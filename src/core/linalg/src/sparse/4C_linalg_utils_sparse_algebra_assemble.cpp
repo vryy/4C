@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of algebraic assemble methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 
 #include "4C_utils_exceptions.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of singular value decomposition (SVD) methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_SVD_HPP
 #define FOUR_C_LINALG_UTILS_DENSEMATRIX_SVD_HPP
 

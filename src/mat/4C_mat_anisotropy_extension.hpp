@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of anisotropy extension to be used by anisotropic materials with @Mat::Anisotropy
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_EXTENSION_HPP
 #define FOUR_C_MAT_ANISOTROPY_EXTENSION_HPP
 

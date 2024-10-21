@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structure field adapter for time step size adaptivity within monolithic FSI
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STR_FSI_TIMINT_ADAPTIVE_HPP
 #define FOUR_C_ADAPTER_STR_FSI_TIMINT_ADAPTIVE_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Coupling Manager for eXtended Fluid Ale Coupling
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fsi_xfem_XFAcoupling_manager.hpp"
 
 #include "4C_adapter_ale_fpsi.hpp"

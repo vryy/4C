@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods for spring and dashpot constraints / boundary conditions:
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_constraint_springdashpot_manager.hpp"
 
 #include "4C_constraint_springdashpot.hpp"

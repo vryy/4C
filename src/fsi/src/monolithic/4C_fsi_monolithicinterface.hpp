@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interfacing FSI problems with NOX
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_MONOLITHICINTERFACE_HPP
 #define FOUR_C_FSI_MONOLITHICINTERFACE_HPP
 

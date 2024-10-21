@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A library of free functions for a solid-scatra element with Nitsche contact
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_SCATRA_3D_ELE_CALC_LIB_NITSCHE_HPP
 #define FOUR_C_SOLID_SCATRA_3D_ELE_CALC_LIB_NITSCHE_HPP
 

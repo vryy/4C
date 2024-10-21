@@ -1,13 +1,3 @@
-/*! \file
-
-\brief Evaluation routines for the solid-scatra element
-
-This file contains the element-specific evaluation routines such as
-evaluate(...), evaluate_neumann(...), etc.
-
-\level 1
-*/
-
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_legacy_enum_definitions_element_actions.hpp"
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"

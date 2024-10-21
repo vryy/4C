@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief service routines for scatra time integration for elch
-
-\level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_elch_service.hpp"
 
 #include "4C_io.hpp"

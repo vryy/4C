@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of a anisotropic exponential fiber material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isoanisoexpo.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

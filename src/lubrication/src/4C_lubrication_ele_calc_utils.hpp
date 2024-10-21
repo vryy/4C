@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief integration rules
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_LUBRICATION_ELE_CALC_UTILS_HPP
 #define FOUR_C_LUBRICATION_ELE_CALC_UTILS_HPP
 

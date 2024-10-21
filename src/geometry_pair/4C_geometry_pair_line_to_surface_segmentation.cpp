@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to surface interaction with segmentation at the boundaries.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_surface_segmentation.hpp"
 
 #include "4C_geometry_pair_element_evaluation_functions.hpp"

@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-  \brief
-
-  allow for computing intersection of zero level-set iso-contour with discretization
-  and related quantities, i.g., volume of subdomains, interface discretization, ...
-
-
-  \level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_LEVELSET_INTERSECTION_UTILS_HPP
 #define FOUR_C_LEVELSET_INTERSECTION_UTILS_HPP
 

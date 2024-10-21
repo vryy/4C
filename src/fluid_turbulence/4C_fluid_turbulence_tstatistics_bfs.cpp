@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief calculate pressures, mean velocity values and fluctuations for
-turbulent flow over a backward-facing step
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_comm_exporter.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"

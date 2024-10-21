@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for geometry element domain size (length, area, volume)
-
-\level 1
-*/
-// End doxygen header.
-
-
 #include <gtest/gtest.h>
 
 #include "4C_fem_geometry_element_volume.hpp"

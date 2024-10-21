@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to surface interaction with simple Gauss point projection and boundary segmentation.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_GAUSS_POINT_PROJECTION_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_GAUSS_POINT_PROJECTION_HPP
 

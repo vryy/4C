@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for scatra
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_SCATRA_HPP
 #define FOUR_C_INPAR_SCATRA_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility routines for the structural non-linear solver classes.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_UTILS_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_UTILS_HPP
 

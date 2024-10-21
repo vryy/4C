@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a pow-like anisotropic material
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_matelast_coupanisopow.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

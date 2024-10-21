@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief A class handling a (periodic) bounding box as simulation volume
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRY_PERIODIC_BOUNDINGBOX_HPP
 #define FOUR_C_FEM_GEOMETRY_PERIODIC_BOUNDINGBOX_HPP
 

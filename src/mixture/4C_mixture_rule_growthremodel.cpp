@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule for growth and remodeling simulations with homogenized constrained mixtures
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_rule_growthremodel.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"

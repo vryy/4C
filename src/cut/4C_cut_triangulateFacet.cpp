@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Class to triangulate facets
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_triangulateFacet.hpp"
 
 #include "4C_cut_boundingbox.hpp"

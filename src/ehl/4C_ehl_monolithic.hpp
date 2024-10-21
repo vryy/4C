@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief basis of all monolithic EHL algorithms that perform a coupling between
-       the structure field equation and lubrication field equations
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_EHL_MONOLITHIC_HPP
 #define FOUR_C_EHL_MONOLITHIC_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation and helper functions for local Newton methods.
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UTILS_LOCAL_NEWTON_HPP
 #define FOUR_C_UTILS_LOCAL_NEWTON_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a mixed-logarithmic neo-Hooke material according to example 1 in
-"Stupkiewicz. An ALE formulation for implicit time integration of quasi-steady state wear problems.
-Comput. Methods Appl. Mech. Engrg. 260, 2013"
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPLOGMIXNEOHOOKE_HPP
 #define FOUR_C_MATELAST_COUPLOGMIXNEOHOOKE_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A mortar coupling element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_ELEMENT_HPP
 #define FOUR_C_MORTAR_ELEMENT_HPP
 

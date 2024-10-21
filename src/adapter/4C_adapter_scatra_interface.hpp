@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Interface for all scatra adapters.
-\level 1
- */
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_SCATRA_INTERFACE_HPP
 #define FOUR_C_ADAPTER_SCATRA_INTERFACE_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief control routine of poroelasticity coupled with scalar transport problems
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_poroelast_scatra_dyn.hpp"
 
 #include "4C_poroelast_scatra_base.hpp"

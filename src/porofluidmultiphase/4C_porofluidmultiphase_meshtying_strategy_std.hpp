@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief standard case without mesh tying
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_STD_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_STD_HPP
 

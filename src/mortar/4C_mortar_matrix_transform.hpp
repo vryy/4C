@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief matrix transformation tools: Switch between different parallel
-distributions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MORTAR_MATRIX_TRANSFORM_HPP
 #define FOUR_C_MORTAR_MATRIX_TRANSFORM_HPP
 

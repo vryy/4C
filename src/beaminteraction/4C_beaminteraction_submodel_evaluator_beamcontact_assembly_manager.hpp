@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble pair based contributions into global matrices.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_HPP
 #define FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_BEAMCONTACT_ASSEMBLY_MANAGER_HPP
 

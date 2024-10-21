@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the volumetic contribution suggested by Ogden, see "Doll, S. and
-Schweizerhof, K. On the Development of Volumetric Strain Energy Functions, Journal of Applied
-Mechanics, 2000"
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_vologden.hpp"
 
 #include "4C_material_parameter_base.hpp"

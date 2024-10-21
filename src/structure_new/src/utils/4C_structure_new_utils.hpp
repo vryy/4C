@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility methods for the structural time integration.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_UTILS_HPP
 #define FOUR_C_STRUCTURE_NEW_UTILS_HPP
 

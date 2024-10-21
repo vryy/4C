@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for Electrochemistry module.
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_elch_dyn.hpp"
 
 #include "4C_ale_utils_clonestrategy.hpp"

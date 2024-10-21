@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Contains a 4C-specific implementation of a bounding
-       volume defined as k-DOP (discrete oriented polytope).
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_BOUNDING_VOLUME_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_BOUNDING_VOLUME_HPP
 

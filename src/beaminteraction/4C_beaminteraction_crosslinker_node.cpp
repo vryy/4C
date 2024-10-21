@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief A class for a crosslinker node
-
-
-\date Oct, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_crosslinker_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

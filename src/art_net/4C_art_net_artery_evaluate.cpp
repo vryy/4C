@@ -1,13 +1,3 @@
-
-/*! \file
-
- \brief evaluate routines for the artery element
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_art_net_artery.hpp"
 #include "4C_art_net_artery_ele_action.hpp"
 #include "4C_art_net_artery_ele_factory.hpp"

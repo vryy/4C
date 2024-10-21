@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief entry point for the solution of Lubrication problems
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LUBRICATION_DYN_HPP
 #define FOUR_C_LUBRICATION_DYN_HPP
 

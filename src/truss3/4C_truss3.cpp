@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief three dimensional total Lagrange truss element
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_truss3.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

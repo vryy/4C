@@ -1,18 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Setting of time-integration parameters in fluid element evaluation
-
-This class provides the fluid element parameter for the time integration,
-which are unique and equal for every fluid in the problem. Time integration
-with different parameters in more than one fluid field is not yet supported.
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_ele_parameter_timint.hpp"
 
 #include "4C_io_pstream.hpp"

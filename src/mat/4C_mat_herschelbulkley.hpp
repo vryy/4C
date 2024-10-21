@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief non-Newtonian fluid of Herschel-Bulkley type
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_HERSCHELBULKLEY_HPP
 #define FOUR_C_MAT_HERSCHELBULKLEY_HPP
 

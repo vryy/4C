@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief  factory class providing the implementations of the porous fluid multiphase
-         boundary element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_BOUNDARY_FACTORY_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_BOUNDARY_FACTORY_HPP
 

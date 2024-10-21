@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for geometric problems associated with beam-to-? interactions
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_geometry_utils.hpp"
 
 #include "4C_beam3_spatial_discretization_utils.hpp"

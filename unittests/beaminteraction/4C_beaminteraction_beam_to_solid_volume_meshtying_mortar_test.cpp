@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief This header provides the interface for all FE simulations
-
-\level 2
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #include <gtest/gtest.h>
 
 #include "4C_beam3_reissner.hpp"

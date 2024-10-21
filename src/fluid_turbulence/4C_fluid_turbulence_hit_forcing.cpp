@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines to calculate forcing for homogeneous isotropic turbulence simulations
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_turbulence_hit_forcing.hpp"
 
 #include "4C_comm_exporter.hpp"

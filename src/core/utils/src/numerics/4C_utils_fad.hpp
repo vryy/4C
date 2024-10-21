@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of utility functions for Forward Automatic Differentiation
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_UTILS_FAD_HPP
 #define FOUR_C_UTILS_FAD_HPP
 

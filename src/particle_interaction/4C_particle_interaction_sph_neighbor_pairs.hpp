@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_SPH_NEIGHBOR_PAIRS_HPP
 #define FOUR_C_PARTICLE_INTERACTION_SPH_NEIGHBOR_PAIRS_HPP
 

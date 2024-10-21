@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Create the desired outer status test.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_statustest_factory.hpp"  // class definition
 
 #include "4C_solver_nonlin_nox_enum_lists.hpp"

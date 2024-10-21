@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Projection of state vectors between overlapping meshes
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_MESH_PROJECTOR_HPP
 #define FOUR_C_XFEM_MESH_PROJECTOR_HPP
 

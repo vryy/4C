@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the creation of additional DOFs for mortar couplings between beams and fluid elements.
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MORTAR_MANAGER_HPP
 

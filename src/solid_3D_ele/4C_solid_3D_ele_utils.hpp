@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Helpers for solid elements
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_UTILS_HPP
 #define FOUR_C_SOLID_3D_ELE_UTILS_HPP
 

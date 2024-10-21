@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Provide a node numbering scheme together with a set of shape functions
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 
 #include "4C_utils_exceptions.hpp"

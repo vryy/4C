@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\level 2
-
-
-\brief Bridge for accessing meshtying & contact from STR time integration
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_CONTACT_BRIDGE_HPP
 #define FOUR_C_CONTACT_MESHTYING_CONTACT_BRIDGE_HPP
 

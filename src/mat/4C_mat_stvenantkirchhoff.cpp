@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-St. Venant-Kirchhoff material
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_stvenantkirchhoff.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

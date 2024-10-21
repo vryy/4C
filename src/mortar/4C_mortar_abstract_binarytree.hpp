@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief An abstract interface for binary trees
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_ABSTRACT_BINARYTREE_HPP
 #define FOUR_C_MORTAR_ABSTRACT_BINARYTREE_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief List of element actions.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEGACY_ENUM_DEFINITIONS_ELEMENT_ACTIONS_HPP
 #define FOUR_C_LEGACY_ENUM_DEFINITIONS_ELEMENT_ACTIONS_HPP
 

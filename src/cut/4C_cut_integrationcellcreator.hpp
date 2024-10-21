@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Create and handle integrationcells for the Tessellation routine
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_INTEGRATIONCELLCREATOR_HPP
 #define FOUR_C_CUT_INTEGRATIONCELLCREATOR_HPP
 

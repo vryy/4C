@@ -1,18 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of RedAcinus element. Methods implemented here
-       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::evaluate()
-       with the corresponding action.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
-
 #include "4C_red_airways_acinus_impl.hpp"
 
 #include "4C_fem_condition.hpp"

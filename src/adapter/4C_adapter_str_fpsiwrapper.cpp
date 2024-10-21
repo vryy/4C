@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for FPSI problems containing the interface
-       and methods dependent on the interface
-
-
-\level 3
-*/
-
 #include "4C_adapter_str_fpsiwrapper.hpp"
 
 #include "4C_fem_discretization.hpp"

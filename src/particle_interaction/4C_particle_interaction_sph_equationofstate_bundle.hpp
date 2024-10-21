@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief class holding all equation of state handlers
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_SPH_EQUATIONOFSTATE_BUNDLE_HPP
 #define FOUR_C_PARTICLE_INTERACTION_SPH_EQUATIONOFSTATE_BUNDLE_HPP
 

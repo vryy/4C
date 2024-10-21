@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CARDIOVASCULAR0D_DOFSET_HPP
 #define FOUR_C_CARDIOVASCULAR0D_DOFSET_HPP
 

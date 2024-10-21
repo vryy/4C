@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Mesh tying strategy for monolithic SSI
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_MONOLITHIC_MESHTYING_STRATEGY_HPP
 #define FOUR_C_SSI_MONOLITHIC_MESHTYING_STRATEGY_HPP
 

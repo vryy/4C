@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief list of important enumerators ( used for the necessary header inclusions
-       till C++11 )
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_ENUM_LISTS_HPP
 #define FOUR_C_XFEM_ENUM_LISTS_HPP
 

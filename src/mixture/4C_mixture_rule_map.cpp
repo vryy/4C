@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule for homogenized constrained mixtures with mass fractions defined as discrete
-values per element
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_rule_map.hpp"
 
 #include "4C_global_data.hpp"

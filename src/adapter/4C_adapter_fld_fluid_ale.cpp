@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solver for fluid field on a moving ALE mesh
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------------*/
 #include "4C_adapter_fld_fluid_ale.hpp"
 
 #include "4C_adapter_ale_fluid.hpp"

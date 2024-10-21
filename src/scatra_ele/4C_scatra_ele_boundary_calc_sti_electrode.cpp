@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra boundary elements for heat transport within electrodes
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc_sti_electrode.hpp"
 
 #include "4C_fem_discretization.hpp"

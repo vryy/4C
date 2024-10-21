@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief structure-specific utils and auxiliary functions
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_AUX_HPP
 #define FOUR_C_STRUCTURE_AUX_HPP
 

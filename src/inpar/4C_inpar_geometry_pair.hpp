@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameter for geometry pairs.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_INPAR_GEOMETRY_PAIR_HPP
 #define FOUR_C_INPAR_GEOMETRY_PAIR_HPP
 

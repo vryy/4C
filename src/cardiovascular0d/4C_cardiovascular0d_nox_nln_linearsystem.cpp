@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Derived class which manages the special requirements to the linear
-       solver for 0D cardiovascular-structural problems.
-
-
-\date Jul 15, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_cardiovascular0d_nox_nln_linearsystem.hpp"
 
 #include "4C_linalg_sparseoperator.hpp"

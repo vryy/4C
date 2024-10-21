@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Element types of the 2D solid-poro element.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_W1_PORO_ELETYPES_HPP
 #define FOUR_C_W1_PORO_ELETYPES_HPP
 

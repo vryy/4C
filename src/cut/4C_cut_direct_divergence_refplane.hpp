@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Construct reference plane for direct divergence method when used in global
-coordinate system
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_CUT_DIRECT_DIVERGENCE_REFPLANE_HPP
 #define FOUR_C_CUT_DIRECT_DIVERGENCE_REFPLANE_HPP
 

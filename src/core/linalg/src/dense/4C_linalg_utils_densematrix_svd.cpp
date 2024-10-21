@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of singular value decomposition (SVD) methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_utils_densematrix_svd.hpp"
 
 #include "4C_utils_exceptions.hpp"

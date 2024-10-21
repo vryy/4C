@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A data storage container
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_INPUT_PARAMETER_CONTAINER_HPP
 #define FOUR_C_IO_INPUT_PARAMETER_CONTAINER_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the general solid material constituent
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_constituent_solidmaterial.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

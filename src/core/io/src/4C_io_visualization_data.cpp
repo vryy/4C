@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Define a data container that stores visualization data in the VTU data format
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #include "4C_io_visualization_data.hpp"
 
 #include <algorithm>

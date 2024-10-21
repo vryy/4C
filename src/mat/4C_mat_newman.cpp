@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material stores parameters for ion species in electrolyte solution. The newman material is
-derived for a binary electrolyte using the electroneutrality condition to condense the non-reacting
-species
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_newman.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

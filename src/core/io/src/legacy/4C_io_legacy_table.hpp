@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A very simple symbol table implementation.
-
-
-\level 1
-
----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_LEGACY_TABLE_HPP
 #define FOUR_C_IO_LEGACY_TABLE_HPP
 

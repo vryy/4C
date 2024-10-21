@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A register that matches 4C element shape types to VTK cell types
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_ELEMENT_VTK_CELL_TYPE_REGISTER_HPP
 #define FOUR_C_IO_ELEMENT_VTK_CELL_TYPE_REGISTER_HPP
 

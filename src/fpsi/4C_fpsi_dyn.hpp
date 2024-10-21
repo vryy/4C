@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief control routine of fluid-porous-structure-interaction problems
-\level 2
-----------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FPSI_DYN_HPP
 #define FOUR_C_FPSI_DYN_HPP
 

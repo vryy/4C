@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a NormF status test. This
-       test can be used to check the residual (right-hand-side)
-       for convergence.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_NORMF_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_NORMF_HPP
 

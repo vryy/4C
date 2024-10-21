@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Element classes that represent faces, i.e. surface elements.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_FACES_HPP
 #define FOUR_C_GEOMETRY_PAIR_ELEMENT_FACES_HPP
 

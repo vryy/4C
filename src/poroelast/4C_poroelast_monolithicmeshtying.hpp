@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief base for porous media monolithic meshtying method
-
-// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Johannes Kremheller
-// Originates from poro_monolithic
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_MONOLITHICMESHTYING_HPP
 #define FOUR_C_POROELAST_MONOLITHICMESHTYING_HPP
 

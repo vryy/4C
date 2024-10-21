@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Time dependent variables for function definition
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_utils_functionvariables.hpp"
 
 #include "4C_utils_symbolic_expression.hpp"

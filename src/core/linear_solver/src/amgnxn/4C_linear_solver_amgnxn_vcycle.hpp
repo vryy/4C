@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_VCYCLE_HPP
 #define FOUR_C_LINEAR_SOLVER_AMGNXN_VCYCLE_HPP
 

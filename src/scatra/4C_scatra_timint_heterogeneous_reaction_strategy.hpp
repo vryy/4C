@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Solution strategy for heterogeneous reactions
-
-   \level 3
-
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_HETEROGENEOUS_REACTION_STRATEGY_HPP
 #define FOUR_C_SCATRA_TIMINT_HETEROGENEOUS_REACTION_STRATEGY_HPP
 

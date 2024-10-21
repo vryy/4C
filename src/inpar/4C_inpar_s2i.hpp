@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input quantities and globally accessible enumerations for scatra-scatra interface coupling
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_S2I_HPP
 #define FOUR_C_INPAR_S2I_HPP
 

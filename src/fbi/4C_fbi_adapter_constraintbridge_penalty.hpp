@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation connecting the penalty constraint enforcement technique with a discretization
-approach for Fluid-beam interaction.
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_HPP
 #define FOUR_C_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_HPP
 

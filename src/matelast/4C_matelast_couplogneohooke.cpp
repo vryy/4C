@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a logarithmic neo-Hooke material according to Bonet and Wood, "Nonlinear
-continuum mechanics for finite element analysis", Cambridge, 1997.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_couplogneohooke.hpp"
 
 #include "4C_material_parameter_base.hpp"

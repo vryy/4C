@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all ELCH algorithms with moving boundaries
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ELCH_MOVING_BOUNDARY_ALGORITHM_HPP
 #define FOUR_C_ELCH_MOVING_BOUNDARY_ALGORITHM_HPP
 

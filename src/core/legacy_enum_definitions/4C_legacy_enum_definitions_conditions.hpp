@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief List of valid conditions.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEGACY_ENUM_DEFINITIONS_CONDITIONS_HPP
 #define FOUR_C_LEGACY_ENUM_DEFINITIONS_CONDITIONS_HPP
 

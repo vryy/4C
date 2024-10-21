@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Method to print the arteries in a way that could be displayed by
-\gnuplot
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_art_write_gnuplot.hpp"
 
 #include "4C_fem_condition.hpp"

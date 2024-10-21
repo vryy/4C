@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains conductivity, permittivity and permeability of the medium for isotropic
-       electromagetic field evolution.
-       example input line:
-       MAT 1 MAT_Electromagnetic CONDUCTIVITY 0.0 PERMITTIVITY 1.732 PERMEABILITY 1.732
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ELECTROMAGNETIC_HPP
 #define FOUR_C_MAT_ELECTROMAGNETIC_HPP
 

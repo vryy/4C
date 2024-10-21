@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Proxy to a set of degrees of freedom
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_dofset_proxy.hpp"
 
 #include "4C_utils_exceptions.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  base class for partitioned poroelasticity algorithms
-
-\level 2
-
- *-----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROELAST_PARTITIONED_HPP
 #define FOUR_C_POROELAST_PARTITIONED_HPP
 

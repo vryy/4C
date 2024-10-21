@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge
-within thermodynamic electrodes
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch_electrode_sti_thermo.hpp"
 
 #include "4C_scatra_ele_parameter_timint.hpp"

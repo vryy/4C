@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class representing a geometrical node
-
-
-\level 3
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_edge.hpp"
 #include "4C_cut_element.hpp"
 #include "4C_cut_volumecell.hpp"

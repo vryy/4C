@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  Partitioned poroelasticity algorithm
-
-\level 2
-
- *-----------------------------------------------------------------------*/
-
 #include "4C_poroelast_partitioned.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

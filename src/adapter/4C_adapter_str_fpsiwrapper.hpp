@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for FPSI problems containing the interface
-       and methods dependent on the interface
-
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_ADAPTER_STR_FPSIWRAPPER_HPP
 #define FOUR_C_ADAPTER_STR_FPSIWRAPPER_HPP
 

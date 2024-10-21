@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief entry point (global control routine) for porous multiphase flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_porofluidmultiphase_dyn.hpp"
 
 #include "4C_fem_discretization.hpp"

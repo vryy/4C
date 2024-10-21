@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the So_hex8 class
-
-\level 3
-
-*-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_fem_discretization.hpp"

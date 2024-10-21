@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief routines to initialize homogeneous isotropic turbulence simulations with passive scalar
-transport
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_scatra_turbulence_hit_initial_scalar_field.hpp"
 
 #include "4C_comm_exporter.hpp"

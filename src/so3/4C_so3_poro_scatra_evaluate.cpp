@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation methods for the 3D structural poro-scatra element
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_list.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains the functions to establish local material law
-stress-strain law for isotropic material for a 3D element
-following Drucker Prager plasticity model
-Reference:
-EA de Souza Neto, D Peric, DRJ Owen. Computational Methods of Plasticity: Theory and Applications,
-John Wiley & Sons, Ltd, 2008
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_PLASTICDRUCKERPRAGER_HPP
 #define FOUR_C_MAT_PLASTICDRUCKERPRAGER_HPP
 

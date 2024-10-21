@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Main abstract class for contact solution strategies
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_ABSTRACT_STRATEGY_HPP
 #define FOUR_C_CONTACT_ABSTRACT_STRATEGY_HPP
 

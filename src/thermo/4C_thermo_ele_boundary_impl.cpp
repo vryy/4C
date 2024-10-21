@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief internal implementation of thermo boundary elements (FaceElement)
-
-\level 1
-
- */
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 09/09 |
- *----------------------------------------------------------------------*/
 #include "4C_thermo_ele_boundary_impl.hpp"
 
 #include "4C_fem_discretization.hpp"

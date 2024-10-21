@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of multiplication methods for namespace LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_MULTIPLY_HPP
 #define FOUR_C_LINALG_UTILS_DENSEMATRIX_MULTIPLY_HPP
 

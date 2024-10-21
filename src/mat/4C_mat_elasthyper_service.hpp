@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Contains the declaration of servce functions for hylerelastic materials
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ELASTHYPER_SERVICE_HPP
 #define FOUR_C_MAT_ELASTHYPER_SERVICE_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_dofset_base.hpp"
 
 #include "4C_fem_discretization.hpp"

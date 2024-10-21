@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A wrapper for the Epetra_Vector
-
-\level 0
-*----------------------------------------------------------------------*/
 #include "4C_linalg_vector.hpp"
 
 #include "4C_linalg_multi_vector.hpp"

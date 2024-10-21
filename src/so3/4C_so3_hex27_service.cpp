@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief tri-quadratic displacement based solid element
-\level 1
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_so3_hex27.hpp"

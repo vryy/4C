@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write nodal coordinates and values at the nodes to a visualization file
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-/* headers */
 #include "4C_io_discretization_visualization_writer_nodes.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of fluid element with xfem wall modeling
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_XWALL_HPP
 #define FOUR_C_FLUID_ELE_CALC_XWALL_HPP
 

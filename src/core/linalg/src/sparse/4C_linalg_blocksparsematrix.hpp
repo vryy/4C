@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief block sparse matrix
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_BLOCKSPARSEMATRIX_HPP
 #define FOUR_C_LINALG_BLOCKSPARSEMATRIX_HPP
 

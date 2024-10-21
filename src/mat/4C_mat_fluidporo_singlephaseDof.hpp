@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief material defining the degree of freedom of phase within a multiphase porous fluid.
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_FLUIDPORO_SINGLEPHASEDOF_HPP
 #define FOUR_C_MAT_FLUIDPORO_SINGLEPHASEDOF_HPP
 

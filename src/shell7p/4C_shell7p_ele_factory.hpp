@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Factory of Shell elements
-
-\level 1
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_FACTORY_HPP
 #define FOUR_C_SHELL7P_ELE_FACTORY_HPP
 

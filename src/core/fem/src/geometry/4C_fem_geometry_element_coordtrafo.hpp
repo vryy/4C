@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief computes coordinate transformation between current and element
-       domains (both ways)
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_ELEMENT_COORDTRAFO_HPP
 #define FOUR_C_FEM_GEOMETRY_ELEMENT_COORDTRAFO_HPP
 

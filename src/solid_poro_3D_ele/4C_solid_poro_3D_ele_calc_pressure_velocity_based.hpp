@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Definition of routines for calculation of solid poro element with pressure based
-implementation
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_PORO_3D_ELE_CALC_PRESSURE_VELOCITY_BASED_HPP
 #define FOUR_C_SOLID_PORO_3D_ELE_CALC_PRESSURE_VELOCITY_BASED_HPP
 

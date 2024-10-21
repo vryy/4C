@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for utilities concerning voigt notation
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"

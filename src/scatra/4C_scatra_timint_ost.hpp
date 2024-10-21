@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief One-Step-Theta time-integration scheme
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_OST_HPP
 #define FOUR_C_SCATRA_TIMINT_OST_HPP
 

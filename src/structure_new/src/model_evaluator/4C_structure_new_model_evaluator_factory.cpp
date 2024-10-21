@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired model evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_model_evaluator_factory.hpp"
 
 #include "4C_beamcontact_str_model_evaluator_beaminteraction_old.hpp"

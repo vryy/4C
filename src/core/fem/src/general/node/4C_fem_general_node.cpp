@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A virtual class for a node
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_general_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

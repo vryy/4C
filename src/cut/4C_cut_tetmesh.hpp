@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Tessellate the element by means of a Delauney triangulation
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_TETMESH_HPP
 #define FOUR_C_CUT_TETMESH_HPP
 

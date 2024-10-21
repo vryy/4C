@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Derived class which manages the special requirements to the linear
-       solver for structural-constraint problems.
-
-
-\date Jul 15, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_constraint_nox_nln_lagpenconstraint_linearsystem.hpp"
 
 #include "4C_linalg_sparseoperator.hpp"

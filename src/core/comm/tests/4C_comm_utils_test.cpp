@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Unittests for comm_utils implementation
-\level 0
-
-*-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_comm_utils.hpp"

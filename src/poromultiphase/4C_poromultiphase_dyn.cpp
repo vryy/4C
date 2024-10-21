@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief entry point (global control routine) for poroelasticity multiphase flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_poromultiphase_dyn.hpp"
 
 #include "4C_fem_discretization.hpp"

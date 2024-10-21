@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of artnet calculation results
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_art_net_artery_resulttest.hpp"
 
 #include "4C_art_net_explicitintegration.hpp"

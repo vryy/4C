@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrate internal faces (stabilization) terms on an internal face element
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_intfaces_calc.hpp"
 
 #include "4C_fem_discretization_faces.hpp"

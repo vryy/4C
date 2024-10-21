@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This file contains the hyperelastic toolbox with application to finite
-strain plasticity using a variational constitutive update.
-
-The input line should read
-MAT 1 MAT_plasticElastHyperVCU NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45
-ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
-
-\level 3
-
- */
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_plastic_VarConstUpdate.hpp"
 
 #include "4C_global_data.hpp"

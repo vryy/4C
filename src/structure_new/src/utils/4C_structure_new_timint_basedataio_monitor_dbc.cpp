@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related monitoring reaction forces for the structural (time) integration
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_structure_new_timint_basedataio_monitor_dbc.hpp"
 
 #include "4C_inpar_IO_monitor_structure_dbc.hpp"

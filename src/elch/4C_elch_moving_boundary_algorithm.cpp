@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all ELCH algorithms with moving boundaries
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_elch_moving_boundary_algorithm.hpp"
 
 #include "4C_fem_discretization.hpp"

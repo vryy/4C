@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of sparse matrix printing methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"

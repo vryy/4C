@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the structural time integration which gives fine grained
-       access in the time loop
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STR_TIMELOOP_HPP
 #define FOUR_C_ADAPTER_STR_TIMELOOP_HPP
 

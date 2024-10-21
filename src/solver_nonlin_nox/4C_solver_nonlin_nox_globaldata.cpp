@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Kind of a data container class, which holds many variables
-       and objects, which are necessary to setup a NOX::NLN
-       solution strategy.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_globaldata.hpp"  // class definition
 
 #include "4C_inpar_boolifyparameters.hpp"

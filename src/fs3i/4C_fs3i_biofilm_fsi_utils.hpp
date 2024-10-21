@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utils for biofilm fs3i
-
-\level 3
-
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FS3I_BIOFILM_FSI_UTILS_HPP
 #define FOUR_C_FS3I_BIOFILM_FSI_UTILS_HPP
 

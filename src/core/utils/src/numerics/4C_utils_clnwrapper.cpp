@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Custom memory allocator user for CLN data type
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_utils_clnwrapper.hpp"
 
 FOUR_C_NAMESPACE_OPEN

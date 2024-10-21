@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base algorithm for all kinds of coupled problems
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_ALGORITHMBASE_HPP
 #define FOUR_C_ADAPTER_ALGORITHMBASE_HPP
 

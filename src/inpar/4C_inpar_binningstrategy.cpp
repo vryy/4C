@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for binning strategy
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_inpar_binningstrategy.hpp"
 
 #include "4C_binstrategy.hpp"

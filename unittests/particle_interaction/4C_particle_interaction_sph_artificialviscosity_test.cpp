@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for artificial viscosity handler for smoothed particle hydrodynamics (SPH)
-interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_particle_interaction_sph_artificialviscosity.hpp"

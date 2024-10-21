@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the Kirchhoff-Love shell element
-
-\level 1
-
-*-----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_shell_kl_nurbs.hpp"

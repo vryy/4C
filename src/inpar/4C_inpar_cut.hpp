@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for cut library
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_CUT_HPP
 #define FOUR_C_INPAR_CUT_HPP
 

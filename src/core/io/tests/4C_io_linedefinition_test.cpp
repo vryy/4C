@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for LineDefinition
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_io_linedefinition.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base level-set algorithm: collection of functions related to reinitialization
-
-    detailed description in header file levelset_algorithm.H
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #include "4C_fem_condition_periodic.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"

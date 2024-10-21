@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Setting of general fluid parameter for element evaluation
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_PARAMETER_STD_HPP
 #define FOUR_C_FLUID_ELE_PARAMETER_STD_HPP
 

@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Generate main Gauss points when using "DirectDivergence" approach.
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CUT_DIRECT_DIVERGENCE_HPP
 #define FOUR_C_CUT_DIRECT_DIVERGENCE_HPP
 

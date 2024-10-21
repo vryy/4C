@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of fluid internal faces elements
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_INTFACES_CALC_HPP
 #define FOUR_C_FLUID_ELE_INTFACES_CALC_HPP
 

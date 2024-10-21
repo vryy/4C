@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of Lubrication elements
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LUBRICATION_ELE_FACTORY_HPP
 #define FOUR_C_LUBRICATION_ELE_FACTORY_HPP
 

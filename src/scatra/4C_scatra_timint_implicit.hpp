@@ -1,26 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Associated with control routine for con.-diff.(in)stat. solvers,
-
-     including instationary solvers based on
-
-     o one-step-theta time-integration scheme
-
-     o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
-
-     o implicit characteristic Galerkin (ICG) time-integration scheme (level-set transport)
-
-     o explicit taylor galerkin (TG) time-integration schemes (level-set transport)
-
-     and stationary solver.
-
-\level 1
-
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_IMPLICIT_HPP
 #define FOUR_C_SCATRA_TIMINT_IMPLICIT_HPP
 

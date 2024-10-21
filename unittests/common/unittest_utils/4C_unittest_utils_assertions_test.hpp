@@ -1,8 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief special assertions for 4C code
-\level 1
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
 #define FOUR_C_UNITTEST_UTILS_ASSERTIONS_TEST_HPP
 

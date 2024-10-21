@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Concrete implementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
-       (pure) virtual routines.
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_noxinterface.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

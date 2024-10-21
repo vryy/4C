@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Summand of the ElastHyper Toolbox with active behavior
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ACTIVESUMMAND_HPP
 #define FOUR_C_MATELAST_ACTIVESUMMAND_HPP
 #include "4C_config.hpp"

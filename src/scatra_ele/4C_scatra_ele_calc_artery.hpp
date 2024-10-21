@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation class containing routines for calculation of scalar transport
-        within 1D-arteries (blood vessels)
-        only pressure-based formulation supports this
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_ARTERY_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ARTERY_HPP
 

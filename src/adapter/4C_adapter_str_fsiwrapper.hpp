@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for FSI problems containing the interface
-       and methods dependent on the interface
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_STR_FSIWRAPPER_HPP
 #define FOUR_C_ADAPTER_STR_FSIWRAPPER_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief main file containing routines for calculation of HDG cardiac monodomain element
-
-\level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_cardiac_monodomain_hdg.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isochoric contribution of an isotropic exponential material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISOEXPOPOW_HPP
 #define FOUR_C_MATELAST_ISOEXPOPOW_HPP
 

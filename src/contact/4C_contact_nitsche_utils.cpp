@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Some helpers for nitsche contact
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_nitsche_utils.hpp"
 
 #include <Epetra_FECrsMatrix.h>

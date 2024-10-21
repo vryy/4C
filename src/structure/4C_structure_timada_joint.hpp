@@ -1,13 +1,3 @@
-/*======================================================================*/
-/*! \file
-\brief Indicator based on general Solid::TimInt object
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_STRUCTURE_TIMADA_JOINT_HPP
 #define FOUR_C_STRUCTURE_TIMADA_JOINT_HPP
 

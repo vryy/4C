@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief global algorithm control class for all immersed algorithms
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_immersed_problem_dyn.hpp"
 
 #include "4C_adapter_str_fsiwrapper_immersed.hpp"

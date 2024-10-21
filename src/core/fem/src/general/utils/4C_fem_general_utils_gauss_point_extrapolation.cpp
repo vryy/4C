@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of utility functions for Gauss point data extrapolation
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_general_utils_gauss_point_extrapolation.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"

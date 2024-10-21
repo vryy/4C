@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 1
-
-\brief Time integration for structural dynamics
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_STRUCTURE_TIMINT_HPP
 #define FOUR_C_STRUCTURE_TIMINT_HPP
 

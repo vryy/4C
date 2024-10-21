@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with sliding grids using a monolithic scheme
-with condensed structure interface displacements
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_fsi_slidingmonolithic_structuresplit.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

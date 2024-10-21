@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This file provide the entry point for any GoogleTest test
-       executable running with MPI Initialized.
-\level 0
-*/
-
-
-
 #include <gtest/gtest.h>
 
 #include "4C_config.hpp"

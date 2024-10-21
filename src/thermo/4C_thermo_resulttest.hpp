@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of thermo calculation results
-
-\level 1
-
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 08/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_RESULTTEST_HPP
 #define FOUR_C_THERMO_RESULTTEST_HPP
 

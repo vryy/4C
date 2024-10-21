@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for monolithic fluid-fluid-fsi (structuresplit)
-using XFEM
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fsi_fluidfluidmonolithic_structuresplit_nonox.hpp"
 
 #include "4C_adapter_ale_xffsi.hpp"

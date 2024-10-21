@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class defining the fluid boundary element
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_BOUNDARY_INTERFACE_HPP
 #define FOUR_C_FLUID_ELE_BOUNDARY_INTERFACE_HPP
 

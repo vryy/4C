@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic tools used in XFEM routines
-
-\level 3
-
-
-\warning this file should be cleaned up
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_utils.hpp"
 
 #include "4C_fem_discretization_faces.hpp"

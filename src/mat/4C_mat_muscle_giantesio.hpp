@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of the Giantesio active skeletal muscle material (active strain approach)
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MUSCLE_GIANTESIO_HPP
 #define FOUR_C_MAT_MUSCLE_GIANTESIO_HPP
 

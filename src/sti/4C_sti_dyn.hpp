@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main control routine for monolithic scalar-thermo interaction
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STI_DYN_HPP
 #define FOUR_C_STI_DYN_HPP
 

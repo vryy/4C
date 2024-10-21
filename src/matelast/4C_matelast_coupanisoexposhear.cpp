@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implentation for an exponential strain energy function for fibers
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupanisoexposhear.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

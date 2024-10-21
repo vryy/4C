@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief creates a second discretization as part of the complete discretization for inflow
-generation
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_DISCRET_EXTRACTOR_HPP
 #define FOUR_C_FLUID_DISCRET_EXTRACTOR_HPP
 

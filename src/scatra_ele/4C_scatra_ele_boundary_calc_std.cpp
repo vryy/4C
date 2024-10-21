@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra boundary terms at integration points
-
-\level 1
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_boundary_calc_std.hpp"
 
 #include "4C_fem_general_utils_boundary_integration.hpp"

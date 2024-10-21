@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for utils for particle interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_particle_interaction_utils.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- *
-  \brief Interface class for contact constitutive law parameters, i.e. paramters for laws that
-relate the contact gap to the contact pressure based on micro interactions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-/* macros */
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 

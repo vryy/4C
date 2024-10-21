@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_linalg_projected_precond.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"

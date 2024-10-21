@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief stores data about nearest object in oct tree
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_geometry_searchtree_nearestobject.hpp"
 
 FOUR_C_NAMESPACE_OPEN

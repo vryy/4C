@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief pre_exodus bc-file reader
-
-
-\level 1
-
-Here is everything related with reading a bc file
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_PRE_EXODUS_READBC_HPP
 #define FOUR_C_PRE_EXODUS_READBC_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic constraint class, dealing with multi point constraints
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_HPP
 #define FOUR_C_CONSTRAINT_MULTIPOINTCONSTRAINT3PENALTY_HPP
 

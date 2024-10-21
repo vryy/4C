@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Abstract interface for meshtying strategies in scalar transport problems (including standard
-strategy without meshtying)
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_HPP
 

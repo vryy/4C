@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Performs ScaTra specifc functions not yet generalized for other fields.
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_utils.hpp"
 
 #include "4C_fem_condition_utils.hpp"

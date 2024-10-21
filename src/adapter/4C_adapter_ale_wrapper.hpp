@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the ALE time integration
-
-\level 2
-
- */
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_ALE_WRAPPER_HPP
 #define FOUR_C_ADAPTER_ALE_WRAPPER_HPP
 

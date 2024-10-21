@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for the evaluation routines of the fluid element
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_INTERFACE_HPP
 #define FOUR_C_FLUID_ELE_INTERFACE_HPP
 

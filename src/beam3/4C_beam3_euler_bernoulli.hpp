@@ -1,36 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional nonlinear torsionless rod based on a C1 curve
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-/* 3D nonlinear Euler-Bernoulli-like beam element based on chapter 5 of the diploma thesis
- * "Development of a finite element for nonlinear beams based on the formulas of Frenet-Serret" by
- * Christoph Meier. The current formulation is only able to display axial tension and bending
- * curvature based on the curve describing the centerline of an initially (i.e. stress free)
- * straight beam. There is no shear deformation and no torsion. Refer to 'beam3k' for a full
- * Kirchhoff type beam element. To be able to use this element correctly so far structural dynamic
- * parameters need to be set to:
- *
- * LOADLIN     Yes
- *
- * since due to this beam formulation external point loads are being linearized and have an effect
- * on the stiffness matrix. For this reason a special type of Neumann conditions, namely DESIGN
- * POINT MOMENT EB CONDITIONS, are needed for this element.
- *
- * As the beam curve has to be C1 it is interpolated with hermitien polynomials of order 3.
- * Therefore each node has 6 dofs: the position vector of the node (3 dofs) and the tangent vector
- * to the curve at the node (3 dofs). If Dirichlet BC are applied one has to make sure that the last
- * three flags refer to the tangent at the node (rotational degree of freedom). The flag of the
- * tangent in beam centerline direction must be set to 0, otherwise the axial tension at the
- * boundary would be prescribed.
- */
-
-// header file only included if not yet included!
 #ifndef FOUR_C_BEAM3_EULER_BERNOULLI_HPP
 #define FOUR_C_BEAM3_EULER_BERNOULLI_HPP
 

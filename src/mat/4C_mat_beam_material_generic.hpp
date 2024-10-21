@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief interface for constitutive relations for beam cross-section resultants
-
-
-\level 1
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_BEAM_MATERIAL_GENERIC_HPP
 #define FOUR_C_MAT_BEAM_MATERIAL_GENERIC_HPP
 

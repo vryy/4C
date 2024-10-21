@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\level 1
-
-
-\brief 4C implementation of main class to control all meshtying
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
 #define FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
 

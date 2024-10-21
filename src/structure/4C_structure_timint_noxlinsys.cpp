@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Use #NOX as non-linear solution technique for implicit
-       structureal time integration
-
-
-\level 3
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_noxlinsys.hpp"
 
 #include "4C_global_data.hpp"

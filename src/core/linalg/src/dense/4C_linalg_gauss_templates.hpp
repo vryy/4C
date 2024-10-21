@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Gauss elimination for small nxn systems
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_GAUSS_TEMPLATES_HPP
 #define FOUR_C_LINALG_GAUSS_TEMPLATES_HPP
 

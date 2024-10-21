@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A wrapper for multi vectors
-
-\level 0
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_MULTI_VECTOR_HPP
 #define FOUR_C_LINALG_MULTI_VECTOR_HPP
 

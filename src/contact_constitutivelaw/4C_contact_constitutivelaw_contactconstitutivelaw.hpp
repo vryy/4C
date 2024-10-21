@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for contact constitutive laws, i.e. laws that relate the contact gap to the
-contact pressure based on micro interactions
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_HPP
 

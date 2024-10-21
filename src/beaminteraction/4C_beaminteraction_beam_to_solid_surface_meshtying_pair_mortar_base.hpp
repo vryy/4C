@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base mortar mesh tying element for between a 3D beam and a surface element.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_BASE_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_MORTAR_BASE_HPP
 

@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Class containing Uzawa algorithm to solve linear system.
-\level 2
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_SOLVER_HPP
 #define FOUR_C_CONSTRAINT_SOLVER_HPP
 

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-  \brief Nurbs specific helper methods for ensight filter basis class
-  Methods are declared in post_ensight_writer header file.
-
-
-  \level 2
-*/
-
-
-
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"

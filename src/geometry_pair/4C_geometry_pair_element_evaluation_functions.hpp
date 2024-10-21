@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Functions to evaluate the templated elements
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_EVALUATION_FUNCTIONS_HPP
 #define FOUR_C_GEOMETRY_PAIR_ELEMENT_EVALUATION_FUNCTIONS_HPP
 

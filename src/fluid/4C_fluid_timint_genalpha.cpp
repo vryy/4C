@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generalized-alpha time-integration scheme
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fluid_timint_genalpha.hpp"
 
 #include "4C_fluid_ele_action.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Generalized-alpha time-integration scheme with extensions for
-       loma problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_LOMA_GENALPHA_HPP
 #define FOUR_C_SCATRA_TIMINT_LOMA_GENALPHA_HPP
 

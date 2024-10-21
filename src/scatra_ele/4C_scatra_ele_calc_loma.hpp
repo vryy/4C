@@ -1,26 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Element evaluations for loma problems
-
-       REMARK:
-       Note, parameter "SGS_MATERIAL_UPDATE" is not anymore supported. The idea of
-       this parameter is to update all material parameters (density, viscosity, conductivity, ...)
-       using the temperature obtained from the solution, i.e., T^h, plus the subgrid-scale
-       temperature (obtained from residual-based or multifractal subgrid-scales). This procedure has
-originally been suggested by Avila et al. 2012. Elaborate testing of this option has not shown any
-notable differences or improvements compared to the usual way, i.e., merely using T^h. For reuse of
-this option see file scatra_ele_impl.cpp of revision 18836. If this option should be re-implemented,
-it should not be combined with subgrid diffusivity approaches or artificial diffusion methods, since
-a potential update of the material parameters may overwrite the subgrid diffusivity added to the
-physical one. For avoiding this potential combination, it should be excluded in a loma parameter
-list, where a FOUR_C_THROW() should be provided.
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_LOMA_HPP
 #define FOUR_C_SCATRA_ELE_CALC_LOMA_HPP
 

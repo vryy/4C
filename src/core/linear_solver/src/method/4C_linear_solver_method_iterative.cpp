@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of 4C's interface to Krylov solvers
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_linear_solver_method_iterative.hpp"
 
 #include "4C_linear_solver_amgnxn_preconditioner.hpp"

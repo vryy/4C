@@ -1,7 +1,3 @@
-/*! \file
-\brief Helpers for fluid element nullspace computation
-\level 0
-*/
 #include "4C_fluid_ele_nullspace.hpp"
 
 #include "4C_fem_general_node.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic class for XFEM-time-integration, e.g. for Semi-Lagrangean methods
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_xfem_xfluid_timeInt_base.hpp"
 
 #include "4C_bele_bele3.hpp"

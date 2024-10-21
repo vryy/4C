@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief utils for proc to proc communication
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_utils_parallel_proctoproc.hpp"
 
 #include "4C_comm_exporter.hpp"

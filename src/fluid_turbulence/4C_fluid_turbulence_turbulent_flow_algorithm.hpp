@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief algorithm for turbulent flows with separate inflow section
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_TURBULENT_FLOW_ALGORITHM_HPP
 #define FOUR_C_FLUID_TURBULENCE_TURBULENT_FLOW_ALGORITHM_HPP
 

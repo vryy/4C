@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief strategy to clone porofluid from porous solid for scalar transport coupling problems
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_scatra_utils_clonestrategy.hpp"
 
 #include "4C_adapter_structure_scatra_ele.hpp"

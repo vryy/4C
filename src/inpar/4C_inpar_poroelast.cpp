@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for poro elasticity
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_poroelast.hpp"
 
 #include "4C_inpar_fluid.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Definitions of NOX group for non-linear solution techniques
-       used within implicit structural time integration
-\level 1
-*/
-
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_NOXGROUP_HPP
 #define FOUR_C_STRUCTURE_TIMINT_NOXGROUP_HPP
 

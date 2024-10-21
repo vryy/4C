@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Adapter for the new structural time integration framework.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_adapter_str_structure_new.hpp"
 
 #include "4C_adapter_str_constr_merged.hpp"

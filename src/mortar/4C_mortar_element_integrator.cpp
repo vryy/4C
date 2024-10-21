@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\level 2
-
-
-\brief A class to perform Gaussian integration on a mortar element
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_mortar_element.hpp"
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief generalized alpha time integration scheme for porous fluid
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_poro_genalpha.hpp"
 
 #include "4C_io.hpp"

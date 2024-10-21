@@ -1,18 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of RedInterAcinarDep element. Methods implemented here
-       are called by inter_acinar_dep_evaluate.cpp by
-Discret::ELEMENTS::RedInterAcinarDep::evaluate() with the corresponding action.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
-
 #include "4C_red_airways_interacinardep_impl.hpp"
 
 #include "4C_fem_condition.hpp"

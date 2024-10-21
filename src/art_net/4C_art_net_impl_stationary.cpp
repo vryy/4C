@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for arterial network stationary formulation.
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_impl_stationary.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

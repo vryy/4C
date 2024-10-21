@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all explicit/implicit time integrators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_integrator.hpp"
 
 #include "4C_fem_general_node.hpp"

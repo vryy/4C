@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters for output of structural problem at runtime
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_IO_runtime_vtk_output_structure.hpp"
 
 #include "4C_inpar_structure.hpp"

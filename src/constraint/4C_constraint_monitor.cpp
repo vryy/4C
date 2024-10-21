@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic constraint class, dealing with constraints living on boundaries
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_constraint_monitor.hpp"
 
 #include "4C_fem_discretization.hpp"

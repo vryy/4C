@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief contact element for contact between two 3D beam elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACTNEW_HPP
 #define FOUR_C_BEAMCONTACT_BEAM3CONTACTNEW_HPP
 

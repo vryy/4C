@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief one pair consisting of exactly one artery element and one poro-
-        multiphase-scatra element which might be tied to each other
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_PAIR_HPP
 

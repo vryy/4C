@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief implementation of the 3D solid-poro element
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_poro.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

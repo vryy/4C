@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief one generic solid-to-solid interaction element pair
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_EMBEDDEDMESH_INTERACTION_PAIR_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_EMBEDDEDMESH_INTERACTION_PAIR_HPP
 

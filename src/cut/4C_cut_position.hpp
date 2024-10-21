@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Class to check whether a point lies inside an element, and also to
-       compute local coordinates of a point with respect to the element.
-       The standard as well as the embedded cases are treated here. Feel
-       free to extend the content for your needs.
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_POSITION_HPP
 #define FOUR_C_CUT_POSITION_HPP
 

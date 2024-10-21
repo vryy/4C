@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief a triad interpolation scheme based on local rotation vectors
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 
 #include "4C_beam3_triad_interpolation.hpp"

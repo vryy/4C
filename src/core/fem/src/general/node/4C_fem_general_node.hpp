@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Base node class
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_NODE_HPP
 #define FOUR_C_FEM_GENERAL_NODE_HPP
 

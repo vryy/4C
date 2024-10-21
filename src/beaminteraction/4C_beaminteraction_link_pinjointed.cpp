@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief connecting beam linked by pin joint
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_link_pinjointed.hpp"
 
 #include "4C_beaminteraction_link.hpp"

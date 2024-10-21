@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief porous material for dissolution reaction in ECM model
-
-
-\level 3
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_STRUCTPORO_REACTION_ECM_HPP
 #define FOUR_C_MAT_STRUCTPORO_REACTION_ECM_HPP
 

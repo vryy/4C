@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Contact parameter interface. Necessary for the communication
-       between the structural time integration framework and the
-       contact strategies.
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_PARAMSINTERFACE_HPP
 #define FOUR_C_CONTACT_PARAMSINTERFACE_HPP
 

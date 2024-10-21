@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief pseudo transient solution method
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_ptc.hpp"  // class definition
 
 #include "4C_structure_new_nln_solver_utils.hpp"

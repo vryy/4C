@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief 4C implementation of main class to control all contact
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_contact_manager.hpp"
 
 #include "4C_contact_element.hpp"

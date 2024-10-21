@@ -1,22 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for convection-diffusion (in)stationary solvers,
-
-     including instationary solvers based on
-
-     o one-step-theta time-integration scheme
-
-     o two-step BDF2 time-integration scheme
-
-     o generalized-alpha time-integration scheme
-
-     and stationary solver.
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_implicit.hpp"
 
 #include "4C_comm_utils_gid_vector.hpp"

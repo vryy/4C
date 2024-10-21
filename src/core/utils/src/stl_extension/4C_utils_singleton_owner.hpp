@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief  SingletonOwner that manages singleton instances
-
-\level 0
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_SINGLETON_OWNER_HPP
 #define FOUR_C_UTILS_SINGLETON_OWNER_HPP
 

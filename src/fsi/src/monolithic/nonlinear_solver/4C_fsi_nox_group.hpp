@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of NOX::Group for FSI
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_GROUP_HPP
 #define FOUR_C_FSI_NOX_GROUP_HPP
 

@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief class for partitioned elastohydrodynamic lubrication (lubrication structure interaction)
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #include "4C_ehl_partitioned.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"

@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Elastohydrodynamic lubrication (lubrication structure interaction) parameters
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #include "4C_inpar_ehl.hpp"
 
 #include "4C_fem_condition_definition.hpp"

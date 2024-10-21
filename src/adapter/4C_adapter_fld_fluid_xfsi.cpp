@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for XFSI. Can only be used in conjunction with XFluid!
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_fld_fluid_xfsi.hpp"
 
 #include "4C_adapter_fld_fluid.hpp"

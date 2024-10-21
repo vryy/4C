@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief This file provides a legacy module which exposes all functionality
-       which isn't yet modularized to the main executables.
-\level 0
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_GLOBAL_LEGACY_MODULE_HPP
 #define FOUR_C_GLOBAL_LEGACY_MODULE_HPP
 

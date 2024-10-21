@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Element classes that represent faces, i.e. surface elements.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #include "4C_geometry_pair_element_faces.hpp"
 
 #include "4C_fem_general_cell_type.hpp"

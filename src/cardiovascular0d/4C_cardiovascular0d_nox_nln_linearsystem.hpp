@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Derived class which manages the special requirements to the linear
-       solver for 0D cardiovascular-structural problems.
-
-
-\date Jul 15, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_HPP
 #define FOUR_C_CARDIOVASCULAR0D_NOX_NLN_LINEARSYSTEM_HPP
 

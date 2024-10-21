@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  Basis of all monolithic poroelasticity algorithms
-
-\level 2
-
-
-*/
 #include "4C_poroelast_monolithic.hpp"
 
 #include "4C_adapter_fld_base_algorithm.hpp"

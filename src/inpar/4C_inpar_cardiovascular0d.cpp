@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for 0d cardiovascular-structure coupling
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_cardiovascular0d.hpp"
 
 #include "4C_fem_condition_definition.hpp"

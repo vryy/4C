@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Material law for elastic spring (either translational or rotational spring)
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SPRING_HPP
 #define FOUR_C_MAT_SPRING_HPP
 

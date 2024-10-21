@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Strategy to clone ALE discretization form other discretization
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_ALE_UTILS_CLONESTRATEGY_HPP
 #define FOUR_C_ALE_UTILS_CLONESTRATEGY_HPP
 

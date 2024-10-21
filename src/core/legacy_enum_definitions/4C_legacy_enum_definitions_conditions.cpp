@@ -1,8 +1,3 @@
-/*! \file
-\brief list of valid conditions
-\level 1
-*/
-
 #include "4C_legacy_enum_definitions_conditions.hpp"
 
 #include "4C_utils_exceptions.hpp"

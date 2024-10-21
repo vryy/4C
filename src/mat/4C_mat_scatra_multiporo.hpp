@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief scatra material for transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_SCATRA_MULTIPORO_HPP
 #define FOUR_C_MAT_SCATRA_MULTIPORO_HPP
 

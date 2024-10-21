@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief structural dynamics input parameters
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_INPAR_STRUCTURE_HPP
 #define FOUR_C_INPAR_STRUCTURE_HPP
 

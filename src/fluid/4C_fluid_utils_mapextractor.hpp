@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief extracting maps of fluid discretizations
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_UTILS_MAPEXTRACTOR_HPP
 #define FOUR_C_FLUID_UTILS_MAPEXTRACTOR_HPP
 

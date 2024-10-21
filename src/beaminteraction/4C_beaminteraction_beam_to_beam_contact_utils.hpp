@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of utility functions for beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_HPP
 

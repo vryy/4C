@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Base class for all fluid time integrations
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint.hpp"
 
 #include "4C_fem_discretization.hpp"

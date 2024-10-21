@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for an isochoric coupled viscous material with pseudo-potential
-representing the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MATELAST_VISCO_COUPMYOCARD_HPP
 #define FOUR_C_MATELAST_VISCO_COUPMYOCARD_HPP
 

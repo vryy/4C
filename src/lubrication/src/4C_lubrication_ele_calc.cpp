@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of lubrication element
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_lubrication_ele_calc.hpp"
 
 #include "4C_fem_condition_utils.hpp"

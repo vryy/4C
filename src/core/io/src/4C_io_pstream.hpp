@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A substitute for STL cout for parallel and complex output schemes.
-
-\level 0
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_PSTREAM_HPP
 #define FOUR_C_IO_PSTREAM_HPP
 

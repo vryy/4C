@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief unittests for LungOxygenExchangeLaw class in poromultiphase_scatra-framework
-
-\level 1
-
-*-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_poromultiphase_scatra_function.hpp"

@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Concrete implementation of the brownian dynamic parameter interface
-
-
-\date Jun 22, 2016
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_global_data.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"

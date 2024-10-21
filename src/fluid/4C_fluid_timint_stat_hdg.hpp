@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Stationary fluid problem with HDG discretization
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_STAT_HDG_HPP
 #define FOUR_C_FLUID_TIMINT_STAT_HDG_HPP
 // TODO als fix

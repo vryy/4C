@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Nitsche contact solving strategy for problems with FPI
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_STRATEGY_FPI_HPP
 #define FOUR_C_CONTACT_NITSCHE_STRATEGY_FPI_HPP
 

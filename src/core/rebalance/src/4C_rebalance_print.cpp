@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the partitioning/rebalancing
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_rebalance_print.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief factory for user defined NOX inner status tests
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_inner_statustest_factory.hpp"
 
 #include "4C_solver_nonlin_nox_enum_lists.hpp"

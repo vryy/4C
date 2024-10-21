@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief
-
-
-\level 3
-
- */
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_linearsystem_scaling.hpp"
 
 #include "4C_fem_discretization.hpp"

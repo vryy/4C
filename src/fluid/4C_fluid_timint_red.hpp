@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Basic time integration driver for reduced models
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_TIMINT_RED_HPP
 #define FOUR_C_FLUID_TIMINT_RED_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all structure terms
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_model_evaluator_structure.hpp"
 
 #include "4C_beam3_base.hpp"

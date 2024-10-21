@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Managing and evaluating of spatial functions for combustion and two-phase flow problems
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_utils_exceptions.hpp"

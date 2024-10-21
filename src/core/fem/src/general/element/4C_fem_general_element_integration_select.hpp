@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief templated version for selecting integration points from element type
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENT_INTEGRATION_SELECT_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENT_INTEGRATION_SELECT_HPP
 

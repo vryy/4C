@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief High order Adams-Bashforth time integration for solid dynamics
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_expl_abx.hpp"
 
 #include "4C_global_data.hpp"

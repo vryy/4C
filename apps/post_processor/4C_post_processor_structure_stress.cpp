@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief postprocessing of structural stresses
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_io_legacy_table.hpp"

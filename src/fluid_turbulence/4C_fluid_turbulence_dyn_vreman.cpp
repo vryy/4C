@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief computes Vreman constant C_v dynamically
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_turbulence_dyn_vreman.hpp"
 
 #include "4C_fluid_ele_action.hpp"

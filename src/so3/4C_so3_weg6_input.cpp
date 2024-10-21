@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Solid Wedge6 Element
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_weg6.hpp"

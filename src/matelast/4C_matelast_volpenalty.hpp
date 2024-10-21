@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the volumetic penalty material as in Roernbauer2008
-(student thesis)
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_VOLPENALTY_HPP
 #define FOUR_C_MATELAST_VOLPENALTY_HPP
 

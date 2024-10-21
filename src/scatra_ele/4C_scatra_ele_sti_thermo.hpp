@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief supplementary element calculation class providing general utility for thermodynamic scalar
-transport
-
-
-\level 2
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_STI_THERMO_HPP
 #define FOUR_C_SCATRA_ELE_STI_THERMO_HPP
 

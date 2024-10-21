@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using NonlinearCG
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_SD_HPP
 #define FOUR_C_FSI_NOX_SD_HPP
 

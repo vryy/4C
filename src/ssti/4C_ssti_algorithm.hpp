@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for all scalar structure thermo algorithms
-
- \level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSTI_ALGORITHM_HPP
 #define FOUR_C_SSTI_ALGORITHM_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief factory class into templated evaluators for fluid boundary integration
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_boundary_factory.hpp"
 
 #include "4C_fluid_ele_boundary_calc_poro.hpp"

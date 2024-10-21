@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Central storage of element input line definitions
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENT_DEFINITION_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENT_DEFINITION_HPP
 

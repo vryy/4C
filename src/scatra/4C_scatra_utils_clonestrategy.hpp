@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief mesh clone strategy for scalar transport problems
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_UTILS_CLONESTRATEGY_HPP
 #define FOUR_C_SCATRA_UTILS_CLONESTRATEGY_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief factory for time integration base strategy and data container
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_FACTORY_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_FACTORY_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Implements an acinus element
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"

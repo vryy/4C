@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief generic interface for implementations of the porofluidmultiphase
-        boundary element evaluation routines
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_INTERFACE_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_INTERFACE_HPP
 

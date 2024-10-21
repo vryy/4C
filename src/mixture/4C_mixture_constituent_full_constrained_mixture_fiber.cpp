@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a quasi 1D full constrained mixture constituent
-equations
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_constituent_full_constrained_mixture_fiber.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

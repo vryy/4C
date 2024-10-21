@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Basic HDG time-integration scheme
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_hdg.hpp"
 
 #include "4C_fem_discretization_hdg.hpp"

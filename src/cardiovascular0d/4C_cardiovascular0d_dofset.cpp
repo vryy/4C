@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cardiovascular0d_dofset.hpp"
 
 #include "4C_cardiovascular0d_mor_pod.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief boundary calc base routines
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #include "4C_elemag_ele_boundary_calc.hpp"
 
 #include "4C_elemag_ele.hpp"

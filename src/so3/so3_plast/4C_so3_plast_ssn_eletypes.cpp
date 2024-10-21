@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief so3_plast element types
-\level 2
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_plast_ssn_eletypes.hpp"
 
 #include "4C_io_linedefinition.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Iterators for the symbol table.
-
-
-\level 1
-
----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_LEGACY_TABLE_ITER_HPP
 #define FOUR_C_IO_LEGACY_TABLE_ITER_HPP
 

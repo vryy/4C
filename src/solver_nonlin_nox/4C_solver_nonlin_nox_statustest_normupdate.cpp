@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a NormUpdate status test. This
-       test can be used to check the solution increment \f$\Delta x\f$
-       for convergence.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_statustest_normupdate.hpp"
 
 #include "4C_solver_nonlin_nox_group.hpp"

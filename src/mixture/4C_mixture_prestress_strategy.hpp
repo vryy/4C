@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief General prestress strategy for mixture constituents
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_PRESTRESS_STRATEGY_HPP
 #define FOUR_C_MIXTURE_PRESTRESS_STRATEGY_HPP
 

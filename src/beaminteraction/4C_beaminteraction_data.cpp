@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief small data containers for beam interaction framework
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_data.hpp"
 
 #include "4C_comm_pack_buffer.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families.
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_matelast_remodelfiber.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

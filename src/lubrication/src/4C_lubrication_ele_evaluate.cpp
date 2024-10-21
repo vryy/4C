@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_lubrication_ele.hpp"
 #include "4C_lubrication_ele_action.hpp"

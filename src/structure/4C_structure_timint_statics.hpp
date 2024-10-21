@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Statics analysis
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_STATICS_HPP
 #define FOUR_C_STRUCTURE_TIMINT_STATICS_HPP
 

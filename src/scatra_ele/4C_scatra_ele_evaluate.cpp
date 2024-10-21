@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation methods of scatra element
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_scatra_ele.hpp"

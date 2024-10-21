@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief This file defines a class that holds different nodal fibers
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_FIBER_NODE_HOLDER_HPP
 #define FOUR_C_FEM_GENERAL_FIBER_NODE_HOLDER_HPP
 

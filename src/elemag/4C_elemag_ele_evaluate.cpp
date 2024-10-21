@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief electromagnetic element evaluation base routines
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_elemag_diff_ele.hpp"
 #include "4C_elemag_ele.hpp"
 #include "4C_elemag_ele_factory.hpp"

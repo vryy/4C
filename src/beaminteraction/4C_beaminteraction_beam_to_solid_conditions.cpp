@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the beam-to-solid conditions.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_conditions.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

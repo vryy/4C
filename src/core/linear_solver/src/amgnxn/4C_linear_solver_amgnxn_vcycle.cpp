@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_amgnxn_vcycle.hpp"
 
 #include "4C_linear_solver_amgnxn_smoothers.hpp"

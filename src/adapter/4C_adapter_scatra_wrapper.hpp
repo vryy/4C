@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Wrapper for the scatra time integrator.
-\level 1
- */
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_SCATRA_WRAPPER_HPP
 #define FOUR_C_ADAPTER_SCATRA_WRAPPER_HPP
 

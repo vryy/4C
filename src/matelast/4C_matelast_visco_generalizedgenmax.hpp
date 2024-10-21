@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the viscous contribution of a generalized maxwell model
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MATELAST_VISCO_GENERALIZEDGENMAX_HPP
 #define FOUR_C_MATELAST_VISCO_GENERALIZEDGENMAX_HPP
 

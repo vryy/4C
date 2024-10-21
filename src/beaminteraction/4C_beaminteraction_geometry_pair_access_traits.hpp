@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Specialize structures to correctly initialize the element data containers for Hermite
-elements
-
-\level 1
-
-*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_GEOMETRY_PAIR_ACCESS_TRAITS_HPP
 #define FOUR_C_BEAMINTERACTION_GEOMETRY_PAIR_ACCESS_TRAITS_HPP
 

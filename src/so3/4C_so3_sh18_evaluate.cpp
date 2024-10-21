@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief evaluation routines for sosh18 elements
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to store the beam to solid volume meshtying output (visualization) parameters.
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
 
 #include "4C_global_data.hpp"

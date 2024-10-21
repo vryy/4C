@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief tangential contact handler for discrete element method (DEM) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_dem_contact_tangential.hpp"
 
 #include "4C_inpar_particle.hpp"

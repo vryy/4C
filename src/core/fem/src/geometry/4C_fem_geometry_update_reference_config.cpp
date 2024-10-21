@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for namespace Discret
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_fem_geometry_update_reference_config.hpp"
 
 #include "4C_fem_discretization.hpp"

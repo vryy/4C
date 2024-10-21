@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Header for implementations of the various reduced elements
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_RED_AIRWAYS_ELEMENTBASE_HPP
 #define FOUR_C_RED_AIRWAYS_ELEMENTBASE_HPP
 

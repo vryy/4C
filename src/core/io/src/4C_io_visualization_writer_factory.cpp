@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Define a container that holds the visualization data and the visualization writer
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_io_visualization_writer_factory.hpp"
 
 #include "4C_io_visualization_writer_vtu_per_rank.hpp"

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of shape function types
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_shape_function_type.hpp"
 
 #include "4C_utils_exceptions.hpp"

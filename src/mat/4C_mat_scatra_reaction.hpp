@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This file contains the base material for reactive scalars. This includes all
-       calculations of the reactions terms and all its derivatives.
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_MAT_SCATRA_REACTION_HPP
 #define FOUR_C_MAT_SCATRA_REACTION_HPP
 

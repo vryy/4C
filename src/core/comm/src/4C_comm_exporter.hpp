@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Management of explicit MPI communications
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_EXPORTER_HPP
 #define FOUR_C_COMM_EXPORTER_HPP
 

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief one way coupled partitioned algorithm for particle structure interaction
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PASI_PARTITIONED_ONEWAYCOUP_HPP
 #define FOUR_C_PASI_PARTITIONED_ONEWAYCOUP_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Coupling of two discretizations (surface- or volume-coupling)
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_coupling_adapter.hpp"
 
 #include "4C_fem_condition_utils.hpp"

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of functions related to partitioning and parallel distribution
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_REBALANCE_GRAPH_BASED_HPP
 #define FOUR_C_REBALANCE_GRAPH_BASED_HPP
 

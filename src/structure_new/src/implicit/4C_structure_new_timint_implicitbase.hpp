@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief This class summarizes the functionality which all
-       implicit time integration strategies share and have in
-       common.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_IMPLICITBASE_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_IMPLICITBASE_HPP
 

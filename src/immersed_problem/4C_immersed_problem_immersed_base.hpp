@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for all immersed algorithms
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IMMERSED_PROBLEM_IMMERSED_BASE_HPP
 #define FOUR_C_IMMERSED_PROBLEM_IMMERSED_BASE_HPP
 

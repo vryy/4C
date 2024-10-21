@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief H-file associated with general algorithmic routines for
-       partitioned solution approaches to fluid-structure-scalar-scalar
-       interaction (FS3I) and fluid-porous-structure-scalar-scalar
-       interaction (FPS3I).
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FS3I_HPP
 #define FOUR_C_FS3I_HPP
 

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN's pure virtual class to allow users to insert pre and post
-       operations into different NOX::NLN classes.
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_ABSTRACT_PREPOSTOPERATOR_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_ABSTRACT_PREPOSTOPERATOR_HPP
 

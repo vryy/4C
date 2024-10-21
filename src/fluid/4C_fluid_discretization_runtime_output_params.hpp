@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related to output at runtime for fluid
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
 #define FOUR_C_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
 

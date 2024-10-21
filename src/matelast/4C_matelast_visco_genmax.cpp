@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a viscous material contribution, calculated according to an
-SLS-model
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_visco_genmax.hpp"
 
 #include "4C_material_parameter_base.hpp"

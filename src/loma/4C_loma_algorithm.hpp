@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all LOMA algorithms
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LOMA_ALGORITHM_HPP
 #define FOUR_C_LOMA_ALGORITHM_HPP
 

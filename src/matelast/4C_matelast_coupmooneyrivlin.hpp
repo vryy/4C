@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a coupled Mooney Rivlin material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPMOONEYRIVLIN_HPP
 #define FOUR_C_MATELAST_COUPMOONEYRIVLIN_HPP
 

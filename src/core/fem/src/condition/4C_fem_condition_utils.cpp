@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of utils on conditions
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_condition_utils.hpp"
 
 #include "4C_fem_condition_selector.hpp"

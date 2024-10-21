@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the creation of additional DOFs for mortar couplings between beams and solids.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"

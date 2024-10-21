@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Contact interface capable of TSI
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_TSI_INTERFACE_HPP
 #define FOUR_C_CONTACT_TSI_INTERFACE_HPP
 

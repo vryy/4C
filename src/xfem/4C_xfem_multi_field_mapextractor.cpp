@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief MultiFieldMapExtractor class to handle different discretizations
-       with joint interfaces
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #include "4C_xfem_multi_field_mapextractor.hpp"
 
 #include "4C_comm_exporter.hpp"

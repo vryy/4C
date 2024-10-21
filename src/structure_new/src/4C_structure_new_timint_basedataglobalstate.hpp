@@ -1,15 +1,3 @@
-
-/*! \file
-
-\brief Global state data container for the structural (time) integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_HPP
 

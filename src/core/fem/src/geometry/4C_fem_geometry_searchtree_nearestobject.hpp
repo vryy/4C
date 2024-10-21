@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief stores data about nearest object in search tree
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GEOMETRY_SEARCHTREE_NEARESTOBJECT_HPP
 #define FOUR_C_FEM_GEOMETRY_SEARCHTREE_NEARESTOBJECT_HPP
 

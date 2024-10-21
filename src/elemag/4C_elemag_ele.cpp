@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Electromagnetic element implementations
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_elemag_ele.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

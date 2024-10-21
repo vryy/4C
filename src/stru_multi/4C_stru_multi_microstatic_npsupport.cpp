@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Static control for  microstructural problems in case of multiscale
-analysis for supporting processors
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_stru_multi_microstatic_npsupport.hpp"
 
 #include "4C_comm_exporter.hpp"

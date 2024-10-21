@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Meshtying element for meshtying between a 1D beam and a 3D fluid element.
-
-\level 1
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_pair_gauss_point.hpp"
 
 #include "4C_beaminteraction_contact_params.hpp"

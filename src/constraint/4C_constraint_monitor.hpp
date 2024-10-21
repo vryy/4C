@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic constraint class, dealing with constraints living on boundaries
-\level 2
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_MONITOR_HPP
 #define FOUR_C_CONSTRAINT_MONITOR_HPP
 

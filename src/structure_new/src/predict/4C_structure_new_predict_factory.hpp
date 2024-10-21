@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory class to build predictor objects
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_PREDICT_FACTORY_HPP
 #define FOUR_C_STRUCTURE_NEW_PREDICT_FACTORY_HPP
 

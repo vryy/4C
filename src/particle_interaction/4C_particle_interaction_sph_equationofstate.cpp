@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief equation of state handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_equationofstate.hpp"
 
 #include "4C_particle_interaction_utils.hpp"

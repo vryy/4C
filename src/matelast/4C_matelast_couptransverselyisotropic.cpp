@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a hyperelastic transversely isotropic material model for large strain
-computations
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_couptransverselyisotropic.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

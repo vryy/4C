@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief strategy handling mesh tying problems with penalty formulation
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_penalty_strategy.hpp"
 
 #include "4C_inpar_contact.hpp"

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief BDF-2 time-integration scheme
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_bdf2.hpp"
 
 #include "4C_fluid_ele_action.hpp"

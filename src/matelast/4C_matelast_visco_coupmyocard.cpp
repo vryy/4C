@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an isochoric coupled viscous material with pseudo-potential representing
-the collagen and elastin matrix surrounding the myocardial fiber (chappelle12)
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_visco_coupmyocard.hpp"
 
 #include "4C_material_parameter_base.hpp"

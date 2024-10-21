@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluate boundary conditions for poroelast / fpsi
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_BOUNDARY_CALC_PORO_HPP
 #define FOUR_C_FLUID_ELE_BOUNDARY_CALC_PORO_HPP
 

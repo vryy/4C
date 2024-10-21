@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Testcases for the IsoOgden material
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_matelast_isoogden.hpp"

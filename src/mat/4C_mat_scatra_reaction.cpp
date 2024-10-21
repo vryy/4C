@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief This file contains the base material for reactive scalars. This includes all
-       calculations of the reactions terms and all its derivatives.
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_scatra_reaction.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief BDF2 time-integration scheme
-
-\level 1
-
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_BDF2_HPP
 #define FOUR_C_SCATRA_TIMINT_BDF2_HPP
 

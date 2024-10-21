@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Stationary fluid problem with HDG discretization
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_stat_hdg.hpp"
 
 #include "4C_fem_discretization_hdg.hpp"

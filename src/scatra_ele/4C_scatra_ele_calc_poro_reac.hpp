@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief evaluation class containing routines for calculation of scalar transport
-        within porous medium including advanced reactions
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_PORO_REAC_HPP
 #define FOUR_C_SCATRA_ELE_CALC_PORO_REAC_HPP
 

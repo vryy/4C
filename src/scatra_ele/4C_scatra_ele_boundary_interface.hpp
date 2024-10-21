@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface of scatra boundary elements
-
-\level 1
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_INTERFACE_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_INTERFACE_HPP
 

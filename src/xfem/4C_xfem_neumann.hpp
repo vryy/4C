@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base XFEM Neumann boundary conditions
-
-\level 2
-
-
-\warning think about removing these routines!!!
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_NEUMANN_HPP
 #define FOUR_C_XFEM_NEUMANN_HPP
 

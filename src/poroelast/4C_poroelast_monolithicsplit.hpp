@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief porous medium algorithm with block matrices for splitting and condensation
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_MONOLITHICSPLIT_HPP
 #define FOUR_C_POROELAST_MONOLITHICSPLIT_HPP
 

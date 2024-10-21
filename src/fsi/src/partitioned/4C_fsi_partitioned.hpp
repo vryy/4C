@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Partitioned FSI base
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_PARTITIONED_HPP
 #define FOUR_C_FSI_PARTITIONED_HPP
 

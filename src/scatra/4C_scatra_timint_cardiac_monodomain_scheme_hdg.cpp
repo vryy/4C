@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief time-integration scheme for HDG with extensions for
-       cardiac monodomain problems
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_cardiac_monodomain_scheme_hdg.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

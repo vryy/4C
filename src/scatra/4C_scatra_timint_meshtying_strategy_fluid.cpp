@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid-fluid meshtying strategy for standard scalar transport problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_meshtying_strategy_fluid.hpp"
 
 #include "4C_fluid_meshtying.hpp"

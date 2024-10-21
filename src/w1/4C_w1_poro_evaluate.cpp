@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Evaluate methods for 2D wall element for structure part of porous medium.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_nurbs_discretization_utils.hpp"

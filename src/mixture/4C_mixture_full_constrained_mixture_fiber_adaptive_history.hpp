@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Helpfer functions for adaptive history integation of full constrained mixture fibers
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_ADAPTIVE_HISTORY_HPP
 #define FOUR_C_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_ADAPTIVE_HISTORY_HPP
 

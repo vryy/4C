@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a strategy evaluating the structural tensor in anisotropic materials
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_HPP
 #define FOUR_C_MATELAST_ANISO_STRUCTURALTENSOR_STRATEGY_HPP
 

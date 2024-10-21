@@ -1,13 +1,3 @@
-/*! \file
-
-\brief Implementation of the solid element
-
-This file contains the element-specific evaluation routines such as
-evaluate(...), evaluate_neumann(...), etc.
-
-\level 1
-*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_fem_general_extract_values.hpp"

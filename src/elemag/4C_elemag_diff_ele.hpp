@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A C++ wrapper for the electromagnetic diffusion element
-
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-<pre>
-\level 2
-
-</pre>
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_DIFF_ELE_HPP
 #define FOUR_C_ELEMAG_DIFF_ELE_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Thermo field adapter
-\level 1
-
-
-
-*/
-
 #ifndef FOUR_C_THERMO_ADAPTER_HPP
 #define FOUR_C_THERMO_ADAPTER_HPP
 

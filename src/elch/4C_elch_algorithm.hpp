@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all ELCH algorithms
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ELCH_ALGORITHM_HPP
 #define FOUR_C_ELCH_ALGORITHM_HPP
 

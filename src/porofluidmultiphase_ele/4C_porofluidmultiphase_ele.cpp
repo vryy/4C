@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief definition of porofluidmultiphase elements
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_ele.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

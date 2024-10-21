@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Quasi-static control for microstructural analysis
-
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_STRU_MULTI_MICROSTATIC_HPP
 #define FOUR_C_STRU_MULTI_MICROSTATIC_HPP
 

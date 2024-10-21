@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief solution algorithm for stationary problems
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_STAT_HPP
 #define FOUR_C_SCATRA_TIMINT_STAT_HPP
 

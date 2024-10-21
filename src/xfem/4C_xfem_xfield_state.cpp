@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief state management for one XFEM discretization
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
-
 #include "4C_xfem_xfield_state.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Implementation of the solid-scatra element
-
-\level 1
-*/
-
 #include "4C_solid_scatra_3D_ele.hpp"
 
 #include "4C_fem_general_cell_type.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for arterial network (time) integration.
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_TIMINT_HPP
 #define FOUR_C_ART_NET_TIMINT_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Base class for fiber materials which remodel. Has a pointer to the single fiber families.
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_REMODELFIBER_HPP
 #define FOUR_C_MATELAST_REMODELFIBER_HPP
 

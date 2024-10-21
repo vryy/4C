@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrates base functions over a line using one-dimensional Gauss quadrature
-equations
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_LINE_INTEGRATION_HPP
 #define FOUR_C_CUT_LINE_INTEGRATION_HPP
 

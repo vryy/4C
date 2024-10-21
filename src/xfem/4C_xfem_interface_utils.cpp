@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic routings to evaluate the terms for Nitsche Interface
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_interface_utils.hpp"
 
 #include "4C_cut_boundarycell.hpp"

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Explicit time integration for thermal dynamics
-\level 3
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_EXPL_HPP
 #define FOUR_C_THERMO_TIMINT_EXPL_HPP
 

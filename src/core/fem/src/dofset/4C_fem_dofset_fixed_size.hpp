@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A modified set of degrees of freedom that always pretends to be
-       of a certain size in order to reserve space for fields that vary
-       in size, i.e. XFEM field.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_FIXED_SIZE_HPP
 #define FOUR_C_FEM_DOFSET_FIXED_SIZE_HPP
 

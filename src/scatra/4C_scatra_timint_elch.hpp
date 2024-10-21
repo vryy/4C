@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra time integration for elch
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_ELCH_HPP
 #define FOUR_C_SCATRA_TIMINT_ELCH_HPP
 

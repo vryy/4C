@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines to initialize homogeneous isotropic turbulence simulations
-
-References are S. Collis, Multiscale methods for turbulence simulation and control.
-Technical Report 034, MEMS, Rice University (2002) 16.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_turbulence_hit_initial_field.hpp"
 
 #include "4C_comm_exporter.hpp"

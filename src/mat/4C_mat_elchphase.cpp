@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores a list of ion species in electrolyte solutions
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_elchphase.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

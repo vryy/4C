@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of monolithic XFSI algorithm that performs a coupling between the
-       structural field equation and XFEM fluid field equations
-
-\level 2
-
-*/
-
-
 #include "4C_fsi_xfem_algorithm.hpp"
 
 #include "4C_adapter_ale.hpp"

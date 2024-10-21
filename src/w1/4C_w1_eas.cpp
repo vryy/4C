@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief wall EAS
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------------*/
-// macros
-
-
-/*----------------------------------------------------------------------*/
-// headers
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

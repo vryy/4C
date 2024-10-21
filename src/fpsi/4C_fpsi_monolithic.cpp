@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief General framework for monolithic fpsi solution schemes
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*/
-// GENERAL includes
 #include "4C_fpsi_monolithic.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

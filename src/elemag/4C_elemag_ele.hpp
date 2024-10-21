@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A C++ wrapper for the electromagnetic element
-
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_ELE_HPP
 #define FOUR_C_ELEMAG_ELE_HPP
 

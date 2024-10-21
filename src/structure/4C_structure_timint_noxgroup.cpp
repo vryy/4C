@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Definitions of NOX group for non-linear solution techniques
-       used within implicit structural time integration
-\level 1
-*/
-
-/*----------------------------------------------------------------------------*/
-/* definitions */
-
-/*----------------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_noxgroup.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

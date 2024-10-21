@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the beam3_kirchhoff class
-
-\level 3
-
-*-----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_beam3_kirchhoff.hpp"

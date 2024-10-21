@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief heat condution according to fourier's law
-
-
-the input line should read
-  MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- |  headers                                                  dano 09/09 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_fourieriso.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

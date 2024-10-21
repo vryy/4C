@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Managing and evaluating of spatial functions for fluid problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_functions.hpp"
 
 #include "4C_global_data.hpp"

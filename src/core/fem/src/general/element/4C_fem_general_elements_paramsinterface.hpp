@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief collection of a serial of possible element actions to pass information
-       down to elements
-
-\level 3
-
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENTS_PARAMSINTERFACE_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENTS_PARAMSINTERFACE_HPP
 

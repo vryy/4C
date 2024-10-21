@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A class providing coupling capabilities based on non-linear
-       mortar methods
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  headers                                                  farah 10/14|
- *----------------------------------------------------------------------*/
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 
 #include "4C_contact_element.hpp"

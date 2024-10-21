@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Input for NURBS Kirchhoff-Love shell implementation
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_cell_type.hpp"
 #include "4C_fem_general_utils_integration.hpp"
 #include "4C_io_linedefinition.hpp"

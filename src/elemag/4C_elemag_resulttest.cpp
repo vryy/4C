@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of electromagnetic calculation results
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_elemag_resulttest.hpp"
 
 #include "4C_elemag_timeint.hpp"

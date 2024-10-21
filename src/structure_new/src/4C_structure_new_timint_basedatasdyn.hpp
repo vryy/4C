@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Structural dynamics data container for the structural (time)
-       integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATASDYN_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATASDYN_HPP
 

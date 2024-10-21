@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Static (time) integrator.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_impl_statics.hpp"
 
 #include "4C_io.hpp"

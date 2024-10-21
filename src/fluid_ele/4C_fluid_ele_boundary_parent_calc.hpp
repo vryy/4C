@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluate boundary conditions requiring parent-element evaluations
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_BOUNDARY_PARENT_CALC_HPP
 #define FOUR_C_FLUID_ELE_BOUNDARY_PARENT_CALC_HPP
 

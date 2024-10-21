@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Concrete implementation of the contact parameter interfaces.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_inpar_contact.hpp"
 #include "4C_structure_new_integrator.hpp"
 #include "4C_structure_new_model_evaluator_data.hpp"

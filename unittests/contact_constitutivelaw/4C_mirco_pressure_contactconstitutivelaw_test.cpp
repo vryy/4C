@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief unit testing functionality for the mirco contact constitutivelaw with pressure-based Green
-function
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"

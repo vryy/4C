@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Base class for all structural time integration strategies.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_timint_base.hpp"
 
 #include "4C_beaminteraction_str_model_evaluator.hpp"

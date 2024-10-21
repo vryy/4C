@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class for evaluation of equations on the structural surface
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_SURFACE_HPP
 #define FOUR_C_SO3_SURFACE_HPP
 

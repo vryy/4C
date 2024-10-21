@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief data container holding all crosslinking input parameters
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_CROSSLINKING_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_CROSSLINKING_PARAMS_HPP
 

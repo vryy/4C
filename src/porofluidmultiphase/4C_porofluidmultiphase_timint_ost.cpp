@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief one-step-theta time integration scheme for porous multiphase flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_timint_ost.hpp"
 
 #include "4C_global_data.hpp"

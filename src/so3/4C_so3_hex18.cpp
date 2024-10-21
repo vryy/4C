@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief 18-node hexahedral (bi-quadratic linear)
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_hex18.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

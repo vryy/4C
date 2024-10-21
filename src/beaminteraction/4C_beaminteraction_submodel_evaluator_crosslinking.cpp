@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief class for submodel crosslinking
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_submodel_evaluator_crosslinking.hpp"
 
 #include "4C_beam3_base.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Application of contact contributions strategy for monolithic/partitioning SSI
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_ssi_contact_strategy.hpp"
 
 #include "4C_contact_nitsche_strategy_ssi.hpp"

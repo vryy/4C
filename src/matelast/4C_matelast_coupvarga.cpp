@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isotropic Varga material
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupvarga.hpp"
 
 #include "4C_material_parameter_base.hpp"

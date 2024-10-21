@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Declaration of routines for calculation of shell element
-       simple displacement based
-
-\level 3
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_CALC_HPP
 #define FOUR_C_SHELL7P_ELE_CALC_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base object that stores all relevant data for beam to solid output
-
-\level 3
-
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_BASE_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_BASE_HPP
 

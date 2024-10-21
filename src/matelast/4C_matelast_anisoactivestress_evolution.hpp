@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for an active stress material
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ANISOACTIVESTRESS_EVOLUTION_HPP
 #define FOUR_C_MATELAST_ANISOACTIVESTRESS_EVOLUTION_HPP
 

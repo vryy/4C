@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief control routine for scalar structure interaction
-
- \level 1
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_DYN_HPP
 #define FOUR_C_SSI_DYN_HPP
 

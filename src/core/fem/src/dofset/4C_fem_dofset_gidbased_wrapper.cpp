@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Implementation of a dofset using a GID based mapping
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_dofset_gidbased_wrapper.hpp"
 
 #include "4C_fem_discretization.hpp"

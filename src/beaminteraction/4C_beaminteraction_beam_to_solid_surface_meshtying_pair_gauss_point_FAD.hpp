@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Gauss point to segment mesh tying element for between a 3D beam and a surface element. The
-coupling terms are evaluated using FAD.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_FAD_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_MESHTYING_PAIR_GAUSS_POINT_FAD_HPP
 

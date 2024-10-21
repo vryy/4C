@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for ScaTraHDG boundary elements
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_HDG_BOUNDARY_CALC_HPP
 #define FOUR_C_SCATRA_ELE_HDG_BOUNDARY_CALC_HPP
 

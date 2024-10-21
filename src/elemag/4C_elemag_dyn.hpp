@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  Main control routine for electromagnetic simulations
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_DYN_HPP
 #define FOUR_C_ELEMAG_DYN_HPP
 

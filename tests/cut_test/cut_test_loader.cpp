@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "cut_test_loader.hpp"
 
 #include "4C_linalg_serialdensematrix.hpp"

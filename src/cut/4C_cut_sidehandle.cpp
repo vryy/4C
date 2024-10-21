@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Sidehandle represents a side original loaded into the cut, internal it can be split into
-subsides
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_sidehandle.hpp"
 
 #include "4C_cut_mesh.hpp"

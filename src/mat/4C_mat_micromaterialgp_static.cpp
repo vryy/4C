@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-class for handling of micro-macro transitions
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_micromaterialgp_static.hpp"
 
 #include "4C_fem_discretization.hpp"

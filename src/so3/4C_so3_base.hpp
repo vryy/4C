@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief a common base class for all solid elements
-
-\level 2
-
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SO3_BASE_HPP
 #define FOUR_C_SO3_BASE_HPP
 

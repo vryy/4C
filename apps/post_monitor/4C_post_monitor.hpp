@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief monitoring filter for one data
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-/*!
-\addtogroup Monitoring
-*//*! @{ (documentation module open)*/
-
 #ifndef FOUR_C_POST_MONITOR_HPP
 #define FOUR_C_POST_MONITOR_HPP
 

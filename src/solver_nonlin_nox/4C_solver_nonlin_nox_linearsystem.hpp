@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN extension of the %::NOX::Epetra::LinearSystem.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_HPP
 

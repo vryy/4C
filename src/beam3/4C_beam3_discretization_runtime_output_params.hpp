@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related to output at runtime for beams
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAM3_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
 #define FOUR_C_BEAM3_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_HPP
 

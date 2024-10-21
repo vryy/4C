@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Base class for all fluid time integrations
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_HPP
 #define FOUR_C_FLUID_TIMINT_HPP
 

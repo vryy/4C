@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Abstract interface for adapters to couple two discretizations
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COUPLING_ADAPTER_BASE_HPP
 #define FOUR_C_COUPLING_ADAPTER_BASE_HPP
 

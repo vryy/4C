@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief This file contains the declaration of a time integrator for prestressing
-
-\level 3
-
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_IMPL_PRESTRESS_HPP
 #define FOUR_C_STRUCTURE_NEW_IMPL_PRESTRESS_HPP
 

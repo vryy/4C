@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for Teko block preconditioner
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_TEKO_HPP
 #define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_TEKO_HPP
 

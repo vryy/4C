@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Fitzhugh Nagumo model for myocard material
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*
- |  headers                                                  ljag 07/12 |
- *----------------------------------------------------------------------*/
-
 #include "4C_mat_myocard_fitzhugh_nagumo.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters for output of structural problem at runtime
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_INPAR_IO_RUNTIME_OUTPUT_HPP
 #define FOUR_C_INPAR_IO_RUNTIME_OUTPUT_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of common functionality for anisotropic materials
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_anisotropy.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

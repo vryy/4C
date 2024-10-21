@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Factory to create the desired contact strategy
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_strategy_factory.hpp"
 
 #include "4C_contact_constitutivelaw_bundle.hpp"

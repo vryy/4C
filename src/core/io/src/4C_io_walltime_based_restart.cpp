@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility to write restart information based on a wall time interval
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_io_walltime_based_restart.hpp"
 
 #include "4C_utils_exceptions.hpp"

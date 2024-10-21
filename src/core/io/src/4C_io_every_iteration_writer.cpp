@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Write output for each Newton step during one load step in an extra output file.
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_io_every_iteration_writer.hpp"
 
 #include "4C_io.hpp"

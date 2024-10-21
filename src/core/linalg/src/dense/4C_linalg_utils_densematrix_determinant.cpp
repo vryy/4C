@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief determinant functions for dense matrices up to 4x4 and LU determinant
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_utils_densematrix_determinant.hpp"
 
 #include "4C_utils_exceptions.hpp"

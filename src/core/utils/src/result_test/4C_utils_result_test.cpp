@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of general result test framework
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_utils_result_test.hpp"
 
 #include "4C_io_linedefinition.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Time dependent variables for function definition
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_FUNCTIONVARIABLES_HPP
 #define FOUR_C_UTILS_FUNCTIONVARIABLES_HPP
 

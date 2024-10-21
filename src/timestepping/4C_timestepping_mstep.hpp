@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Multi-step functionalities for time integration
-
-\level 0
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_TIMESTEPPING_MSTEP_HPP
 #define FOUR_C_TIMESTEPPING_MSTEP_HPP
 

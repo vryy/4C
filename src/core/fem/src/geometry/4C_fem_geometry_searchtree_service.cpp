@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief provides geometry methods for a search tree
-
- \level 1
-
- */
-
 #include "4C_fem_geometry_searchtree_service.hpp"
 
 #include "4C_fem_discretization.hpp"

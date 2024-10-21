@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief scatra time integration for loma
-\level 2
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_LOMA_HPP
 #define FOUR_C_SCATRA_TIMINT_LOMA_HPP
 

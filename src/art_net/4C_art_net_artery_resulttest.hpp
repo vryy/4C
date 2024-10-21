@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of artery calculation results
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_ARTERY_RESULTTEST_HPP
 #define FOUR_C_ART_NET_ARTERY_RESULTTEST_HPP
 

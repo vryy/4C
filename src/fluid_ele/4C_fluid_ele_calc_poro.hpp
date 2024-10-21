@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Internal implementation of poro Fluid element (standard poro fluid)
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_PORO_HPP
 #define FOUR_C_FLUID_ELE_CALC_PORO_HPP
 

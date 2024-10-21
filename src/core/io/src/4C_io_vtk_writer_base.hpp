@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief VTK writer base class
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_VTK_WRITER_BASE_HPP
 #define FOUR_C_IO_VTK_WRITER_BASE_HPP
 

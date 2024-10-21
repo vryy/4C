@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief control routine for scalar structure thermo interaction
-
- \level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSTI_DYN_HPP
 #define FOUR_C_SSTI_DYN_HPP
 

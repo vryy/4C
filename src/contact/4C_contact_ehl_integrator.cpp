@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of ehl related terms
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_ehl_integrator.hpp"
 
 #include "4C_contact_element.hpp"

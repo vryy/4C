@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Construct reference plane for direct divergence method when used in global
-coordinate system
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
 #include "4C_cut_direct_divergence_refplane.hpp"
 
 #include "4C_cut_kernel.hpp"

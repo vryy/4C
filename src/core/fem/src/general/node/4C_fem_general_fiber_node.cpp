@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief   This is basically a (3d-) node with an additional fiber direction.
-
-\level 2
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_fiber_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

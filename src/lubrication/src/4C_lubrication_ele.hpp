@@ -1,17 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Lubrication elements
-
-This file contains the element specific service routines like
-Pack, Unpack, NumDofPerNode etc.
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LUBRICATION_ELE_HPP
 #define FOUR_C_LUBRICATION_ELE_HPP
 

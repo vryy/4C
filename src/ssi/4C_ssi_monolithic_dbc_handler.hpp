@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Dirichlet boundary condition handler for monolithic SSI
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_MONOLITHIC_DBC_HANDLER_HPP
 #define FOUR_C_SSI_MONOLITHIC_DBC_HANDLER_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Methods needed to apply rotationally symmetric periodic boundary
-       conditions for fluid problems
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ROTSYM_PERIODICBC_UTILS_HPP
 #define FOUR_C_FLUID_ROTSYM_PERIODICBC_UTILS_HPP
 

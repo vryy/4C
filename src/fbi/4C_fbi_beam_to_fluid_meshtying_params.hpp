@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Data container holding all beam to fluid volume meshtying input parameters.
-
-\level 1
-
-*/
-
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PARAMS_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief utility methods for poro
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_UTILS_SETUP_HPP
 #define FOUR_C_POROELAST_UTILS_SETUP_HPP
 

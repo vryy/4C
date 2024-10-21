@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of a scatra element that does not contain any physics
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_calc_no_physics.hpp"
 
 #include "4C_utils_singleton_owner.hpp"

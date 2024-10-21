@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for electromagnetic simulations
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_elemag.hpp"
 
 #include "4C_fem_condition_definition.hpp"

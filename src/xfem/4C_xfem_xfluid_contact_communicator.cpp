@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Communicates between xfluid and NIT contact --> for XFSCI and XFPSCI
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_xfluid_contact_communicator.hpp"
 
 #include "4C_contact_element.hpp"

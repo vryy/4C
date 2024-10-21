@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Specify how to evaluate the shape functions for the geometry pair elements
-
-\level 1
-*/
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_SHAPE_FUNCTIONS_HPP
 #define FOUR_C_GEOMETRY_PAIR_ELEMENT_SHAPE_FUNCTIONS_HPP
 

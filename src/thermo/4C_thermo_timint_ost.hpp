@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief one-step-theta time integrator for thermal field
-\level 1
-
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 08/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_OST_HPP
 #define FOUR_C_THERMO_TIMINT_OST_HPP
 

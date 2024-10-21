@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Constants used in the geometry pair namespace.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_CONSTANTS_HPP
 #define FOUR_C_GEOMETRY_PAIR_CONSTANTS_HPP
 

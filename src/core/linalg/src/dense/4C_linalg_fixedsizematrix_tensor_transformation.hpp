@@ -1,8 +1,3 @@
-/*! \file
-\level 1
-\brief Util functions for tensor transformations
-*/
-
 #ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_TENSOR_TRANSFORMATION_HPP
 #define FOUR_C_LINALG_FIXEDSIZEMATRIX_TENSOR_TRANSFORMATION_HPP
 

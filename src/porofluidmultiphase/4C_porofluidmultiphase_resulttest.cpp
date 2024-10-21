@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief result test for multiphase porous flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

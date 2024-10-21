@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform line clipping for line to surface contact +
-       call for numerical integration
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_LINE_COUPLING_HPP
 #define FOUR_C_CONTACT_LINE_COUPLING_HPP
 

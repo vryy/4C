@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of scatra elements
-
-\level 1
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_INTERFACE_HPP
 #define FOUR_C_SCATRA_ELE_INTERFACE_HPP
 

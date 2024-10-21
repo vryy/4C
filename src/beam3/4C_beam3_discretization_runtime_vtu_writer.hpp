@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write visualization output for a beam discretization in vtk/vtu format at runtime
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAM3_DISCRETIZATION_RUNTIME_VTU_WRITER_HPP
 #define FOUR_C_BEAM3_DISCRETIZATION_RUNTIME_VTU_WRITER_HPP
 

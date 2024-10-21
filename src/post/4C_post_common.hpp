@@ -1,22 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief drt binary filter library
-
-
-\level 2
-
-
-The drt binary filter library contains classes to open and read binary
-files. Based on these different filter applications can be written.
-
-Note: The new filter design uses the discretization, node and element
-classes. So postprocessing calculations are easily possible. Element
-specific output operations can be done by the elements themselves.
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POST_COMMON_HPP
 #define FOUR_C_POST_COMMON_HPP
 

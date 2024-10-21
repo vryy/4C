@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief collection of service methods for intersection computations
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_geometry_intersection_service.hpp"
 
 #include "4C_fem_discretization.hpp"

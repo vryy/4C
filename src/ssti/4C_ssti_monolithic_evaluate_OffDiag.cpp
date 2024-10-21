@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation of off-diagonal blocks for monolithic SSTI
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #include "4C_ssti_monolithic_evaluate_OffDiag.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief An elastic visco-plastic material law without yield surface
-
-\level 2
- *----------------------------------------------------------------------*/
-
 #include "4C_mat_viscoplastic_no_yield_surface.hpp"
 
 #include "4C_global_data.hpp"

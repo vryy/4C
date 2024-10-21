@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Class containing Uzawa algorithm to solve linear system.
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_constraint_solver.hpp"
 
 #include "4C_fem_discretization.hpp"

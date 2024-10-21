@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
-       to use with nonlinear singlestep solver.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_singlestep_group.hpp"
 
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"

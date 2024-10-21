@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A very simple symbol table implementation.
-
-
-\level 1
-
----------------------------------------------------------------------*/
-
 #include "4C_io_legacy_table.hpp"
 
 #include "4C_io_legacy_types.hpp"

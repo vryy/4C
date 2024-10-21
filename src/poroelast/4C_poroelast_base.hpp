@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  Basis of all porous media algorithms
-
- \level 2
-
- *-----------------------------------------------------------------------*/
 #ifndef FOUR_C_POROELAST_BASE_HPP
 #define FOUR_C_POROELAST_BASE_HPP
 

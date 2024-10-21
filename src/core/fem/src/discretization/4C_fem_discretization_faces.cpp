@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage an enhanced discretization including the faces between elements
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_discretization_faces.hpp"
 
 #include "4C_comm_utils_factory.hpp"

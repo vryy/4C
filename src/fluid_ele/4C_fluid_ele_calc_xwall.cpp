@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of fluid element with xfem wall modeling
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_xwall.hpp"
 
 #include "4C_fem_condition_utils.hpp"

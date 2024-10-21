@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief partitioned coupling algorithm for scatra-thermo interaction
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_sti_partitioned.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

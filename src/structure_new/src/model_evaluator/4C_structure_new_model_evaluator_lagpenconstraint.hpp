@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all constraint terms
-
-
-\level 3
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_LAGPENCONSTRAINT_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_LAGPENCONSTRAINT_HPP
 

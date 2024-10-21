@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an isotropic growth strategy for the growth remodel mixture rule
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_growth_strategy_isotropic.hpp"
 
 #include "4C_mixture_growth_strategy.hpp"

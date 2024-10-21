@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all input parameters for vtk-based visualization of beam contact
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_RUNTIME_VISUALIZATION_OUTPUT_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_RUNTIME_VISUALIZATION_OUTPUT_PARAMS_HPP
 

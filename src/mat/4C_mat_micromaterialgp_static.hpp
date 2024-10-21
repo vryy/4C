@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief class for handling of micro-macro transitions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MICROMATERIALGP_STATIC_HPP
 #define FOUR_C_MAT_MICROMATERIALGP_STATIC_HPP
 

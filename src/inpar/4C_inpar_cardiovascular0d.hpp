@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for 0d cardiovascular-structure coupling
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_CARDIOVASCULAR0D_HPP
 #define FOUR_C_INPAR_CARDIOVASCULAR0D_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-    \brief virtual DG Element interface for HDG discretization method
-
-    \level 3
- */
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_DG_ELEMENT_HPP
 #define FOUR_C_FEM_GENERAL_DG_ELEMENT_HPP
 

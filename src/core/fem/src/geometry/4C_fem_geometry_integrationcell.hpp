@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief integration cell classes for domain and boundary integration
-
---> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE 4C SOON
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_INTEGRATIONCELL_HPP
 #define FOUR_C_FEM_GEOMETRY_INTEGRATIONCELL_HPP
 

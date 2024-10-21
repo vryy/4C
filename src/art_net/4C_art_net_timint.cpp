@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for arterial network (time) integration.
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_timint.hpp"
 
 #include "4C_art_net_artery_resulttest.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief multiscale functionality for tri-quadratic displacement based solid element
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"

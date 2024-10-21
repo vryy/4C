@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Implementation of routines for calculation of solidporo element with pressure and velocity
-based formulation
-
-\level 1
-*/
-
 #include "4C_solid_poro_3D_ele_calc_pressure_velocity_based.hpp"
 
 #include "4C_fem_discretization.hpp"

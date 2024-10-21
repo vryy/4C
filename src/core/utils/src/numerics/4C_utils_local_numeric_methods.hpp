@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Collection of small local numerical methods.
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UTILS_LOCAL_NUMERIC_METHODS_HPP
 #define FOUR_C_UTILS_LOCAL_NUMERIC_METHODS_HPP
 

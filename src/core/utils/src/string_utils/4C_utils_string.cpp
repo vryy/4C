@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of string helper methods for namespace Discret::Utils
-
-\level 1
-
-*/
-
 #include "4C_utils_string.hpp"
 
 FOUR_C_NAMESPACE_OPEN

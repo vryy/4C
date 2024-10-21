@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for contact
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_CONTACT_HPP
 #define FOUR_C_INPAR_CONTACT_HPP
 

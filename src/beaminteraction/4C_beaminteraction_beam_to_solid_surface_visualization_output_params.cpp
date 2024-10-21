@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to store the beam to solid surface output (visualization) parameters.
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"
 
 #include "4C_global_data.hpp"

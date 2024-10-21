@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom special for contact
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_dofset_transparent.hpp"
 
 #include "4C_fem_condition.hpp"

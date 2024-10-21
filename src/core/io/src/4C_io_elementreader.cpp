@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Read element sections of dat files.
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_io_elementreader.hpp"
 
 #include "4C_comm_utils_factory.hpp"

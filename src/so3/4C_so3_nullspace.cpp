@@ -1,8 +1,3 @@
-/*! \file
-\brief Helpers for solid element nullspace computation
-\level 0
-*/
-
 #include "4C_so3_nullspace.hpp"
 
 #include "4C_fem_general_node.hpp"

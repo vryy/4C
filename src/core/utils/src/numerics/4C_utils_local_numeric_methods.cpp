@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Collection of small local numerical methods.
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_utils_local_numeric_methods.hpp"
 
 #include "4C_utils_exceptions.hpp"

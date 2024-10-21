@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Mortar parameter interface.
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MORTAR_PARAMSINTERFACE_HPP
 #define FOUR_C_MORTAR_PARAMSINTERFACE_HPP
 

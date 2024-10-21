@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for monolithic porous multiphase flow through elastic medium problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_poromultiphase_monolithic.hpp"
 
 #include "4C_global_data.hpp"

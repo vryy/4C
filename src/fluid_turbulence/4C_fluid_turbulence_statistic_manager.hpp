@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the computation of averages for several
-canonical flows like channel flow, flow around a square
-cylinder, flow in a lid driven cavity etc.
-
-The manager is intended to remove as much of the averaging
-overhead as possible from the time integration method.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTIC_MANAGER_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTIC_MANAGER_HPP
 

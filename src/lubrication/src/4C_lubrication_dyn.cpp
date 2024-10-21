@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief entry point for the solution of Lubrication problems
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_lubrication_dyn.hpp"
 
 #include "4C_fem_dofset_predefineddofnumber.hpp"

@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
-       to handle unconstrained problems.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_group.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

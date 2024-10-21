@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of the Weickenmeier active skeletal muscle material (generalized active strain
-approach)
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MUSCLE_WEICKENMEIER_HPP
 #define FOUR_C_MAT_MUSCLE_WEICKENMEIER_HPP
 

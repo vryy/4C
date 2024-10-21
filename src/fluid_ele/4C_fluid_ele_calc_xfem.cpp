@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Internal implementation of XFluid element interface coupling
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_xfem.hpp"
 
 #include "4C_cut_boundarycell.hpp"

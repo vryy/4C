@@ -1,10 +1,3 @@
-/*! \file
-\brief Interface for every material monolithic solid-scalar material (ssi, tsi)
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_MAT_MONOLITHIC_SOLID_SCALAR_MATERIAL_HPP
 #define FOUR_C_MAT_MONOLITHIC_SOLID_SCALAR_MATERIAL_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class for implementation of sparse operations (including sparse
-       matrices)
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_SPARSEOPERATOR_HPP
 #define FOUR_C_LINALG_SPARSEOPERATOR_HPP
 

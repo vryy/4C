@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Line element associated to the shell 7-Parameter element
-
-\level 3
-*/
-
 #ifndef FOUR_C_SHELL7P_LINE_HPP
 #define FOUR_C_SHELL7P_LINE_HPP
 

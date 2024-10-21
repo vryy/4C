@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief base class of time integration schemes for porous fluid
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_PORO_HPP
 #define FOUR_C_FLUID_TIMINT_PORO_HPP
 

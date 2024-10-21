@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Factory of Shell7p elements
-
-\level 1
-*/
-
-
 #include "4C_shell7p_ele_factory.hpp"
 
 #include "4C_shell7p_ele.hpp"

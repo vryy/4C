@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief implements a simple power law as contact constitutive law
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_POWER_CONTACTCONSTITUTIVELAW_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_POWER_CONTACTCONSTITUTIVELAW_HPP
 

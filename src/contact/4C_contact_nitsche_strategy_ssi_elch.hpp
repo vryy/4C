@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Nitsche ssi contact solving strategy including electrochemistry
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_STRATEGY_SSI_ELCH_HPP
 #define FOUR_C_CONTACT_NITSCHE_STRATEGY_SSI_ELCH_HPP
 

@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Global state data container for the structural (time)
-       integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_STR_MODEL_EVALUATOR_DATASTATE_HPP
 #define FOUR_C_BEAMINTERACTION_STR_MODEL_EVALUATOR_DATASTATE_HPP
 

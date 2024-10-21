@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a viscous material contribution, calculated according to an
-FSLS-model
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_VISCO_FRACT_HPP
 #define FOUR_C_MATELAST_VISCO_FRACT_HPP
 

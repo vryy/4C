@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief adhesion surface energy handler for discrete element method (DEM) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_dem_adhesion_surface_energy.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Computation of mean values of nodal/cp quantities. The
-means are computed as time averages
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
 

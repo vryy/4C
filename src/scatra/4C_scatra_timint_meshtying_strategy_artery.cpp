@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief routines for coupling between 1D arterial network and 2D/3D
-        scatra-algorithm
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_meshtying_strategy_artery.hpp"
 
 #include "4C_adapter_art_net.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Weakly compressible fluid according to Murnaghan-Tait
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_FLUID_MURNAGHANTAIT_HPP
 #define FOUR_C_MAT_FLUID_MURNAGHANTAIT_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of functions in order to calculate a smooth tangent field
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_TANGENTSMOOTHING_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_TANGENTSMOOTHING_HPP
 

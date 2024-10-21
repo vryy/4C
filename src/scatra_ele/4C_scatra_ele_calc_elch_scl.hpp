@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements with scls
-
-\level 2
-
-*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_ELCH_SCL_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ELCH_SCL_HPP
 #include "4C_config.hpp"

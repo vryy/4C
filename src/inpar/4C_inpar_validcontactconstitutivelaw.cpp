@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Setup of the list of valid contact constitutive laws for input
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"

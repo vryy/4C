@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief singleton class holding all static turbulence parameters required for scalar transport
-element evaluation
-
-This singleton class holds all static turbulence parameters required for scalar transport element
-evaluation. All parameters are usually set only once at the beginning of a simulation, namely during
-initialization of the global time integrator, and then never touched again throughout the
-simulation. This parameter class needs to coexist with the general parameter class holding all
-general static parameters required for scalar transport element evaluation.
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_parameter_turbulence.hpp"
 
 #include "4C_scatra_ele_parameter_timint.hpp"

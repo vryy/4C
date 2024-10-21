@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of electromagnetic elements
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_ELE_FACTORY_HPP
 #define FOUR_C_ELEMAG_ELE_FACTORY_HPP
 

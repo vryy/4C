@@ -1,10 +1,3 @@
-/*! \file
-\brief Interface for every material that can evaluate solid material laws
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_MAT_TRAIT_SOLID_HPP
 #define FOUR_C_MAT_TRAIT_SOLID_HPP
 

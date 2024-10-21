@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief factory class providing the implementations of the porofluidmultiphase
-        element evaluation routines
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_FACTORY_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_FACTORY_HPP
 

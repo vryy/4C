@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Managing and evaluating of spatial functions for Xfluid problems
-
-\level 3
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_xfluid_functions.hpp"
 
 #include "4C_io_linedefinition.hpp"

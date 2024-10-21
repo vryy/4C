@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class for  elastohydrodynamic lubrication (lubrication structure interaction)
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_ehl_utils.hpp"
 
 #include "4C_utils_exceptions.hpp"

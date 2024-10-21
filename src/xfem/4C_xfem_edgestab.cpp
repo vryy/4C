@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented,
-continuous interior penalty) scheme
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_xfem_edgestab.hpp"
 
 #include "4C_cut_cutwizard.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with matching grids using a monolithic scheme
-with condensed fluid interface velocities
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_monolithicfluidsplit.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

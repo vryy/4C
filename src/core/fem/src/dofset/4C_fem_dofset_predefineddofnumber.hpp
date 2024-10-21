@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief A dofset that owns a predefined number of dofs
-
- \level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_PREDEFINEDDOFNUMBER_HPP
 #define FOUR_C_FEM_DOFSET_PREDEFINEDDOFNUMBER_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the creation of additional DOFs for mortar couplings between solids.
-
-\level 3
-*/
-// End doxygen header.
-
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_EMBEDDEDMESH_SOLID_TO_SOLID_MORTAR_MANAGER_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_EMBEDDEDMESH_SOLID_TO_SOLID_MORTAR_MANAGER_HPP
 

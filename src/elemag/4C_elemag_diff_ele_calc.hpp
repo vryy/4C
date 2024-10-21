@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief All functionality for electromagnetic diffusionm element evaluations
-
-<pre>
-\level 2
-
-</pre>
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_DIFF_ELE_CALC_HPP
 #define FOUR_C_ELEMAG_DIFF_ELE_CALC_HPP
 

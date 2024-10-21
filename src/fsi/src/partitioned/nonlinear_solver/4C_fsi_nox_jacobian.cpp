@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Matrix-free Newton-Krylov for FSI
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_jacobian.hpp"
 
 #include "4C_linalg_vector.hpp"

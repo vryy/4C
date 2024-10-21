@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class supporting element evaluation for electrochemistry problems
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_utils_elch.hpp"
 
 #include "4C_fem_condition.hpp"

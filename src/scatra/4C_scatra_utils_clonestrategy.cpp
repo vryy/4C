@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief mesh clone strategy for scalar transport problems
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_utils_clonestrategy.hpp"
 
 #include "4C_fem_general_element.hpp"

@@ -1,8 +1,3 @@
-/*! \file
-\brief Interface for scalar functions
-\level 0
-*/
-
 #ifndef FOUR_C_UTILS_FUNCTION_OF_SCALAR_HPP
 #define FOUR_C_UTILS_FUNCTION_OF_SCALAR_HPP
 

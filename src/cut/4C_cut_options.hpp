@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief options to set up the cut
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_OPTIONS_HPP
 #define FOUR_C_CUT_OPTIONS_HPP
 

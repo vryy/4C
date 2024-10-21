@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief routines for coupling between 1D arterial network and 2D/3D
-        scatra-algorithm
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_HPP
 

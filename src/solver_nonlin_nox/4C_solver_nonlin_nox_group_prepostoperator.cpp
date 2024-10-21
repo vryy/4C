@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief wrapper class for a user derived NOX PrePostOperator
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_group_prepostoperator.hpp"
 
 #include <Teuchos_ParameterList.hpp>

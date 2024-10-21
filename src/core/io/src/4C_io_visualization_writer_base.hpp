@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Define a base class for objects that write visualization data to disk
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_WRITER_BASE_HPP
 #define FOUR_C_IO_VISUALIZATION_WRITER_BASE_HPP
 

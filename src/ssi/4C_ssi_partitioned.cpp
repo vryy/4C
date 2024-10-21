@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for partitioned scalar structure interaction
-
- \level 2
-
- *------------------------------------------------------------------------------------------------*/
 #include "4C_ssi_partitioned.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

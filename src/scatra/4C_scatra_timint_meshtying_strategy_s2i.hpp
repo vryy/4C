@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Scatra-scatra interface coupling strategy for standard scalar transport problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_HPP
 

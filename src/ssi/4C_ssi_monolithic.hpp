@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief monolithic scalar-structure interaction
-
-\level 2
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_MONOLITHIC_HPP
 #define FOUR_C_SSI_MONOLITHIC_HPP
 

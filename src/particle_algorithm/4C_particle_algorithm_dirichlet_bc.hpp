@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief dirichlet boundary condition handler for particle simulations
-\level 2
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_ALGORITHM_DIRICHLET_BC_HPP
 #define FOUR_C_PARTICLE_ALGORITHM_DIRICHLET_BC_HPP
 

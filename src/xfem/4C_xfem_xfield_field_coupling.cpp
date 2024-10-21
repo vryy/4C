@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief Special coupling routines to handle the possible changing number of DoFs
-       from node to node during XFEM simulations
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #include "4C_xfem_xfield_field_coupling.hpp"
 
 #include "4C_comm_exporter.hpp"

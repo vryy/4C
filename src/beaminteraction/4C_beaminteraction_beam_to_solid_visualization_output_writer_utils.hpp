@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the beam-to-solid visualization output writers.
-
-\level 3
-
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VISUALIZATION_OUTPUT_WRITER_UTILS_HPP
 

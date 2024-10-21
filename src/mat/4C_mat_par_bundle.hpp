@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Bundle holds all read-in materials of a #Global::Problem
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
 #ifndef FOUR_C_MAT_PAR_BUNDLE_HPP
 #define FOUR_C_MAT_PAR_BUNDLE_HPP
 

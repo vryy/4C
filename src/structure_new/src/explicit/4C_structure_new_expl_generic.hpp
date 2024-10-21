@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all explicit time integrators
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_EXPL_GENERIC_HPP
 #define FOUR_C_STRUCTURE_NEW_EXPL_GENERIC_HPP
 

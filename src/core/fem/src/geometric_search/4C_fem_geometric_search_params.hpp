@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Data container class for geometric search parameters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_PARAMS_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_PARAMS_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief element actions for evaluation of artery element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_ARTERY_ELE_ACTION_HPP
 #define FOUR_C_ART_NET_ARTERY_ELE_ACTION_HPP
 

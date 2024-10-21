@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base classes to manage the beam interactions defined by conditions.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_conditions.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_condition.hpp"

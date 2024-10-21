@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief St.Venant Kirchhoff with an additional temperature dependent term
-       describing heat expansion
-
-       example input line:
-       MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 2 YOUNG 1.48e8 1.48e5 NUE 0.3 DENS
-         9.130e-6 THEXPANS 1.72e-5 INITTEMP 293.15
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*
- | definitions                                               dano 02/10 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_THERMOSTVENANTKIRCHHOFF_HPP
 #define FOUR_C_MAT_THERMOSTVENANTKIRCHHOFF_HPP
 

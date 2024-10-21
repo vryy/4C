@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility routines for ale mesh tying
-
-
-\level 2
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_ALE_UTILS_HPP
 #define FOUR_C_ALE_UTILS_HPP
 

@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief This class provides the functionality to use contact with Lagrangian
-multipliers for monolithical coupled multifield problems!
-Therefore apply_force_stiff_cmt() & recover() are overloaded by this class and
-do nothing, as they are called directly in the structure. To use the contact
-the additional methods apply_force_stiff_cmt_coupled() & RecoverCoupled() have
-to be called!
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_HPP
 #define FOUR_C_CONTACT_MONOCOUPLED_LAGRANGE_STRATEGY_HPP
 

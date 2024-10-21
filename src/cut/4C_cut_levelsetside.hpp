@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief for intersection with an levelset, levelsetside represents the surface described by the
-levelset
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_LEVELSETSIDE_HPP
 #define FOUR_C_CUT_LEVELSETSIDE_HPP
 

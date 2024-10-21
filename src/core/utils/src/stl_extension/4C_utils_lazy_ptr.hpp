@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Class to lazily initialize an object
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_LAZY_PTR_HPP
 #define FOUR_C_UTILS_LAZY_PTR_HPP
 

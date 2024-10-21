@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief scatra material for transport within porous model with special implementations
-        for ECM model
-
-
-\level 3
- *----------------------------------------------------------------------*/
-
-
 #include "4C_mat_scatra_poro_ecm.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

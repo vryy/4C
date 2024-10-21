@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Testcases for the CoupAnisoExpoShear summand with gauss point fibers
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"

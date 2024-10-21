@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief porous medium algorithm with matrix split for condensation of
-      no-penetration constraint
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_monolithicsplit_nopenetration.hpp"
 
 #include "4C_adapter_coupling_nonlin_mortar.hpp"

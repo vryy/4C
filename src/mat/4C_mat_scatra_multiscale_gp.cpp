@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar
-transport problems
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_mat_scatra_multiscale_gp.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

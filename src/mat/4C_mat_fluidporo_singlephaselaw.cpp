@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief a material defining pressure-saturation relationship
-        for a single phase within a multiphase porous fluid
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_mat_fluidporo_singlephaselaw.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

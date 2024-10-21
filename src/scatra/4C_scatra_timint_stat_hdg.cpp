@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief solution algorithm for stationary problems
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_stat_hdg.hpp"
 
 #include "4C_io.hpp"

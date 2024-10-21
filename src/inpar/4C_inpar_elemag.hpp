@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for electromagnetic simulations
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_ELEMAG_HPP
 #define FOUR_C_INPAR_ELEMAG_HPP
 

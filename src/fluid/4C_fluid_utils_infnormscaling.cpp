@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief infnorm-scaling utility class for preconditioning of fluid problems
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_utils_infnormscaling.hpp"
 
 #include "4C_inpar_fluid.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic time integration classes "TimeInt", "TimeIntStd", "TimeIntEnr"
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_XFLUID_TIMEINT_BASE_HPP
 #define FOUR_C_XFEM_XFLUID_TIMEINT_BASE_HPP
 

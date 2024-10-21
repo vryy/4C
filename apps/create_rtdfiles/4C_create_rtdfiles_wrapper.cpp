@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief Main routine
-
-\author scheider
-
-\level 0
-*/
-
 #include "4C_config_revision.hpp"
 
 #include "4C_create_rtdfiles_wrapper.hpp"

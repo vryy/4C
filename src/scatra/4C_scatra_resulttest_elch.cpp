@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief result tests for electrochemistry problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_resulttest_elch.hpp"
 
 #include "4C_scatra_timint_elch.hpp"

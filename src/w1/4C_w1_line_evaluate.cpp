@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation on the boundary lines of a wall1 element.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_fem_general_extract_values.hpp"

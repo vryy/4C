@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Cut Volumecell (3d-Object described by 2d surfaces(facets))
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_VOLUMECELL_HPP
 #define FOUR_C_CUT_VOLUMECELL_HPP
 

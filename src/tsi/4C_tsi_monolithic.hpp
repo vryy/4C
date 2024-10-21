@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\level 1
-
-\brief Basis of all monolithic TSI algorithms that perform a coupling between
-       the structure field equation and temperature field equations
-
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 11/10 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_TSI_MONOLITHIC_HPP
 #define FOUR_C_TSI_MONOLITHIC_HPP
 

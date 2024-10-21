@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief control routine for scalar structure thermo interaction
-
- \level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_ssti_dyn.hpp"
 
 #include "4C_fem_discretization.hpp"

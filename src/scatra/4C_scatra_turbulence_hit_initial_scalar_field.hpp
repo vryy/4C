@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief routines to initialize homogeneous isotropic turbulence simulations with passive scalar
-transport
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_HPP
 #define FOUR_C_SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_HPP
 

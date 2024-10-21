@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of inter_acinar_dep_impl element
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_RED_AIRWAYS_INTERACINARDEP_IMPL_HPP
 #define FOUR_C_RED_AIRWAYS_INTERACINARDEP_IMPL_HPP
 

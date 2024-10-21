@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to handle beam to solid volume meshtying output creation.
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_writer.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"

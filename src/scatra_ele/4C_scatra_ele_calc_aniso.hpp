@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra_ele_calc_aniso.H
-
-\level 3
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_ANISO_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ANISO_HPP
 

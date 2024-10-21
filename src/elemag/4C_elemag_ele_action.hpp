@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Provides enum of actions for electromagnetics elements
-
-\level 2
-
-*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_ELE_ACTION_HPP
 #define FOUR_C_ELEMAG_ELE_ACTION_HPP
 

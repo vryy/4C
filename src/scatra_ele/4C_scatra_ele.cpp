@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A finite element for simulation transport phenomena
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele.hpp"
 
 #include "4C_comm_utils_factory.hpp"

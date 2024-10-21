@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for handing a collection of element matrices and vectors to the actual assembly
-calls into one global sparse matrix and global load vector
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_fem_general_assemblestrategy.hpp"
 
 #include "4C_fem_discretization.hpp"

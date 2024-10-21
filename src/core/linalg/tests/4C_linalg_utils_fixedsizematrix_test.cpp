@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for the fixed size matrix.
-
-\level 0
-*/
-
-
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"

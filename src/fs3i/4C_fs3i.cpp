@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief cpp-file associated with general algorithmic routines for
-       partitioned solution approaches to fluid-structure-scalar-scalar
-       interaction (FS3I) and fluid-porous-structure-scalar-scalar
-       interaction (FPS3I).
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fs3i.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

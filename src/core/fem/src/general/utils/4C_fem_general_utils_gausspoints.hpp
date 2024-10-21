@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of gauss formulas
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_UTILS_GAUSSPOINTS_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_GAUSSPOINTS_HPP
 

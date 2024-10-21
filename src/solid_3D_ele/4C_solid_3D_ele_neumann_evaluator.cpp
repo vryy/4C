@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Evaluation of neumann loads
-
-\level 1
-*/
-
 #include "4C_solid_3D_ele_neumann_evaluator.hpp"
 
 #include "4C_fem_general_element.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides a class with search tree with various search requests
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GEOMETRY_SEARCHTREE_HPP
 #define FOUR_C_FEM_GEOMETRY_SEARCHTREE_HPP
 

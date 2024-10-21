@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief rigid particle contact handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_SPH_RIGID_PARTICLE_CONTACT_HPP
 #define FOUR_C_PARTICLE_INTERACTION_SPH_RIGID_PARTICLE_CONTACT_HPP
 

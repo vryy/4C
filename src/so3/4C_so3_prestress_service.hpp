@@ -1,12 +1,3 @@
-/*! \file
-
-\level 1
-
-\brief Common service function for prestress
-
-
-*/
-
 #ifndef FOUR_C_SO3_PRESTRESS_SERVICE_HPP
 #define FOUR_C_SO3_PRESTRESS_SERVICE_HPP
 

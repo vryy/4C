@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for elch
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"  // for time curve in body force
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_geometry_position_array.hpp"

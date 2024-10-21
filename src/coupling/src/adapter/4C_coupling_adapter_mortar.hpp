@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A class providing coupling capabilities based on mortar methods
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COUPLING_ADAPTER_MORTAR_HPP
 #define FOUR_C_COUPLING_ADAPTER_MORTAR_HPP
 

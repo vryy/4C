@@ -1,8 +1,3 @@
-/*! \file
-\brief Interface for functions of time
-\level 0
-*/
-
 #ifndef FOUR_C_UTILS_FUNCTION_OF_TIME_HPP
 #define FOUR_C_UTILS_FUNCTION_OF_TIME_HPP
 

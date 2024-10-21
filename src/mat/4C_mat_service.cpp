@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Interface class for complex materials at Gauss points
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_service.hpp"
 
 #include "4C_linalg_four_tensor.hpp"

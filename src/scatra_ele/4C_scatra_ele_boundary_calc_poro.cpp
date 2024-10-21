@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra boundary terms at integration points
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_boundary_calc_poro.hpp"
 
 #include "4C_fem_general_extract_values.hpp"

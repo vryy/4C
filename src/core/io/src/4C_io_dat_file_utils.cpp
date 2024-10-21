@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- * \brief Helpers to read and write dat files
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_io_dat_file_utils.hpp"
 
 FOUR_C_NAMESPACE_OPEN

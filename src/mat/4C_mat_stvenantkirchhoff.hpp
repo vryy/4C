@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-St. Venant-Kirchhoff material
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_STVENANTKIRCHHOFF_HPP
 #define FOUR_C_MAT_STVENANTKIRCHHOFF_HPP
 

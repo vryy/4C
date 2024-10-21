@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief global access method for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_DYN_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_DYN_HPP
 

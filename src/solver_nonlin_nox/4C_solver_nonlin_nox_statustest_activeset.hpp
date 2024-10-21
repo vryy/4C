@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Check the active set for convergence. Only meaningful for
-       inequality constrained problems.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_HPP
 

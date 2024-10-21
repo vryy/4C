@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief implements a linear contact constitutive law
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_contact_constitutivelaw_linear_contactconstitutivelaw.hpp"
 
 #include "4C_global_data.hpp"

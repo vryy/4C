@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_HPP
 

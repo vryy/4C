@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief 2D solid-wall elements using NURBS shape functions.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_W1_NURBS_HPP
 #define FOUR_C_W1_NURBS_HPP
 

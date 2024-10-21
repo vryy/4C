@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for geometric search strategy
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_inpar_geometric_search.hpp"
 
 #include "4C_utils_parameter_list.hpp"

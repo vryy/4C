@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class for evaluation of equations on the structural surface
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_surface.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

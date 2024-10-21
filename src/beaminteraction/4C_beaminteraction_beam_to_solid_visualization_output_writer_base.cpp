@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base object that stores all relevant data for beam to solid output
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"

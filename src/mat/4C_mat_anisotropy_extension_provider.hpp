@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of an provider of an Mat::FiberAnisotropyExtension
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_EXTENSION_PROVIDER_HPP
 #define FOUR_C_MAT_ANISOTROPY_EXTENSION_PROVIDER_HPP
 

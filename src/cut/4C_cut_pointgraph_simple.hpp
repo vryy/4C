@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Create a simple point graph for 1-D and 2-D elements ( embedded in a
-       higher dimensional space )
-
-\date Nov 12, 2016
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_POINTGRAPH_SIMPLE_HPP
 #define FOUR_C_CUT_POINTGRAPH_SIMPLE_HPP
 

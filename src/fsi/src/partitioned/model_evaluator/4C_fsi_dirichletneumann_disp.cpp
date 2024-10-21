@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
-based on the interface displacements
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_dirichletneumann_disp.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

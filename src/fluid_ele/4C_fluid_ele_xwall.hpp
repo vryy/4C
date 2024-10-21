@@ -1,18 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of enrichment-wall fluid elements.
-In addition to that, it contains the interface between element call
-and Gauss point loop (depending on the fluid implementation)
-as well as some additional service routines (for the evaluation
-of errors, turbulence statistics etc.)
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_XWALL_HPP
 #define FOUR_C_FLUID_ELE_XWALL_HPP
 

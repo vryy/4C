@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mesh tying element to couple points of two 3D beam elements together.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_beam_point_coupling_pair.hpp"
 
 #include "4C_beam3_reissner.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra time integration for cardiac monodomain
-
-\level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_CARDIAC_MONODOMAIN_HPP
 #define FOUR_C_SCATRA_TIMINT_CARDIAC_MONODOMAIN_HPP
 

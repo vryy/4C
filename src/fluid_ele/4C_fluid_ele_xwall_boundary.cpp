@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief boundary element for the wall-enrichment elements
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"

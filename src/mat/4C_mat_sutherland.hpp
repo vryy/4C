@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief temperature-dependent gas according to Sutherland law
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SUTHERLAND_HPP
 #define FOUR_C_MAT_SUTHERLAND_HPP
 

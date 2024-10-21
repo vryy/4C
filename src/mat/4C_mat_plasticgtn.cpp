@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of GTN damage-plasticity model.
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_plasticgtn.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

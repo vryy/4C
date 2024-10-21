@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with generalised-alpha
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_GENALPHA_HPP
 #define FOUR_C_STRUCTURE_TIMINT_GENALPHA_HPP
 

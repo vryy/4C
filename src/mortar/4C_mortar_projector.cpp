@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform projections of nodes onto opposing Mortar::Elements
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_mortar_projector.hpp"
 
 #include "4C_contact_node.hpp"

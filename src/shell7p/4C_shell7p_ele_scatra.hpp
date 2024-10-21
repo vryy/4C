@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A 2D shell element with ScaTra functionality
-
-\level 3
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_SCATRA_HPP
 #define FOUR_C_SHELL7P_ELE_SCATRA_HPP
 

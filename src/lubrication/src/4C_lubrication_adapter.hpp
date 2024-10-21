@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Lubrication field base algorithm
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_LUBRICATION_ADAPTER_HPP
 #define FOUR_C_LUBRICATION_ADAPTER_HPP
 

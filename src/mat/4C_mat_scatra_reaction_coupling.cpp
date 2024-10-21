@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper class encapsulating the reaction terms and its derivatives
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_mat_scatra_reaction_coupling.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

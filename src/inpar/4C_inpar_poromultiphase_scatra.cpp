@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief input parameters for porous multiphase problem with scalar transport
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_inpar_poromultiphase_scatra.hpp"
 
 #include "4C_fem_condition_definition.hpp"

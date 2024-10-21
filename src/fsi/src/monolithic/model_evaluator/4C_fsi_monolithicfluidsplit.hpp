@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with matching grids using a monolithic scheme
-with condensed fluid interface velocities
-
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_MONOLITHICFLUIDSPLIT_HPP
 #define FOUR_C_FSI_MONOLITHICFLUIDSPLIT_HPP
 

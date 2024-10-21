@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of general 4C sparse matrix class
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #include "4C_linalg_sparsematrix.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"

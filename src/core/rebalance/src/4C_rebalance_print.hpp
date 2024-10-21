@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the partitioning/rebalancing
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_REBALANCE_PRINT_HPP
 #define FOUR_C_REBALANCE_PRINT_HPP
 

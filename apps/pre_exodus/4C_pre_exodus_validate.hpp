@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief validate a given .dat-file
-
-
-\level 1
-
-Validate a given 4C input file (after all preprocessing steps)
-
-*/
-
 #ifndef FOUR_C_PRE_EXODUS_VALIDATE_HPP
 #define FOUR_C_PRE_EXODUS_VALIDATE_HPP
 

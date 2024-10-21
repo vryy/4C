@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Mesh sliding for ale problems
-
-
-\level 3
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_ale_meshsliding.hpp"
 
 #include "4C_adapter_coupling_nonlin_mortar.hpp"

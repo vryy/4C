@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Service class for XFluid-related output.
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_XFLUID_OUTPUTSERVICE_HPP
 #define FOUR_C_FLUID_XFLUID_OUTPUTSERVICE_HPP
 

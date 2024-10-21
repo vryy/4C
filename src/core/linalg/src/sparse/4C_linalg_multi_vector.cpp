@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A wrapper for multi vectors
-
-\level 0
-*----------------------------------------------------------------------*/
-
 #include "4C_linalg_multi_vector.hpp"
 
 #include "4C_linalg_vector.hpp"

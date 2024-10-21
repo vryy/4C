@@ -1,11 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief Material model for the lubrication film
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_LUBRICATION_MAT_HPP
 #define FOUR_C_MAT_LUBRICATION_MAT_HPP
 

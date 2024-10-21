@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief subproxy functionality to dofsets
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_DOFSET_GIDBASED_WRAPPER_HPP
 #define FOUR_C_FEM_DOFSET_GIDBASED_WRAPPER_HPP
 

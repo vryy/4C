@@ -1,11 +1,3 @@
-/*! \file
-
-    * \brief Declaration of the solid-poro pressure-velocity-based element
-    * This file contains the element-specific service routines such as Pack, Unpack, NumDofPerNode
-etc.
-\level 1
-                */
-
 #ifndef FOUR_C_SOLID_PORO_3D_ELE_PRESSURE_VELOCITY_BASED_HPP
 #define FOUR_C_SOLID_PORO_3D_ELE_PRESSURE_VELOCITY_BASED_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief PointPool, stores a points in the cut and decides if points are merged or new points are
-created
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_POINTPOOL_HPP
 #define FOUR_C_CUT_POINTPOOL_HPP
 

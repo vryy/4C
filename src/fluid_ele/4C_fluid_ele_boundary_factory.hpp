@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief factory class into templated evaluators for fluid boundary integration
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_BOUNDARY_FACTORY_HPP
 #define FOUR_C_FLUID_ELE_BOUNDARY_FACTORY_HPP
 

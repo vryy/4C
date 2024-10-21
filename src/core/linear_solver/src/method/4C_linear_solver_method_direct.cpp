@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_method_direct.hpp"
 
 #include "4C_linalg_krylov_projector.hpp"

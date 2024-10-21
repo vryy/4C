@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief result testing functionality for scatra-thermo interaction problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STI_RESULTTEST_HPP
 #define FOUR_C_STI_RESULTTEST_HPP
 

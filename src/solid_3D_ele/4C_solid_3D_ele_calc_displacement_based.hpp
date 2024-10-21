@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A displacement based solid element formulation
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_CALC_DISPLACEMENT_BASED_HPP
 #define FOUR_C_SOLID_3D_ELE_CALC_DISPLACEMENT_BASED_HPP
 

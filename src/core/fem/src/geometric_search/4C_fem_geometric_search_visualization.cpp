@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Visualization writer for geometric search
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_geometric_search_visualization.hpp"
 
 #include "4C_fem_geometric_search_utils.hpp"

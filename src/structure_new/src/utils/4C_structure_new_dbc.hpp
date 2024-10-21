@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for all Dirichlet boundary condition tasks.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_DBC_HPP
 #define FOUR_C_STRUCTURE_NEW_DBC_HPP
 

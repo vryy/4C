@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Modified Generalized Alpha time integrator for Lie groups
-       (can handle non-additive rotational pseudo-vector DoFs)
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_HPP
 #define FOUR_C_STRUCTURE_NEW_IMPL_GENALPHA_LIEGROUP_HPP
 

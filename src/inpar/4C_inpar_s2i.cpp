@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input quantities and globally accessible enumerations for scatra-scatra interface coupling
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_s2i.hpp"
 
 #include "4C_fem_condition_definition.hpp"

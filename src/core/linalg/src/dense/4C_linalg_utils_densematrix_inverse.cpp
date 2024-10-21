@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Inverse dense matrices up to 4x4 and other inverse methods.
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 
 #include "4C_linalg_fortran_definitions.hpp"

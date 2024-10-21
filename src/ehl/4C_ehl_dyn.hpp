@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
-
-\level 2
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_EHL_DYN_HPP
 #define FOUR_C_EHL_DYN_HPP
 

@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Abstract base class to control all mortar coupling
-
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_mortar_manager_base.hpp"
 
 #include <Epetra_SerialComm.h>

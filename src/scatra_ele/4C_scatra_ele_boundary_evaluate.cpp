@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluate boundary conditions for scalar transport problems
-
-\level 2
-
- *----------------------------------------------------------------------*/
 #include "4C_fem_discretization.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_scatra_ele.hpp"

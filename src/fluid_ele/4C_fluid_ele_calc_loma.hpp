@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Low-Mach-number flow routines for calculation of fluid element
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_LOMA_HPP
 #define FOUR_C_FLUID_ELE_CALC_LOMA_HPP
 

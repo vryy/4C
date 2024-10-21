@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores a list of ion species in electrolyte solutions
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ELCHPHASE_HPP
 #define FOUR_C_MAT_ELCHPHASE_HPP
 

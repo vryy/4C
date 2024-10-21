@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief normal contact handler for discrete element method (DEM) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_DEM_CONTACT_NORMAL_HPP
 #define FOUR_C_PARTICLE_INTERACTION_DEM_CONTACT_NORMAL_HPP
 

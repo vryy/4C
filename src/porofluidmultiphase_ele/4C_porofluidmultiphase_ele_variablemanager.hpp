@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief variable manager class for poro multiphase fluid element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_VARIABLEMANAGER_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_VARIABLEMANAGER_HPP
 

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief graph to create volume cells from facets and lines
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_facetgraph.hpp"
 
 #include "4C_cut_mesh.hpp"

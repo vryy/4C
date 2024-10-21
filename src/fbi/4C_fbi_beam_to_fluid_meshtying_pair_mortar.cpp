@@ -1,12 +1,3 @@
-/*! \file
-
-\brief Meshtying element for meshtying between a 3D beam and a 3D fluid element using mortar shape
-functions.
-
-\level 3
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_pair_mortar.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"

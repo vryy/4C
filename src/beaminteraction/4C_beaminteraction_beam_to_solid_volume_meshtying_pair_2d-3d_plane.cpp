@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for 2D-3D beam-to-solid volume mesh tying based on a plane beam element. This
-simplifies the triad construction and torsion free beam elements can be used.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_plane.hpp"
 
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"

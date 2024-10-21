@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements for ion-transport equation
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch.hpp"
 
 #include "4C_scatra_ele_parameter_std.hpp"

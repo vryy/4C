@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Structural non-linear %NOX::NLN solver.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_nox.hpp"  // class header
 
 #include "4C_linear_solver_method_linalg.hpp"

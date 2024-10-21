@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra_ele_calc_cardiac_monodomain.cpp
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_calc_cardiac_monodomain.hpp"
 
 #include "4C_fem_discretization.hpp"

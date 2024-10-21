@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Active strain membrane material for gastric electromechanics
-
- The input line should read
- MAT 0 MAT_Membrane_ActiveStrain MATIDPASSIVE 1 SCALIDVOLTAGE 3 BETA1 1.2 BETA2 2.3 VOLTHRESH 0.5
- ALPHA1 1.0 ALPHA2 1.25
-
- \level 3
-
-
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                         brandstaeter 05/2018 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_membrane_active_strain.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

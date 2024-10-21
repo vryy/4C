@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of base element class in 4C with basic operations
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_general_element.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

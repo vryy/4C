@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of solver type base class
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_METHOD_HPP
 #define FOUR_C_LINEAR_SOLVER_METHOD_HPP
 

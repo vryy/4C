@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief utils for proc to proc communication
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_UTILS_PARALLEL_PROCTOPROC_HPP
 #define FOUR_C_BEAMINTERACTION_UTILS_PARALLEL_PROCTOPROC_HPP
 

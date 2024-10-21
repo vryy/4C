@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble pair based contributions into global coupling matrices.
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_HPP
 #define FOUR_C_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_HPP
 

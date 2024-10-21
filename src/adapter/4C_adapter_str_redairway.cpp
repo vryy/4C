@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structure field adapter for coupling with reduced-D airway trees
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_adapter_str_redairway.hpp"
 
 #include "4C_fem_discretization.hpp"

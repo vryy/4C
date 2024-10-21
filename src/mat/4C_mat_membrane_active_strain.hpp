@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Active strain membrane material for gastric electromechanics
-
- The input line should read
- MAT 0 MAT_Membrane_ActiveStrain
-
- \level 3
-
-
-
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | definitions                                     brandstaeter 05/2018 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MEMBRANE_ACTIVE_STRAIN_HPP
 #define FOUR_C_MAT_MEMBRANE_ACTIVE_STRAIN_HPP
 

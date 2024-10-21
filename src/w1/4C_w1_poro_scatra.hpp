@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief 2D wall element for structure part of porous medium including scatra functionality.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_W1_PORO_SCATRA_HPP
 #define FOUR_C_W1_PORO_SCATRA_HPP
 

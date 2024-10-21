@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Create and handle integrationcells for the Tessellation routine
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_integrationcellcreator.hpp"
 
 #include "4C_cut_boundarycell.hpp"

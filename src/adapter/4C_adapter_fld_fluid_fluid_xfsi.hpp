@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for XFSI allowing multiple fluid discretizations. Can only be used in
-conjunction with XFluidFluid!
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_FLUID_XFSI_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_FLUID_XFSI_HPP
 

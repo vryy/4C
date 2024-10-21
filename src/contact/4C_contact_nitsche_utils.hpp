@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Some helpers for nitsche contact
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_UTILS_HPP
 #define FOUR_C_CONTACT_NITSCHE_UTILS_HPP
 

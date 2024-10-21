@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Conversion of LINALG matrix with CLN type to double and vice versa
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_CLN_MATRIX_CONVERSION_HPP
 #define FOUR_C_UTILS_CLN_MATRIX_CONVERSION_HPP
 

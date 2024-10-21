@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for all porous multiphase flow through elastic medium problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_base.hpp"
 
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"

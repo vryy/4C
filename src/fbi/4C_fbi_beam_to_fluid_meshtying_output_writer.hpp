@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to handle beam to fluid meshtying output creation.
-
-\level 2
-
-*/
-
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_WRITER_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_WRITER_HPP
 

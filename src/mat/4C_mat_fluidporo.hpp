@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  fluid material for poroelasticity problems
-
-
-\level 2
- *-----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_FLUIDPORO_HPP
 #define FOUR_C_MAT_FLUIDPORO_HPP
 

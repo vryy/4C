@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Wrapper for the scatra time integrator.
-\level 1
- */
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_adapter_scatra_wrapper.hpp"
 
 #include "4C_linalg_sparseoperator.hpp"

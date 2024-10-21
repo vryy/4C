@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of ehl related terms
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_EHL_INTEGRATOR_HPP
 #define FOUR_C_CONTACT_EHL_INTEGRATOR_HPP
 

@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Read domain sections of dat files.
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_IO_DOMAINREADER_HPP
 #define FOUR_C_IO_DOMAINREADER_HPP
 

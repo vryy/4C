@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for automatic creation of a discretization
-       from an existing one (e.g. ALE from Fluid)
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_createdis.hpp"
 
 #include "4C_fem_dofset_transparent_independent.hpp"

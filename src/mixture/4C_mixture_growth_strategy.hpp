@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a mixture growth strategy interface
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_GROWTH_STRATEGY_HPP
 #define FOUR_C_MIXTURE_GROWTH_STRATEGY_HPP
 

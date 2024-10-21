@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Octtree for beam contact search
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACT_OCTTREE_HPP
 #define FOUR_C_BEAMCONTACT_BEAM3CONTACT_OCTTREE_HPP
 

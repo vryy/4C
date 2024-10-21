@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Managing and evaluating of spatial functions for combustion and two-phase flow problems
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_fluid_xfluid_functions_combust.hpp"
 
 #include "4C_io_linedefinition.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation class containing routines for calculation of scalar transport
-        within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
 #define FOUR_C_SCATRA_ELE_CALC_MULTIPORO_REAC_HPP
 

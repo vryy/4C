@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Solution strategy for heterogeneous reactions. This is not meshtying!!!
-
-  \level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_heterogeneous_reaction_strategy.hpp"
 
 #include "4C_fem_discretization.hpp"

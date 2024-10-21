@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Classes for mortar contact coupling in 2D.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_COUPLING2D_HPP
 #define FOUR_C_CONTACT_COUPLING2D_HPP
 

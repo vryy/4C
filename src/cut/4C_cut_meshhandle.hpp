@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief handle that holds the mesh specific information
-
-
-\level 2
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_MESHHANDLE_HPP
 #define FOUR_C_CUT_MESHHANDLE_HPP
 

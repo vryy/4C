@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to volume interaction with simple Gauss point projection and boundary segmentation.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_volume_gauss_point_projection.hpp"
 
 #include "4C_fem_general_element.hpp"

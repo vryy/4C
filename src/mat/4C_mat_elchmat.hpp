@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores a list of species and phases for electrochemistry applications
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ELCHMAT_HPP
 #define FOUR_C_MAT_ELCHMAT_HPP
 

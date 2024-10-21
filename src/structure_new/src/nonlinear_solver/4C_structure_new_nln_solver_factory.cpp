@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory for nonlinear solvers in structural dynamics
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_factory.hpp"
 
 #include "4C_structure_new_nln_solver_fullnewton.hpp"

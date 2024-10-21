@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_FIXEDSIZEBLOCKMATRIX_HPP
 #define FOUR_C_LINALG_FIXEDSIZEBLOCKMATRIX_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of a general solid material constituent
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_SOLIDMATERIAL_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_SOLIDMATERIAL_HPP
 

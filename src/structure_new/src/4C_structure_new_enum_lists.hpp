@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Contains ONLY lists of enumerators and is supposed to be included
-       in the header files if required
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_ENUM_LISTS_HPP
 #define FOUR_C_STRUCTURE_NEW_ENUM_LISTS_HPP
 

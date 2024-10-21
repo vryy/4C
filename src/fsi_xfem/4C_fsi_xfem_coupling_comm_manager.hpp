@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Coupling Communication Manager automatically creates all required coupling object to
-transform matrixes, vectors, ...
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_coupling_adapter.hpp"

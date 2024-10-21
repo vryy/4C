@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief evaluation of 1d-artery junction bc
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_art_junction.hpp"
 
 #include "4C_fem_condition.hpp"

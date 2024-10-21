@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class functions for time integration of electromagnetics
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_elemag_timeint.hpp"
 
 #include "4C_elemag_ele_action.hpp"

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief convert problem type string to enum
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_PROBLEMTYPE_HPP
 #define FOUR_C_INPAR_PROBLEMTYPE_HPP
 

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the structural time integration which gives fine grained
-       access in the adaptive time marching loop
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_str_timeada_zienxie.hpp"
 
 #include "4C_structure_new_timint_base.hpp"

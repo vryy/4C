@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Parameters for geometry input
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_GEOMETRY_TYPE_HPP
 #define FOUR_C_IO_GEOMETRY_TYPE_HPP
 

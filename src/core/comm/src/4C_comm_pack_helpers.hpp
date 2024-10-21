@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Functions to pack and extract data
-\level 0
-*/
-/*---------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_COMM_PACK_HELPERS_HPP
 #define FOUR_C_COMM_PACK_HELPERS_HPP
 

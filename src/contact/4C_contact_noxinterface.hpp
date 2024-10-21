@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Concrete mplementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
-       (pure) virtual routines.
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_NOXINTERFACE_HPP
 #define FOUR_C_CONTACT_NOXINTERFACE_HPP
 

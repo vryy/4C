@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Outside world interface to element. Converts quadratic to linear element. This provides the
-  Gaussian rules generated from the cut
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_ELEMENTHANDLE_HPP
 #define FOUR_C_CUT_ELEMENTHANDLE_HPP
 

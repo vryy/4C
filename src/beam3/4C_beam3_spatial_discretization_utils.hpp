@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for spatial discretization of beam elements
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAM3_SPATIAL_DISCRETIZATION_UTILS_HPP
 #define FOUR_C_BEAM3_SPATIAL_DISCRETIZATION_UTILS_HPP
 

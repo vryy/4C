@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid Base Algorithm
-
-\level 1
-
-
- */
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_adapter_fld_base_algorithm.hpp"
 
 #include "4C_adapter_fld_fbi_wrapper.hpp"

@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
-       with sliding ALE-structure interfaces
-
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fsi_dirichletneumannslideale.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

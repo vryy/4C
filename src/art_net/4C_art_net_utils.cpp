@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief helper functions/classes for artery problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_art_net_utils.hpp"
 
 #include "4C_art_net_artery.hpp"

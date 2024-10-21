@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Binning strategy for neighborhood search
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_binstrategy.hpp"
 
 #include "4C_binstrategy_meshfree_multibin.hpp"

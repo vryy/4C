@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Description
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_METHOD_DIRECT_HPP
 #define FOUR_C_LINEAR_SOLVER_METHOD_DIRECT_HPP
 

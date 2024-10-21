@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief All functionality for electromagnetic element evaluations
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_ELE_CALC_HPP
 #define FOUR_C_ELEMAG_ELE_CALC_HPP
 

@@ -1,11 +1,3 @@
-
-/*! \file
-
- \brief Factory of solid-poro elements
-
- \level 1
-                               */
-
 #ifndef FOUR_C_SOLID_PORO_3D_ELE_PROPERTIES_HPP
 #define FOUR_C_SOLID_PORO_3D_ELE_PROPERTIES_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class functions for time integration of electromagnetics
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_TIMEINT_HPP
 #define FOUR_C_ELEMAG_TIMEINT_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief element actions for evaluation of porofluidmultiphase element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_ACTION_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_ACTION_HPP
 

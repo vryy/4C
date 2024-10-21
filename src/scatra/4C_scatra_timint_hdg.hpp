@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Time integration class for HDG discretization for scalar transport
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_HDG_HPP
 #define FOUR_C_SCATRA_TIMINT_HDG_HPP
 

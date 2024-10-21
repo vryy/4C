@@ -1,9 +1,3 @@
-/*! \file
-\brief A 2D shell element with ScaTra functionality
-
-\level 3
-*/
-
 #include "4C_shell7p_ele_scatra.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

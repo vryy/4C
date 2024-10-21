@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief part of the facetgraph to create facets from lines and edges
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_FIND_CYCLES_HPP
 #define FOUR_C_CUT_FIND_CYCLES_HPP
 

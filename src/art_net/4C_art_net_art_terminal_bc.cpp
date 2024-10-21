@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief evaluation of 1d-artery inlet bc
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_art_net_art_terminal_bc.hpp"
 
 #include "4C_fem_condition_utils.hpp"

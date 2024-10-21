@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_DIRICHLETNEUMANN_VEL_HPP
 #define FOUR_C_FSI_DIRICHLETNEUMANN_VEL_HPP
 

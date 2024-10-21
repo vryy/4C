@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all LOMA algorithms
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_loma_algorithm.hpp"
 
 #include "4C_fem_general_assemblestrategy.hpp"

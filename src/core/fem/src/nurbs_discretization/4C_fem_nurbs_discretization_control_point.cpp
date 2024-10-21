@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief   This is basically a (3d-) node with an additional weight.
-   The weight is required for the evaluation of the nurbs
-   basis functions.
-
-   note that X() is not the coordinate of some grid point
-   anymore, it's just the control point position
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_nurbs_discretization_control_point.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

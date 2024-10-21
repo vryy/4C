@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters for VTK output of structural problem at runtime
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_INPAR_IO_RUNTIME_VTK_OUTPUT_STRUCTURE_HPP
 #define FOUR_C_INPAR_IO_RUNTIME_VTK_OUTPUT_STRUCTURE_HPP
 

@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for elch
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 #include "4C_scatra_ele.hpp"

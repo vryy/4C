@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Container for parameters for line to 3D pairs, as well as global evaluation data.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_3D_EVALUATION_DATA_HPP
 

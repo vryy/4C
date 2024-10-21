@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Contains ONLY lists of enumerators and is supposed to be included
-       into the header files, if necessary and till the C++11 standard is
-       available in 4C.
-
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_ENUM_LISTS_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_ENUM_LISTS_HPP
 

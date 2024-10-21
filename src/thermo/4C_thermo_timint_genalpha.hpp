@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Thermal time integration with generalised-alpha
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 05/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_GENALPHA_HPP
 #define FOUR_C_THERMO_TIMINT_GENALPHA_HPP
 

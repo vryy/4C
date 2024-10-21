@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for Fluid-beam interaction problems
-
-
-\level 2
-*/
-
 #include "4C_adapter_str_fbiwrapper.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for ALE mesh motion
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_ALE_HPP
 #define FOUR_C_INPAR_ALE_HPP
 

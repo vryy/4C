@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief contains utils functions for Dirichlet Boundary Conditions of HDG discretizations
-
-\level 2
-
-*/
-
 #include "4C_fluid_DbcHDG.hpp"
 
 #include "4C_fem_discretization_hdg.hpp"

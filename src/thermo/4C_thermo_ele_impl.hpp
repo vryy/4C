@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of thermo elements
-
-\level 1
-
-
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                                gjb 01/08 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_ELE_IMPL_HPP
 #define FOUR_C_THERMO_ELE_IMPL_HPP
 

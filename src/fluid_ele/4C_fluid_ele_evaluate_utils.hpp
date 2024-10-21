@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utilities for the fluid element evaluation
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_EVALUATE_UTILS_HPP
 #define FOUR_C_FLUID_ELE_EVALUATE_UTILS_HPP
 

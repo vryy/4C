@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief two-way coupled monolithic solution algorithm
-        for porous multiphase flow through elastic medium problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_monolithic_twoway.hpp"
 
 #include "4C_adapter_art_net.hpp"

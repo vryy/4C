@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief testing of fluid calculation results
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_RESULT_TEST_HPP
 #define FOUR_C_FLUID_RESULT_TEST_HPP
 

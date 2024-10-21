@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for Electrochemistry module.
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELCH_DYN_HPP
 #define FOUR_C_ELCH_DYN_HPP
 

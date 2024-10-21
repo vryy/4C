@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for binning strategy
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_BINNINGSTRATEGY_HPP
 #define FOUR_C_INPAR_BINNINGSTRATEGY_HPP
 

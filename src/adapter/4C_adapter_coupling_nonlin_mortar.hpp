@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A class providing coupling capabilities based on non-linear
-       mortar methods
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_COUPLING_NONLIN_MORTAR_HPP
 #define FOUR_C_ADAPTER_COUPLING_NONLIN_MORTAR_HPP
 

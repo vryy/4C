@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief cut facet (surface descripted by a cycle of points)
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_FACET_HPP
 #define FOUR_C_CUT_FACET_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief All enumerators used in cut libraries
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_ENUM_HPP
 #define FOUR_C_CUT_ENUM_HPP
 

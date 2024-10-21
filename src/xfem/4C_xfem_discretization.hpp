@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage one discretization with changing dofs in xfem context
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_DISCRETIZATION_HPP
 #define FOUR_C_XFEM_DISCRETIZATION_HPP
 

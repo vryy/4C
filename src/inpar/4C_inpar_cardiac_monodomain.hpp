@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for cardiac monodomain
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_CARDIAC_MONODOMAIN_HPP
 #define FOUR_C_INPAR_CARDIAC_MONODOMAIN_HPP
 

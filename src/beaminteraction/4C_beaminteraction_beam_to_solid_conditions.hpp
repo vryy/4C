@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the beam-to-solid conditions.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_CONDITIONS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_CONDITIONS_HPP
 

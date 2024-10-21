@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Creation of structural time integrators in accordance with user's wishes
-\level 1
-*/
-
 #ifndef FOUR_C_STRUCTURE_TIMINT_CREATE_HPP
 #define FOUR_C_STRUCTURE_TIMINT_CREATE_HPP
 

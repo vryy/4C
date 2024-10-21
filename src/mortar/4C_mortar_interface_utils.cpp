@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of utility functions for mortar interfaces
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
 #include "4C_mortar_interface_utils.hpp"
 
 #include <algorithm>

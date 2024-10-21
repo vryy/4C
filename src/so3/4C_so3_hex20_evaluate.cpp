@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief 3D quadratic serendipity element
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"

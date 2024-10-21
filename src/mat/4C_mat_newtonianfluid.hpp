@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Newtonian fluid material
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_NEWTONIANFLUID_HPP
 #define FOUR_C_MAT_NEWTONIANFLUID_HPP
 

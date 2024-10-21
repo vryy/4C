@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isochoric contribution of a material to test the isochoric
-parts of the Elasthyper-Toolbox.
-
-\level 1
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISOTESTMATERIAL_HPP
 #define FOUR_C_MATELAST_ISOTESTMATERIAL_HPP
 

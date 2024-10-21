@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief calculation classes for evaluation of constitutive relation for
-        relative permeability for multiphase porous flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_mat_fluidporo_relpermeability_law.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

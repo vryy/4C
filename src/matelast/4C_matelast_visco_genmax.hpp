@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a viscous material contribution, calculated according to an SLS-model
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_VISCO_GENMAX_HPP
 #define FOUR_C_MATELAST_VISCO_GENMAX_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief state management for one XFEM discretization
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_XFIELD_STATE_HPP
 #define FOUR_C_XFEM_XFIELD_STATE_HPP
 

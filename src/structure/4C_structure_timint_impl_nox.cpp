@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Interface of solid time integration to NOX solver package
-
-
-\level 3
-*/
-
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
-/* headers */
 #include "4C_inpar_boolifyparameters.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_blocksparsematrix.hpp"

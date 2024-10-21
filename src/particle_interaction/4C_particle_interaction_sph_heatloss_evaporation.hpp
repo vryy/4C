@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief evaporation induced heat loss handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_SPH_HEATLOSS_EVAPORATION_HPP
 #define FOUR_C_PARTICLE_INTERACTION_SPH_HEATLOSS_EVAPORATION_HPP
 

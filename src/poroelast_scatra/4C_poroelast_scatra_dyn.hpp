@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief control routine of poroelasticity coupled with scalar transport problems
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_SCATRA_DYN_HPP
 #define FOUR_C_POROELAST_SCATRA_DYN_HPP
 

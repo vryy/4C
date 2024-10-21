@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief calculation classes for evaluation of constitutive relation for (microscopic) density in
- porous media
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_PORO_DENSITY_LAW_HPP
 #define FOUR_C_MAT_PORO_DENSITY_LAW_HPP
 

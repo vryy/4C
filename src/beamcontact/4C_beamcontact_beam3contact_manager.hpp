@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief contact manager for contact in a beam3 discretization
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACT_MANAGER_HPP
 #define FOUR_C_BEAMCONTACT_BEAM3CONTACT_MANAGER_HPP
 

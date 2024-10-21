@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Within this file all geometry typedefs shall be defined. Thus they can
-be used from outside in header files without including the according geometry
-header file
---> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE 4C SOON
-
-\level 3
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_GEO_UTILS_HPP
 #define FOUR_C_FEM_GEOMETRY_GEO_UTILS_HPP
 

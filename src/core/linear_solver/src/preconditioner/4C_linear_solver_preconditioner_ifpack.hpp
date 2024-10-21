@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Core::LinAlg::SOLVER wrapper around Trilinos' IFPACK preconditioner
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_IFPACK_HPP
 #define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_IFPACK_HPP
 

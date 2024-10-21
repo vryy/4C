@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief pre_exodus bc-file reader
-
-
-\level 1
-
-Here is everything related with reading a bc file
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_pre_exodus_readbc.hpp"
 
 #include "4C_pre_exodus_reader.hpp"

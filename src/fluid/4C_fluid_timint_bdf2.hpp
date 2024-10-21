@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief BDF-2 time-integration scheme
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_TIMINT_BDF2_HPP
 #define FOUR_C_FLUID_TIMINT_BDF2_HPP
 

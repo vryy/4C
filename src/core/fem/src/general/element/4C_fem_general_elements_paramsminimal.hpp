@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Minimal implementation of the parameter interface for the element
-<--> time integrator data exchange
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENTS_PARAMSMINIMAL_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENTS_PARAMSMINIMAL_HPP
 

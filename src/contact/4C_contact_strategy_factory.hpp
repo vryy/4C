@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Factory to create the desired contact strategy.
-
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_STRATEGY_FACTORY_HPP
 #define FOUR_C_CONTACT_STRATEGY_FACTORY_HPP
 

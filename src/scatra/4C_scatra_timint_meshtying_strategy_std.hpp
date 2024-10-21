@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Standard solution strategy for standard scalar transport problems (without meshtying)
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_STD_HPP
 

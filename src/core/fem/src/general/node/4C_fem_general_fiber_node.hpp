@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief   This is basically a (3d-) node with an additional fiber direction.
-
-\level 2
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_FIBER_NODE_HPP
 #define FOUR_C_FEM_GENERAL_FIBER_NODE_HPP
 

@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Classes for mortar coupling in 2D.
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mortar_coupling2d.hpp"
 
 #include "4C_fem_discretization.hpp"

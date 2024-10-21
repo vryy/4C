@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief structural model evaluator for scalar-structure interaction
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_STR_MODEL_EVALUATOR_BASE_HPP
 #define FOUR_C_SSI_STR_MODEL_EVALUATOR_BASE_HPP
 

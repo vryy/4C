@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the viscous contribution a generalized maxwell model
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_matelast_visco_generalizedgenmax.hpp"
 
 #include "4C_global_data.hpp"

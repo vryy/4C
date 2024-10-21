@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief manages a mesh coupling object with knowledge of a level set field
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_COUPLING_MESH_COUPLED_LEVELSET_HPP
 #define FOUR_C_XFEM_COUPLING_MESH_COUPLED_LEVELSET_HPP
 

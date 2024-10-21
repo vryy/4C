@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief container class holding parameters for element evaluation (singleton)
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_PARAMETER_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_PARAMETER_HPP
 

@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Classes for mortar coupling in 3D.
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_COUPLING3D_HPP
 #define FOUR_C_MORTAR_COUPLING3D_HPP
 

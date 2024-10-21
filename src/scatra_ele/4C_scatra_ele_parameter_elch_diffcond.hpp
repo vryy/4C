@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief singleton class holding all static diffusion-conduction parameters required for element
-evaluation
-
-This singleton class holds all static diffusion-conduction parameters required for element
-evaluation. All parameters are usually set only once at the beginning of a simulation, namely during
-initialization of the global time integrator, and then never touched again throughout the
-simulation. This parameter class needs to coexist with more general parameter classes holding
-additional static parameters required for scalar transport element evaluation.
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_HPP
 #define FOUR_C_SCATRA_ELE_PARAMETER_ELCH_DIFFCOND_HPP
 

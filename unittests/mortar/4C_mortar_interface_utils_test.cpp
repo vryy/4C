@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Unit tests for mortar interface utitlies.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_mortar_interface_utils.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utilities for matrix equilibration
-
-\level 1
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_EQUILIBRATE_HPP
 #define FOUR_C_LINALG_EQUILIBRATE_HPP
 

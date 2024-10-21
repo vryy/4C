@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of utility functions for beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_beam_to_beam_contact_utils.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

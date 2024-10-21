@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired Line Search object.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_linesearch_factory.hpp"  // class definition
 
 #include "4C_solver_nonlin_nox_linesearch_backtrack.hpp"

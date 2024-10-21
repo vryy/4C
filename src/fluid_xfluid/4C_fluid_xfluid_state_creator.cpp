@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Creates a state object for (in)stationary XFEM fluid problems
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_xfluid_state_creator.hpp"
 
 #include "4C_cut_cutwizard.hpp"

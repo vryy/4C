@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Main control routine for fluid-structure-scalar-scalar
-       interaction (FS3I)
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fs3i_dyn.hpp"
 
 #include "4C_comm_utils.hpp"

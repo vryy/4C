@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implicit time integration for structural dynamics
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_structure_timint_impl.hpp"
 
 #include "4C_beamcontact_beam3contact_manager.hpp"

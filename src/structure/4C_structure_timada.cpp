@@ -1,14 +1,3 @@
-/*======================================================================*/
-/*! \file
-\brief Time step adaptivity front-end for structural dynamics
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timada.hpp"
 
 #include "4C_fem_discretization.hpp"

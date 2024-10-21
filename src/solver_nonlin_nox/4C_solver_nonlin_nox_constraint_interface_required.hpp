@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Required interface for constrained problems.
-       (necessary for the NOX::Nln::CONSTRAINT::Group
-        and the evaluation of special constraint status
-        tests)
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_REQUIRED_HPP
 

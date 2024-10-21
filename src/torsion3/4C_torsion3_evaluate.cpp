@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional torsion spring element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"

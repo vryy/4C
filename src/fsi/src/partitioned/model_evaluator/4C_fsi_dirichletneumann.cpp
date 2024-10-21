@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioning approach
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fsi_dirichletneumann.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

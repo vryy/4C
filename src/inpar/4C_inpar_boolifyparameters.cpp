@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Auxiliar routine to boolify integral Yes/No data
-
-
-\level 0
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_inpar_boolifyparameters.hpp"
 
 #include "4C_utils_exceptions.hpp"

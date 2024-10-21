@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of a boundary element for fluid poro problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_poro.hpp"
 
 FOUR_C_NAMESPACE_OPEN

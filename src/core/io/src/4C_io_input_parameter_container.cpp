@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A data storage container
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_io_input_parameter_container.hpp"
 
 #include "4C_linalg_vector.hpp"

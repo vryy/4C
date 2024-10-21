@@ -1,9 +1,3 @@
-/*! \file
-\brief Nonlinear Shell 7-parameter model Finite Element
-
-\level 3
-*/
-
 #include "4C_shell7p_ele.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

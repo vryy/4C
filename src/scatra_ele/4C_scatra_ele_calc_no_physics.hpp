@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of a scatra element that does not contain any physics
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_NO_PHYSICS_HPP
 #define FOUR_C_SCATRA_ELE_CALC_NO_PHYSICS_HPP
 

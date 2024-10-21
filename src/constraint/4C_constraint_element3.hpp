@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A 3D constraint element with no physics attached
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_ELEMENT3_HPP
 #define FOUR_C_CONSTRAINT_ELEMENT3_HPP
 

@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
-       with sliding ALE-structure interfaces
-
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_DIRICHLETNEUMANNSLIDEALE_HPP
 #define FOUR_C_FSI_DIRICHLETNEUMANNSLIDEALE_HPP
 

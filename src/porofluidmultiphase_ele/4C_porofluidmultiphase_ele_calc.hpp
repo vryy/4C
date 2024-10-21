@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief implementation of the evaluation routines of the porofluidmultiphase element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_CALC_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_CALC_HPP
 

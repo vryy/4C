@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired Line Search object.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_FACTORY_HPP
 

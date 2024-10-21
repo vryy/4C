@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Element types of the 2D solid-poro element.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_poro_eletypes.hpp"
 
 #include "4C_fem_discretization.hpp"

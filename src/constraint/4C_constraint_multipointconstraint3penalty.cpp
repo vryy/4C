@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic constraint class, dealing with multi point constraints
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_constraint_multipointconstraint3penalty.hpp"
 
 #include "4C_constraint_element3.hpp"

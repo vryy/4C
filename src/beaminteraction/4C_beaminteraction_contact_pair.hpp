@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief one generic (beam-to-?) contact element pair
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_PAIR_HPP
 

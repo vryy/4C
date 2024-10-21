@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Contains access traits definitions used by ArborX to access
-       the 4C-specific bounding volume data structure
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_ACCESS_TRAITS_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_ACCESS_TRAITS_HPP
 

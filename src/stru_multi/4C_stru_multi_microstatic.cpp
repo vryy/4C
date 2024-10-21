@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Quasi-static control for microstructural analysis
-
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
-
-
 #include "4C_stru_multi_microstatic.hpp"
 
 #include "4C_comm_utils.hpp"

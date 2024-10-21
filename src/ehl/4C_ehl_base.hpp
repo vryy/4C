@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for all elastohydrodynamic lubrication (lubrication structure interaction)
-algorithms
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_EHL_BASE_HPP
 #define FOUR_C_EHL_BASE_HPP
 

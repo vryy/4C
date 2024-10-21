@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
-// This test is tests the triangulation by EarClipping
 #include "4C_cut_combintersection.hpp"
 #include "4C_cut_kernel.hpp"
 #include "4C_cut_levelsetintersection.hpp"

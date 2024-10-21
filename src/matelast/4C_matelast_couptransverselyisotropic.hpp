@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a hyperelastic transversely isotropic material model for large
-strain computations
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPTRANSVERSELYISOTROPIC_HPP
 #define FOUR_C_MATELAST_COUPTRANSVERSELYISOTROPIC_HPP
 

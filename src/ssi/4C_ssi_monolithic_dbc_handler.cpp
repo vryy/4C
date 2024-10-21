@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Dirichlet boundary condition handler for monolithic SSI
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_ssi_monolithic_dbc_handler.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"

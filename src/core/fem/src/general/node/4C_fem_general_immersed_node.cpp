@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief specialized node for immersed problems.
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_immersed_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

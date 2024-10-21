@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief block sparse matrix implementation
-
-\level 0
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_linalg_blocksparsematrix.hpp"
 
 #include "4C_linalg_utils_densematrix_communication.hpp"

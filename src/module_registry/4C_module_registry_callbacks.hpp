@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Central callback structure to register modules in executables
-\level 0
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MODULE_REGISTRY_CALLBACKS_HPP
 #define FOUR_C_MODULE_REGISTRY_CALLBACKS_HPP
 

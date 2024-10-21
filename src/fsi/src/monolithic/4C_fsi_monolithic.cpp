@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief General framework for monolithic fsi solution schemes
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fsi_monolithic.hpp"
 
 #include "4C_adapter_ale.hpp"

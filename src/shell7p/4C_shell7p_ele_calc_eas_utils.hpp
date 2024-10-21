@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Helper functions for shell element EAS technology
-
-\level 1
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_CALC_EAS_UTILS_HPP
 #define FOUR_C_SHELL7P_ELE_CALC_EAS_UTILS_HPP
 

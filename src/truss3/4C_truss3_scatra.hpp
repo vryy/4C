@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief three dimensional total Lagrange truss element used for scalar transport coupling
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------------*/
 #ifndef FOUR_C_TRUSS3_SCATRA_HPP
 #define FOUR_C_TRUSS3_SCATRA_HPP
 

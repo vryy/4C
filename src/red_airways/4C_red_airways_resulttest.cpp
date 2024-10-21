@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Testing of calculation results for reduced elements
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_red_airways_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

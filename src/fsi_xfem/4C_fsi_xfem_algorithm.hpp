@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of monolithic XFSI algorithm that performs a coupling between the
-       structural field equation and XFEM fluid field equations
-
-\level 2
-
-*/
-
-
 #ifndef FOUR_C_FSI_XFEM_ALGORITHM_HPP
 #define FOUR_C_FSI_XFEM_ALGORITHM_HPP
 

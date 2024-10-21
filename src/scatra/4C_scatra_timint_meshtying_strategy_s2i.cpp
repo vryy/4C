@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Scatra-scatra interface coupling strategy for standard scalar transport problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_meshtying_strategy_s2i.hpp"
 
 #include "4C_comm_utils_gid_vector.hpp"

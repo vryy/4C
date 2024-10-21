@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation class containing routines for dissolving reactions within
-       porous medium for ECM modeling
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_poro_reac_ECM.hpp"
 
 #include "4C_fem_discretization.hpp"

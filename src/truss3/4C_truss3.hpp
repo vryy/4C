@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief three dimensional total Lagrange truss element
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------------*/
 #ifndef FOUR_C_TRUSS3_HPP
 #define FOUR_C_TRUSS3_HPP
 

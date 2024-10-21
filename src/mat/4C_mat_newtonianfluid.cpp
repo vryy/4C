@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Newtonian fluid material
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_newtonianfluid.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

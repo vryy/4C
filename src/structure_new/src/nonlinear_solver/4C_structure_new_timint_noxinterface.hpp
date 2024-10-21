@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Concrete implementation of the Jacobian, Required and
-       Preconditioner %NOX::NLN interfaces.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_NOXINTERFACE_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_NOXINTERFACE_HPP
 

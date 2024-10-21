@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with generalised-alpha
-
-\level 1
-
- */
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_structure_timint_genalpha.hpp"
 
 #include "4C_fem_condition_locsys.hpp"

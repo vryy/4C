@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Calculates the fix point direction.
-
-
-\level 1
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_fixpoint.hpp"
 
 #include <NOX_Abstract_Group.H>

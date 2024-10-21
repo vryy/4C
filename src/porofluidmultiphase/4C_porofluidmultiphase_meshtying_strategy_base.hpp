@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Abstract interface for meshtying strategies in porofluidmultiphase problems
-       (including standard strategy without meshtying)
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_BASE_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_BASE_HPP
 

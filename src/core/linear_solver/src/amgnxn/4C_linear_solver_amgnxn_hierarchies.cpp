@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_linear_solver_amgnxn_hierarchies.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

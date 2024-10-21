@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief dummy 3D boundary element without any physics
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BELE_BELE3_HPP
 #define FOUR_C_BELE_BELE3_HPP
 

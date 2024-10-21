@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief This file contains the history class of the constraintmixture material
-
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_CONSTRAINTMIXTURE_HISTORY_HPP
 #define FOUR_C_MAT_CONSTRAINTMIXTURE_HISTORY_HPP
 

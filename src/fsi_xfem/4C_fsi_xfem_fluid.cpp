@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief ...
-
-\level 2
-
-*/
-
 #include "4C_fsi_xfem_fluid.hpp"
 
 #include "4C_global_data.hpp"

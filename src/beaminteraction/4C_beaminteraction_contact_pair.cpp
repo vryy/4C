@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief one generic (beam-to-?) contact element pair
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_contact_pair.hpp"
 
 #include "4C_beam3_base.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Monolithic coupling of 3D structure and 0D cardiovascular flow models
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cardiovascular0d_manager.hpp"
 
 #include "4C_adapter_str_structure.hpp"

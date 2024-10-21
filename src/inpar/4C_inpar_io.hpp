@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\file inpar_io.H
-
-\brief Input parameters for global IO section
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_IO_HPP
 #define FOUR_C_INPAR_IO_HPP
 

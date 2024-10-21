@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief a fluid material for porous multiphase flow with reactions (mass sources and sinks)
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_mat_fluidporo_multiphase_reactions.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

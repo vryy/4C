@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Generate main Gauss points when using "DirectDivergence" approach.
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_cut_direct_divergence.hpp"
 
 #include "4C_cut_direct_divergence_refplane.hpp"

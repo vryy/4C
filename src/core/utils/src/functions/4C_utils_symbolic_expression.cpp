@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluating of arbitrary symbolic expressions, which contain literals
-       ('1.0', 'pi', etc) operations ('+', '-','sin', etc.).
-       The parsed expression is organised in a syntax tree whose nodes can
-       either hold an operation or a literal.
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_utils_symbolic_expression.hpp"
 
 #include "4C_utils_exceptions.hpp"

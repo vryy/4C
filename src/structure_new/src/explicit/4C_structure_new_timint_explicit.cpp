@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief explicit structural time integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_timint_explicit.hpp"
 
 #include "4C_solver_nonlin_nox_group.hpp"

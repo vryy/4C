@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief monitoring filter for one data
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-/*!
-\addtogroup Monitoring
-*//*! @{ (documentation module open)*/
-
 #include "4C_post_monitor.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of thermo elements
-
-\level 1
-
-*/
-
 #include "4C_thermo_ele_impl.hpp"
 
 #include "4C_fem_condition_utils.hpp"

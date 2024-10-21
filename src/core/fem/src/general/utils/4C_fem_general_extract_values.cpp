@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for namespace Discret
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_general_extract_values.hpp"
 
 #include "4C_fem_discretization.hpp"

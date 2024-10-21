@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of an exponential strain energy function with a simple active contribution
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mixture_constituent_remodelfiber_material_exponential_active.hpp"
 
 #include "4C_mat_par_bundle.hpp"

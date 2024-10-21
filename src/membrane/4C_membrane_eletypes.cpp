@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element Type
-
-*----------------------------------------------------------------------*/
 #include "4C_membrane_eletypes.hpp"
 
 #include "4C_io_linedefinition.hpp"

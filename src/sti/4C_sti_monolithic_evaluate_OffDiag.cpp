@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation of off-diagonal blocks for monolithic STI
-\level 2
-
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_sti_monolithic_evaluate_OffDiag.hpp"
 
 #include "4C_coupling_adapter.hpp"

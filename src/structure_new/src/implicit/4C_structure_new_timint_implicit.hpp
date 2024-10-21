@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implicit structural time integration strategy.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_IMPLICIT_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_IMPLICIT_HPP
 

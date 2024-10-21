@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with forward Euler (explicit)
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_EXPLEULER_HPP
 #define FOUR_C_STRUCTURE_TIMINT_EXPLEULER_HPP
 

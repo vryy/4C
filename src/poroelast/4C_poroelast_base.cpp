@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  Basis of all porous media algorithms
-
- \level 2
-
-
- *-----------------------------------------------------------------------*/
-
 #include "4C_poroelast_base.hpp"
 
 #include "4C_adapter_fld_base_algorithm.hpp"

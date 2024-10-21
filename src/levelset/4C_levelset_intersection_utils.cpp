@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief detailed description in header file levelset_intersection.H
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #include "4C_levelset_intersection_utils.hpp"
 
 #include "4C_comm_exporter.hpp"

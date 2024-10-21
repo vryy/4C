@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief uzawa (DEPRECATED)
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_UZAWA_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_UZAWA_HPP
 

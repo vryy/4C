@@ -1,21 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief coupling adapter for porous meshtying
-
-Masterthesis of h.Willmann under supervision of Anh-Tu Vuong
-and Johannes Kremheller, Originates from Adapter::CouplingNonLinMortar
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  includes                                                  ager 10/15|
- *----------------------------------------------------------------------*/
-// lib
 #include "4C_adapter_coupling_poro_mortar.hpp"
 
 #include "4C_contact_element.hpp"

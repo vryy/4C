@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Functionality to read a mesh from a dat file
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_MESHREADER_HPP
 #define FOUR_C_IO_MESHREADER_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Math operations specialization for CLN
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UTILS_MATHOPERATIONS_CLN_HPP
 #define FOUR_C_UTILS_MATHOPERATIONS_CLN_HPP
 

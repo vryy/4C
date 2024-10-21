@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the xfluid timeIntegration,
-       maps vectors from old interface position to vectors at new interface position,
-       determines the reconstruction method for missing and unreasonable ghost and standard values
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_XFLUID_TIMEINT_HPP
 #define FOUR_C_XFEM_XFLUID_TIMEINT_HPP
 

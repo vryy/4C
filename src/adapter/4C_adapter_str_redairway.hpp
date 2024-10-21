@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structure field adapter for coupling with reduced-D airway trees
-
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-
 #ifndef FOUR_C_ADAPTER_STR_REDAIRWAY_HPP
 #define FOUR_C_ADAPTER_STR_REDAIRWAY_HPP
 /*----------------------------------------------------------------------*/

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrates base functions over the facet for both volumecell facets and for boundarycells
-equations
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_cut_facet_integration.hpp"
 
 #include "4C_cut_boundarycell.hpp"

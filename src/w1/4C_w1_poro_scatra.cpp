@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief 2D wall element for structure part of porous medium including scatra functionality.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_poro_scatra.hpp"
 
 #include "4C_io_linedefinition.hpp"

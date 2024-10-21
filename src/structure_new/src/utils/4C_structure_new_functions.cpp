@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Managing and evaluating of functions for structure problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_functions.hpp"
 
 #include "4C_global_data.hpp"

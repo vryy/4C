@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Classes for interface coupling in the XFEM
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_HPP
 #define FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_HPP
 

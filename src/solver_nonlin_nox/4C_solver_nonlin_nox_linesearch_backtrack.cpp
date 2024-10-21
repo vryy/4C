@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN backtracking line search implementation.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_linesearch_backtrack.hpp"  // class definition
 
 #include "4C_linalg_vector.hpp"

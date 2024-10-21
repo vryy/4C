@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief input parameters for porous multiphase problem with scalar transport
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_POROMULTIPHASE_SCATRA_HPP
 #define FOUR_C_INPAR_POROMULTIPHASE_SCATRA_HPP
 

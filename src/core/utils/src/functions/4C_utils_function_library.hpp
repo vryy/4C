@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Collection of functions that are not problem-specific
-
-The functions in this file are not problem-specific and may be useful for a number of applications.
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UTILS_FUNCTION_LIBRARY_HPP
 #define FOUR_C_UTILS_FUNCTION_LIBRARY_HPP
 

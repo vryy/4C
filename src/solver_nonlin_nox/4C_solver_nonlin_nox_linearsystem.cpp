@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN extension of the %::NOX::Epetra::LinearSystem.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_linearsystem.hpp"
 
 #include "4C_linalg_serialdensevector.hpp"

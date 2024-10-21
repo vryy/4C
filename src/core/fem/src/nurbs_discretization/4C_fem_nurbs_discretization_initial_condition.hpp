@@ -1,22 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A service method allowing the application of initial conditions
-       for nurbs discretisations.
-
-Since nurbs shape functions are not interpolating, it is not as
-straightforward to apply initial conditions to the degrees of freedom.
-(dofs are always associated with control points, i.e. the location
-associated with the 'node'=control point is not the physical location
-and the value at the control point is not the prescribed value at this
-position since dofs associated with neighbouring control points influence
-the function value as well)
-
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_INITIAL_CONDITION_HPP
 #define FOUR_C_FEM_NURBS_DISCRETIZATION_INITIAL_CONDITION_HPP
 

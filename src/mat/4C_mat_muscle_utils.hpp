@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility methods for skeletal muscle
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MUSCLE_UTILS_HPP
 #define FOUR_C_MAT_MUSCLE_UTILS_HPP
 

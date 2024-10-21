@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Preevalution methods for Shell-ScaTra elements
-
-\level 1
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_SCATRA_PREEVALUATOR_HPP
 #define FOUR_C_SHELL7P_ELE_SCATRA_PREEVALUATOR_HPP
 

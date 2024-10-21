@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation methods for 3D nonlinear Reissner beam element
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beam3_reissner.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"

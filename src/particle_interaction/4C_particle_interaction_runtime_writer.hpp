@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief write output for particle interaction at runtime
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_RUNTIME_WRITER_HPP
 #define FOUR_C_PARTICLE_INTERACTION_RUNTIME_WRITER_HPP
 

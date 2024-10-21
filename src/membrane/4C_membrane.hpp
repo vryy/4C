@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element
-
-The input line (in the header file) should read
-MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MEMBRANE_HPP
 #define FOUR_C_MEMBRANE_HPP
 

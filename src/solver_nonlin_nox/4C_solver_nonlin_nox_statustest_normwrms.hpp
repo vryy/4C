@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN Weighted root mean square test of the solution
-       increment. A detailed description can be found in the NOX
-       documentation.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Former file of Ursula Mayer
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_CARREAUYASUDA_HPP
 #define FOUR_C_MAT_CARREAUYASUDA_HPP
 

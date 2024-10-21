@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief NOX Newton direction with adaptive linear solver tolerance for FSI
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_NEWTON_HPP
 #define FOUR_C_FSI_NOX_NEWTON_HPP
 

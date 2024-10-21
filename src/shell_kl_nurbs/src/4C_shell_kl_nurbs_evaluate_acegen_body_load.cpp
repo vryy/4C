@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief This file contains functions for the NURBS Kirchhoff-Love shell which are generated
-with AceGen.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_shell_kl_nurbs.hpp"
 

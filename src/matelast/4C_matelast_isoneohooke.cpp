@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an isochoric Neo Hooke material
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isoneohooke.hpp"
 
 #include "4C_material_parameter_base.hpp"

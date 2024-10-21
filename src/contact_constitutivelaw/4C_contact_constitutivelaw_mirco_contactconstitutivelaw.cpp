@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief implements a mirco contact constitutive law
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_contact_constitutivelaw_mirco_contactconstitutivelaw.hpp"
 
 #include "4C_contact_rough_node.hpp"

@@ -1,10 +1,3 @@
-/*! \file
-\brief Interface for all thermal material models
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_MAT_THERMO_HPP
 #define FOUR_C_MAT_THERMO_HPP
 

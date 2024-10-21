@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for thermo problems
-
-\level 1
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_thermo.hpp"
 
 #include "4C_fem_condition_definition.hpp"

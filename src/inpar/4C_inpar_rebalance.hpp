@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for rebalancing the discretization
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_REBALANCE_HPP
 #define FOUR_C_INPAR_REBALANCE_HPP
 

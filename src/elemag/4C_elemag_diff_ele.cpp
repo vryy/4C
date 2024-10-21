@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of electromagnetic diffusion elements
-
-<pre>
-\level 2
-
-</pre>
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_elemag_diff_ele.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

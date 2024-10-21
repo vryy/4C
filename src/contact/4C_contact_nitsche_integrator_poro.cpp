@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of nitsche related terms for the poro contact case
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_nitsche_integrator_poro.hpp"
 
 #include "4C_contact_element.hpp"

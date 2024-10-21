@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Nitsche poro contact solving strategy
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_STRATEGY_PORO_HPP
 #define FOUR_C_CONTACT_NITSCHE_STRATEGY_PORO_HPP
 

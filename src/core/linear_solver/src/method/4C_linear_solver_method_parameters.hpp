@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Computation of specific solver parameters
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_METHOD_PARAMETERS_HPP
 #define FOUR_C_LINEAR_SOLVER_METHOD_PARAMETERS_HPP
 

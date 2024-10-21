@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief electrode material carrying concentration and electric potential as degrees of freedom
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_ELECTRODE_HPP
 #define FOUR_C_MAT_ELECTRODE_HPP
 

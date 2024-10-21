@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for functions in 4C_io_utils_reader.H
-
-\level 1
-
-*-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_utils_string.hpp"

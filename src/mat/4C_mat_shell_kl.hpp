@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Material for an elastic Kirchhoff-Love shell
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SHELL_KL_HPP
 #define FOUR_C_MAT_SHELL_KL_HPP
 

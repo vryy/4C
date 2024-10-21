@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-\brief factory for structure adapters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_adapter_str_factory.hpp"
 
 #include "4C_adapter_str_structure_new.hpp"

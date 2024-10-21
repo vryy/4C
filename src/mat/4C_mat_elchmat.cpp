@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores a list of species and phases for electrochemistry applications
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_elchmat.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

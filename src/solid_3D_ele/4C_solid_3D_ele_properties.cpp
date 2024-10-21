@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Properties of solid elements
-
-\level 1
-*/
-
-
 #include "4C_config.hpp"
 
 #include "4C_solid_3D_ele_properties.hpp"

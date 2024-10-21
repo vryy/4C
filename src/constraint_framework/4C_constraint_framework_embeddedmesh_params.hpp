@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all solid to solid embedded mesh interaction
-       input parameters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_EMBEDDEDMESH_PARAMS_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_EMBEDDEDMESH_PARAMS_HPP
 

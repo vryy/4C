@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Central file for the tests of the CUT Library, here all tests are called.
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_cut_element.hpp"

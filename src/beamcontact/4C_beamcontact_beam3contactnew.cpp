@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief contact element for contact between two 3D beam elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_beamcontact_beam3contactnew.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Monitor tagged Dirichlet boundary conditions
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_MONITOR_DBC_HPP
 #define FOUR_C_STRUCTURE_NEW_MONITOR_DBC_HPP
 

@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for thermodynamic diffusion-conduction ion-transport equations
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ELCH_DIFFCOND_STI_THERMO_HPP
 

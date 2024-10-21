@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief spherical particle element for brownian dynamics
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_RIGIDSPHERE_HPP
 #define FOUR_C_RIGIDSPHERE_HPP
 

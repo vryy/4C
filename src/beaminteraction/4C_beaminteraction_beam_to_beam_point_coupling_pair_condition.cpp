@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class to manage beam-to-beam point couplings.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_beam_point_coupling_pair_condition.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_point_coupling_pair.hpp"

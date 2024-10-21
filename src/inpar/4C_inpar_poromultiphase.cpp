@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief input parameters for porous multiphase problem
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_poromultiphase.hpp"
 
 #include "4C_fem_condition_definition.hpp"

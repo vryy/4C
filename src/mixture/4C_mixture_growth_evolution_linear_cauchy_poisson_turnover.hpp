@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief 1D constitutive equation for growth (Linear in Cauchy fiber stress)
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_POISSON_TURNOVER_HPP
 #define FOUR_C_MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_POISSON_TURNOVER_HPP
 

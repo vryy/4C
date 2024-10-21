@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief material for macro-scale elements in multi-scale simulations of electrochemistry problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_NEWMAN_MULTISCALE_HPP
 #define FOUR_C_MAT_NEWMAN_MULTISCALE_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for fsi. Can only be used in conjunction with FLD::FluidImplicitTimeInt
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_FSI_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_FSI_HPP
 

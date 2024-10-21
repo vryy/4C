@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief dummy 3D boundary element without any physics
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_bele_bele3.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

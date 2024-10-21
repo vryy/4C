@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods to broadcast data across procs
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_BROADCAST_UTILS_HPP
 #define FOUR_C_COMM_BROADCAST_UTILS_HPP
 

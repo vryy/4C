@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isotropic Varga material
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPVARGA_HPP
 #define FOUR_C_MATELAST_COUPVARGA_HPP
 

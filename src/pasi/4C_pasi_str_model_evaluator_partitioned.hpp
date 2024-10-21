@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief model evaluator for structure part of partitioned pasi
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PASI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
 #define FOUR_C_PASI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
 

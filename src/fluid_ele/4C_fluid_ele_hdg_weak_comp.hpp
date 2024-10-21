@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Weakly Compressible fluid element based on the HDG method
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_HDG_WEAK_COMP_HPP
 #define FOUR_C_FLUID_ELE_HDG_WEAK_COMP_HPP
 

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container for input parameters for visualization of potential-based beam interactions
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_POTENTIAL_RUNTIME_VISUALIZATION_OUTPUT_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_POTENTIAL_RUNTIME_VISUALIZATION_OUTPUT_PARAMS_HPP
 

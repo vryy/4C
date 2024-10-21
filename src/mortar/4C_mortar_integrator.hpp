@@ -1,9 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief integrate mortar terms
-\level 1
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_INTEGRATOR_HPP
 #define FOUR_C_MORTAR_INTEGRATOR_HPP
 

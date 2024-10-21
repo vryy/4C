@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief tri-quadratic displacement based solid element
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"

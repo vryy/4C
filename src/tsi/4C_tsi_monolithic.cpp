@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  Basis of all monolithic TSI algorithms that perform a coupling between
-        the linear momentum equation and the heat conduction equation
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 11/10 |
- *----------------------------------------------------------------------*/
 #include "4C_tsi_monolithic.hpp"
 
 #include "4C_adapter_str_structure_new.hpp"

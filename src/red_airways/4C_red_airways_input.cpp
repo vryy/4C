@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Input for RedAirway, RedAcinus, RedInterAcinarDep, RedAirBloodScatra and
-RedAirBloodScatraLine3 elements
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_maxwell_0d_acinus.hpp"

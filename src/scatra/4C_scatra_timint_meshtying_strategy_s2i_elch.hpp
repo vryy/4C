@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Scatra-scatra interface coupling strategy for electrochemistry problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_HPP
 

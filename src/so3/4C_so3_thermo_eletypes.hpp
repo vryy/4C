@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief 3d TSI silid element
-\level 1
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_THERMO_ELETYPES_HPP
 #define FOUR_C_SO3_THERMO_ELETYPES_HPP
 

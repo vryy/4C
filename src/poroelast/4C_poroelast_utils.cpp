@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief utility functions for porous media problems
-
-\level 2
-
- */
-
 #include "4C_poroelast_utils.hpp"
 
 #include "4C_fem_condition_utils.hpp"

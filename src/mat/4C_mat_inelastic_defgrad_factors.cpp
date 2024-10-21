@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief evaluation of inelastic deformation gradients and their derivatives
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 
 #include "4C_global_data.hpp"

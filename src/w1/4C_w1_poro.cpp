@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief 2D wall element for structure part of porous medium.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_poro.hpp"
 
 #include "4C_comm_utils_factory.hpp"

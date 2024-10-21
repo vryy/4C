@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Setup of the list of valid materials for input
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_validmaterials.hpp"
 
 #include "4C_global_data.hpp"

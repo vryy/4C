@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Interface class for materials of the (visco)elasthyper toolbox.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_SUMMAND_HPP
 #define FOUR_C_MATELAST_SUMMAND_HPP
 

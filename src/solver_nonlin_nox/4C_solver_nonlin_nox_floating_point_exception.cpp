@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Bundle the floating point exception handling in one class.
-
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_floating_point_exception.hpp"
 
 #include <NOX_Utils.H>

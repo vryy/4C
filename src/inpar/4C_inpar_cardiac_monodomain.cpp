@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for cardiac monodomain
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_cardiac_monodomain.hpp"
 
 #include "4C_fem_condition_definition.hpp"

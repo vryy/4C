@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- *
- *\brief Utility functions for fluid beam interaction related calculations
- *
- *\level 3
- *
- */
-/*----------------------------------------------------------------------*/
 #include "4C_fbi_calc_utils.hpp"
 
 #include "4C_beam3_base.hpp"

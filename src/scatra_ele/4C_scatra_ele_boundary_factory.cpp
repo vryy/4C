@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief factory for scatra boundary evaluation
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_factory.hpp"
 
 #include "4C_global_data.hpp"

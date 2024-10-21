@@ -1,8 +1,3 @@
-/*! \file
-\level 1
-\brief Voigt notation definition and utilities
-*/
-
 #ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_VOIGT_NOTATION_HPP
 #define FOUR_C_LINALG_FIXEDSIZEMATRIX_VOIGT_NOTATION_HPP
 

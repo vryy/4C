@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief These classes are meant as policies for the paired objects and
-       are NOT supposed to be accessed directly. Use the methods of the derived
-       classes, instead.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
 #define FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
 

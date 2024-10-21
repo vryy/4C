@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief evaluation of a generic material whose deformation gradient is modeled to be split
-multiplicatively into elastic and inelastic parts
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_multiplicative_split_defgrad_elasthyper.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

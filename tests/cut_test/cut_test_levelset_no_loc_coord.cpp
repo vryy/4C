@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
-// Issues with non-local cut!
-// Tried to be resolved here (Only for small deformation created from cubit).
-// Sheared elements needs to be tested separately
-// m.w. 05.2015
-
 #include "4C_cut_element.hpp"
 #include "4C_cut_levelsetintersection.hpp"
 #include "4C_cut_mesh.hpp"

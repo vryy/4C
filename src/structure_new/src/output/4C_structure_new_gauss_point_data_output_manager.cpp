@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a Gauss point data output handler
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 
 #include "4C_comm_exporter.hpp"

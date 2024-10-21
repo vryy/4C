@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scalar transport elements for standard scalar transport problems
-
-
-\level 1
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_CALC_STD_HPP
 #define FOUR_C_SCATRA_ELE_CALC_STD_HPP
 

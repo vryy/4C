@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for elch
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"

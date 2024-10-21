@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for geometric search strategy
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_GEOMETRIC_SEARCH_HPP
 #define FOUR_C_INPAR_GEOMETRIC_SEARCH_HPP
 

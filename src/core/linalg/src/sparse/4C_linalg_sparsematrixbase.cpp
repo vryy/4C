@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation
-
-\level 0
-
-*----------------------------------------------------------------------*/
-
 #include "4C_linalg_sparsematrixbase.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

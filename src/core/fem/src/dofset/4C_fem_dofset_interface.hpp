@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Common interface class for all sets of degrees of freedom.
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_INTERFACE_HPP
 #define FOUR_C_FEM_DOFSET_INTERFACE_HPP
 

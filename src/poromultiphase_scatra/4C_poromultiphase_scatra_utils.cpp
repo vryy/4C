@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper functions/classes for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_utils.hpp"
 
 #include "4C_art_net_utils.hpp"

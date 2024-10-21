@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for ScaTraHDG element
-
-Scatra element based on the hybridizable discontinuous Galerkin method instead
-of the usual Lagrangian polynomials for standard transport elements
-
-\level 3
-
-
-*/
 #ifndef FOUR_C_SCATRA_ELE_HDG_HPP
 #define FOUR_C_SCATRA_ELE_HDG_HPP
 

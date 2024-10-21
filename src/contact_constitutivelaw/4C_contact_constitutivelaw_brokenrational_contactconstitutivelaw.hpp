@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief implements a broken rational function \f$ A/(x-B)+C \f$ as contact constitutive law
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_BROKENRATIONAL_CONTACTCONSTITUTIVELAW_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_BROKENRATIONAL_CONTACTCONSTITUTIVELAW_HPP
 

@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for plasticity
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_PLASTICITY_HPP
 #define FOUR_C_INPAR_PLASTICITY_HPP
 

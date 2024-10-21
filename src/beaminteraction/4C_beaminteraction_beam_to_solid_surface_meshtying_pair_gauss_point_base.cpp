@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Gauss point to segment mesh tying element for between a 3D beam and a surface element.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point_base.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_params.hpp"

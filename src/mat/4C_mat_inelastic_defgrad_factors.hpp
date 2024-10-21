@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief evaluation of inelastic deformation gradients and their derivatives
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_MAT_INELASTIC_DEFGRAD_FACTORS_HPP
 #define FOUR_C_MAT_INELASTIC_DEFGRAD_FACTORS_HPP
 

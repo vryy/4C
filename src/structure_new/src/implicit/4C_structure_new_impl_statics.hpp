@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Static (time) integrator.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_IMPL_STATICS_HPP
 #define FOUR_C_STRUCTURE_NEW_IMPL_STATICS_HPP
 

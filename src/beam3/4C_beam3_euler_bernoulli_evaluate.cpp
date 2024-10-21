@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional nonlinear torsionless rod based on a C1 curve
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beam3_euler_bernoulli.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_fem_condition.hpp"

@@ -1,12 +1,3 @@
-/*======================================================================*/
-/*! \file
-\brief Time step adaptivity front-end for structural dynamics
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_STRUCTURE_TIMADA_HPP
 #define FOUR_C_STRUCTURE_TIMADA_HPP
 

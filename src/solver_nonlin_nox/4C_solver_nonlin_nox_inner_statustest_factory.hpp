@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief factory for user defined NOX inner status tests
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FACTORY_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FACTORY_HPP
 

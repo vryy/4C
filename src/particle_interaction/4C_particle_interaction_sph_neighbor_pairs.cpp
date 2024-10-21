@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief neighbor pair handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_neighbor_pairs.hpp"
 
 #include "4C_fem_geometry_element_coordtrafo.hpp"

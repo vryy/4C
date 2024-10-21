@@ -1,13 +1,3 @@
-/*! \file
-
-\brief Evaluation routines for the solid-poro element
-
-This file contains the element-specific evaluation routines such as
-evaluate(...), evaluate_neumann(...), etc.
-
-\level 1
-*/
-
 #include "4C_mat_structporo.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for immersed-fluids
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_IMMERSED_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_IMMERSED_HPP
 

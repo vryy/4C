@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Input parameter for beam-to-solid interaction.
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_inpar_beam_to_solid.hpp"
 
 #include "4C_fem_condition_definition.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a growth strategy for anisotropic growth
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_growth_strategy_anisotropic.hpp"
 
 #include "4C_linalg_fixedsizematrix_generators.hpp"

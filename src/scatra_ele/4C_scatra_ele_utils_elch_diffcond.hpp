@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class supporting element evaluation for concentrated electrolytes
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
 #define FOUR_C_SCATRA_ELE_UTILS_ELCH_DIFFCOND_HPP
 

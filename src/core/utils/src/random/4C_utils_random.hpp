@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods for randomness
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_RANDOM_HPP
 #define FOUR_C_UTILS_RANDOM_HPP
 

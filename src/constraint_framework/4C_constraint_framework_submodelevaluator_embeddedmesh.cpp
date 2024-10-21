@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief  Manage embedded mesh methods
-
-\level 3
- */
-/*-----------------------------------------------------------*/
-
 #include "4C_constraint_framework_submodelevaluator_embeddedmesh.hpp"
 
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_mortar_manager.hpp"

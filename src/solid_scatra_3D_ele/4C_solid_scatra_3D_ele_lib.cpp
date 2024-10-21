@@ -1,9 +1,3 @@
-/*! \file
-
-\brief Implementation of the solid-scatra element
-
-\level 1
-*/
 #include "4C_solid_scatra_3D_ele_lib.hpp"
 
 #include "4C_utils_exceptions.hpp"

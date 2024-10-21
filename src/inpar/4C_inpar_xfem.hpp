@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for XFEM
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_XFEM_HPP
 #define FOUR_C_INPAR_XFEM_HPP
 

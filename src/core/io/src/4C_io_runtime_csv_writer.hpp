@@ -1,9 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief Write output in csv format at runtime in serial
-\level 2
-*/
-/*-----------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_RUNTIME_CSV_WRITER_HPP
 #define FOUR_C_IO_RUNTIME_CSV_WRITER_HPP
 

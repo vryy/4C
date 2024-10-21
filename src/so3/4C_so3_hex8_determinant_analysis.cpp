@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief determinant analysis for Solid Hex8 element
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_so3_hex8_determinant_analysis.hpp"
 
 #include <Teuchos_LAPACK.hpp>

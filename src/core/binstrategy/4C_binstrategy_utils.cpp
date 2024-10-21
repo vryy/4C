@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utils class for use of binning strategy
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_binstrategy_utils.hpp"
 
 #include "4C_comm_exporter.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Service routines of the scalar transport time integration class
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_coupling_adapter.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_superconvergent_patch_recovery.hpp"

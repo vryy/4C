@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Utility functions for FBAR element technology
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_CALC_LIB_FBAR_HPP
 #define FOUR_C_SOLID_3D_ELE_CALC_LIB_FBAR_HPP
 

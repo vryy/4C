@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter
-
-\level 1
-
-*/
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_HPP
 

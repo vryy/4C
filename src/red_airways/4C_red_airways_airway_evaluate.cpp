@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Templated Evaluate file for airway element containing the action
-       types for a reduced airway element RedAirway. The actual
-       implementation of the routines called during the possible actions
-       is contained in airway_impl.cpp
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_mat_list.hpp"

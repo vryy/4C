@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\level 1
-
-
-\brief 4C implementation of main class to control all solid meshtying
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_manager.hpp"
 
 #include "4C_contact_meshtying_lagrange_strategy.hpp"

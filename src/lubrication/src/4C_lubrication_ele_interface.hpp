@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface of Lubrication element evaluation routine
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LUBRICATION_ELE_INTERFACE_HPP
 #define FOUR_C_LUBRICATION_ELE_INTERFACE_HPP
 

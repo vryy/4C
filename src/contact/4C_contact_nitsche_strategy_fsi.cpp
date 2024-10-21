@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Nitsche contact solving strategy for problems with FSI
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_nitsche_strategy_fsi.hpp"
 
 #include "4C_contact_element.hpp"

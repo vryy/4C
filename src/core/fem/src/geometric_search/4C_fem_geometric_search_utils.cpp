@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the geometric search.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_geometric_search_utils.hpp"
 
 #include "4C_fem_geometric_search_bounding_volume.hpp"

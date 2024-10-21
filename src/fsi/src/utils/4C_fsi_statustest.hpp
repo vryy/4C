@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Test routines for monolithic FSI convergence test
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_STATUSTEST_HPP
 #define FOUR_C_FSI_STATUSTEST_HPP
 

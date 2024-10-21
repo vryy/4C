@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief This file contains the history class of the constraintmixture material
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_constraintmixture_history.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

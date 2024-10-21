@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief list of valid materials
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_INPAR_MATERIAL_HPP
 #define FOUR_C_INPAR_MATERIAL_HPP
 

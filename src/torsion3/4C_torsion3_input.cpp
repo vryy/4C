@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional torsion spring element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_torsion3.hpp"

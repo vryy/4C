@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the structural time integration which gives fine grained
-       access in the adaptive time marching loop
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STR_TIMEADA_ZIENXIE_HPP
 #define FOUR_C_ADAPTER_STR_TIMEADA_ZIENXIE_HPP
 

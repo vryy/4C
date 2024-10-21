@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the coupled contribution of an anisotropic active fiber material
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupanisoexpoactive.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

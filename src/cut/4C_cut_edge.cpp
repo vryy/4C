@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class representing a geometrical edge
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_facet.hpp"
 #include "4C_cut_intersection.hpp"
 #include "4C_cut_levelsetside.hpp"

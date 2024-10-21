@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utils methods concerning the discretization evaluation
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"

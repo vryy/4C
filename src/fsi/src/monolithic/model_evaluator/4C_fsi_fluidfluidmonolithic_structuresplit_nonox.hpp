@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for monolithic fluid-fluid-fsi (structuresplit)
-using XFEM
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_NONOX_HPP
 #define FOUR_C_FSI_FLUIDFLUIDMONOLITHIC_STRUCTURESPLIT_NONOX_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Creation of auxiliary time integration scheme for time step size adaptivity
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
 #ifndef FOUR_C_STRUCTURE_TIMADA_CREATE_HPP
 #define FOUR_C_STRUCTURE_TIMADA_CREATE_HPP
 

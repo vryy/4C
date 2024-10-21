@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Setup of the list of valid materials for input
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
-
-
 #ifndef FOUR_C_INPAR_VALIDMATERIALS_HPP
 #define FOUR_C_INPAR_VALIDMATERIALS_HPP
 

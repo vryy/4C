@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of independent dofset
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_dofset_independent.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Read node sections of dat files.
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_NODEREADER_HPP
 #define FOUR_C_IO_NODEREADER_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief utility functions for poroelast coupled with scatra problems
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_poroelast_scatra_utils.hpp"
 
 #include "4C_fem_condition_utils.hpp"

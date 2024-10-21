@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create appropriate beam to fluid meshtying assembly managers for the desired
-constraint discretization approach
-
-\level 2
-*/
-
 #include "4C_fbi_beam_to_fluid_assembly_manager_factory.hpp"
 
 #include "4C_beaminteraction_contact_pair.hpp"

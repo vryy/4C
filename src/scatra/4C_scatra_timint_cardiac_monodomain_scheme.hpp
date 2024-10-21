@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
-        Cardiac-monodomain-specific implementation (class TimIntCardiacMonodomain)
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HPP
 #define FOUR_C_SCATRA_TIMINT_CARDIAC_MONODOMAIN_SCHEME_HPP
 

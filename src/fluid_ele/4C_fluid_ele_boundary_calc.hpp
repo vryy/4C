@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of fluid terms at integration points of boundaries
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_ELE_BOUNDARY_CALC_HPP
 #define FOUR_C_FLUID_ELE_BOUNDARY_CALC_HPP
 

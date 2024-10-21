@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief A 2D wall element for solid-part of porous medium using p1 (mixed) approach.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_poro_p1.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

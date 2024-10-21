@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\file inpar_io.cpp
-
-\brief Input parameters for global IO section
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_io.hpp"
 
 #include "4C_inpar_structure.hpp"

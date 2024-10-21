@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create appropriate immersed coupling implementations for Fluid-beam
-interaction
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FBI_IMMERSEDCOUPLER_FACTORY_HPP
 #define FOUR_C_FBI_IMMERSEDCOUPLER_FACTORY_HPP
 

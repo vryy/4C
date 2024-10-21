@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for beaminteraction
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_BEAMINTERACTION_HPP
 #define FOUR_C_INPAR_BEAMINTERACTION_HPP
 

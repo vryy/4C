@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief manages a mesh coupling object with knowledge of a level set field
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_coupling_mesh_coupled_levelset.hpp"
 
 #include "4C_xfem_coupling_mesh.hpp"

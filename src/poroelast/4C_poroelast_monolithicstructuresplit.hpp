@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  monolithic poroelasticity algorithm with split of structure degrees of freedom at the
-interface
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROELAST_MONOLITHICSTRUCTURESPLIT_HPP
 #define FOUR_C_POROELAST_MONOLITHICSTRUCTURESPLIT_HPP
 

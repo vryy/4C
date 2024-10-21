@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-Evaluate boundary conditions for thermo problems
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 09/09 |
- *----------------------------------------------------------------------*/
 #include "4C_thermo_ele_boundary_impl.hpp"
 
 FOUR_C_NAMESPACE_OPEN

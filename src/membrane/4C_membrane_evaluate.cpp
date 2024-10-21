@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element evaluation
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"

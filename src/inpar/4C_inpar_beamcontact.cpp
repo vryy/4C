@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameter definitions for beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_beamcontact.hpp"
 
 #include "4C_fem_condition_definition.hpp"

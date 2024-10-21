@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief base class for all time integrators in thermal field
-\level 1
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                              bborn 06/08 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_HPP
 #define FOUR_C_THERMO_TIMINT_HPP
 

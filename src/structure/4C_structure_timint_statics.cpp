@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Statics analysis
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_statics.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief data container holding all crosslinking input parameters
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_crosslinking_params.hpp"
 
 #include "4C_global_data.hpp"

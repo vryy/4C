@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility class supporting evaluation of electrode materials
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_UTILS_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_UTILS_HPP
 

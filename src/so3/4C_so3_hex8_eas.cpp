@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Everything concerning EAS technology for so_hex8
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
 #include "4C_linalg_serialdensematrix.hpp"

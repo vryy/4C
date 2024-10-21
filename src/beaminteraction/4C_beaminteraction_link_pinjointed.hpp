@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief connecting beam linked by pin joint
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_LINK_PINJOINTED_HPP
 #define FOUR_C_BEAMINTERACTION_LINK_PINJOINTED_HPP
 

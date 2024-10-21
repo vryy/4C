@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief This class manages some of the necessary factory calls
-       if a %NOX::NLN solver is supposed to be used. Therefore a
-       lean function call becomes possible.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 #define SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 

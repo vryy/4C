@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Coupling Manager for eXtended Fluid Poro Coupling
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_XFEM_XFPCOUPLING_MANAGER_HPP
 #define FOUR_C_FSI_XFEM_XFPCOUPLING_MANAGER_HPP
 

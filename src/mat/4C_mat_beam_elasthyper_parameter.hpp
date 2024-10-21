@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief constitutive parameters for a beam material based on hyperelastic stored energy function
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_BEAM_ELASTHYPER_PARAMETER_HPP
 #define FOUR_C_MAT_BEAM_ELASTHYPER_PARAMETER_HPP
 

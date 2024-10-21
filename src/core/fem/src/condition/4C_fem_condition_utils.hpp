@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utils functions for conditions
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_CONDITION_UTILS_HPP
 #define FOUR_C_FEM_CONDITION_UTILS_HPP
 

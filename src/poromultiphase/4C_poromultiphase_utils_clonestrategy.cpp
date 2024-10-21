@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief utils methods for cloning the porofluid discretization
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_poromultiphase_utils_clonestrategy.hpp"
 
 #include "4C_fem_general_element.hpp"

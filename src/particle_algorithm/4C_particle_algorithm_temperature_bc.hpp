@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief temperature boundary condition handler for particle simulations
-\level 2
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_ALGORITHM_TEMPERATURE_BC_HPP
 #define FOUR_C_PARTICLE_ALGORITHM_TEMPERATURE_BC_HPP
 

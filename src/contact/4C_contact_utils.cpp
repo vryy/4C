@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Contains a summary of contact utility functions
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_contact_utils.hpp"
 
 #include "4C_fem_discretization.hpp"

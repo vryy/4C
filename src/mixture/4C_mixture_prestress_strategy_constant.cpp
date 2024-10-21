@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Constant prestretch strategy
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_prestress_strategy_constant.hpp"
 
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"

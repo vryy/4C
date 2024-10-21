@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief pre_exodus .dat-file writer
-
-\level 1
-
-
-Here is everything related with writing a dat-file
- */
-/*----------------------------------------------------------------------*/
 #include "4C_pre_exodus_writedat.hpp"
 
 #include "4C_fem_condition_definition.hpp"

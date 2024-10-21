@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Check the active set for convergence. Only meaningful for
-       inequality constrained problems.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_statustest_activeset.hpp"
 
 #include "4C_solver_nonlin_nox_constraint_group.hpp"

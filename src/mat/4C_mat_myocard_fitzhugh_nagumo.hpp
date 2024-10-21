@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Fitzhugh Nagumo model for myocard material
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*
- |  definitions                                              cbert 09/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
 #define FOUR_C_MAT_MYOCARD_FITZHUGH_NAGUMO_HPP
 

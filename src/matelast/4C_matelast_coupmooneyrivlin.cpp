@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a coupled Mooney Rivlin material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupmooneyrivlin.hpp"
 
 #include "4C_material_parameter_base.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of NOX::Group for FSI
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_group.hpp"
 
 #include "4C_fsi_monolithicinterface.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief 4C implementation of main class to control all contact
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MANAGER_HPP
 #define FOUR_C_CONTACT_MANAGER_HPP
 

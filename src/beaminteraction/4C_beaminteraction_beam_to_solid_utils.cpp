@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for beam-to-solid interactions
-
-\level 3
-
-*/
-// End doxygen header.
-
-
 #include "4C_beaminteraction_beam_to_solid_utils.hpp"
 
 #include "4C_beam3_reissner.hpp"

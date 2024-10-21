@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Visualization writer for geometric search
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_VISUALIZATION_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_VISUALIZATION_HPP
 

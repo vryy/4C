@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Transport of passive scalars in Navier-Stokes velocity field
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ALGORITHM_HPP
 #define FOUR_C_SCATRA_ALGORITHM_HPP
 

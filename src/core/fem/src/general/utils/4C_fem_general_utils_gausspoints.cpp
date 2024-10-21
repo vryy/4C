@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of gauss points access functions
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_gausspoints.hpp"
 
 #include <Intrepid_Cubature.hpp>

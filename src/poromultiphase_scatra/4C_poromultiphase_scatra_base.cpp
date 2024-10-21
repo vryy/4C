@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base algorithm for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_base.hpp"
 
 #include "4C_adapter_art_net.hpp"

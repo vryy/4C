@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the base mixture rule
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_rule.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

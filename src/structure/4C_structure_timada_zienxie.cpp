@@ -1,16 +1,3 @@
-/*======================================================================*/
-/*! \file
-\brief ZienkiewiczXie time step indicator for time adaptivity
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timada_zienxie.hpp"
 
 #include "4C_structure_timint.hpp"

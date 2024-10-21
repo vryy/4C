@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Main control routine for all arterial network solvers.
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-/************/
 #ifndef FOUR_C_ART_NET_DYN_DRT_HPP
 #define FOUR_C_ART_NET_DYN_DRT_HPP
 

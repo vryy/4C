@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the main fluid element
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

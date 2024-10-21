@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of integration formulas for general integration
-
-\level 0
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_integration.hpp"
 
 #include "4C_utils_exceptions.hpp"

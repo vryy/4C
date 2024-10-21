@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of 4C's interface to Krylov solvers
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
 #define FOUR_C_LINEAR_SOLVER_METHOD_ITERATIVE_HPP
 

@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief Material model for the lubrication film
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #include "4C_mat_lubrication_mat.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

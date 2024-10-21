@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra boundary elements for isothermal electrodes exhibiting surface layer
-growth, e.g., lithium plating
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc_elch_electrode_growth.hpp"
 
 #include "4C_fem_general_utils_boundary_integration.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief internal implementation of thermo boundary elements
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 09/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_ELE_BOUNDARY_IMPL_HPP
 #define FOUR_C_THERMO_ELE_BOUNDARY_IMPL_HPP
 

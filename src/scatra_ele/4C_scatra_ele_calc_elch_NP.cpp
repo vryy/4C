@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements for Nernst-Planck ion-transport equations
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch_NP.hpp"
 
 #include "4C_fem_discretization.hpp"

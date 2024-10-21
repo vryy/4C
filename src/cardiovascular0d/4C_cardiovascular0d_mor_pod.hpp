@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Model Order Reduction (MOR) using Proper Orthogonal Decomposition (POD)
-
-\level 2
-
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CARDIOVASCULAR0D_MOR_POD_HPP
 #define FOUR_C_CARDIOVASCULAR0D_MOR_POD_HPP
 

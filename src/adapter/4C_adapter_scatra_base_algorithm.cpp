@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scalar transport field base algorithm
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_scatra_base_algorithm.hpp"
 
 #include "4C_global_data.hpp"

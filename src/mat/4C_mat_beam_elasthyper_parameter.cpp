@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief constitutive parameters for a beam material based on hyperelastic stored energy function
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_mat_beam_elasthyper_parameter.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

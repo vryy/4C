@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Explicit Euler time integration for solid dynamics
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_EXPL_FORWARDEULER_HPP
 #define FOUR_C_STRUCTURE_NEW_EXPL_FORWARDEULER_HPP
 

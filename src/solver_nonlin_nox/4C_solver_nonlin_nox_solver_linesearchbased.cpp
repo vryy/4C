@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_solver_linesearchbased.hpp"  // class definition
 
 #include "4C_solver_nonlin_nox_aux.hpp"

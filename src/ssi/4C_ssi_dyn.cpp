@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief control routine for scalar structure interaction
-
- \level 1
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_ssi_dyn.hpp"
 
 #include "4C_global_data.hpp"

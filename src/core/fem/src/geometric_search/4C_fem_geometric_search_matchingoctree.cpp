@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Search closest node in given set of nodes using an octree search
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_fem_geometric_search_matchingoctree.hpp"
 
 #include "4C_comm_exporter.hpp"

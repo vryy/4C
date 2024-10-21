@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Derived class which manages the special requirements to the linear
-       solver for contact problems.
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_contact_nox_nln_contact_linearsystem.hpp"  // base class
 
 #include "4C_contact_abstract_strategy.hpp"

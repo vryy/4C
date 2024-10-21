@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the specific functionality for cutting a mesh with other meshes
-
-\level 3
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_meshintersection.hpp"
 
 #include "4C_cut_selfcut.hpp"

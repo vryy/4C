@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Various mathematicl functions that can be applied to quantities of artithmetic type, CLN
-type, or Sacado FAD type.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UTILS_MATHOPERATIONS_HPP
 #define FOUR_C_UTILS_MATHOPERATIONS_HPP
 

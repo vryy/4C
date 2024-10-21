@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Model evaluator for structure part of partitioned fsi
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fsi_str_model_evaluator_partitioned.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"

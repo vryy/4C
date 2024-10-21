@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief NOX Newton direction with adaptive linear solver tolerance for FSI
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_newton.hpp"
 
 #include <NOX_GlobalData.H>

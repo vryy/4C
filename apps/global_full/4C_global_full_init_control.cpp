@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief general initialization routine of 4C
-
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_global_full_init_control.hpp"
 
 #include "4C_comm_utils.hpp"

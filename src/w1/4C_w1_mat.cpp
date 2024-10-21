@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material laws for wall1 element.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------------*/
-// macros
-
-
-/*----------------------------------------------------------------------*/
-// headers
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"

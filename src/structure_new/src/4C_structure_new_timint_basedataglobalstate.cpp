@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Global state data container for the structural (time) integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 
 #include "4C_beam3_base.hpp"

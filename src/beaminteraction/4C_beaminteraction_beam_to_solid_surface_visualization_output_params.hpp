@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to store the beam to solid surface output (visualization) parameters.
-
-\level 3
-
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VISUALIZATION_OUTPUT_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VISUALIZATION_OUTPUT_PARAMS_HPP
 

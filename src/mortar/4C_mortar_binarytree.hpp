@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class for performing mortar search in 2D/3D based on binarytrees
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_BINARYTREE_HPP
 #define FOUR_C_MORTAR_BINARYTREE_HPP
 

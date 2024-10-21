@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element Type with ScaTra coupling
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MEMBRANE_SCATRA_ELETYPES_HPP
 #define FOUR_C_MEMBRANE_SCATRA_ELETYPES_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired model evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_HPP
 

@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform line clipping for line to surface contact +
-       call for numerical integration
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  header                                                   farah 07/16|
- *----------------------------------------------------------------------*/
 #include "4C_contact_line_coupling.hpp"
 
 #include "4C_contact_defines.hpp"

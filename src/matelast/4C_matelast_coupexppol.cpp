@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an isotropic exponential coupled material according to Weickenmeier_2014
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupexppol.hpp"
 
 #include "4C_global_data.hpp"

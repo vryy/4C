@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief main file containing routines for calculation of scatra element with advanced reaction terms
-
- \level 2
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_calc_advanced_reaction.hpp"
 
 #include "4C_fem_discretization.hpp"

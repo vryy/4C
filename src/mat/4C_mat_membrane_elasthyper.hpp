@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief hyperelastic toolbox for membranes assuming incompressibility and plane stress
-
-The input line should read
-MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | definitions                                           sfuchs 08/2017 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MEMBRANE_ELASTHYPER_HPP
 #define FOUR_C_MAT_MEMBRANE_ELASTHYPER_HPP
 

@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for FunctionVariable classes
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_utils_functionvariables.hpp"

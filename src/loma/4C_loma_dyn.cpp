@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for low-Mach-number flow module.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_loma_dyn.hpp"
 
 #include "4C_fem_dofset_predefineddofnumber.hpp"

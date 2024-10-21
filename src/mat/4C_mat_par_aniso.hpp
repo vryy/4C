@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a base class for anisotropic material parameters
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
 #ifndef FOUR_C_MAT_PAR_ANISO_HPP
 #define FOUR_C_MAT_PAR_ANISO_HPP
 

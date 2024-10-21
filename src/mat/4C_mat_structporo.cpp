@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief wrapper for structure material of porous media
-
-
-\level 2
- *-----------------------------------------------------------------------*/
-
 #include "4C_mat_structporo.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

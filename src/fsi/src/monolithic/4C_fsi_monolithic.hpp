@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 1
-
-
-\brief General framework for monolithic fsi solution schemes
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_MONOLITHIC_HPP
 #define FOUR_C_FSI_MONOLITHIC_HPP
 

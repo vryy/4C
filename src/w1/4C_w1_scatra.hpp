@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief a 2D solid-wall element with ScaTra coupling.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_W1_SCATRA_HPP
 #define FOUR_C_W1_SCATRA_HPP
 

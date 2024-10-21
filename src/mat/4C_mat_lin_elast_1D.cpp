@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Linear elastic material in one dimension and material that supports growth due to an external
-quantity (e.g. concentration)
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_lin_elast_1D.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

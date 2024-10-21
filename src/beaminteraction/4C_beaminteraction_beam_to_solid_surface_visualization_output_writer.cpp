@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to handle beam to solid surface output creation.
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_surface_visualization_output_writer.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_conditions.hpp"

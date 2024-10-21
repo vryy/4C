@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to handle beam to solid volume meshtying output creation.
-
-\level 3
-
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VISUALIZATION_OUTPUT_WRITER_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VISUALIZATION_OUTPUT_WRITER_HPP
 

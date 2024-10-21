@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of nitsche related terms for the ssi contact case including
-electrochemistry
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_HPP
 #define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_SSI_ELCH_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief general initialization routine of 4C
-
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_GLOBAL_FULL_INIT_CONTROL_HPP
 #define FOUR_C_GLOBAL_FULL_INIT_CONTROL_HPP
 

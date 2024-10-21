@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all beaminteraction submodel evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_beaminteraction_submodel_evaluator_generic.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"

@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief calc utils for beam interaction framework
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_CALC_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_CALC_UTILS_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief xfem based fluid result tests
-
-\level 0
-
- */
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_XFLUID_RESULTTEST_HPP
 #define FOUR_C_FLUID_XFLUID_RESULTTEST_HPP
 

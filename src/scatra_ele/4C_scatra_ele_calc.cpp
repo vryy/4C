@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of scatra element
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc.hpp"
 
 #include "4C_fem_condition_utils.hpp"

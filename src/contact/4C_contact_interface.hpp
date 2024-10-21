@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief One contact interface
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_INTERFACE_HPP
 #define FOUR_C_CONTACT_INTERFACE_HPP
 

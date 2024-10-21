@@ -1,18 +1,3 @@
-
-/*! \file
-\brief Control routine for artery solvers,
-
-     including solvers based on
-
-     o two-step Taylor-Galerking scheme
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_explicitintegration.hpp"
 
 #include "4C_art_net_art_junction.hpp"

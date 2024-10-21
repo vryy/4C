@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\file inpar_fbi.cpp
-
-\brief input parameter for Fluid-Beam Interaction
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_inpar_fbi.hpp"
 
 #include "4C_fem_condition_definition.hpp"

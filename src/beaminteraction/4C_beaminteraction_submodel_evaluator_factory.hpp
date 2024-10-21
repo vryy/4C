@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired submodel evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_HPP
 #define FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_HPP
 

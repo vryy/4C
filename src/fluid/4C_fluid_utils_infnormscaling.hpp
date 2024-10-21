@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief infnorm-scaling utility class for preconditioning of fluid problems
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_UTILS_INFNORMSCALING_HPP
 #define FOUR_C_FLUID_UTILS_INFNORMSCALING_HPP
 

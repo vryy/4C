@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief here the intersection of a (plane) surface with a line is performed
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_cut_intersection.hpp"
 
 #include "4C_cut_boundingbox.hpp"

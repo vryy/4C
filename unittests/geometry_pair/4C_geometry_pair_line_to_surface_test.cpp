@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for line to surface geometry pairs.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #include <gtest/gtest.h>
 
 #include "4C_geometry_pair_line_to_surface.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\level 3
-\brief finite deformation plasticity algorithm based on
-       variational constitutive update
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_PLASTIC_VARCONSTUPDATE_HPP
 #define FOUR_C_MAT_PLASTIC_VARCONSTUPDATE_HPP
 

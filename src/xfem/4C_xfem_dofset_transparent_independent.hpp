@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief transparent independent dofset
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
 #define FOUR_C_XFEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
 

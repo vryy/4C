@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utilities to read and fill global data
-
-\level 1
-
-    */
-/*----------------------------------------------------------------------*/
-
 #include "4C_global_data_read.hpp"
 
 #include "4C_comm_utils.hpp"

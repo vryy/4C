@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief collection of templated service methods for intersection computations
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_HPP
 #define FOUR_C_FEM_GEOMETRY_INTERSECTION_SERVICE_TEMPLATES_HPP
 

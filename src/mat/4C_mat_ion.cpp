@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores parameters of ion species in electrolyte solution. Former file of Georg
-Bauer
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_ion.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

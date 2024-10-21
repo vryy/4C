@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Abstract data container class for contact solution strategies
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_contact_abstract_data_container.hpp"
 
 FOUR_C_NAMESPACE_OPEN

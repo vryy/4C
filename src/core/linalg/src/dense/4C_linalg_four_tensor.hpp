@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of general 4C 4-tensor
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_FOUR_TENSOR_HPP
 #define FOUR_C_LINALG_FOUR_TENSOR_HPP
 

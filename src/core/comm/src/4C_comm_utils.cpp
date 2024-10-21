@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Helper class for everything that deals with communication
-
-\level 0
-
-*----------------------------------------------------------------------*/
-
 #include "4C_comm_utils.hpp"
 
 #include "4C_io_pstream.hpp"

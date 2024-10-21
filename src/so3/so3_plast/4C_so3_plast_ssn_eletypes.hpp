@@ -1,8 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief so3_plast element types
-\level 2
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_PLAST_SSN_ELETYPES_HPP
 #define FOUR_C_SO3_PLAST_SSN_ELETYPES_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Wear interface implementation.
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_WEAR_INTERFACE_HPP
 #define FOUR_C_CONTACT_WEAR_INTERFACE_HPP
 

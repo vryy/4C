@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Performs ScaTra specifc functions not yet generalized for other fields.
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_UTILS_HPP
 #define FOUR_C_SCATRA_UTILS_HPP
 

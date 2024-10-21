@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief One mortar coupling interface
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_mortar_interface.hpp"
 
 #include "4C_binstrategy.hpp"

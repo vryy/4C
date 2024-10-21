@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of utility functions for fiber interpolation
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_FIBER_NODE_UTILS_HPP
 #define FOUR_C_FEM_GENERAL_FIBER_NODE_UTILS_HPP
 #include "4C_config.hpp"

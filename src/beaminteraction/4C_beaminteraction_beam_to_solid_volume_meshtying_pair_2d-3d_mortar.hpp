@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for full 2D-3D beam-to-solid volume mesh tying based on a Simo-Reissner beam element
-with mortar constraint discretization.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_MORTAR_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_MORTAR_HPP
 

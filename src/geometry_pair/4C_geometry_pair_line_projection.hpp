@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for interaction of lines and other geometry types.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_PROJECTION_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_PROJECTION_HPP
 

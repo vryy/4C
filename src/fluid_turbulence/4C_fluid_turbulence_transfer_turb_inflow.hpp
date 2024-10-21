@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods to transfer a turbulent inflow profile a from a master
-boundary to a slave boundary on a seperate domain.
-The slave boundary must have an additional Dirichlet condition, the
-master boundary will usually be a periodic boundary (but is not required
-to)
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
 #define FOUR_C_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
 

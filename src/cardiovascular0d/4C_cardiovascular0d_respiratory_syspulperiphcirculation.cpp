@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cardiovascular0d_respiratory_syspulperiphcirculation.hpp"
 
 #include "4C_global_data.hpp"

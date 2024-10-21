@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Provide 1D, 2D and 3D shape functions
-
-The corresponding graphics and a detailed description can be found in
-the 4C guide in the Convention chapter.
-
-\level 0
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

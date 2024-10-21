@@ -1,9 +1,3 @@
-/*! \file
-
-\brief An interface defining an serializable class
-
-\level 1
-*/
 #ifndef FOUR_C_SHELL7P_ELE_INTERFACE_SERIALIZABLE_HPP
 #define FOUR_C_SHELL7P_ELE_INTERFACE_SERIALIZABLE_HPP
 

@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
-       with volume coupling
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_DIRICHLETNEUMANN_VOLCOUPL_HPP
 #define FOUR_C_FSI_DIRICHLETNEUMANN_VOLCOUPL_HPP
 

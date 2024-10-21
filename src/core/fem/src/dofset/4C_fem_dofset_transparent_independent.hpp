@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom on two discretizations
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
 #define FOUR_C_FEM_DOFSET_TRANSPARENT_INDEPENDENT_HPP
 

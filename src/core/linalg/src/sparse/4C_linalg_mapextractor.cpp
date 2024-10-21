@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_mapextractor.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

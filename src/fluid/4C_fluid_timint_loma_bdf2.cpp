@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief BDF2 time integrator for Low Mach number problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_loma_bdf2.hpp"
 
 #include "4C_io.hpp"

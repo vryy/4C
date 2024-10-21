@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief factory class providing the implementations of the porofluidmultiphase
-        element evaluation routines
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_porofluidmultiphase_ele_factory.hpp"
 
 #include "4C_global_data.hpp"

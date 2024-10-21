@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief implements a contact constitutive law following a broken rational function
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_contact_constitutivelaw_brokenrational_contactconstitutivelaw.hpp"
 
 #include "4C_global_data.hpp"

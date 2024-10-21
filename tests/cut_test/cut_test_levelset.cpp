@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_element.hpp"
 #include "4C_cut_levelsetintersection.hpp"
 #include "4C_cut_mesh.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief main file containing routines for calculation of scatra element with chemotactic terms
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_chemo.hpp"
 
 #include "4C_fem_discretization.hpp"

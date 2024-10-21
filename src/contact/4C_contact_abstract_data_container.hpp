@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Abstract data container class for contact solution strategies
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_CONTACT_ABSTRACT_DATA_CONTAINER_HPP
 #define FOUR_C_CONTACT_ABSTRACT_DATA_CONTAINER_HPP
 

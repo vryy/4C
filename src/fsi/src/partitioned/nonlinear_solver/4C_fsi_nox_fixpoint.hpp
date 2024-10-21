@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Calculates the fix point direction.
-
-
-\level 1
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_FIXPOINT_HPP
 #define FOUR_C_FSI_NOX_FIXPOINT_HPP
 

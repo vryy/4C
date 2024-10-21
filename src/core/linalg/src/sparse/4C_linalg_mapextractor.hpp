@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of map extractor class
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_MAPEXTRACTOR_HPP
 #define FOUR_C_LINALG_MAPEXTRACTOR_HPP
 

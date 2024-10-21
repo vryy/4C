@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Create and handle integrationcells
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_cut_integrationcell.hpp"
 
 #include "4C_cut_boundarycell.hpp"

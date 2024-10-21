@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of HDG transport element
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_hdg.hpp"
 
 #include "4C_fem_discretization.hpp"

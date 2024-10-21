@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Strategy to clone scatra discretization from elemag discretization
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
 #include "4C_elemag_utils_clonestrategy.hpp"
 
 #include "4C_elemag_ele.hpp"

@@ -1,8 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Get the path to the support files for the unit tests
-\level 1
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UNITTEST_UTILS_SUPPORT_FILES_TEST_HPP
 #define FOUR_C_UNITTEST_UTILS_SUPPORT_FILES_TEST_HPP
 

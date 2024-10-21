@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container for input parameters for vtk-based visualization of potential-based beam
-       interactions
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_potential_runtime_visualization_output_params.hpp"
 
 #include "4C_global_data.hpp"

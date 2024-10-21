@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief temperature-dependent gas according to Sutherland law
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_sutherland.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

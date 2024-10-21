@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Penalty contact solving strategy: The contact constrains are enforced
-       by a penalty formulation.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_penalty_strategy.hpp"
 
 #include "4C_contact_constitutivelaw_cubic_contactconstitutivelaw.hpp"

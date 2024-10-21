@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the creation of additional DOFs for mortar couplings between beams and solids in
-contact simulations
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_MORTAR_MANAGER_CONTACT_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_MORTAR_MANAGER_CONTACT_HPP
 

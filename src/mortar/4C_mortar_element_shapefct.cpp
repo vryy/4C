@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Shape function repository for mortar coupling element
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"

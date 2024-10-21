@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Unittests for the Pstream and Level classes
-\level 1
-
-*-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_io_pstream.hpp"

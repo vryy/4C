@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A class to perform integrations of nitsche related terms for the fpi contact case
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_FPI_HPP
 #define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_FPI_HPP
 

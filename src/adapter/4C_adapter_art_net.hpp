@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief adapter for artery network
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_ART_NET_HPP
 #define FOUR_C_ADAPTER_ART_NET_HPP
 

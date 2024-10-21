@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods to transfer a turbulent inflow profile from a (usually
-periodic boundary condition) separate domain to a name Dirichlet
-boundary of the actual domain
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_turbulence_transfer_turb_inflow.hpp"
 
 #include "4C_fem_condition.hpp"

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief a in-plane bi-quadratic solid-like 7-parameter shell
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_SH18_HPP
 #define FOUR_C_SO3_SH18_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a penalty term like growth strategy
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_growth_strategy_stiffness.hpp"
 
 #include "4C_linalg_fixedsizematrix_generators.hpp"

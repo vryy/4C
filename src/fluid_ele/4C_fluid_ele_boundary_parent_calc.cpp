@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluate boundary conditions requiring parent-element evaluations
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_boundary_parent_calc.hpp"
 
 #include "4C_fem_general_element_integration_select.hpp"

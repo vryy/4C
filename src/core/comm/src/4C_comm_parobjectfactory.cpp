@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Central type object management.
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_comm_parobjectfactory.hpp"
 
 #include "4C_comm_parobject.hpp"

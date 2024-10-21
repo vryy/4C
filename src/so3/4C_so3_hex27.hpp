@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief tri-quadratic displacement based solid element
-\level 1
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_HEX27_HPP
 #define FOUR_C_SO3_HEX27_HPP
 

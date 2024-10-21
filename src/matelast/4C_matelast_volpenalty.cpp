@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the volumetic penalty material as in Roernbauer2008 (student
-thesis)
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_volpenalty.hpp"
 
 #include "4C_material_parameter_base.hpp"

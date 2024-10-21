@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to handle beam to solid volume meshtying output creation.
-
-\level 2
-
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_output_writer.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

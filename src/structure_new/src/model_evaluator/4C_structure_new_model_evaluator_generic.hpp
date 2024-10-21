@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all model evaluators.
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_GENERIC_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_GENERIC_HPP
 

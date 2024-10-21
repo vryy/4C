@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief class representing a geometrical side
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_cut_side.hpp"
 
 #include "4C_cut_facet.hpp"

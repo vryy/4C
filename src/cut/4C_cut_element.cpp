@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief cut element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_facetgraph.hpp"
 #include "4C_cut_integrationcellcreator.hpp"
 #include "4C_cut_intersection.hpp"

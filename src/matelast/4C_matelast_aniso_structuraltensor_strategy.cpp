@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a strategy evaluating the structural tensor in anisotropic
-materials
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 
 #include "4C_fem_general_utils_integration.hpp"

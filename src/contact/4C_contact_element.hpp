@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Contact element
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_ELEMENT_HPP
 #define FOUR_C_CONTACT_ELEMENT_HPP
 

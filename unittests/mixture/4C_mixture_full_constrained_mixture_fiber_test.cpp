@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Testcases for the full constrained mixture fiber
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_mixture_full_constrained_mixture_fiber.hpp"

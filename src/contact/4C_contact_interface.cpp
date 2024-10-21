@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief One contact interface
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_interface.hpp"
 
 #include "4C_binstrategy.hpp"

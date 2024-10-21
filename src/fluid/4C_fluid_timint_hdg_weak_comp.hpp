@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Basic HDG weakly compressible time-integration scheme
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_TIMINT_HDG_WEAK_COMP_HPP
 #define FOUR_C_FLUID_TIMINT_HDG_WEAK_COMP_HPP
 

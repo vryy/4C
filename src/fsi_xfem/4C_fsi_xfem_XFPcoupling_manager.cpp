@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Coupling Manager for eXtended Fluid Poro Coupling
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fsi_xfem_XFPcoupling_manager.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

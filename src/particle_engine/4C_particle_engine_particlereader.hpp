@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief functionality to read particles from file
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_PARTICLE_ENGINE_PARTICLEREADER_HPP
 #define FOUR_C_PARTICLE_ENGINE_PARTICLEREADER_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Routines for calculation of HDG weakly compressible fluid element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_hdg_weak_comp.hpp"
 
 #include "4C_fem_general_extract_values.hpp"

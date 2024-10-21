@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of functions related to partitioning and parallel distribution
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_rebalance_graph_based.hpp"
 
 #include "4C_fem_discretization.hpp"

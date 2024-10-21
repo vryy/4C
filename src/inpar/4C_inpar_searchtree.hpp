@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief search tree input parameters
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_SEARCHTREE_HPP
 #define FOUR_C_INPAR_SEARCHTREE_HPP
 

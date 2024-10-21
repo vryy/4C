@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for an isotropic general power-type material in terms of the first
-Cauchy-Green invariant
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUP1POW_HPP
 #define FOUR_C_MATELAST_COUP1POW_HPP
 

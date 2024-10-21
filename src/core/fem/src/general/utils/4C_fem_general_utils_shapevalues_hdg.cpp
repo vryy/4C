@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation of scalar shape functions for HDG
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_shapevalues_hdg.hpp"
 
 #include "4C_fem_general_utils_boundary_integration.hpp"

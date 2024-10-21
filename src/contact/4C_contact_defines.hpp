@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A set of preprocessor defines for contact methods
-
-\level 2
-
-
-*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_DEFINES_HPP
 #define FOUR_C_CONTACT_DEFINES_HPP
 

@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A collection of helper functions for Teuchos::ParameterLists
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_utils_parameter_list.hpp"
 
 #include <Teuchos_Array.hpp>

@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of lubrication calculation results
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_lubrication_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

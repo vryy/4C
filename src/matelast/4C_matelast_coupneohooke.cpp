@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a coupled Neo Hookean material
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupneohooke.hpp"
 
 #include "4C_material_parameter_base.hpp"

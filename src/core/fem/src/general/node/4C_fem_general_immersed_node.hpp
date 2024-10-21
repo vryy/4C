@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief specialized node for immersed problems.
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_IMMERSED_NODE_HPP
 #define FOUR_C_FEM_GENERAL_IMMERSED_NODE_HPP
 

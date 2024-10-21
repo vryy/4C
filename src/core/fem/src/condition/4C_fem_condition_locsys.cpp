@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Class controlling local coordinate systems on points, lines and
-surfaces and supplying all necessary transformation methods for parallel
-vectors and matrices.
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fem_condition_locsys.hpp"
 
 #include "4C_fem_general_extract_values.hpp"

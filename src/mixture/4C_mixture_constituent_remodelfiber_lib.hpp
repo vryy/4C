@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of helper functions for the remodel fiber constituent
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_LIB_HPP
 

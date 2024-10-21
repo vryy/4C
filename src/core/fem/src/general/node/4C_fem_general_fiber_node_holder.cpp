@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief This file implements a class that holds different nodal fibers
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_fiber_node_holder.hpp"
 
 #include "4C_comm_parobject.hpp"

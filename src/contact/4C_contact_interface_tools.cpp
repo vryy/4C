@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains support methods for the contact interface evaluation.
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_contact_defines.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_integrator.hpp"

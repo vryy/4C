@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to volume interaction with full segmentation of the line.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_volume_segmentation.hpp"
 
 #include "4C_geometry_pair_element_evaluation_functions.hpp"

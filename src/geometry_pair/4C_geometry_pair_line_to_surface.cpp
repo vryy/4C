@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for interaction of lines and surfaces.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_surface.hpp"
 
 #include "4C_beam3_base.hpp"

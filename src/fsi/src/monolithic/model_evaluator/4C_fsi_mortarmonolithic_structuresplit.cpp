@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-
-\brief Solve FSI problem with non-matching grids using a monolithic scheme
-with condensed structure interface displacements
-
-\level 1
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fsi_mortarmonolithic_structuresplit.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

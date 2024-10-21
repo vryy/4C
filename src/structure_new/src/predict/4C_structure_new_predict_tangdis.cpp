@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Tangential displacement predictor.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_predict_tangdis.hpp"
 
 #include "4C_linalg_sparsematrix.hpp"

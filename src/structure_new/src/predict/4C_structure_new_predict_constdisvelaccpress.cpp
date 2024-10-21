@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief implementation of predictor for either constant displacement, velocity or acceleration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_predict_constdisvelaccpress.hpp"
 
 #include "4C_linalg_vector.hpp"

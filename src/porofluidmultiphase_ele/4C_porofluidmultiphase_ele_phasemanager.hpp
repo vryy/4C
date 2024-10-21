@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief manager class for handling the phases and their dofs on element level
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_PHASEMANAGER_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_PHASEMANAGER_HPP
 

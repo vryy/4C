@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief strategy for cloning thermo discretization from scatra discretization
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STI_CLONESTRATEGY_HPP
 #define FOUR_C_STI_CLONESTRATEGY_HPP
 

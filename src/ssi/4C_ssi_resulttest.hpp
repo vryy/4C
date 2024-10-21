@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief result testing functionality for scalar-structure interaction problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_RESULTTEST_HPP
 #define FOUR_C_SSI_RESULTTEST_HPP
 

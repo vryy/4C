@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for automatic creation of a discretization
-       from an existing one (e.g. ALE from Fluid)
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_CREATEDIS_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_CREATEDIS_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A 2D constraint element with no physics attached
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_constraint_element2.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

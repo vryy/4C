@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra boundary elements for diffusion-conduction formulation
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc_elch_diffcond.hpp"
 
 #include "4C_mat_elchmat.hpp"

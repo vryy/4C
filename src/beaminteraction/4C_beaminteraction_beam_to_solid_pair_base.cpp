@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base element for interactions between a beam and a solid.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_pair_base.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a volumetric power law
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_VOLPOW_HPP
 #define FOUR_C_MATELAST_VOLPOW_HPP
 

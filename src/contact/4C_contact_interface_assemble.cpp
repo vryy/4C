@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Contains assemble routines for multiple types of matrices and cases
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"

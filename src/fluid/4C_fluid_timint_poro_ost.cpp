@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief One-step theta time integration scheme for porous fluid
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_poro_ost.hpp"
 
 #include "4C_io.hpp"

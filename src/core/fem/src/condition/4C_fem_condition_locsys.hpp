@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Local coordinate systems and transformations for all types of objects
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_CONDITION_LOCSYS_HPP
 #define FOUR_C_FEM_CONDITION_LOCSYS_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble pair based contributions into global matrices. The pairs in this class can
-be directly assembled into the global matrices.
-
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.hpp"
 
 #include "4C_beaminteraction_calc_utils.hpp"

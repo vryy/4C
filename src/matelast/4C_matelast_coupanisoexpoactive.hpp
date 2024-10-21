@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the coupled contribution of an anisotropic active fiber material
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPANISOEXPOACTIVE_HPP
 #define FOUR_C_MATELAST_COUPANISOEXPOACTIVE_HPP
 

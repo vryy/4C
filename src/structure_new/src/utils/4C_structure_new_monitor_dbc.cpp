@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Monitor tagged Dirichlet boundary conditions
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_structure_new_monitor_dbc.hpp"
 
 #include "4C_fem_discretization.hpp"

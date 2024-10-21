@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a pow-like anisotropic material
-
-\level 3
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MATELAST_COUPANISOPOW_HPP
 #define FOUR_C_MATELAST_COUPANISOPOW_HPP
 

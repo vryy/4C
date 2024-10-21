@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Structural dynamics data container for the structural (time)
-       integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_timint_basedatasdyn.hpp"
 
 #include "4C_comm_utils.hpp"

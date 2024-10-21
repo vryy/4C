@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of constraint terms.
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_constraint_framework_model_evaluator.hpp"

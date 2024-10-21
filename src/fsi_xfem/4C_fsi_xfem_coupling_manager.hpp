@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Pure Virtual Coupling Manager, to define the basic functionality of all specified coupling
-managers
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_linalg_vector.hpp"

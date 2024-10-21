@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief node based VTU filter
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_post_vtk_vtu_writer_node_based.hpp"
 
 #include "4C_beam3_base.hpp"

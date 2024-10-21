@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Factory to create the desired meshtying strategy.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_strategy_factory.hpp"
 
 #include "4C_contact_abstract_strategy.hpp"

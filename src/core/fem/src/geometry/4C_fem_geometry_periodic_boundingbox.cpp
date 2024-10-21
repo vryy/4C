@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief A class handling a (periodic) bounding box as simulation volume
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_geometry_periodic_boundingbox.hpp"
 
 #include "4C_comm_utils_factory.hpp"

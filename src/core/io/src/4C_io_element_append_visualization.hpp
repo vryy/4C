@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Functions to append visualization for runtime output
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_ELEMENT_APPEND_VISUALIZATION_HPP
 #define FOUR_C_IO_ELEMENT_APPEND_VISUALIZATION_HPP
 

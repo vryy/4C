@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Contains a local bounding volume hierarchy search implementation
-       based on bounding volumes.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_BVH_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_BVH_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief one beam contact segment living on an element pair
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_beam_to_beam_contact_variables.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_pair.hpp"

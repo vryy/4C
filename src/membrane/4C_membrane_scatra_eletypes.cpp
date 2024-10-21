@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element Type with ScaTra coupling
-
-*----------------------------------------------------------------------*/
-
 #include "4C_membrane_scatra_eletypes.hpp"
 
 #include "4C_io_linedefinition.hpp"

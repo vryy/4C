@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Contact element for contact between a 3D beam and a surface element.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_surface_contact_pair_base.hpp"
 
 #include "4C_beam3_base.hpp"

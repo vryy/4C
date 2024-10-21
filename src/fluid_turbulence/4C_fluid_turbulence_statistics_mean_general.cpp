@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Computation of mean values of nodal/cp quantities. The
-means are computed as time averages
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_turbulence_statistics_mean_general.hpp"
 
 #include "4C_comm_exporter.hpp"

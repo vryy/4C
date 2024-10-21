@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to store the beam to fluid volume meshtying output (visualization) parameters.
-
-\level 3
-
-*/
-
-
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_PARAMS_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_OUTPUT_PARAMS_HPP
 

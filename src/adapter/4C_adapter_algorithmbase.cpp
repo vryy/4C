@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base algorithm for all kinds of coupled problems
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_algorithmbase.hpp"
 
 #include "4C_global_data.hpp"

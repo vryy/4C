@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Mesh tying strategy for monolithic SSI
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_ssi_monolithic_meshtying_strategy.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"

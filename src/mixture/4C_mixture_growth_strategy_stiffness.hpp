@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a penalty term like growth strategy
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MIXTURE_GROWTH_STRATEGY_STIFFNESS_HPP
 #define FOUR_C_MIXTURE_GROWTH_STRATEGY_STIFFNESS_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of womersley flow bc
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fluid_volumetric_surfaceFlow_condition.hpp"
 
 #include "4C_fem_condition_utils.hpp"

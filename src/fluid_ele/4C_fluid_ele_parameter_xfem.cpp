@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Setting of specific XFEM based fluid parameter for element evaluation
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_ele_parameter_xfem.hpp"
 
 #include "4C_io_pstream.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam contact segment living on an element pair
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACTVARIABLES_HPP
 #define FOUR_C_BEAMCONTACT_BEAM3CONTACTVARIABLES_HPP
 

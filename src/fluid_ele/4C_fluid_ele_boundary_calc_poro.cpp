@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluate boundary conditions not requiring parent-element evaluations
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_boundary_calc_poro.hpp"
 
 #include "4C_coupling_volmortar_shape.hpp"

@@ -1,8 +1,3 @@
-/*! \file
-\brief Nullspace computation for a discretization
-\level 0
-*/
-
 #include "4C_fem_discretization_nullspace.hpp"
 
 #include "4C_fem_discretization.hpp"

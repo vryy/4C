@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief particle material handler for particle simulations
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_MATERIAL_HANDLER_HPP
 #define FOUR_C_PARTICLE_INTERACTION_MATERIAL_HANDLER_HPP
 

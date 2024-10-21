@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Testing of calculation results for reduced elements
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_RED_AIRWAYS_RESULTTEST_HPP
 #define FOUR_C_RED_AIRWAYS_RESULTTEST_HPP
 

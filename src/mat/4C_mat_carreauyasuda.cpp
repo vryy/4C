@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Former file of Ursula Mayer
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_carreauyasuda.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

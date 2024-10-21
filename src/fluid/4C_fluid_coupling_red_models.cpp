@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of 3D/redD coupled vascular bc
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
-// #ifdef D_COUPLED_ARTNET
-
 #include "4C_fluid_coupling_red_models.hpp"
 
 #include "4C_fem_condition.hpp"

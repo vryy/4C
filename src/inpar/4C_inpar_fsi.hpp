@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 1
-
-
-\brief Input parameters for fluid structure interaction
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_FSI_HPP
 #define FOUR_C_INPAR_FSI_HPP
 

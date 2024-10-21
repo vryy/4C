@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage an enhanced discretization including the faces between elements
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DISCRETIZATION_FACES_HPP
 #define FOUR_C_FEM_DISCRETIZATION_FACES_HPP
 

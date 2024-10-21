@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basic discretization-related tools used in XFEM routines
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_discretization_utils.hpp"
 
 #include "4C_fem_condition_utils.hpp"

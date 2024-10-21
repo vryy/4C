@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for the constraint framework
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_CONSTRAINT_FRAMEWORK_HPP
 #define FOUR_C_INPAR_CONSTRAINT_FRAMEWORK_HPP
 

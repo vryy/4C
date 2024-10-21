@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Testing of structure calculation results
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_structure_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

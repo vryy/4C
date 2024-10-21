@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Manage the creation of additional DOFs for mortar couplings between solids.
-
-\level 3
-*/
-
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_mortar_manager.hpp"
 
 #include "4C_constraint_framework_embeddedmesh_interaction_pair.hpp"

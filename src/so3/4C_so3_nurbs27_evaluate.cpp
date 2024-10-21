@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation methods of the quadratic NURBS 27 element
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_elements_paramsinterface.hpp"
 #include "4C_fem_general_extract_values.hpp"

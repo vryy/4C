@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Central header for forward declaration of Trilinos's classes.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_FORWARD_DECL_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_FORWARD_DECL_HPP
 

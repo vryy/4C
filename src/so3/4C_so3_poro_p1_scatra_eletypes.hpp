@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief element types of the 3D solid-poro element (p1, mixed approach) including scatra
- functionality
-
- \level 2
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SO3_PORO_P1_SCATRA_ELETYPES_HPP
 #define FOUR_C_SO3_PORO_P1_SCATRA_ELETYPES_HPP
 

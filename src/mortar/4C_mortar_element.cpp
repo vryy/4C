@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A mortar coupling element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mortar_element.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

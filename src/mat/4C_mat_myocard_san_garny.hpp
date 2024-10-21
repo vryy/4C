@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief san garny myocard material model
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*
- |  definitions                                              cbert 08/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MYOCARD_SAN_GARNY_HPP
 #define FOUR_C_MAT_MYOCARD_SAN_GARNY_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Monolithic coupling of 3D structure Cardiovascular0D models
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CARDIOVASCULAR0D_HPP
 #define FOUR_C_CARDIOVASCULAR0D_HPP
 

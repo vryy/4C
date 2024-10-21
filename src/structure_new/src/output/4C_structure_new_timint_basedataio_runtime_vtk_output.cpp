@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related to VTK output at runtime for the structural (time) integration
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_structure_new_timint_basedataio_runtime_vtk_output.hpp"
 
 #include "4C_beam3_discretization_runtime_output_params.hpp"

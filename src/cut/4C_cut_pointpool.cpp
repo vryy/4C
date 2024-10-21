@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief PointPool, stores a points in the cut and decides if points are merged or new points are
-created
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_pointpool.hpp"
 
 #include "4C_cut_output.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to store the beam to fluid meshtying output (visualization) parameters.
-
-\level 2
-
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_output_params.hpp"
 
 #include "4C_global_data.hpp"

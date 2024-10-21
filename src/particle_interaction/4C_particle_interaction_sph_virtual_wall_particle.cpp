@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief virtual wall particle handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_virtual_wall_particle.hpp"
 
 #include "4C_fem_general_element.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the beam3_reissner class
-
-\level 3
-
-*-----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_beam3_reissner.hpp"

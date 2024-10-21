@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Assemble strategy for monolithic SSTI
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_HPP
 #define FOUR_C_SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_HPP
 

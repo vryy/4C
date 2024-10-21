@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element line evaluation
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_condition.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"

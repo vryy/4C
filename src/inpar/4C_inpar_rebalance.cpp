@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for rebalancing the discretization
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_inpar_rebalance.hpp"
 
 #include "4C_rebalance.hpp"

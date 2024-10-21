@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Provide functionality for extrapolation of any quantity from Gauss point to nodes via the
-shape functions
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_GAUSS_POINT_EXTRAPOLATION_HPP
 

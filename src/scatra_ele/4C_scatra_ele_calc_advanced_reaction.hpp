@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief main file containing routines for calculation of scatra element with advanced reaction terms
-
-  \level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_ADVANCED_REACTION_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ADVANCED_REACTION_HPP
 

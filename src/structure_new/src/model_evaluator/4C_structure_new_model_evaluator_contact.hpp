@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all contact terms
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_CONTACT_HPP
 

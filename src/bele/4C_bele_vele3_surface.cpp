@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief volume element
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_bele_vele3.hpp"
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_discretization.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
-        elch-specific implementation (class ScaTraTimIntElch)
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_elch_scheme.hpp"
 
 #include "4C_fem_discretization.hpp"

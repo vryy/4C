@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief material for heat transport due to Fourier-type thermal conduction and the Soret effect
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SORET_HPP
 #define FOUR_C_MAT_SORET_HPP
 

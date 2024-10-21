@@ -1,10 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief An elastic visco-plastic finite strain material law without yield surface.
-
-\level 2
-*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_HPP
 #define FOUR_C_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_HPP
 

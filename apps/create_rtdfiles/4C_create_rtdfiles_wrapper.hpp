@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief Main routine
-
-\author scheider
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CREATE_RTDFILES_WRAPPER_HPP
 #define FOUR_C_CREATE_RTDFILES_WRAPPER_HPP
 #include "4C_config.hpp"

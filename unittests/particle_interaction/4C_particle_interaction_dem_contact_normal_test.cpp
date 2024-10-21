@@ -1,9 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for normal contact handler for discrete element method (DEM) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_particle_interaction_dem_contact_normal.hpp"

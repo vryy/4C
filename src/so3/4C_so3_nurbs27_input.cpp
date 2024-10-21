@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input-related methods of the quadratic NURBS 27 element
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_nurbs27.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief transparent independent dofset
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_dofset_transparent_independent.hpp"
 
 #include "4C_cut_cutwizard.hpp"

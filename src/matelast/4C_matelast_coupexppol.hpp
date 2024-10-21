@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for an isotropic exponential coupled material according to
-Weickenmeier_2014
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPEXPPOL_HPP
 #define FOUR_C_MATELAST_COUPEXPPOL_HPP
 

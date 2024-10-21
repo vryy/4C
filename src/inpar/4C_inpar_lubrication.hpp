@@ -1,11 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief Lubrication dynamic parameters
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_LUBRICATION_HPP
 #define FOUR_C_INPAR_LUBRICATION_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief definition of porofluidmultiphase elements
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_ELE_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_ELE_HPP
 

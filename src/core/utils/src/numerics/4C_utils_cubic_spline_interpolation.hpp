@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Cubic spline interpolation
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_CUBIC_SPLINE_INTERPOLATION_HPP
 #define FOUR_C_UTILS_CUBIC_SPLINE_INTERPOLATION_HPP
 

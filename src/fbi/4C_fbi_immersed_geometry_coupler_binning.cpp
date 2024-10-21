@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class containing geometric operations usually needed for the coupling of an embedded
-body using a binning strategy to pre-sort the beam elements, for which an octree search needs to be
-performed afterwards
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #include "4C_fbi_immersed_geometry_coupler_binning.hpp"
 
 #include "4C_beam3_base.hpp"

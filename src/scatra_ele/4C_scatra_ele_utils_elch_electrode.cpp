@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class supporting element evaluation for electrodes
-
-
-\level 2
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_utils_elch_electrode.hpp"
 
 #include "4C_mat_electrode.hpp"

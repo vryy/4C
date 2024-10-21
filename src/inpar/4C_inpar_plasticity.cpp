@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for plasticity
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_inpar_plasticity.hpp"
 
 #include "4C_inpar_structure.hpp"

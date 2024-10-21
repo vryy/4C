@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief 2D solid-wall elements using NURBS shape functions.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_nurbs.hpp"
 
 #include "4C_comm_utils_factory.hpp"

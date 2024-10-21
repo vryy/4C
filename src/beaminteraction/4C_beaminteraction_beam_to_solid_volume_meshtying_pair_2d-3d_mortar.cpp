@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for full 2D-3D beam-to-solid volume mesh tying based on a Simo-Reissner beam element
-with mortar constraint discretization.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_mortar.hpp"
 
 #include "4C_beam3_reissner.hpp"

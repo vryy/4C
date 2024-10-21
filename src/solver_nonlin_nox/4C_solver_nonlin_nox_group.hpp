@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
-       to handle unconstrained problems.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_GROUP_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_GROUP_HPP
 

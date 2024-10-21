@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation of off-diagonal blocks for monolithic SSI
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
 #define FOUR_C_SSI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
 

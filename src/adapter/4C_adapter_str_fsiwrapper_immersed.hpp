@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for Immersed and Immersed + ALE FSI problems containing the interface
-       and methods dependent on the interface
-
-\level 2
-
-
-*/
-
 #ifndef FOUR_C_ADAPTER_STR_FSIWRAPPER_IMMERSED_HPP
 #define FOUR_C_ADAPTER_STR_FSIWRAPPER_IMMERSED_HPP
 

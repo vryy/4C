@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief general result test framework
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_RESULT_TEST_HPP
 #define FOUR_C_UTILS_RESULT_TEST_HPP
 

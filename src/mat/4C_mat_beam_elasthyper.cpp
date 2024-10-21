@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief constitutive relations for beam cross-section resultants (hyperelastic stored energy
-function)
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_mat_beam_elasthyper.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

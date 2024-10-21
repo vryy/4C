@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Global control routine of 4C
-
-\level 0
-
-*----------------------------------------------------------------------*/
-
 #include "4C_comm_utils.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"

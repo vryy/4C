@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implicit time integration for structural dynamics
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_IMPL_HPP
 #define FOUR_C_STRUCTURE_TIMINT_IMPL_HPP
 

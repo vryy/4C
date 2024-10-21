@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a 1D remodel fiber
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_remodelfiber.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

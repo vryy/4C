@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief communicates between xfluid and NIT contact ... for XFSCI and XFPSCI(soon)
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_XFLUID_CONTACT_COMMUNICATOR_HPP
 #define FOUR_C_XFEM_XFLUID_CONTACT_COMMUNICATOR_HPP
 

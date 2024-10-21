@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief standard case without mesh tying
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_porofluidmultiphase_meshtying_strategy_std.hpp"
 
 #include "4C_linear_solver_method_linalg.hpp"

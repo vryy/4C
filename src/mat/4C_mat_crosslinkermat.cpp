@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief A class for a crosslinker material
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_mat_crosslinkermat.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief material for macro-scale elements in multi-scale simulations of electrochemistry problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_newman_multiscale.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

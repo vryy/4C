@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief unittests for utils of poromultiphase_scatra-framework
-
-
-\level 1
-
-*-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_poromultiphase_scatra_utils.hpp"

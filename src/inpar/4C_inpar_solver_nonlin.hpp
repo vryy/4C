@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for nonlinear solvers
-
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_SOLVER_NONLIN_HPP
 #define FOUR_C_INPAR_SOLVER_NONLIN_HPP
 

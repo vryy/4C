@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Preconditioner interface for constrained problems.
-
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_PRECONDITIONER_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_PRECONDITIONER_HPP
 

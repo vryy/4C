@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for coupled reduced airways and continuum tissue models
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_RED_AIRWAYS_TISSUE_HPP
 #define FOUR_C_RED_AIRWAYS_TISSUE_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for immersed fluids (beam)
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_fbi_movingboundary.hpp"
 
 #include "4C_adapter_fld_base_algorithm.hpp"

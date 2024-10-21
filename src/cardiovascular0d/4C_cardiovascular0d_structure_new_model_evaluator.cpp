@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all 0D cardiovascular model terms
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_cardiovascular0d_structure_new_model_evaluator.hpp"
 
 #include "4C_fem_discretization.hpp"

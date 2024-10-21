@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief handle that holds the mesh specific information
-
-
-\level 2
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_meshhandle.hpp"
 
 #include "4C_cut_options.hpp"

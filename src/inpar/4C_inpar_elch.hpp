@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for electrochemistry
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_ELCH_HPP
 #define FOUR_C_INPAR_ELCH_HPP
 

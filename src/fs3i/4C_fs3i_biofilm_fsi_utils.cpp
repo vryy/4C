@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utils for biofilm fs3i
-
-\level 3
-
-
- *----------------------------------------------------------------------*/
-
 #include "4C_fs3i_biofilm_fsi_utils.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for fluid-fluid (in)stationary solvers with XFEM
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_xfluid_fluid.hpp"
 
 #include "4C_fem_discretization_faces.hpp"

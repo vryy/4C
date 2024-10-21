@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a remodel constituent with explicit update rule
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_EXPL_HPP
 

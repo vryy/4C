@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief input parameters for porous multiphase fluid problem
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_porofluidmultiphase.hpp"
 
 #include "4C_inpar_bio.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for fluid beam interaction
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_fbi_wrapper.hpp"
 
 #include "4C_fluid_implicit_integration.hpp"

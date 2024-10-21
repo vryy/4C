@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief singleton class holding all interface parameters required for boundary element evaluation
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_parameter_boundary.hpp"
 
 #include "4C_utils_exceptions.hpp"

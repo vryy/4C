@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief contains base class for a generic output filter (ensight and vtk are derived from this class)
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_post_filter_base.hpp"
 
 #include "4C_io_legacy_table.hpp"

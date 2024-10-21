@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrates base functions over a line using one-dimensional Gauss quadrature
-equations
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_line_integration.hpp"
 
 #include "4C_cut_tolerance.hpp"

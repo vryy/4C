@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for namespace Discret
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRY_UPDATE_REFERENCE_CONFIG_HPP
 #define FOUR_C_FEM_GEOMETRY_UPDATE_REFERENCE_CONFIG_HPP
 

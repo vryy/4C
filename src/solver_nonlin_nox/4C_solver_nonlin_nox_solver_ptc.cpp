@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a pseudo transient non-linear
-       solver.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_solver_ptc.hpp"  // class definition
 
 #include "4C_fem_geometry_intersection_math.hpp"

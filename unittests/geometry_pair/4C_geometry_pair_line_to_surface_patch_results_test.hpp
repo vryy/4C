@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fill arrays with the results for the tests.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_RESULTS_TEST_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_RESULTS_TEST_HPP
 

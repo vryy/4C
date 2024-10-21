@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Model Order Reduction (MOR) using Proper Orthogonal Decomposition (POD)
-
-\level 2
-
-
- *----------------------------------------------------------------------*/
-
 #include "4C_cardiovascular0d_mor_pod.hpp"
 
 #include "4C_io.hpp"

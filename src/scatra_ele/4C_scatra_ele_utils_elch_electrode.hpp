@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class supporting element evaluation for electrodes
-
-
-\level 2
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_UTILS_ELCH_ELECTRODE_HPP
 #define FOUR_C_SCATRA_ELE_UTILS_ELCH_ELECTRODE_HPP
 

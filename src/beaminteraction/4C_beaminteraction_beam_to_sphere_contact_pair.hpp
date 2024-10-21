@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief class to handle contact between a 3D beam element and a rigid sphere
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
 

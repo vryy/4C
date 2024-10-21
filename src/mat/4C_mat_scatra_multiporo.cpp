@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief scatra material for transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_mat_scatra_multiporo.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

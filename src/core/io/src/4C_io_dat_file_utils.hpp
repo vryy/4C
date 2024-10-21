@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- * \brief Helpers to read and write dat files
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_DAT_FILE_UTILS_HPP
 #define FOUR_C_IO_DAT_FILE_UTILS_HPP
 

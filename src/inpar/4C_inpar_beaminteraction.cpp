@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief input parameter for beaminteraction
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_inpar_beaminteraction.hpp"
 
 #include "4C_fem_condition_definition.hpp"

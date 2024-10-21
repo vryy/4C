@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A class that wraps Teuchos::SerialDenseMatrix
-
-\level 0
-
-*----------------------------------------------------------------------*/
-
 #include "4C_linalg_serialdensematrix.hpp"
 
 FOUR_C_NAMESPACE_OPEN

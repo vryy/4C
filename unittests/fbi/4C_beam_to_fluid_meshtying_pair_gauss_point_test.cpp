@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for the beam to fluid meshtying gpts pair.
-
-\level 2
-*/
-
-
 #include <gtest/gtest.h>
 
 #include "4C_beam3_euler_bernoulli.hpp"

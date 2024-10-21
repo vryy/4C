@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief  SingletonOwner that manages singleton instances
-
-\level 0
-    */
-/*----------------------------------------------------------------------------*/
-
 #include "4C_utils_singleton_owner.hpp"
 
 void FourC::Core::Utils::SingletonOwnerRegistry::finalize()

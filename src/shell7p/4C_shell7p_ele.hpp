@@ -1,17 +1,3 @@
-/*! \file
-
-\brief The 7-parameter shell element
-
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-In addition, it contains the interface between element call and gauss point
-loop for the evaluation.
-
-\level 3
-*/
-
-
 #ifndef FOUR_C_SHELL7P_ELE_HPP
 #define FOUR_C_SHELL7P_ELE_HPP
 

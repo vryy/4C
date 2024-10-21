@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Contains a global distributed tree search implementation
-       based on bounding volumes.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_geometric_search_distributed_tree.hpp"
 
 #include "4C_fem_geometric_search_access_traits.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra time integration for cardiac monodomain
-
-\level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_cardiac_monodomain.hpp"
 
 #include "4C_fem_nurbs_discretization.hpp"

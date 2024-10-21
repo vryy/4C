@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for Fluid-beam interaction problems
-
-
-\level 2
-*/
-
 #ifndef FOUR_C_ADAPTER_STR_FBIWRAPPER_HPP
 #define FOUR_C_ADAPTER_STR_FBIWRAPPER_HPP
 

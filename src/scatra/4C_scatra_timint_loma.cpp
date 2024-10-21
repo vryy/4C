@@ -1,8 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief scatra time integration for loma
-\level 2
- *------------------------------------------------------------------------------------------------*/
 #include "4C_scatra_timint_loma.hpp"
 
 #include "4C_fem_discretization.hpp"

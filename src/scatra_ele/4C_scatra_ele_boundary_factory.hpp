@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief factory for scatra boundary evaluation
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_FACTORY_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_FACTORY_HPP
 

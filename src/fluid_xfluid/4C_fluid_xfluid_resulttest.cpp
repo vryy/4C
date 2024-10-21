@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief xfem based fluid result tests
-
-\level 0
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_xfluid_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

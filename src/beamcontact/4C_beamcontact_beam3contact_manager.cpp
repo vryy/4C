@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Main class to control beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_beamcontact_beam3contact_manager.hpp"
 
 #include "4C_beam3_base.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of a cylinder coordinate system manager
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_HPP
 #define FOUR_C_MAT_ANISOTROPY_CYLINDER_COORDINATE_SYSTEM_MANAGER_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all constraint terms
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_structure_new_model_evaluator_lagpenconstraint.hpp"
 
 #include "4C_constraint_lagpenconstraint_noxinterface.hpp"

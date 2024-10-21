@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of utility functions for mortar methods
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_mortar_utils.hpp"
 
 #include "4C_comm_exporter.hpp"

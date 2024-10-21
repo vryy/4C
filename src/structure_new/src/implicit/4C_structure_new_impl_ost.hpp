@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief One step theta time integrator.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_IMPL_OST_HPP
 #define FOUR_C_STRUCTURE_NEW_IMPL_OST_HPP
 

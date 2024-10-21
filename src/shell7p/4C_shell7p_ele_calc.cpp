@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Implementation of routines for calculation of shell element simple displacement based
-
-\level 3
-*/
-
 #include "4C_shell7p_ele_calc.hpp"
 
 #include "4C_fem_discretization.hpp"

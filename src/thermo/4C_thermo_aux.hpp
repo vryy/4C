@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Various auxiliar methods needed in thermal analysis
-\level 1
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                              bborn 08/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_AUX_HPP
 #define FOUR_C_THERMO_AUX_HPP
 

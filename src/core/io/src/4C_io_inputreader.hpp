@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal classes to read elements and nodes
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_IO_INPUTREADER_HPP
 #define FOUR_C_IO_INPUTREADER_HPP
 

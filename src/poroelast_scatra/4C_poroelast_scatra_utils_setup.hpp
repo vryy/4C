@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for poroelast-scatra setup
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_SCATRA_UTILS_SETUP_HPP
 #define FOUR_C_POROELAST_SCATRA_UTILS_SETUP_HPP
 

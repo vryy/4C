@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of elemag internal faces elements
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_ELE_INTFACES_CALC_HPP
 #define FOUR_C_ELEMAG_ELE_INTFACES_CALC_HPP
 

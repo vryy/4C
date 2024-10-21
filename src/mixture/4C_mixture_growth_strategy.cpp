@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a mixture growth strategy interface
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_growth_strategy.hpp"
 
 #include "4C_global_data.hpp"

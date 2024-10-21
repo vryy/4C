@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the ALE time integration for fluid problems with moving boundaries
-
-\level 2
-
- */
-/*----------------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------------*/
-/* header inclusions */
 #include "4C_adapter_ale_fluid.hpp"
 
 #include "4C_ale_utils_mapextractor.hpp"

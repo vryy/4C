@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief FSI Wrapper for the ALE time integration with internal mesh tying or mesh sliding interface
-
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_ALE_FSI_MSHT_HPP
 #define FOUR_C_ADAPTER_ALE_FSI_MSHT_HPP
 

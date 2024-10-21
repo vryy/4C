@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for implicit time integration schemes for
-        multiphas porous fluid problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_TIMINT_IMPLICIT_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief strategy for cloning thermo discretization from scatra discretization
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_sti_clonestrategy.hpp"
 
 #include "4C_global_data.hpp"

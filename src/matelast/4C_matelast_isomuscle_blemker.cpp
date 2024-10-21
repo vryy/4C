@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric part of the Blemker active skeletal muscle material (active
-stress approach)
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isomuscle_blemker.hpp"
 
 #include "4C_global_data.hpp"

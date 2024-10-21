@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief write debug information for fsi applications
-\level 2
-*----------------------------------------------------------------------*/
-
 #include "4C_fsi_debugwriter.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

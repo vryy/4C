@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all beam to sphere contact input parameters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PARAMS_HPP
 

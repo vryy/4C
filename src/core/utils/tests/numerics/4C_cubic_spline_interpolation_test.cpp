@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the cubic spline interpolation
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_utils_cubic_spline_interpolation.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Static Prestress analysis
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-/* headers */
 #include "4C_structure_timint_prestress.hpp"
 
 #include "4C_constraint_springdashpot_manager.hpp"

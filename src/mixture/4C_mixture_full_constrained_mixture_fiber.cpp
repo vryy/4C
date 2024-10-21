@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a 1D full constrained mixture fiber
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_full_constrained_mixture_fiber.hpp"
 
 #include "4C_comm_pack_buffer.hpp"

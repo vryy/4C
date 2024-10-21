@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Specification of nurbs basis functions
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_NURBS_SHAPEFUNCTIONS_HPP
 

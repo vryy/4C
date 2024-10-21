@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional torsion spring element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_TORSION3_HPP
 #define FOUR_C_TORSION3_HPP
 

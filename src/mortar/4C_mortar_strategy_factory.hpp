@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Base class for the CONTACT/MESHTYING factories.
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_STRATEGY_FACTORY_HPP
 #define FOUR_C_MORTAR_STRATEGY_FACTORY_HPP
 

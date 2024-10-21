@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Extension of Trilinos's ::NOX::Solver::SingleStep to include 4C's specific inner/outer
-tests
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_SOLVER_SINGLESTEP_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_SOLVER_SINGLESTEP_HPP
 

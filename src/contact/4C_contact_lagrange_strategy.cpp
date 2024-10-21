@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Contact solving strategy with (standard/dual) Lagrangian multipliers.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_lagrange_strategy.hpp"
 
 #include "4C_contact_defines.hpp"

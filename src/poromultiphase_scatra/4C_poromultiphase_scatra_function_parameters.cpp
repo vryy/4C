@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Managing parameters of (reaction) functions for poromultiphase_scatra
-       problems
-
-\level 3
-
-    */
-/*-----------------------------------------------------------*/
-
-
 #include "4C_poromultiphase_scatra_function_parameters.hpp"
 
 #include "4C_utils_exceptions.hpp"

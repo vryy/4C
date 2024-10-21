@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief class for managing rigid sphere to beam crosslinking
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_HPP
 #define FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_SPHEREBEAMLINKING_HPP
 

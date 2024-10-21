@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helpful methods for the porofluidmultiphase element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_ele_calc_utils.hpp"
 
 #include "4C_mat_fluidporo_multiphase.hpp"

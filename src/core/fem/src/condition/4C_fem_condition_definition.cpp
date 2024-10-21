@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of base class for all conditions
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_fem_condition_definition.hpp"
 
 #include "4C_fem_discretization.hpp"

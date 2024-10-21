@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional torsion spring element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_torsion3.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

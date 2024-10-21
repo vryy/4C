@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief integration routines for the volmortar framework
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------*
- | definitions                                             farah 01/14 |
- *---------------------------------------------------------------------*/
 #ifndef FOUR_C_COUPLING_VOLMORTAR_INTEGRATOR_HPP
 #define FOUR_C_COUPLING_VOLMORTAR_INTEGRATOR_HPP
 

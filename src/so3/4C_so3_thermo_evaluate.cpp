@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation of thermo-structure-interaction elements
-       (structural part of coupling matrices)
-\level 1
-*/
-
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 11/12 |
- *----------------------------------------------------------------------*/
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_nurbs_shapefunctions.hpp"
 #include "4C_fem_nurbs_discretization.hpp"

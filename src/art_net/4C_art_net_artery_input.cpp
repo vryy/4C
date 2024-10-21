@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input for the artery element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_art_net_artery.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_cnst_1d_art.hpp"

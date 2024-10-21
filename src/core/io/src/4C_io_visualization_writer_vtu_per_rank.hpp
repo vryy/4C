@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write visualization data to disk in the pvtu format, where each MPI rank writes its own file
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_WRITER_VTU_PER_RANK_HPP
 #define FOUR_C_IO_VISUALIZATION_WRITER_VTU_PER_RANK_HPP
 

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Concrete implementation of the structural and all related parameter interfaces.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_HPP
 

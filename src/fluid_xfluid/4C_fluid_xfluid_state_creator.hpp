@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Creates a state object for (in)stationary XFEM fluid problems
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_XFLUID_STATE_CREATOR_HPP
 #define FOUR_C_FLUID_XFLUID_STATE_CREATOR_HPP
 

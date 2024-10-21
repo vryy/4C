@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief transparent independent dofset
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_dofset_transparent_independent.hpp"
 
 #include "4C_fem_dofset.hpp"

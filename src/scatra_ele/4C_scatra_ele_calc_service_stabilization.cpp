@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of ScaTra element
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_condition_utils.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"

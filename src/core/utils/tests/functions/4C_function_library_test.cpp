@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the function library
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_utils_cubic_spline_interpolation.hpp"

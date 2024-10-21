@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base classes to manage the beam interactions defined by conditions.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_CONDITIONS_HPP
 #define FOUR_C_BEAMINTERACTION_CONDITIONS_HPP
 

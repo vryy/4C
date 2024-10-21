@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief
-
-This file contains the material for reactive AND chemotactic scalars. It is
-in diamond inheritance with MatListReactions and MatListChemotaxis,
-which govern the actual doings
-
-\level 3
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_MAT_LIST_CHEMOREAC_HPP
 #define FOUR_C_MAT_LIST_CHEMOREAC_HPP
 

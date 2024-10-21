@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of contact constitutive law definitions
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-/*----------------------------------------------------------------------*/
-/* headers */
-
 #include "4C_contact_constitutivelaw_constitutivelaw_definition.hpp"
 
 #include "4C_contact_constitutivelaw_bundle.hpp"

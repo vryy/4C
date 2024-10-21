@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Template classes for interface coupling in the XFEM with mixed/hybrid stress-based Lagrange
-multipliers method
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_xfem_coupling.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling_impl.hpp"
 

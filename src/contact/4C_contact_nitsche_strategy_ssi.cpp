@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Nitsche ssi contact solving strategy
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_contact_nitsche_strategy_ssi.hpp"
 
 #include "4C_contact_interface.hpp"

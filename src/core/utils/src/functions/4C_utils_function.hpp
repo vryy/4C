@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluating of space- and/or time-dependent functions
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_FUNCTION_HPP
 #define FOUR_C_UTILS_FUNCTION_HPP
 

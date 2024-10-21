@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Interface class for complex materials at Gauss points
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_material_factory.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

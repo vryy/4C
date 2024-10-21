@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory class going from the generic evaluation routines to the ones
-  templated by the element shape and specialization
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_factory.hpp"
 
 #include "4C_fluid_ele_calc_hdg.hpp"

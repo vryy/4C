@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief implementation of the quadratic NURBS 27 element
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_NURBS27_HPP
 #define FOUR_C_SO3_NURBS27_HPP
 

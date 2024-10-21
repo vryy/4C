@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Nonlinear viscosity according to a modified power law
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_modpowerlaw.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

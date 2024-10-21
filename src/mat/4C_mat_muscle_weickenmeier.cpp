@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the Weickenmeier active skeletal muscle material (generalized active strain
-approach)
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_muscle_weickenmeier.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

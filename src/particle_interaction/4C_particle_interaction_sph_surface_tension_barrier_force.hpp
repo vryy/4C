@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief barrier force handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_HPP
 #define FOUR_C_PARTICLE_INTERACTION_SPH_SURFACE_TENSION_BARRIER_FORCE_HPP
 

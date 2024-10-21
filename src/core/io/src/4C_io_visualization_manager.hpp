@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Define a container that holds the visualization data and the visualization writer
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_MANAGER_HPP
 #define FOUR_C_IO_VISUALIZATION_MANAGER_HPP
 

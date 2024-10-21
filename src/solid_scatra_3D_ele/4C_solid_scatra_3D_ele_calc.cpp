@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Implementation of routines for calculation of a coupled solid-scatra element with templated
-solid formulation
-
-\level 1
-*/
-
 #include "4C_solid_scatra_3D_ele_calc.hpp"
 
 #include "4C_fem_discretization.hpp"

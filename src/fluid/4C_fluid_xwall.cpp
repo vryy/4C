@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief implementation of enrichment-based wall model for turbulence
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_xwall.hpp"
 
 #include "4C_fem_condition.hpp"

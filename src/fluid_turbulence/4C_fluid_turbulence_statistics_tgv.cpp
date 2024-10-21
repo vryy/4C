@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Compute dissipation rates for Taylor-Green vortex
-       and write them to files.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_fluid_turbulence_statistics_tgv.hpp"
 
 #include "4C_fluid_ele_action.hpp"

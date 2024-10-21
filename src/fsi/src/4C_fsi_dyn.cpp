@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 1
-
-
-\brief Entry routines for FSI problems and some other problem types as well
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_dyn.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

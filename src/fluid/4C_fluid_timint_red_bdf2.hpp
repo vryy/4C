@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief BDF-2 time integration for reduced models
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_RED_BDF2_HPP
 #define FOUR_C_FLUID_TIMINT_RED_BDF2_HPP
 

@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Adapter Layer for Structures with Algebraic Constraints
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-
 #ifndef FOUR_C_ADAPTER_STR_CONSTR_MERGED_HPP
 #define FOUR_C_ADAPTER_STR_CONSTR_MERGED_HPP
 

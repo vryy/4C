@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  monolithic structure split poroelasticity algorithm
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_poroelast_monolithicstructuresplit.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

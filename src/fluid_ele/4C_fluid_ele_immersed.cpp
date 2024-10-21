@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief specialized immersed element used in immersed fsi
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_immersed.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

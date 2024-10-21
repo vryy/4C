@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class supporting element evaluation for concentrated electrolytes
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_utils_elch_scl.hpp"
 
 #include "4C_mat_elchmat.hpp"

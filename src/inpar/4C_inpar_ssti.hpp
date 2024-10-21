@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input parameters for solid-scatra-interaction
-
-\level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_INPAR_SSTI_HPP
 #define FOUR_C_INPAR_SSTI_HPP
 

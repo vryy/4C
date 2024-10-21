@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief ...
-
-\level 2
-
-*/
-
 #ifndef FOUR_C_FSI_XFEM_FLUID_HPP
 #define FOUR_C_FSI_XFEM_FLUID_HPP
 

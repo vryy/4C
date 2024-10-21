@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief Model evaluator for structure part of partitioned ssi.
-
-\level 3
-
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_ssi_str_model_evaluator_partitioned.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

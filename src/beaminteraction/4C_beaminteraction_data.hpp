@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief small data container for beam interaction framework
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_DATA_HPP
 #define FOUR_C_BEAMINTERACTION_DATA_HPP
 

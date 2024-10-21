@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of preprocessor defines for beam contact methods
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_HPP
 

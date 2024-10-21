@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of an isotropic exponential material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isoexpopow.hpp"
 
 #include "4C_material_parameter_base.hpp"

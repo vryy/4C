@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief
-This file contains the base material for chemotactic scalars.
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_mat_scatra_chemotaxis.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

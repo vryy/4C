@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Contains a summary of contact utility functions
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_UTILS_HPP
 #define FOUR_C_CONTACT_UTILS_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utils methods concerning the discretization
-
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DISCRETIZATION_UTILS_HPP
 #define FOUR_C_FEM_DISCRETIZATION_UTILS_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to surface interaction with segmentation at the boundaries.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_SEGMENTATION_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_SEGMENTATION_HPP
 

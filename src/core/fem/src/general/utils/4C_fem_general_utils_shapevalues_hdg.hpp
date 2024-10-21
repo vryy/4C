@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of arbitrary lagrange polynomials in HDG context
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_SHAPEVALUES_HDG_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_SHAPEVALUES_HDG_HPP
 

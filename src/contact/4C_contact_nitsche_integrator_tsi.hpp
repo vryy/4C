@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of nitsche related terms
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_TSI_HPP
 #define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_TSI_HPP
 

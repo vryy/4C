@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Specification of B-splines
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_bspline.hpp"
 
 #include "4C_utils_exceptions.hpp"

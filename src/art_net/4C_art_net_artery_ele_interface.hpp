@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief generic interface for implementations of the artery element
-        evaluation routines
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_ARTERY_ELE_INTERFACE_HPP
 #define FOUR_C_ART_NET_ARTERY_ELE_INTERFACE_HPP
 

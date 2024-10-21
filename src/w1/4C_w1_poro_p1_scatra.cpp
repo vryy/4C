@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief A 2D wall element for solid-part of porous medium using p1 (mixed) approach including scatra
- functionality.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_poro_p1_scatra.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

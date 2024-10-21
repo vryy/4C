@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief This class is meant as a replacement for std::maps, when other
-       storage and access characteristics are needed.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_PAIREDVECTOR_HPP
 #define FOUR_C_UTILS_PAIREDVECTOR_HPP
 

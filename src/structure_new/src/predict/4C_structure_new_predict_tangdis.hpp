@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Tangential displacement predictor.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_PREDICT_TANGDIS_HPP
 #define FOUR_C_STRUCTURE_NEW_PREDICT_TANGDIS_HPP
 

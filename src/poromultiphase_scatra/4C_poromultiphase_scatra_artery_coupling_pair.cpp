@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief one pair consisting of exactly one artery element and one poro-
-        multiphase-scatra element which might be coupled to each other
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_artery_coupling_pair.hpp"
 
 #include "4C_fem_discretization.hpp"

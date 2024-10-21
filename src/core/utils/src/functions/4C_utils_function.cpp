@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluating of space- and/or time-dependent functions
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_utils_function.hpp"
 
 #include "4C_io.hpp"

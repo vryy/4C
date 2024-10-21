@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief  Manage linear multipoint constraint equations including
-        periodic displacement boundary conditions.
-
-\level 3
- */
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_MPC_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_MPC_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_EXTENSION_DEFAULT_HPP
 #define FOUR_C_MAT_ANISOTROPY_EXTENSION_DEFAULT_HPP
 

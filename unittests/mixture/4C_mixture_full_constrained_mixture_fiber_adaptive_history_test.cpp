@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Testcases for the helpfer functions for adaptive history integation of full constrained
-mixture fibers
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include <gmock/gmock.h>

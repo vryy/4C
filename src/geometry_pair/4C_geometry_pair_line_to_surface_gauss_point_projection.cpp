@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for interaction of lines and surfaces.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_surface_gauss_point_projection.hpp"
 
 #include "4C_geometry_pair_element_evaluation_functions.hpp"

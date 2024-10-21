@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief A class for a crosslinker material
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_MAT_CROSSLINKERMAT_HPP
 #define FOUR_C_MAT_CROSSLINKERMAT_HPP
 

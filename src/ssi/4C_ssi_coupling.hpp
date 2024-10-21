@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper classes for  scalar-structure coupling
-
- \level 3
-
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_COUPLING_HPP
 #define FOUR_C_SSI_COUPLING_HPP
 

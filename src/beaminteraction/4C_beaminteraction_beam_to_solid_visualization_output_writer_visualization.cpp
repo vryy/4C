@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object that stores the relevant data for a single output file.
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 
 #include "4C_comm_utils.hpp"

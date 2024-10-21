@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Interface class for materials at Gauss points
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATERIAL_BASE_HPP
 #define FOUR_C_MATERIAL_BASE_HPP
 

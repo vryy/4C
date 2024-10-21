@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Matrix-free Newton-Krylov for FSI
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_JACOBIAN_HPP
 #define FOUR_C_FSI_NOX_JACOBIAN_HPP
 

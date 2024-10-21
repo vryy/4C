@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage an enhanced discretization including all faces for HDG
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_discretization_hdg.hpp"
 
 #include "4C_comm_exporter.hpp"

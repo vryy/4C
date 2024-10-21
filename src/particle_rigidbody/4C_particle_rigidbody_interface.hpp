@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief interface to provide restricted access to rigid body handler
-\level 2
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_RIGIDBODY_INTERFACE_HPP
 #define FOUR_C_PARTICLE_RIGIDBODY_INTERFACE_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of sparse matrix printing methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_HPP
 #define FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_HPP
 

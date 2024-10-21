@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a coupled Neo Hookean material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPNEOHOOKE_HPP
 #define FOUR_C_MATELAST_COUPNEOHOOKE_HPP
 

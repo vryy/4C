@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------     */
-/*! \file
-
-\brief one generic (beam-to-?) element pair interacting via potentials
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------     */
 #ifndef FOUR_C_BEAMINTERACTION_POTENTIAL_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_POTENTIAL_PAIR_HPP
 

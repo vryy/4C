@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief one way coupled partitioned scalar structure interaction
-
- \level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_ssi_partitioned_1wc.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

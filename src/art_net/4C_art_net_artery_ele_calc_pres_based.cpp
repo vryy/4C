@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of PressureBased artery element
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_art_net_artery_ele_calc_pres_based.hpp"
 
 #include "4C_art_net_art_terminal_bc.hpp"

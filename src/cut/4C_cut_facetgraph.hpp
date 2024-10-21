@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief graph to create volumecells from facets and lines
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_FACETGRAPH_HPP
 #define FOUR_C_CUT_FACETGRAPH_HPP
 

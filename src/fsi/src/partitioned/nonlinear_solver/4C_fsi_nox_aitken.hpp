@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class computing step length for AITKEN relaxation
-
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_AITKEN_HPP
 #define FOUR_C_FSI_NOX_AITKEN_HPP
 

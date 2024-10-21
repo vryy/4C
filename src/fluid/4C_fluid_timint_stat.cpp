@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Basic fluid driver for stationary problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_stat.hpp"
 
 #include "4C_fluid_ele_action.hpp"

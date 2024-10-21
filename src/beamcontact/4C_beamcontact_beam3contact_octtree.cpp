@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Octree for beam contact search
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beamcontact_beam3contact_octtree.hpp"
 
 #include "4C_beam3_base.hpp"

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN backtracking line search implementation.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_BACKTRACK_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_BACKTRACK_HPP
 

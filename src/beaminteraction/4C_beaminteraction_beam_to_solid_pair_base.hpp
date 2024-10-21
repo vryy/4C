@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base element for interactions between a beam and a solid.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_PAIR_BASE_HPP
 

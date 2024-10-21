@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utils routines for xfluid state class
-
-\level 0
-
- */
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_XFIELD_STATE_UTILS_HPP
 #define FOUR_C_XFEM_XFIELD_STATE_UTILS_HPP
 

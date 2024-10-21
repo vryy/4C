@@ -1,18 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief
-This file contains the hyperelastic toolbox. It allows summing up several summands
-of several types (isotropic or anisotropic, splitted or not) to build a hyperelastic
-strain energy function.
-
-The input line should read
-MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
-
-\level 1
-
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_MAT_ELASTHYPER_HPP
 #define FOUR_C_MAT_ELASTHYPER_HPP
 

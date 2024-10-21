@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for tsi problems
-
-\level 2
-*/
-
 #ifndef FOUR_C_TSI_UTILS_HPP
 #define FOUR_C_TSI_UTILS_HPP
 

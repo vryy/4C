@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of algebraic mathematical methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include "4C_linalg_serialdensematrix.hpp"

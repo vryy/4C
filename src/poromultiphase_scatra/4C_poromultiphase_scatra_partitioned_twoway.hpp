@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief two-way coupled partitioned algorithm for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_PARTITIONED_TWOWAY_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_PARTITIONED_TWOWAY_HPP
 

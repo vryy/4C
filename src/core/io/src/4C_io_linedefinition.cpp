@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of one line of an input file.
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_io_linedefinition.hpp"
 
 #include "4C_io_input_parameter_container.hpp"

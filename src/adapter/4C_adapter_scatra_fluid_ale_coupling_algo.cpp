@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all algorithms that perform a coupling between Navier-Stokes
-       and scalar transport equations including deforming meshes
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_scatra_fluid_ale_coupling_algo.hpp"
 
 #include "4C_ale_utils_mapextractor.hpp"

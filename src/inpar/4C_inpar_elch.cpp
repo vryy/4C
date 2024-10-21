@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for electrochemistry
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_elch.hpp"
 
 #include "4C_fem_condition_definition.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Search tree for unbiased self-contact problems
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_contact_selfcontact_binarytree_unbiased.hpp"
 
 #include "4C_contact_element.hpp"

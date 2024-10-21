@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief evaluation class containing routines for calculation of scalar transport
-        within porous medium
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_poro.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief prestress functionality in solid elements
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_PRESTRESS_HPP
 #define FOUR_C_SO3_PRESTRESS_HPP
 

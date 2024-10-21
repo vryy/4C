@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class for  elastohydrodynamic lubrication (lubrication structure interaction)
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_EHL_UTILS_HPP
 #define FOUR_C_EHL_UTILS_HPP
 

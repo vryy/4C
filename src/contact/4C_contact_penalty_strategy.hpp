@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Penalty contact solving strategy: The contact constrains are enforced
-       by a penalty formulation.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_PENALTY_STRATEGY_HPP
 #define FOUR_C_CONTACT_PENALTY_STRATEGY_HPP
 

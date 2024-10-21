@@ -1,21 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Algorithm for the calculation of biofilm growth.
-       It consists of:
-       - an inner timeloop (resolving fsi and scatra (in both fluid and structure)
-       at fluid-dynamic time-scale
-       - an outer timeloop (resolving only the biofilm growth)
-       at biological time-scale
-
-\level 3
-
-
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 #include "4C_fs3i_biofilm_fsi.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief two way coupled partitioned scalar structure interaction
-
- \level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_PARTITIONED_2WC_HPP
 #define FOUR_C_SSI_PARTITIONED_2WC_HPP
 

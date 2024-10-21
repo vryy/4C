@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Routines for extending contact interface ghosting by Round-Robin loop
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_element.hpp"
 #include "4C_contact_friction_node.hpp"
 #include "4C_contact_interface.hpp"

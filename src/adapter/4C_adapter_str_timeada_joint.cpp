@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the structural time integration which gives fine grained
-       access in the adaptive time marching loop
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_str_timeada_joint.hpp"
 
 #include "4C_adapter_str_timeloop.hpp"

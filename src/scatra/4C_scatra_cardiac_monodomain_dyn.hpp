@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief entry point for cardiac monodomain scalar transport problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_CARDIAC_MONODOMAIN_DYN_HPP
 #define FOUR_C_SCATRA_CARDIAC_MONODOMAIN_DYN_HPP
 

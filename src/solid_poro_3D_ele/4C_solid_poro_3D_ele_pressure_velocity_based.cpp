@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Implementation of the solid-poro-pressure-velocity-based element
-
-\level 1
-                                         */
-
 #include "4C_solid_poro_3D_ele_pressure_velocity_based.hpp"
 
 #include "4C_comm_utils_factory.hpp"

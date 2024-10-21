@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief structural model evaluator for scalar-structure interaction
-
-\level 2
-
-    */
-/*----------------------------------------------------------------------*/
 #include "4C_ssi_str_model_evaluator_base.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"

@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Element types that can be part of a pair.
-
-These types can be used as a template argument. Each element type defines how it's shape functions
-and other data are evaluated
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_ELEMENT_HPP
 #define FOUR_C_GEOMETRY_PAIR_ELEMENT_HPP
 

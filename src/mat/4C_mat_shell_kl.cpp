@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Material for an elastic Kirchhoff-Love shell
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_shell_kl.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

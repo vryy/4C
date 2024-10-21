@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structure field adapter for time step size adaptivity
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_adapter_str_timint_adaptive.hpp"
 
 #include "4C_structure_timada.hpp"

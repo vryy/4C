@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Collection of functions that are not problem-specific
-
-The functions in this file are not problem-specific and may be useful for a number of applications.
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_utils_function_library.hpp"
 
 #include "4C_io_control.hpp"

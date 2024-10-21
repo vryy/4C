@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for all Dirichlet boundary condition tasks.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_dbc.hpp"
 
 #include "4C_fem_condition_locsys.hpp"

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of constraint terms.
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_MODEL_EVALUATOR_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_MODEL_EVALUATOR_HPP
 

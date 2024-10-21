@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Central file for !all! Tolerances used in the cut
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_TOLERANCE_HPP
 #define FOUR_C_CUT_TOLERANCE_HPP
 

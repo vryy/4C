@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief time-dependent subgrid scale functionality
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_tds.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

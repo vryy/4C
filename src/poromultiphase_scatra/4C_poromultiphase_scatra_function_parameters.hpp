@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Managing parameters of (reaction) functions for poromultiphase_scatra
-        problems
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_PARAMETERS_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_PARAMETERS_HPP
 

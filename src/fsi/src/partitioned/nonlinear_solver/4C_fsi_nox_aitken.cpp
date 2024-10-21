@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class computing step length for AITKEN relaxation
-
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_aitken.hpp"
 
 #include "4C_fsi_utils.hpp"

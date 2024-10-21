@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all mesh-tying terms
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_structure_new_model_evaluator_meshtying.hpp"
 
 #include "4C_contact_meshtying_abstract_strategy.hpp"

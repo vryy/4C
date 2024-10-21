@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief cut facet (surface descripted by a cycle of points)
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_cut_boundarycell.hpp"
 #include "4C_cut_kernel.hpp"
 #include "4C_cut_mesh.hpp"

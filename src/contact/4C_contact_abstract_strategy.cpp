@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Main abstract class for contact solution strategies
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_abstract_strategy.hpp"
 
 #include "4C_contact_defines.hpp"

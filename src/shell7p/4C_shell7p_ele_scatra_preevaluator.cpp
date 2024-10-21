@@ -1,11 +1,3 @@
-/*! \file
-
-\brief PreEvaluator of Shell7p-ScaTra elements
-
-\level 1
-*/
-
-
 #include "4C_shell7p_ele_scatra_preevaluator.hpp"
 
 #include "4C_fem_discretization.hpp"

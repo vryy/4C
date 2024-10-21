@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes to calculate the Simo and Pister material model except the volumetric
-term
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPSIMOPISTER_HPP
 #define FOUR_C_MATELAST_COUPSIMOPISTER_HPP
 

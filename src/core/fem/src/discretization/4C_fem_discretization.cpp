@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage one discretization
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

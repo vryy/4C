@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isochoric one-term Ogden material.
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISOOGDEN_HPP
 #define FOUR_C_MATELAST_ISOOGDEN_HPP
 

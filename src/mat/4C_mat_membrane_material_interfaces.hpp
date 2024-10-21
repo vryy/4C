@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Interface classes for membrane materials
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MEMBRANE_MATERIAL_INTERFACES_HPP
 #define FOUR_C_MAT_MEMBRANE_MATERIAL_INTERFACES_HPP
 

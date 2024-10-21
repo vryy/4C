@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the passive material behaviour of cardiac muscle
-according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupanisoexpotwocoup.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

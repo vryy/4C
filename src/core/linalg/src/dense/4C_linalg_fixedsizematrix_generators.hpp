@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of generators of different special fixed size matrices
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_GENERATORS_HPP
 #define FOUR_C_LINALG_FIXEDSIZEMATRIX_GENERATORS_HPP
 

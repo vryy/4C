@@ -1,18 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief model evaluator for brownian (stochastic and damping)
-       forces
-
-
-\date May, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BROWNIANDYN_STR_MODEL_EVALUATOR_HPP
 #define FOUR_C_BROWNIANDYN_STR_MODEL_EVALUATOR_HPP
 

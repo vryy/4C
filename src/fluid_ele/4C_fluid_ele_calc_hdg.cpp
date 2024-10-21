@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of HDG fluid element
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_hdg.hpp"
 
 #include "4C_fem_general_extract_values.hpp"

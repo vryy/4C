@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Auxiliary methods.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_AUX_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_AUX_HPP
 

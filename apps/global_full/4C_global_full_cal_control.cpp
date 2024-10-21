@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routine to control execution phase
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_ale_dyn.hpp"
 #include "4C_art_net_dyn_drt.hpp"
 #include "4C_ehl_dyn.hpp"

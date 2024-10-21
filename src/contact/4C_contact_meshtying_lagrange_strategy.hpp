@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Mesh-tying solving strategy with (standard/dual) Lagrangian multipliers
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_LAGRANGE_STRATEGY_HPP
 #define FOUR_C_CONTACT_MESHTYING_LAGRANGE_STRATEGY_HPP
 

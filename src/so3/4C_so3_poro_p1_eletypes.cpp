@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief element types of the p1 (mixed) solid-poro element
-
- \level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_so3_poro_p1_eletypes.hpp"
 
 #include "4C_fluid_ele_nullspace.hpp"

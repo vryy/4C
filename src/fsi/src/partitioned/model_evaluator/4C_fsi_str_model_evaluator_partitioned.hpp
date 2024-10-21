@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Model evaluator for structure part of partitioned fsi
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FSI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
 #define FOUR_C_FSI_STR_MODEL_EVALUATOR_PARTITIONED_HPP
 

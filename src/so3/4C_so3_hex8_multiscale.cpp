@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief multiscale functionality of Solid Hex8 element
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_comm_utils.hpp"
 #include "4C_global_data.hpp"
 #include "4C_mat_micromaterial.hpp"

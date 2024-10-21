@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for interaction of lines and volumes.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_volume.hpp"
 
 #include "4C_geometry_pair_constants.hpp"

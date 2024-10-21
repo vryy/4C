@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Create the pairs for beam to fluid meshtying depending on the input parameters..
-
-\level 2
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_pair_factory.hpp"
 
 #include "4C_fbi_beam_to_fluid_meshtying_pair_gauss_point.hpp"

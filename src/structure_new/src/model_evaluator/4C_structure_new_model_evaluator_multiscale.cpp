@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Handle multiscale relevant aspects
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_model_evaluator_multiscale.hpp"
 
 #include "4C_fem_discretization.hpp"

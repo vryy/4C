@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule using functions to define the massfractions of the mixture materials
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_RULE_FUNCTION_HPP
 #define FOUR_C_MIXTURE_RULE_FUNCTION_HPP
 

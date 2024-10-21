@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Concrete implementation of the Jacobian, Required and
-       Preconditioner %NOX::NLN interfaces.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_timint_noxinterface.hpp"
 
 #include "4C_fem_discretization.hpp"

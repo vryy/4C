@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Prestress strategy for isotropic materials used in a growth remodel simulation
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_prestress_strategy_isocyl.hpp"
 
 #include "4C_linalg_fixedsizematrix_generators.hpp"

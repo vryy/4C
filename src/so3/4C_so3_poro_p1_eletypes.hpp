@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief element types of the p1 (mixed) solid-poro element
-
- \level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SO3_PORO_P1_ELETYPES_HPP
 #define FOUR_C_SO3_PORO_P1_ELETYPES_HPP
 

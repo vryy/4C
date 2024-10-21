@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
-       with volume coupling
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------*
- *---------------------------------------------------------------------*/
 #include "4C_fsi_dirichletneumann_volcoupl.hpp"
 
 #include "4C_adapter_ale_fluid.hpp"

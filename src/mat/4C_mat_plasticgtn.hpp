@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of GTN damage-plasticity model.
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_PLASTICGTN_HPP
 #define FOUR_C_MAT_PLASTICGTN_HPP
 

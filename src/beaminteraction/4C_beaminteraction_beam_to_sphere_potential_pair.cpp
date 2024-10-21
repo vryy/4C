@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam-to-sphere potential-based interacting pair
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_beam_to_sphere_potential_pair.hpp"
 
 #include "4C_beam3_base.hpp"

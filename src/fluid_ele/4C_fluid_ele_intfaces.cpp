@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid internal faces elements
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fluid_ele.hpp"

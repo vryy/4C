@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write visualization output for a discretization, i.e., write the mesh and results on the mesh
-to disk
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 
 #include "4C_fem_discretization.hpp"

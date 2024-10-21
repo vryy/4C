@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief a wrapper for porous multiphase flow algorithms
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_adapter_porofluidmultiphase_wrapper.hpp"
 
 #include "4C_fem_discretization.hpp"

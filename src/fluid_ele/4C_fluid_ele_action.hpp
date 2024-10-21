@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Enumeration of actions provided by the fluid element
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_ACTION_HPP
 #define FOUR_C_FLUID_ELE_ACTION_HPP
 

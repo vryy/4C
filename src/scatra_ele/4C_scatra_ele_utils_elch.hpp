@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility class supporting element evaluation for electrochemistry problems
-
-
-\level 2
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_UTILS_ELCH_HPP
 #define FOUR_C_SCATRA_ELE_UTILS_ELCH_HPP
 

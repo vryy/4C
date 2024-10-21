@@ -1,34 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Filter methods for the dynamic Smagorinsky model
-
-Reference:
-
-    Subgrid viscosity:
-    D. You, P. Moin:
-    A dynamic global-coefficient
-    subgrid-scale eddy-viscosity model for large-eddy simulation
-    in complex geometries
-    (Phys. Fluids 2007)
-
-    Subgrid diffusivity:
-    D. You, P. Moin:
-    A dynamic global-coefficient subgrid-scale odel for large-eddy simulation
-    of turbulent scalar transport in complex geometries
-    (Phys. Fluids 2009)
-
-    Remark:
-    alphaij=transpose(velderxy)
-    rows and colums of the jacobian alphaij are swapped in comparison
-    to the jacobian velderxy used in 4C routines for bfda test case
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_DYN_VREMAN_HPP
 #define FOUR_C_FLUID_TURBULENCE_DYN_VREMAN_HPP
 

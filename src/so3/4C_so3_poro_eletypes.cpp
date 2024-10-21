@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief element types of the 3D solid-poro element
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_poro_eletypes.hpp"
 
 #include "4C_io_linedefinition.hpp"

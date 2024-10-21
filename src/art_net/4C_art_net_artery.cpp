@@ -1,12 +1,3 @@
-
-/*! \file
-\brief One-dimensional artery element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_art_net_artery.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

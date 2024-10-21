@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief General prestress strategy for mixture constituents
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_prestress_strategy.hpp"
 
 #include "4C_global_data.hpp"

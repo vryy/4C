@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Setup of the list of valid conditions for input
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_inpar_validconditions.hpp"
 
 #include "4C_fem_condition_definition.hpp"

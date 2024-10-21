@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic functionality for cutting a mesh with a level set function
-
-
-\level 2
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_LEVELSETINTERSECTION_HPP
 #define FOUR_C_CUT_LEVELSETINTERSECTION_HPP
 

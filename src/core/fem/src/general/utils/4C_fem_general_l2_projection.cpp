@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief L2 projection on nodes
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_general_l2_projection.hpp"
 
 #include "4C_fem_discretization.hpp"

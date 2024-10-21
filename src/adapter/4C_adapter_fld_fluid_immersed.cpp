@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for immersed fluids
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_fluid_immersed.hpp"
 
 #include "4C_global_data.hpp"

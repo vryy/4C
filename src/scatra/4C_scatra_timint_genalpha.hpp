@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Generalized-alpha time-integration scheme
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_GENALPHA_HPP
 #define FOUR_C_SCATRA_TIMINT_GENALPHA_HPP
 

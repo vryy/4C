@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation class containing routines for calculation of scalar transport
-        within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_calc_multiporo_reac.hpp"
 
 #include "4C_fem_discretization.hpp"

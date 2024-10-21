@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of helper functions for the remodel fiber constituent
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_constituent_remodelfiber_lib.hpp"
 
 #include "4C_global_data.hpp"

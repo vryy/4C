@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Contains the declaration of service functions for hyperelastic membrane materials
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MEMBRANE_ELASTHYPER_SERVICE_HPP
 #define FOUR_C_MAT_MEMBRANE_ELASTHYPER_SERVICE_HPP
 

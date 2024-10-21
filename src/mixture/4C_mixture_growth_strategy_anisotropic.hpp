@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a growth strategy for anisotropic growth
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_HPP
 #define FOUR_C_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_HPP
 

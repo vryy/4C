@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief submaterial associated with macro-scale Gauss point in multi-scale simulations of scalar
-transport problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SCATRA_MULTISCALE_GP_HPP
 #define FOUR_C_MAT_SCATRA_MULTISCALE_GP_HPP
 

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrates base functions over the facet for both volumecell facets and for boundarycells
-equations
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CUT_FACET_INTEGRATION_HPP
 #define FOUR_C_CUT_FACET_INTEGRATION_HPP
 

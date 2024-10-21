@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for biomedical simulations
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_BIO_HPP
 #define FOUR_C_INPAR_BIO_HPP
 

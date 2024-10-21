@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of functions in order to calculate a smooth tangent field
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_beam_to_beam_contact_tangentsmoothing.hpp"
 
 #include "4C_fem_general_element.hpp"

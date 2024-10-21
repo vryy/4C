@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief manager class for handling the phases and their dofs on element level
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_porofluidmultiphase_ele_phasemanager.hpp"
 
 #include "4C_linalg_utils_densematrix_multiply.hpp"

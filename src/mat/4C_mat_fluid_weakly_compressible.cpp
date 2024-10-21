@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Weakly compressible fluid
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_fluid_weakly_compressible.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

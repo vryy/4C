@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for coupled reduced airways and continuum tissue models
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_red_airways_tissue.hpp"
 
 #include "4C_adapter_str_redairway.hpp"

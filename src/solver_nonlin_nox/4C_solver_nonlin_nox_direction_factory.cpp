@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_direction_factory.hpp"
 
 #include "4C_solver_nonlin_nox_direction_newton.hpp"

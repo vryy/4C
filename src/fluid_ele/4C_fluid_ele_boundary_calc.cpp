@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of fluid terms at integration points of boundaries
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_boundary_calc.hpp"
 
 #include "4C_fem_general_element_integration_select.hpp"

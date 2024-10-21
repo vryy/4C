@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Class which stores floating points numbers of arbitrary precision (equivalent to double )
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_CLNWRAPPER_HPP
 #define FOUR_C_UTILS_CLNWRAPPER_HPP
 #include "4C_config.hpp"

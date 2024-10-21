@@ -1,15 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Associated with control routine for Lubrication solvers,
-
-     including stationary solver.
-
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_LUBRICATION_TIMINT_IMPLICIT_HPP
 #define FOUR_C_LUBRICATION_TIMINT_IMPLICIT_HPP
 

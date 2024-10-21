@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation connecting the penalty constraint enforcement technique with a discretization
-approach for Fluid-beam interaction.
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #include "4C_fbi_adapter_constraintbridge_penalty.hpp"
 
 #include "4C_beaminteraction_contact_pair.hpp"

@@ -1,17 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for elemag boundary elements
-
-The routines are used in the creation of boundary elements for the electromagnetic module. The
-correct implementation is still missing.
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ELEMAG_ELE_BOUNDARY_CALC_HPP
 #define FOUR_C_ELEMAG_ELE_BOUNDARY_CALC_HPP
 

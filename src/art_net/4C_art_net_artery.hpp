@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief One-dimensional artery element
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ART_NET_ARTERY_HPP
 #define FOUR_C_ART_NET_ARTERY_HPP
 

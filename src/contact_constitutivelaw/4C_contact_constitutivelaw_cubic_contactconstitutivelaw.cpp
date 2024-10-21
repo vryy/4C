@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
- *
-\brief implements a Cubic contact constitutive law
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_contact_constitutivelaw_cubic_contactconstitutivelaw.hpp"
 
 #include "4C_global_data.hpp"

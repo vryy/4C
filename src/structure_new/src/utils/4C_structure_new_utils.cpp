@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility methods for the structural time integration.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_utils.hpp"
 
 #include "4C_constraint_lagpenconstraint_noxinterface.hpp"

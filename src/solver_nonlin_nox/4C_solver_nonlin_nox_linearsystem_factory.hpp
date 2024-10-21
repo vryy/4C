@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN factory to create a %::NOX::Epetra::LinearSystem.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_FACTORY_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_LINEARSYSTEM_FACTORY_HPP
 

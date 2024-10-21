@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief non-Newtonian fluid of Herschel-Bulkley type
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_herschelbulkley.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

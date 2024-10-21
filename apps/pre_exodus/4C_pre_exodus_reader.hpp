@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief preprocessor reader for exodusII format
-
-
-\level 1
-
-Here everything related with the exodus format and the accessible data
-is handed to a c++ object mesh.
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_PRE_EXODUS_READER_HPP
 #define FOUR_C_PRE_EXODUS_READER_HPP
 

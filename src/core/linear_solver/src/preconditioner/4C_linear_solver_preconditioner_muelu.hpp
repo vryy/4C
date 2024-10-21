@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for MueLu preconditioner
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_PRECONDITIONER_MUELU_HPP
 #define FOUR_C_LINEAR_SOLVER_PRECONDITIONER_MUELU_HPP
 

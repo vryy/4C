@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element
-
-*----------------------------------------------------------------------*/
 #include "4C_membrane.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

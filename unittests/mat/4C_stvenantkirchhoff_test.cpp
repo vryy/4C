@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief unit testing functionality for stvenantkirchhoff material
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_linalg_serialdensevector.hpp"

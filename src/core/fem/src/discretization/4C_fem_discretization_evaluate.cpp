@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of evaluate calls on discretization
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_discretization_utils.hpp"

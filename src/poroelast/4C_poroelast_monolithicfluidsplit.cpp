@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  monolithic fluid split poroelasticity algorithms
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_poroelast_monolithicfluidsplit.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

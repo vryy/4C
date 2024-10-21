@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Container for output data of the gauss point level
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_HPP
 #define FOUR_C_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_HPP
 

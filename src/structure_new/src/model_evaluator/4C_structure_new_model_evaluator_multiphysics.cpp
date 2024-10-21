@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Base class for modelevaluators in partitioned algorithms.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_model_evaluator_multiphysics.hpp"
 
 FOUR_C_NAMESPACE_OPEN

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Read node sections of dat files.
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_io_nodereader.hpp"
 
 #include "4C_fem_discretization.hpp"

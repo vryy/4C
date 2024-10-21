@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief here the intersection of a (plane) surface with a line is performed
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_INTERSECTION_HPP
 #define FOUR_C_CUT_INTERSECTION_HPP
 

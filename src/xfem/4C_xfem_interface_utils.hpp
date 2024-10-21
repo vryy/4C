@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic routings to evaluate the terms for Nitsche Interface
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_INTERFACE_UTILS_HPP
 #define FOUR_C_XFEM_INTERFACE_UTILS_HPP
 

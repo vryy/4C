@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for Teko block preconditioner
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_preconditioner_teko.hpp"
 
 #include "4C_comm_utils.hpp"

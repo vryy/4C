@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  special assemble/split strategy for blockmatrices arising
-        when simulating electrochemical problems with ion transport
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_UTILS_SPLITSTRATEGY_HPP
 #define FOUR_C_SCATRA_UTILS_SPLITSTRATEGY_HPP
 

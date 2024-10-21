@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
-        problems
-
-\level 3
-
-    *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_function.hpp"
 
 #include "4C_global_data.hpp"

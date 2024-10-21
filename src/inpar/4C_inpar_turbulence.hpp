@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for turbulence
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_TURBULENCE_HPP
 #define FOUR_C_INPAR_TURBULENCE_HPP
 

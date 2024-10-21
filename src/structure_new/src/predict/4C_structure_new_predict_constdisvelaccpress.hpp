@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief implementation of predictor for either constant displacement, velocity or acceleration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_PREDICT_CONSTDISVELACCPRESS_HPP
 #define FOUR_C_STRUCTURE_NEW_PREDICT_CONSTDISVELACCPRESS_HPP
 

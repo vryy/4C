@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief implements a Cubic contact constitutive law
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CUBIC_CONTACTCONSTITUTIVELAW_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_CUBIC_CONTACTCONSTITUTIVELAW_HPP
 

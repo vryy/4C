@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Meshtying element for meshtying between a 3D beam and a 3D solid element.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_gauss_point.hpp"
 
 #include "4C_beam3_reissner.hpp"

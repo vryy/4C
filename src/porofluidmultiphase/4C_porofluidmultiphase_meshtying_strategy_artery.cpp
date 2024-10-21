@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines for coupling with artery network
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_porofluidmultiphase_meshtying_strategy_artery.hpp"
 
 #include "4C_art_net_utils.hpp"

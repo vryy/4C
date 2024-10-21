@@ -1,8 +1,3 @@
-/*! \file
-\brief Helpers for solid element nullspace computation
-\level 0
-*/
-
 #ifndef FOUR_C_SO3_NULLSPACE_HPP
 #define FOUR_C_SO3_NULLSPACE_HPP
 

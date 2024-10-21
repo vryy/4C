@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief Input parameters for ALE mesh motion
-
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_ale.hpp"
 
 #include "4C_fem_condition_definition.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isochoric part of the anisotropic Blemker active skeletal
-(active stress approach) muscle material
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISOMUSCLE_BLEMKER_HPP
 #define FOUR_C_MATELAST_ISOMUSCLE_BLEMKER_HPP
 

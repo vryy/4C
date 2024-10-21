@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-This file contains the routines required for aneurysmatic artery wall following
-Raghavan and Vorp [2000]
-
-The material is a special case of a generalised pover law neo-Hookean material
-
-the input line should read
-  MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 DENS 1.0
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_AAANEOHOOKE_HPP
 #define FOUR_C_MAT_AAANEOHOOKE_HPP
 

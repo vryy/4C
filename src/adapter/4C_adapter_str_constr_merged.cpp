@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Adapter Layer for Structures with Algebraic Constraints
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_adapter_str_constr_merged.hpp"
 
 #include "4C_constraint_manager.hpp"

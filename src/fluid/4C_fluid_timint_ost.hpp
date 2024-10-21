@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief One-step theta time integration for fluids
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_OST_HPP
 #define FOUR_C_FLUID_TIMINT_OST_HPP
 

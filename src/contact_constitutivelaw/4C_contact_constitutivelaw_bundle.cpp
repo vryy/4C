@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief This bundle is used to hold all contact constitutive laws from the input file
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_contact_constitutivelaw_bundle.hpp"
 
 #include "4C_contact_constitutivelaw_contactconstitutivelaw.hpp"

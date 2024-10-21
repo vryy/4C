@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief result testing functionality for scatra-thermo interaction problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_sti_resulttest.hpp"
 
 #include "4C_io_linedefinition.hpp"

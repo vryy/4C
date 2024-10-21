@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of XFluid element interface coupling
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_XFEM_HPP
 #define FOUR_C_FLUID_ELE_CALC_XFEM_HPP
 

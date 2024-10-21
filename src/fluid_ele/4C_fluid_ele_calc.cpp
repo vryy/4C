@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of fluid element
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc.hpp"
 
 #include "4C_fem_condition_utils.hpp"

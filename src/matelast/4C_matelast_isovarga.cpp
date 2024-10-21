@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the isochoric part of the isotropic Varga material
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isovarga.hpp"
 
 #include "4C_material_parameter_base.hpp"

@@ -1,20 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-This file contains the viscohyperelastic material toolbox.
-The availabele viscous models can be applied to any hyperelastic law
-of the Elasthyper toolbox.
-The viscous part is summed up with the hyperelastic laws
-to build a viscohyperelastic material model.
-
-The input line should read
-MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_VISCOELASTHYPER_HPP
 #define FOUR_C_MAT_VISCOELASTHYPER_HPP
 

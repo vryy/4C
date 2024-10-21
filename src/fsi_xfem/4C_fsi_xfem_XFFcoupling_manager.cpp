@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Coupling Manager for eXtended Fluid Fluid Coupling
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fsi_xfem_XFFcoupling_manager.hpp"
 
 #include "4C_fluid_xfluid.hpp"

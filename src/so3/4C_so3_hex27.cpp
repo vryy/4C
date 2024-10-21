@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief tri-quadratic displacement based solid element
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_hex27.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

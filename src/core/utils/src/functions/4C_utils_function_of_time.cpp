@@ -1,8 +1,3 @@
-/*! \file
-\brief Interface for functions of time
-\level 0
-*/
-
 #include "4C_utils_function_of_time.hpp"
 
 #include "4C_io_linedefinition.hpp"

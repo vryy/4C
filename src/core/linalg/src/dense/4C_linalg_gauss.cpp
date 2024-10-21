@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Gauss elimination for small nxn systems
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_gauss_templates.hpp"
 
 FOUR_C_NAMESPACE_OPEN

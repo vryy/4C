@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve fluid problems on ALE mesh
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_FLUID_ALE_HPP
 #define FOUR_C_FSI_FLUID_ALE_HPP
 

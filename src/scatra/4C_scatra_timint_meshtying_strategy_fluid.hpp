@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid-fluid meshtying strategy for standard scalar transport problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
 

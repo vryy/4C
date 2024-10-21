@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of poro Fluid element (standard poro fluid)
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_poro.hpp"
 
 #include "4C_fem_general_element_integration_select.hpp"

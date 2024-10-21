@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of a hyperelastic constituent basis
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_ELASTHYPERBASE_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_ELASTHYPERBASE_HPP
 

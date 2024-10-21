@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with central difference scheme 2nd order (explicit)
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_CENTRDIFF_HPP
 #define FOUR_C_STRUCTURE_TIMINT_CENTRDIFF_HPP
 

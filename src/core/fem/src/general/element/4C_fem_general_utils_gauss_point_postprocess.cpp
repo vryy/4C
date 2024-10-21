@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Extrapolation of Gauss point quantities for to
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 
 #include "4C_fem_general_element.hpp"

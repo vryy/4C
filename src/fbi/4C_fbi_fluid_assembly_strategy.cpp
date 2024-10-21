@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble the fbi coupling contributions
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 
 #include "4C_beam3_base.hpp"

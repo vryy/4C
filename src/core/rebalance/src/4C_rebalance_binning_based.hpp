@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of functions for parallel redistribution
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_REBALANCE_BINNING_BASED_HPP
 #define FOUR_C_REBALANCE_BINNING_BASED_HPP
 

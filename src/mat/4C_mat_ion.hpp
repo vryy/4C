@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores parameters of ion species in electrolyte solution. Former file of Georg
-Bauer
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ION_HPP
 #define FOUR_C_MAT_ION_HPP
 

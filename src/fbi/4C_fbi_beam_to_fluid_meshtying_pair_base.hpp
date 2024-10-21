@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base meshtying element for meshtying between a 1D beam and a 3D fluid element.
-
-\level 2
-*/
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_BASE_HPP
 

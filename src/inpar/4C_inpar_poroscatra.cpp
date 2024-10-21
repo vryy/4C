@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for poro scatra
-
-   \level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_poroscatra.hpp"
 
 #include "4C_inpar_poroelast.hpp"

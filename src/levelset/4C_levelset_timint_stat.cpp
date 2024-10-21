@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief stationary time integration scheme for level-set problems (for coupled problems only)
-       just a dummy
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_levelset_timint_stat.hpp"
 
 FOUR_C_NAMESPACE_OPEN

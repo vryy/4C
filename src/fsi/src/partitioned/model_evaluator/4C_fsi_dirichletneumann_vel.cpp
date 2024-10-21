@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\file fsi_dirichletneumann_vel.cpp
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fsi_dirichletneumann_vel.hpp"
 
 #include "4C_adapter_fld_fbi_movingboundary.hpp"

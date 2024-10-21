@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Electromagnetic diffusion equation element implementation
-
-<pre>
-\level 2
-
-</pre>
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_elemag_diff_ele_calc.hpp"
 
 #include "4C_elemag_ele_action.hpp"

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief element type class of meshfree multibin, creating the same
-
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_BINSTRATEGY_MESHFREE_MULTIBIN_HPP
 #define FOUR_C_BINSTRATEGY_MESHFREE_MULTIBIN_HPP
 

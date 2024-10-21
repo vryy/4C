@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fem_general_utils_gauss_point_postprocess.hpp"
 #include "4C_fem_nurbs_discretization.hpp"

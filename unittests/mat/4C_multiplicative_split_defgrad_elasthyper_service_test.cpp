@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Testcases for the multiplicative_split_defgrad_elasthyper_service functions
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"

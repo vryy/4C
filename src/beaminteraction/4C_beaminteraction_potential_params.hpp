@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all input parameters relevant for potential based beam interactions
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_POTENTIAL_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_POTENTIAL_PARAMS_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief strategy for cloning scatra discretization from structure discretization
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_CLONESTRATEGY_HPP
 #define FOUR_C_SSI_CLONESTRATEGY_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for constraint framework library
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_constraint_framework.hpp"
 
 #include "4C_utils_parameter_list.hpp"

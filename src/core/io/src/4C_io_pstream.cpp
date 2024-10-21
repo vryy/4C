@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A substitute for STL cout for parallel and complex output schemes.
-
-\level 0
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_io_pstream.hpp"
 
 #include <Teuchos_oblackholestream.hpp>

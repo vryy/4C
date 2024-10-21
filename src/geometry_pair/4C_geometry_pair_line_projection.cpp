@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class for interaction of lines and other geometry types.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_projection.hpp"
 
 #include "4C_geometry_pair_element.hpp"

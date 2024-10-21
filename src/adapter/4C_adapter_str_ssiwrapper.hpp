@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structural adapter for SSI problems
-
-
-\level 1
-*/
-
 #ifndef FOUR_C_ADAPTER_STR_SSIWRAPPER_HPP
 #define FOUR_C_ADAPTER_STR_SSIWRAPPER_HPP
 

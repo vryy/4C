@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A dofset that does not rely on same GID/LID numbers but uses
-       a defined node mapping instead (not implemented for element DOFs).
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_DEFINEDMAPPING_WRAPPER_HPP
 #define FOUR_C_FEM_DOFSET_DEFINEDMAPPING_WRAPPER_HPP
 

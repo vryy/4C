@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief bounding box for cut
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_BOUNDINGBOX_HPP
 #define FOUR_C_CUT_BOUNDINGBOX_HPP
 

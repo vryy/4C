@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definitions of classes for the coupled exponential summand for fibers
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPANISOEXPO_HPP
 #define FOUR_C_MATELAST_COUPANISOEXPO_HPP
 

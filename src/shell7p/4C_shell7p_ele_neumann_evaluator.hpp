@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Evaluation of neumann loads for shell7p element
-
-\level 3
- */
-
 #ifndef FOUR_C_SHELL7P_ELE_NEUMANN_EVALUATOR_HPP
 #define FOUR_C_SHELL7P_ELE_NEUMANN_EVALUATOR_HPP
 

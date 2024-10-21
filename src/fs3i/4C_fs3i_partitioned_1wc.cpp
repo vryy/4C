@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Algorithmic routines for partitioned solution approaches to
-       fluid-structure-scalar-scalar interaction (FS3I) specifically
-       related to one-way-coupled problem configurations
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fs3i_partitioned_1wc.hpp"
 
 #include "4C_adapter_fld_fluid_fsi.hpp"

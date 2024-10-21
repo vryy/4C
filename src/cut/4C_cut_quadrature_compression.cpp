@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief see paper by Sudhakar
-
-
-\level 2
- */
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_cut_quadrature_compression.hpp"
 
 #include "4C_cut_element.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of ScaTraHDG internal faces elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_HDG_INTFACES_CALC_HPP
 #define FOUR_C_SCATRA_ELE_HDG_INTFACES_CALC_HPP
 

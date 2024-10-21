@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid-fluid meshtying strategy for electrochemistry problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_HPP
 

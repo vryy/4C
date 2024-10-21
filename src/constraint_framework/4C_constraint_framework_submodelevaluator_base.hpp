@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all constraint submodel evaluators.
-
-
-\level 3
-*/
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_BASE_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_BASE_HPP
 

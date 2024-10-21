@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for structure or poro time integration
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_str_poro_wrapper.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

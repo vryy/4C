@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief contains basis class for the Ensight filter
-
-
- \level 1
- */
-
-
 #ifndef FOUR_C_POST_ENSIGHT_WRITER_HPP
 #define FOUR_C_POST_ENSIGHT_WRITER_HPP
 

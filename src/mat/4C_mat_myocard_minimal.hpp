@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief minimal modoel for myocard material
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*
- |  definitions                                              cbert 08/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MYOCARD_MINIMAL_HPP
 #define FOUR_C_MAT_MYOCARD_MINIMAL_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the field time integration
-
-\level 2
-
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_adapter_field_wrapper.hpp"
 
 FOUR_C_NAMESPACE_OPEN

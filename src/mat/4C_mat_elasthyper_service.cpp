@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Contains the declaration of service functions for hyperelastic materials
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_elasthyper_service.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

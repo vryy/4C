@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief evaluate methods of the 2D solid-wall element with ScaTra coupling.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_extract_values.hpp"

@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
- \brief A proxy of a dofset that adds additional, existing degrees of freedom from the same
-        discretization to nodes (not implemented for element DOFs).
-
- \level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_fem_dofset_merged_wrapper.hpp"
 
 #include "4C_fem_condition_utils.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief computes element volume
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_ELEMENT_VOLUME_HPP
 #define FOUR_C_FEM_GEOMETRY_ELEMENT_VOLUME_HPP
 

@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Helper functions for shell7p element
-
-\level 1
-*/
-
 #ifndef FOUR_C_SHELL7P_UTILS_HPP
 #define FOUR_C_SHELL7P_UTILS_HPP
 

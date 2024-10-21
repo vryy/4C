@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Collection of free functions to reduce code duplication between elements
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_ELEMENT_SERVICE_HPP
 #define FOUR_C_SO3_ELEMENT_SERVICE_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to build the desired linear solver std::map corresponding to the active model types
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_solver_factory.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

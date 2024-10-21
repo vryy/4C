@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief Krylov projector
-
-\level 1
-
-
-*---------------------------------------------------------------------------*/
-
 #include "4C_linalg_krylov_projector.hpp"
 
 #include "4C_linalg_serialdensematrix.hpp"

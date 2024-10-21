@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Converter to use Adapter::Coupling type objects in both coupling directions
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COUPLING_ADAPTER_CONVERTER_HPP
 #define FOUR_C_COUPLING_ADAPTER_CONVERTER_HPP
 

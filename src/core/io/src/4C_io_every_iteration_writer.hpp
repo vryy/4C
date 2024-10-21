@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Write output for each Newton step during one load step in an extra output file.
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_EVERY_ITERATION_WRITER_HPP
 #define FOUR_C_IO_EVERY_ITERATION_WRITER_HPP
 

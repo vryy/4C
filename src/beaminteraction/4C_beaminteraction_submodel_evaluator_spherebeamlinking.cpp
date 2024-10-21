@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief class for managing rigid sphere to beam crosslinking
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_beaminteraction_submodel_evaluator_spherebeamlinking.hpp"
 
 #include "4C_beam3_base.hpp"

@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Evaluation of neumann loads
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
 #define FOUR_C_SOLID_3D_ELE_NEUMANN_EVALUATOR_HPP
 #include "4C_config.hpp"

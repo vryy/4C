@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Gen-alpha time integrator for Low Mach number problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_LOMA_GENALPHA_HPP
 #define FOUR_C_FLUID_TIMINT_LOMA_GENALPHA_HPP
 

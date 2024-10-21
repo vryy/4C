@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Handler to control beam crosslinker simulations
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_CROSSLINKER_HANDLER_HPP
 #define FOUR_C_BEAMINTERACTION_CROSSLINKER_HANDLER_HPP
 

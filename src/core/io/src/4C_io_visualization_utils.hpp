@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the visualization output
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_UTILS_HPP
 #define FOUR_C_IO_VISUALIZATION_UTILS_HPP
 

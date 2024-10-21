@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines for homogeneous isotropic turbulence
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_HIT_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_HIT_HPP
 

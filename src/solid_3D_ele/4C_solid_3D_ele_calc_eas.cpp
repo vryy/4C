@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Implementation of routines for calculation of solid element with EAS element technology
-
-\level 1
-*/
-
 #include "4C_solid_3D_ele_calc_eas.hpp"
 
 #include "4C_comm_parobject.hpp"

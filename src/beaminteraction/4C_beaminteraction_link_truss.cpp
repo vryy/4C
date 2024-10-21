@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for a truss element used as mechanical link
-       between two beam elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_link_truss.hpp"
 
 #include "4C_beaminteraction_link.hpp"

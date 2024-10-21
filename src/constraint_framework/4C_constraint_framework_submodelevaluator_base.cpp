@@ -1,8 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief Generic class for all constraint submodel evaluators.
-\level 3
-*/
 #include "4C_config.hpp"
 
 #include "4C_constraint_framework_submodelevaluator_base.hpp"

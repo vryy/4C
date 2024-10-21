@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Method to deal with coupling between 3D fluid and 0/1D vascular
-problem
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
-// #ifdef D_COUPLED_ARTNET
 #ifndef FOUR_C_FLUID_COUPLING_RED_MODELS_HPP
 #define FOUR_C_FLUID_COUPLING_RED_MODELS_HPP
 

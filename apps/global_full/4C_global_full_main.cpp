@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief Main routine
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_config.hpp"
 #include "4C_config_revision.hpp"
 #include "4C_config_trilinos_version.hpp"

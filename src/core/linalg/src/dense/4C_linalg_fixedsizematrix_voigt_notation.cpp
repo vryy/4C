@@ -1,8 +1,3 @@
-/*! \file
-\brief Voigt notation definition and utilities
-\level 1
-*/
-
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 
 #include <Sacado.hpp>

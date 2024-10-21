@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation
-
-\level 0
-
-*-----------------------------------------------------------------------*/
 #include "4C_linear_solver_method_linalg.hpp"
 
 #include "4C_io_pstream.hpp"

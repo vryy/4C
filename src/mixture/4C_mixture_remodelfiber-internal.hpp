@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a 1D remodel fiber implementation
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_REMODELFIBER_INTERNAL_HPP
 #define FOUR_C_MIXTURE_REMODELFIBER_INTERNAL_HPP
 

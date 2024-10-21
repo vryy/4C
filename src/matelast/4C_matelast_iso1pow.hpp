@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isochoric contribution of an isotropic general power-type
-material in terms of the first Cauchy-Green invariant
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISO1POW_HPP
 #define FOUR_C_MATELAST_ISO1POW_HPP
 

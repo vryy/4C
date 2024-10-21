@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of utility functions for large rotations
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_LARGEROTATIONS_HPP
 #define FOUR_C_FEM_GENERAL_LARGEROTATIONS_HPP
 

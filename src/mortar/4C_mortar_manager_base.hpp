@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-
-\level 2
-
-\brief Base class for contact and meshtying managers (structural problems only)
-       all other problem types use mortar adapters
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_MANAGER_BASE_HPP
 #define FOUR_C_MORTAR_MANAGER_BASE_HPP
 

@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief The cut kernel computes basic geometric operation, implemented are
-    - intersection of Surface and line or line and line
-    - Calculate local coordinates inside an element
-    - Compute Distance from a point to an embedded geometrical object
-      ( surface or line )
-
-\level 1
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #include "4C_cut_kernel.hpp"
 
 #include "4C_cut_point.hpp"

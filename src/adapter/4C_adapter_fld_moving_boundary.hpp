@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Fluid field adapter for moving boundary problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_FLD_MOVING_BOUNDARY_HPP
 #define FOUR_C_ADAPTER_FLD_MOVING_BOUNDARY_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of a scatra element that does not contain any physics
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele.hpp"
 #include "4C_scatra_ele_action.hpp"
 #include "4C_scatra_ele_calc.hpp"

@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief unit testing functionality for druckerprager material
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_beam3_kirchhoff.hpp"

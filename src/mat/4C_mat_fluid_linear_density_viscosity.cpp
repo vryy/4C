@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Linear law (pressure-dependent) for the density and the viscosity
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_fluid_linear_density_viscosity.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class for performing mortar search in 2D/3D based on binarytrees
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_mortar_binarytree.hpp"
 
 #include "4C_fem_discretization.hpp"

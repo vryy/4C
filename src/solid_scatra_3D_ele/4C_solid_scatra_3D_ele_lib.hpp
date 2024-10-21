@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Declaration of a solid-scatra coupling library functions
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_SCATRA_3D_ELE_LIB_HPP
 #define FOUR_C_SOLID_SCATRA_3D_ELE_LIB_HPP
 

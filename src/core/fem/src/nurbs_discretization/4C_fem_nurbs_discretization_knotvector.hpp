@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief knot vectors for nurbs problems (isogeometric analysis)
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_KNOTVECTOR_HPP
 #define FOUR_C_FEM_NURBS_DISCRETIZATION_KNOTVECTOR_HPP
 

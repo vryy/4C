@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A C++ wrapper for the thermo element
-
-This file contains the element specific service routines like
-Pack, Unpack, NumDofPerNode etc.
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                                gjb 01/08 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_ELEMENT_HPP
 #define FOUR_C_THERMO_ELEMENT_HPP
 

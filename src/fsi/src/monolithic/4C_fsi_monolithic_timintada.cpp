@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Provide time adaptivity functionalities within the Monolithic class
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------------*/
-
 #include "4C_adapter_ale_fsi.hpp"
 #include "4C_adapter_fld_fluid_fsi.hpp"
 #include "4C_adapter_str_fsi_timint_adaptive.hpp"

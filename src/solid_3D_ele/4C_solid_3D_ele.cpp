@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Implementation of the solid element
-
-\level 1
-*/
-
-
 #include "4C_solid_3D_ele.hpp"
 
 #include "4C_comm_parobject.hpp"

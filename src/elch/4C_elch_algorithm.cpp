@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all ELCH algorithms
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_elch_algorithm.hpp"
 
 #include "4C_linalg_mapextractor.hpp"

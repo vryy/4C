@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Input parameter for beam-to-solid interaction.
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_BEAM_TO_SOLID_HPP
 #define FOUR_C_INPAR_BEAM_TO_SOLID_HPP
 

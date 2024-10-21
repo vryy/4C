@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief density correction handler in smoothed particle hydrodynamics (SPH)
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_SPH_DENSITY_CORRECTION_HPP
 #define FOUR_C_PARTICLE_INTERACTION_SPH_DENSITY_CORRECTION_HPP
 

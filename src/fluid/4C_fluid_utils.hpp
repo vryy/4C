@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for fluid problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_UTILS_HPP
 #define FOUR_C_FLUID_UTILS_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Abstract class to be overloaded by different constraint enforcement techniques for fluid-beam
-interaction.
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FBI_CONSTRAINTENFORCER_HPP
 #define FOUR_C_FBI_CONSTRAINTENFORCER_HPP
 

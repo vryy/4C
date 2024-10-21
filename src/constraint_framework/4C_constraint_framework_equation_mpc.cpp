@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all multipoint constraint equation terms
-
-\level 3
-    */
-/*-----------------------------------------------------------*/
 #include "4C_config.hpp"
 
 #include "4C_constraint_framework_equation_mpc.hpp"

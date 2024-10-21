@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Main abstract class for meshtying solution strategies
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_ABSTRACT_STRATEGY_HPP
 #define FOUR_C_CONTACT_MESHTYING_ABSTRACT_STRATEGY_HPP
 

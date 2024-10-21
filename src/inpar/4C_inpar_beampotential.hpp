@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameter definitions for beam potential-based interactions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_BEAMPOTENTIAL_HPP
 #define FOUR_C_INPAR_BEAMPOTENTIAL_HPP
 

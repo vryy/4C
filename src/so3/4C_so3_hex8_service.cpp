@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Service routines for Solid Hex8 element
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_so3_hex8.hpp"

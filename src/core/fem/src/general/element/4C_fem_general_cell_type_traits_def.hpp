@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definitions of cell types traits.
-
-In this file, the helper defining the mapping from celltype to their properties are defined
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_HPP
 #define FOUR_C_FEM_GENERAL_CELL_TYPE_TRAITS_DEF_HPP
 

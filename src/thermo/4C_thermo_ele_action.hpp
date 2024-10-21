@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief enums defining action of the thermo elements and related helper functions
-
-\level 1
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_THERMO_ELE_ACTION_HPP
 #define FOUR_C_THERMO_ELE_ACTION_HPP
 

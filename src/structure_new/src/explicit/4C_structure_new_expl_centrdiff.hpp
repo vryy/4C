@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Central differences time integration for solid dynamics
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_EXPL_CENTRDIFF_HPP
 #define FOUR_C_STRUCTURE_NEW_EXPL_CENTRDIFF_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for ScaTraHDG element
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_hdg.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

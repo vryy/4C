@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for multi point constraints used for periodic boundary conditions
- for representative volume elements (RVEs)
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_MPC_RVE_HPP
 #define FOUR_C_INPAR_MPC_RVE_HPP
 

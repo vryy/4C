@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for arterial network stationary formulation.
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_IMPL_STATIONARY_HPP
 #define FOUR_C_ART_NET_IMPL_STATIONARY_HPP
 

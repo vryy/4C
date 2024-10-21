@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Service for microstructural problems
-
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_node.hpp"

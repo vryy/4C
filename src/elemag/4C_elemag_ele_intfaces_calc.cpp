@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrate internal face terms on an internal faces element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_elemag_ele_intfaces_calc.hpp"
 
 #include "4C_elemag_ele_action.hpp"

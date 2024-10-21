@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief input parameter for Brownian dynamics simulation
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_BROWNIANDYN_HPP
 #define FOUR_C_INPAR_BROWNIANDYN_HPP
 

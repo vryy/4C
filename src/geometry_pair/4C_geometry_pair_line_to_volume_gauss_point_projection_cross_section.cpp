@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to volume interaction with Gauss point projection on the cylinder surface along the
-line.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 
 #include "4C_beam3_base.hpp"

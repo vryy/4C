@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the element calculation library
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_solid_3D_ele_calc_lib.hpp"

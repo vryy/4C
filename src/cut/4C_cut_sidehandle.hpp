@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Sidehandle represents a side original loaded into the cut, internal it can be split into
-subsides
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_SIDEHANDLE_HPP
 #define FOUR_C_CUT_SIDEHANDLE_HPP
 

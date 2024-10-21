@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired non-linear solver object.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_solver_factory.hpp"
 
 #include "4C_solver_nonlin_nox_globaldata.hpp"

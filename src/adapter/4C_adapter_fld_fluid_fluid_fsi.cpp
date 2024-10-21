@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for embedded (ALE-)fluid-fluid problems using XFEM
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_fld_fluid_fluid_fsi.hpp"
 
 #include "4C_fluid_utils_mapextractor.hpp"

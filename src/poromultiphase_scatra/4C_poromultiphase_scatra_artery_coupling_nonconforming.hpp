@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base algorithm for non-conforming coupling between poromultiphase_scatra-
-        framework and flow in artery networks including scalar transport
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NONCONFORMING_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_NONCONFORMING_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief a templated fixed size dense matrix
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linalg_fixedsizematrix.hpp"
 
 #include "4C_linalg_serialdensematrix.hpp"

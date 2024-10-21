@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Elastohydrodynamic lubrication (lubrication structure interaction) parameters
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_EHL_HPP
 #define FOUR_C_INPAR_EHL_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of PressureBased artery element
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ART_NET_ARTERY_ELE_CALC_PRES_BASED_HPP
 #define FOUR_C_ART_NET_ARTERY_ELE_CALC_PRES_BASED_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Setup of discretization including assignment of degrees of freedom
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_parobjectfactory.hpp"
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"

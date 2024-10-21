@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief implementation of the 3D solid-poro element including scatra functionality
-
- \level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SO3_PORO_SCATRA_HPP
 #define FOUR_C_SO3_PORO_SCATRA_HPP
 

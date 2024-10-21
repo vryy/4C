@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Bundle the floating point exception handling in one class.
-
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_FLOATING_POINT_EXCEPTION_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_FLOATING_POINT_EXCEPTION_HPP
 

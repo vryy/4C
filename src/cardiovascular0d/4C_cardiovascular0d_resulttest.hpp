@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Monolithic coupling of 3D structural dynamics and 0D cardiovascular flow models
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CARDIOVASCULAR0D_RESULTTEST_HPP
 #define FOUR_C_CARDIOVASCULAR0D_RESULTTEST_HPP
 

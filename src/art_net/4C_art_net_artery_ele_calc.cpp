@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of artery element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_artery_ele_calc.hpp"
 
 FOUR_C_NAMESPACE_OPEN

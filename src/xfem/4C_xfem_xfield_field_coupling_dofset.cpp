@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief DoF set for coupling a xfield and a field discretization at a common
-       interface
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_xfem_xfield_field_coupling_dofset.hpp"
 
 FOUR_C_NAMESPACE_OPEN

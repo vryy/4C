@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief validate a given .dat-file
-
-
-\level 1
-
-Validate a given 4C input file (after all preprocessing steps)
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_pre_exodus_validate.hpp"
 
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"

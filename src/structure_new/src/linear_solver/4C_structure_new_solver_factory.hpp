@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to build the desired linear solver std::map corresponding to the active model types
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_SOLVER_FACTORY_HPP
 #define FOUR_C_STRUCTURE_NEW_SOLVER_FACTORY_HPP
 

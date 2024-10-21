@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for the forward implementation of the range functionality in
-utils_std_cxx20_ranges.H
-
-\level 0
-*/
-
 #include <gtest/gtest.h>
 
 #include "4C_utils_std_cxx20_ranges.hpp"

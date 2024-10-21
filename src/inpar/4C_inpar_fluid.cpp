@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for fluid and related problems
-
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_fluid.hpp"
 
 #include "4C_fem_condition_definition.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-\level 0
-
-\brief Core::LinAlg::SOLVER wrapper around Trilinos' IFPACK preconditioner
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_linear_solver_preconditioner_ifpack.hpp"
 
 #include "4C_utils_exceptions.hpp"

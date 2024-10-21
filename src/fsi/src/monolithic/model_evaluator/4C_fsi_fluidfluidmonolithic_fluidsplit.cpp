@@ -1,13 +1,3 @@
-/*------------------------------------------------------*/
-/*! \file
-\brief Control routine for monolithic fluid-fluid-fsi
-(fluidsplit) using XFEM and NOX
-
-\level 3
-
-*/
-/*------------------------------------------------------*/
-
 #include "4C_fsi_fluidfluidmonolithic_fluidsplit.hpp"
 
 #include "4C_adapter_ale_xffsi.hpp"

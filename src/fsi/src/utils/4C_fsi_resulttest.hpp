@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of fsi specific calculation results
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_RESULTTEST_HPP
 #define FOUR_C_FSI_RESULTTEST_HPP
 

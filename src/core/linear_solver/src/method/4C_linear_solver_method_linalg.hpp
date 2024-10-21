@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of basic solver interface
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_METHOD_LINALG_HPP
 #define FOUR_C_LINEAR_SOLVER_METHOD_LINALG_HPP
 

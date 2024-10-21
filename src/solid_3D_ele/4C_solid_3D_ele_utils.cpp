@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Helpers for solid elements
-
-\level 1
-*/
-
 #include "4C_solid_3D_ele_utils.hpp"
 
 #include "4C_fem_general_element.hpp"

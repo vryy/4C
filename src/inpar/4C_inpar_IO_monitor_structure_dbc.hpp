@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input parameters monitoring dirichlet boundary conditions
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_INPAR_IO_MONITOR_STRUCTURE_DBC_HPP
 #define FOUR_C_INPAR_IO_MONITOR_STRUCTURE_DBC_HPP
 

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Base class to hold material parameters
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 #define FOUR_C_MATERIAL_PARAMETER_BASE_HPP
 

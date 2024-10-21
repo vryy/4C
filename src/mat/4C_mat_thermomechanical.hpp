@@ -1,10 +1,3 @@
-/*! \file
-\brief Interface for all thermo-mechanical material models
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_MAT_THERMOMECHANICAL_HPP
 #define FOUR_C_MAT_THERMOMECHANICAL_HPP
 

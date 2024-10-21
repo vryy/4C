@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class for performing self contact search in 2D / 3D based
-       on binary search trees and dual graphs
-
-
-\level 1
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_contact_selfcontact_binarytree.hpp"
 
 #include "4C_contact_element.hpp"

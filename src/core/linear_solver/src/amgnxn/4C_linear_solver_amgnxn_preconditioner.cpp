@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_amgnxn_preconditioner.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"

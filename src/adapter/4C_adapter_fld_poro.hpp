@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Fluid field adapter for poroelasticity
-
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_FLD_PORO_HPP
 #define FOUR_C_ADAPTER_FLD_PORO_HPP
 

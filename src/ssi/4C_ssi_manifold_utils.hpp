@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Provides utilities to incorporate transport on manifolds into SSI, mainly
- - flux between ScaTra and ScaTra on manifolds incl. coupling matrices
- - mesh tying between manifold fields
- \level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_MANIFOLD_UTILS_HPP
 #define FOUR_C_SSI_MANIFOLD_UTILS_HPP
 

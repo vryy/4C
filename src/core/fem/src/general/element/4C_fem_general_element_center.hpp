@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Center coordinates of an element
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENT_CENTER_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENT_CENTER_HPP
 

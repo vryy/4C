@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief collection of service methods for intersection computations
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_geometry_position_array.hpp"
 
 #include "4C_fem_general_element.hpp"

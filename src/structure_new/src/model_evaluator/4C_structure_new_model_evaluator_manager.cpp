@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Manager of the model evaluator calls.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_model_evaluator_manager.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"  // debugging

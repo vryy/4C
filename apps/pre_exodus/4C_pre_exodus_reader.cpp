@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief preprocessor reader for exodusII format
-
-
-\level 1
-
-Here everything related with the exodus format and the accessible data
-is handed to a c++ object mesh.
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_pre_exodus_reader.hpp"
 
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"

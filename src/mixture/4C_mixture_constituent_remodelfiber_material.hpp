@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a general material for a remodel fiber constituent.
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_HPP
 

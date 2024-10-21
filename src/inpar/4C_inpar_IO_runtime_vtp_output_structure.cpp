@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input parameters for VTP output of structural problem at runtime
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_IO_runtime_vtp_output_structure.hpp"
 
 #include "4C_io_geometry_type.hpp"

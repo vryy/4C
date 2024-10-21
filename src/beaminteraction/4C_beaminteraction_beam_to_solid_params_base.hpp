@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base data container holding data for beam-to-solid interactions.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_PARAMS_BASE_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_PARAMS_BASE_HPP
 

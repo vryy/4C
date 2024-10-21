@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief control routine of poroelasticity problems
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_poroelast_dyn.hpp"
 
 #include "4C_poroelast_base.hpp"

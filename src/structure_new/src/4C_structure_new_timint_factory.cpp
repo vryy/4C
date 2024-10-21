@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief factory for time integration base strategy and data container
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_timint_factory.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief pseudo transient solution method
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_PTC_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_PTC_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility routines for the structural non-linear solver classes.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_utils.hpp"
 
 #include "4C_global_data.hpp"

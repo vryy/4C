@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra boundary terms at integration points
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_PORO_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_PORO_HPP
 

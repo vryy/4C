@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief inner status test that restricts value of update vector
-
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_INNER_STATUSTEST_UPPERBOUND_HPP
 

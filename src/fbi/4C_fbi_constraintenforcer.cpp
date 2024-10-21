@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Abstract class to be overloaded by different constraint enforcement techniques for fluid-beam
-interaction.
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fbi_constraintenforcer.hpp"
 
 #include "4C_adapter_fld_fbi_movingboundary.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Material law for elastic spring (either translational or rotational spring)
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_spring.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

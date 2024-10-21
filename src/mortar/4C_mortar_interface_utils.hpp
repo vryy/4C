@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of utility functions for mortar interfaces
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_INTERFACE_UTILS_HPP
 #define FOUR_C_MORTAR_INTERFACE_UTILS_HPP
 

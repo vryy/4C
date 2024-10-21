@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief generic material that stores a list of materials, where each material itself defines the
-properties of e.g. one species in a scalar transport problem, or one phase in a fluid problem
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_mat_list.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

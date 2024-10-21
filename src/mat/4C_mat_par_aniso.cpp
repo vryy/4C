@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of a base class for anisotropic material parameters
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_mat_par_aniso.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

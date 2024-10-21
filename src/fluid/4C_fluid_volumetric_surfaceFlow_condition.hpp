@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Method to deal with womersley flow profiles
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_HPP
 #define FOUR_C_FLUID_VOLUMETRIC_SURFACEFLOW_CONDITION_HPP
 

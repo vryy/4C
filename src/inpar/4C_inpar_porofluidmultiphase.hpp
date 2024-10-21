@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief input parameters for porous multiphase fluid problem
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_POROFLUIDMULTIPHASE_HPP
 #define FOUR_C_INPAR_POROFLUIDMULTIPHASE_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_HPP
 #define FOUR_C_FEM_DOFSET_HPP
 

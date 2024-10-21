@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_SPARSEMATRIXBASE_HPP
 #define FOUR_C_LINALG_SPARSEMATRIXBASE_HPP
 

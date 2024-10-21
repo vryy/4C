@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base meshtying element for meshtying between a 3D beam and a 3D solid element.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_base.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"

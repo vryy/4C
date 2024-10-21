@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief HDG time-integration scheme
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_hdg.hpp"
 
 #include "4C_binstrategy.hpp"

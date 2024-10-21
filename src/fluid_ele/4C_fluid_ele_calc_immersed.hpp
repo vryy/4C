@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief calc class for immersed problems
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_IMMERSED_HPP
 #define FOUR_C_FLUID_ELE_CALC_IMMERSED_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief variable manager class for poro multiphase fluid element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_ele_variablemanager.hpp"
 
 #include "4C_fem_discretization.hpp"

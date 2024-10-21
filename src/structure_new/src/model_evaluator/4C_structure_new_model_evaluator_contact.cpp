@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all contact terms
-
-
-\level 3
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_structure_new_model_evaluator_contact.hpp"
 
 #include "4C_contact_lagrange_strategy_poro.hpp"

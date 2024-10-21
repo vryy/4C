@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief part of the facetgraph to create facets from lines and edges
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_find_cycles.hpp"
 
 FOUR_C_NAMESPACE_OPEN

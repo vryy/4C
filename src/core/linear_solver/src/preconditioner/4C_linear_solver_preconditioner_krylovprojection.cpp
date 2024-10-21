@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-
- \level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_preconditioner_krylovprojection.hpp"
 
 #include "4C_linalg_projected_precond.hpp"

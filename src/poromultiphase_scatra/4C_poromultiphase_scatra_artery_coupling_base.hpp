@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base algorithm for coupling between poromultiphase_scatra-
-        framework and flow in artery networks including scalar transport
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_BASE_HPP
 

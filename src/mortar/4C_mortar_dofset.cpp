@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of degrees of freedom special for mortar coupling
-
-
-\level 1
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_mortar_dofset.hpp"
 
 #include "4C_fem_discretization.hpp"

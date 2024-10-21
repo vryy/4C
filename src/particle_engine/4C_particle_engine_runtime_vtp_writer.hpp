@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief write visualization output for particles in vtk/vtp format at runtime
-\level 1
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_ENGINE_RUNTIME_VTP_WRITER_HPP
 #define FOUR_C_PARTICLE_ENGINE_RUNTIME_VTP_WRITER_HPP
 

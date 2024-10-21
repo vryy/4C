@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief utils methods for cloning the porofluid discretization
-
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_UTILS_CLONESTRATEGY_HPP
 #define FOUR_C_POROMULTIPHASE_UTILS_CLONESTRATEGY_HPP
 

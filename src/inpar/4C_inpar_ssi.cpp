@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input parameters for solid-scatra-interaction
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_ssi.hpp"
 
 #include "4C_fem_condition_definition.hpp"

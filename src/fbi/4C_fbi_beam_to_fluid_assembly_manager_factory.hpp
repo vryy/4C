@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create appropriate beam to fluid meshtying assembly managers for the desired
-constraint discretization approach
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_ASSEMBLY_MANAGER_FACTORY_HPP
 

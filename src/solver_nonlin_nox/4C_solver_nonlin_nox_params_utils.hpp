@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
- *  *
- * \brief Utility methods to handle and parse (input) parameter lists
- *
- * \level 3
- *
- *
- */
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_PARAMS_UTILS_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_PARAMS_UTILS_HPP
 

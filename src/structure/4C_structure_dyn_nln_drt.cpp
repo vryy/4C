@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for structural dynamics (outsourced to adapter layer)
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_structure_dyn_nln_drt.hpp"
 
 #include "4C_adapter_str_factory.hpp"

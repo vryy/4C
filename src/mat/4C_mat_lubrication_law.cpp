@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief calculation classes for evaluation of constitutive relation for lubrication
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_mat_lubrication_law.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

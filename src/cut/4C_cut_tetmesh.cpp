@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Tessellate the element by means of a Delauney triangulation
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_cut_tetmesh.hpp"
 
 #include "4C_cut_levelsetside.hpp"

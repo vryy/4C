@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the geometry pairs.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_UTILITY_FUNCTIONS_HPP
 #define FOUR_C_GEOMETRY_PAIR_UTILITY_FUNCTIONS_HPP
 

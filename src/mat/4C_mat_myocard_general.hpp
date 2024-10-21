@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief general myocard material model
-
-\level 3
-
-*/
-
 #ifndef FOUR_C_MAT_MYOCARD_GENERAL_HPP
 #define FOUR_C_MAT_MYOCARD_GENERAL_HPP
 

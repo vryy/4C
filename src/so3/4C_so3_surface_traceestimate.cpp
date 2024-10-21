@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation for nitsche trace inequality estimate
-
-
-\level 3
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_element_integration_select.hpp"
 #include "4C_fem_general_utils_boundary_integration.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"

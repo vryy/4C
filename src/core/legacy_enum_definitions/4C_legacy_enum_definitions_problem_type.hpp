@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Some important enums used in conjunction with Global::Problem
-\level 1
-*/
-/*--------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEGACY_ENUM_DEFINITIONS_PROBLEM_TYPE_HPP
 #define FOUR_C_LEGACY_ENUM_DEFINITIONS_PROBLEM_TYPE_HPP
 

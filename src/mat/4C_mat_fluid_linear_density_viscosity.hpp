@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Linear law (pressure-dependent) for the density and the viscosity
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_FLUID_LINEAR_DENSITY_VISCOSITY_HPP
 #define FOUR_C_MAT_FLUID_LINEAR_DENSITY_VISCOSITY_HPP
 

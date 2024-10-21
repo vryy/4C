@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief a wrapper for porous multiphase flow algorithms
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_HPP
 #define FOUR_C_ADAPTER_POROFLUIDMULTIPHASE_WRAPPER_HPP
 

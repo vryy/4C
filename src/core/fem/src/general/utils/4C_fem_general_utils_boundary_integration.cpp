@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of integration routines for faces on elements
-
-\level 0
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_utils_boundary_integration.hpp"
 
 #include "4C_fem_general_utils_integration.hpp"

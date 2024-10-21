@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief  base class for monolithic porous multiphase flow through elastic medium problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_MONOLITHIC_HPP
 #define FOUR_C_POROMULTIPHASE_MONOLITHIC_HPP
 

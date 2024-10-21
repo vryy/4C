@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Static Prestress  analysis
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_PRESTRESS_HPP
 #define FOUR_C_STRUCTURE_TIMINT_PRESTRESS_HPP
 

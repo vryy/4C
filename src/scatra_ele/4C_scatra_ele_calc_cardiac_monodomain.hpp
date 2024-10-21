@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra_ele_calc_cardiac_monodomain.H
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_HPP
 #define FOUR_C_SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_HPP
 

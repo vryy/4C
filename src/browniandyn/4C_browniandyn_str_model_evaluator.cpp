@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief model evaluator for brownian (stochastic and damping)
-       forces
-
-
-\date May, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
 #include "4C_browniandyn_str_model_evaluator.hpp"
 
 #include "4C_beam3_base.hpp"

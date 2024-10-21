@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief manages the different types of mesh and level-set based coupling conditions and thereby
-builds the bridge between the xfluid class and the cut-library
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_CONDITION_MANAGER_HPP
 #define FOUR_C_XFEM_CONDITION_MANAGER_HPP
 

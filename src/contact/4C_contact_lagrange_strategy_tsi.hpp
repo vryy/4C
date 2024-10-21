@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief a derived strategy handling the Lagrange multiplier based TSI contact
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_LAGRANGE_STRATEGY_TSI_HPP
 #define FOUR_C_CONTACT_LAGRANGE_STRATEGY_TSI_HPP
 

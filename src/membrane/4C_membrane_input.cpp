@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element input
-
-*----------------------------------------------------------------------*/
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_membrane.hpp"

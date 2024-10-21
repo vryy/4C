@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a mixed-logarithmic neo-Hooke material according to example 1 in
-"Stupkiewicz. An ALE formulation for implicit time integration of quasi-steady state wear problems.
-Comput. Methods Appl. Mech. Engrg. 260, 2013"
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_couplogmixneohooke.hpp"
 
 #include "4C_material_parameter_base.hpp"

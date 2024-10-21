@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the SemiLagrangean class
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_xfluid_timeInt_std_SemiLagrange.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

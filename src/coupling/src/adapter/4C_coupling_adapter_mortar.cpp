@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A class providing coupling capabilities based on mortar methods
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_coupling_adapter_mortar.hpp"
 
 #include "4C_fem_condition_utils.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation on an active stress material
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_matelast_anisoactivestress_evolution.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

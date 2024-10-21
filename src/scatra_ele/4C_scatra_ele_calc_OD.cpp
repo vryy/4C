@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief routines for calculation of off diagonal terms of scatra element
-
- \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_fem_geometry_position_array.hpp"
 #include "4C_fem_nurbs_discretization_utils.hpp"
 #include "4C_scatra_ele.hpp"

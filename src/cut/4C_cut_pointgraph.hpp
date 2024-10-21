@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief PointGraph, Graph Algorithm to create Facets from lines and edges
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_POINTGRAPH_HPP
 #define FOUR_C_CUT_POINTGRAPH_HPP
 

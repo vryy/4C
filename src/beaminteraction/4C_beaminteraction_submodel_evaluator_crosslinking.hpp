@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief class for submodel crosslinking
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_HPP
 #define FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_HPP
 

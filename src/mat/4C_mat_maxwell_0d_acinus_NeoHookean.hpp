@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Four-element Maxwell material model for reduced dimensional acinus elements simplified to
-linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
 #define FOUR_C_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
 

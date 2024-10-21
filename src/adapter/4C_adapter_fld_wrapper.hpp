@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief fluid wrapper
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_FLD_WRAPPER_HPP
 #define FOUR_C_ADAPTER_FLD_WRAPPER_HPP
 

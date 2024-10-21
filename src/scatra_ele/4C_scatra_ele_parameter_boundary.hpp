@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief singleton class holding all interface parameters required for boundary element evaluation
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_PARAMETER_BOUNDARY_HPP
 #define FOUR_C_SCATRA_ELE_PARAMETER_BOUNDARY_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief FSI linear system interface to the nonlinear solver NOX
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_LINEARSYSTEM_HPP
 #define FOUR_C_FSI_NOX_LINEARSYSTEM_HPP
 

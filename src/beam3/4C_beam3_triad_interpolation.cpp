@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for a triad interpolation scheme
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beam3_triad_interpolation.hpp"
 
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"

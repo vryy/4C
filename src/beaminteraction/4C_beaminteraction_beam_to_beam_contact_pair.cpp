@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam contact pair (two beam elements) consisting of several contact segments
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_beam_to_beam_contact_pair.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

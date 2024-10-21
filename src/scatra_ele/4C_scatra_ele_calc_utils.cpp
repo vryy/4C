@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility methods for scatra
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_calc_utils.hpp"
 
 #include "4C_fem_condition_utils.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief structs to store integration points and weights together
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_UTILS_INTEGRATION_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_INTEGRATION_HPP
 

@@ -1,28 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief High order Adams-Bashforth time integration for solid dynamics
-
-The Adams-Bashforth scheme will update the displacement and velocities as follows:
-+ For second order Adams-Bashforth:
-
-  u_{n+1} = u_{n} + 3/2 dt v_{n} - 1/2 dt v_{n-1}
-  v_{n+1} = v_{n} + 3/2 dt a_{n} - 1/2 dt a_{n-1}
-
-+ For fourth order Adams-Bashforth:
-
-  u_{n+1} = u_{n} + 55/24 dt v_{n} - 59/24 dt v_{n-1} + 37/24 dt v_{n-2} - 9/24 dt v_{n-3}
-  v_{n+1} = v_{n} + 55/24 dt a_{n} - 59/24 dt a_{n-1} + 37/24 dt a_{n-2} - 9/24 dt a_{n-3}
-
-Adams-Bashforth scheme of order p typically needs previous p-1 steps for explicit extrapolation.
-This is generally not available in a new analysis, thus modified forward Euler scheme is employed in
-the first p-1 steps. For a restart analysis, those values are restored from the history.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_EXPL_ABX_HPP
 #define FOUR_C_STRUCTURE_NEW_EXPL_ABX_HPP
 

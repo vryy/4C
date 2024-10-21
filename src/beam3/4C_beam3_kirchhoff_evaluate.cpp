@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-// Todo check for obsolete header inclusions
 #include "4C_beam3_kirchhoff.hpp"
 #include "4C_beam3_spatial_discretization_utils.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"

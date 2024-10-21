@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all structure terms
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_HPP
 

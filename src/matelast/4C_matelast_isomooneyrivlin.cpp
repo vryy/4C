@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of a Mooney-Rivlin-type material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isomooneyrivlin.hpp"
 
 #include "4C_material_parameter_base.hpp"

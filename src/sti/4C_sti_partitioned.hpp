@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief partitioned coupling algorithm for scatra-thermo interaction
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STI_PARTITIONED_HPP
 #define FOUR_C_STI_PARTITIONED_HPP
 

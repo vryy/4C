@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper functions and classes for the readthedocs parser
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CREATE_RTDFILES_UTILS_HPP
 #define FOUR_C_CREATE_RTDFILES_UTILS_HPP
 #include "4C_config.hpp"

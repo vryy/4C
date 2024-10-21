@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all beaminteraction submodel evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_HPP
 #define FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_GENERIC_HPP
 

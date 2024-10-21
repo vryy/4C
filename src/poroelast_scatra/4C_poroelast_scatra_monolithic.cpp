@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief monolithic coupling algorithm for scalar transport within porous medium
-
-\level 2
-
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_scatra_monolithic.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

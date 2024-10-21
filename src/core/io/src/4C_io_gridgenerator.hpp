@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Create parametrized structured grid.
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_GRIDGENERATOR_HPP
 #define FOUR_C_IO_GRIDGENERATOR_HPP
 

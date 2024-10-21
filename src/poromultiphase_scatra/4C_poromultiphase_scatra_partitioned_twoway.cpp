@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief two-way coupled partitioned algorithm for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_poromultiphase_scatra_partitioned_twoway.hpp"
 
 #include "4C_adapter_art_net.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters for mortar methods
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_MORTAR_HPP
 #define FOUR_C_INPAR_MORTAR_HPP
 

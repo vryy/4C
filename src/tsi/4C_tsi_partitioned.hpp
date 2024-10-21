@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all TSI algorithms that perform a coupling between the
-       structural field equation and temperature field equations
-
-
-\level 2
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 12/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_TSI_PARTITIONED_HPP
 #define FOUR_C_TSI_PARTITIONED_HPP
 

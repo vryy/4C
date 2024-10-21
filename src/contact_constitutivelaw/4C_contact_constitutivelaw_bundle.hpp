@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This bundle is used to hold all contact constitutive laws from the input file
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_BUNDLE_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_BUNDLE_HPP
 

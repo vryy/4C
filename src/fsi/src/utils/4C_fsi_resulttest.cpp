@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of FSI calculation results
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_resulttest.hpp"
 
 #include "4C_adapter_fld_fluid_fsi.hpp"

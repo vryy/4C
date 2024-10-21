@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a general material for a remodel fiber constituent.
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mixture_constituent_remodelfiber_material_exponential.hpp"
 
 #include <Sacado.hpp>

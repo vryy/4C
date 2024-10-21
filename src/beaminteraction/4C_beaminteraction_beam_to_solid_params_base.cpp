@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base data container holding data for beam-to-solid interactions.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_params_base.hpp"
 
 #include "4C_global_data.hpp"

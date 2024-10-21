@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Base class for the CONTACT/MESHTYING factories.
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_mortar_strategy_factory.hpp"
 
 #include "4C_fem_nurbs_discretization.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- *
-\brief Definition of Constitutive contact Laws
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_HPP
 

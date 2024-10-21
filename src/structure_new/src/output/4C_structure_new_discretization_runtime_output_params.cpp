@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related to output at runtime for beams
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_structure_new_discretization_runtime_output_params.hpp"
 
 #include "4C_global_data.hpp"

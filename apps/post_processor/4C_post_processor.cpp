@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief main routine of the main postprocessor filters
-
-\level 1
-
- */
-
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_post_common.hpp"

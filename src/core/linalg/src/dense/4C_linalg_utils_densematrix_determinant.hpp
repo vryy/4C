@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\file linalg_utils_densematrix_determinant.H
-
-\brief determinant functions for dense matrices up to 4x4 and LU determinant.
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_DETERMINANT_HPP
 #define FOUR_C_LINALG_UTILS_DENSEMATRIX_DETERMINANT_HPP
 

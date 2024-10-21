@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief main file containing routines for calculation of scatra element formulated in reference
-concentrations and with advanced reaction terms
-
-\level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_REFCONC_REAC_HPP
 

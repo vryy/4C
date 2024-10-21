@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility class supporting evaluation of electrode materials
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_boundary_calc_elch_electrode_growth_utils.hpp"
 
 #include "4C_scatra_ele_parameter_boundary.hpp"

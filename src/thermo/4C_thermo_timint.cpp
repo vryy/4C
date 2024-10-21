@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Time integration for spatially discretised thermal dynamics
-\level 1
-*/
-
-
-/*----------------------------------------------------------------------*
- | headers                                                  bborn 08/09 |
- *----------------------------------------------------------------------*/
 #include "4C_thermo_timint.hpp"
 
 #include "4C_contact_nitsche_strategy_tsi.hpp"

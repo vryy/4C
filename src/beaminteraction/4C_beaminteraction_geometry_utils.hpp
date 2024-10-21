@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for geometric problems associated with beam-to-? interactions
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_GEOMETRY_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_GEOMETRY_UTILS_HPP
 

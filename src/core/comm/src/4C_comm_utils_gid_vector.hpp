@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for std vector with nodal GIDs
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_UTILS_GID_VECTOR_HPP
 #define FOUR_C_COMM_UTILS_GID_VECTOR_HPP
 

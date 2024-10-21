@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of all beam interaction terms, managing
-       everything that has to do with parallelity
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_str_model_evaluator.hpp"
 
 #include "4C_beam3_base.hpp"

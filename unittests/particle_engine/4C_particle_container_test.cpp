@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for smart particle container class
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_particle_engine_container.hpp"

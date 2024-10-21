@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for geometry pair evaluation data subcontainers.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_EVALUATION_DATA_BASE_HPP
 #define FOUR_C_GEOMETRY_PAIR_EVALUATION_DATA_BASE_HPP
 

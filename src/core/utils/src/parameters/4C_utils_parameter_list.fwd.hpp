@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Forward declaration of the Teuchos::ParameterList class
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_PARAMETER_LIST_FWD_HPP
 #define FOUR_C_UTILS_PARAMETER_LIST_FWD_HPP
 

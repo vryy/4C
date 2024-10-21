@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of nitsche related terms
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_nitsche_integrator.hpp"
 
 #include "4C_contact_element.hpp"

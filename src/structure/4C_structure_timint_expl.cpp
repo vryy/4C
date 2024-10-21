@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Explicit time integration for structural dynamics
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_expl.hpp"
 
 #include "4C_cardiovascular0d_manager.hpp"

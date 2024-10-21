@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of lubrication element
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_LUBRICATION_ELE_CALC_HPP
 #define FOUR_C_LUBRICATION_ELE_CALC_HPP
 

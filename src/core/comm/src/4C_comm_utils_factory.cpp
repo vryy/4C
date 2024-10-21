@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for namespace Discret
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_utils_factory.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"

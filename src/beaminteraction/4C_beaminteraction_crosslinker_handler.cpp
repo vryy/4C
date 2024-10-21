@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Handler to control beam crosslinker simulations
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_beaminteraction_crosslinker_handler.hpp"
 
 #include "4C_binstrategy_meshfree_multibin.hpp"

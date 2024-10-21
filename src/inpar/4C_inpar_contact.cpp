@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for contact
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_contact.hpp"
 
 #include "4C_inpar_structure.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element Type
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MEMBRANE_ELETYPES_HPP
 #define FOUR_C_MEMBRANE_ELETYPES_HPP
 

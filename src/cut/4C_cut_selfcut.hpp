@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class that provides all routines to handle cutsides which cut each other
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_SELFCUT_HPP
 #define FOUR_C_CUT_SELFCUT_HPP
 

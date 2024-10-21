@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Definition of a solid-scatra element
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_SCATRA_3D_ELE_CALC_HPP
 #define FOUR_C_SOLID_SCATRA_3D_ELE_CALC_HPP
 

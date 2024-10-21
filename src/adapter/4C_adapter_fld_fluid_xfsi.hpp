@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for fsi. Can only be used in conjunction with XFluid!
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_XFSI_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_XFSI_HPP
 

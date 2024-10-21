@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief strategy handling mesh tying problems with Lagrange multipliers
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_lagrange_strategy.hpp"
 
 #include "4C_global_data.hpp"

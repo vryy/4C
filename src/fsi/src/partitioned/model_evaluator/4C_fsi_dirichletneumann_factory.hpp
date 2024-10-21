@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create appropriate DirichletNeumann Algorithm
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_DIRICHLETNEUMANN_FACTORY_HPP
 #define FOUR_C_FSI_DIRICHLETNEUMANN_FACTORY_HPP
 

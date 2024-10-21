@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief utility functions for poroelasticity problems
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROELAST_UTILS_HPP
 #define FOUR_C_POROELAST_UTILS_HPP
 

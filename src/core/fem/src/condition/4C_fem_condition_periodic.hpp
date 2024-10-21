@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods to apply periodic boundary conditions
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_CONDITION_PERIODIC_HPP
 #define FOUR_C_FEM_CONDITION_PERIODIC_HPP
 

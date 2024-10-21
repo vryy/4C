@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief colored graph to create volumecells from facets
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_coloredgraph.hpp"
 
 #include "4C_cut_facet.hpp"

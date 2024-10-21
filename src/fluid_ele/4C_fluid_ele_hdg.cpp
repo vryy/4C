@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid element based on the HDG method
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_hdg.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of exporter class
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_exporter.hpp"
 
 #include "4C_utils_exceptions.hpp"

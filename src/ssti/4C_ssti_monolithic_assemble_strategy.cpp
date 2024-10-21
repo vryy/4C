@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Assemble strategy for monolithic SSTI
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #include "4C_ssti_monolithic_assemble_strategy.hpp"
 
 #include "4C_adapter_str_ssiwrapper.hpp"

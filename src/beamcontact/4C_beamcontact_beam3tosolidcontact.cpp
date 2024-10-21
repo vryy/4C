@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam and solid contact pair (two elements)
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beamcontact_beam3tosolidcontact.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

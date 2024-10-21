@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Basic time integration driver for Low Mach number problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_loma.hpp"
 
 #include "4C_fluid_ele_action.hpp"

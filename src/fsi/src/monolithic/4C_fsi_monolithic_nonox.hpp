@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Base class for monolithic fluid-fluid-fsi algorithm
- using XFEM (without NOX)
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_MONOLITHIC_NONOX_HPP
 #define FOUR_C_FSI_MONOLITHIC_NONOX_HPP
 

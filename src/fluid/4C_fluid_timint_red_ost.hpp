@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief One-step theta time integration for reduced models
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_TIMINT_RED_OST_HPP
 #define FOUR_C_FLUID_TIMINT_RED_OST_HPP
 

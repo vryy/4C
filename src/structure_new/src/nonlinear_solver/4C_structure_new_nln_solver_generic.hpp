@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class of the non-linear structural solvers.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_GENERIC_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_GENERIC_HPP
 

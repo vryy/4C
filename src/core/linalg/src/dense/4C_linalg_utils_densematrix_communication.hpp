@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of communication methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_HPP
 #define FOUR_C_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_HPP
 

@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Various components that make up an input line
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_LINECOMPONENT_HPP
 #define FOUR_C_IO_LINECOMPONENT_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Derived class which manages the special requirements to the linear
-       solver for structural problems.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_HPP
 #define FOUR_C_STRUCTURE_NEW_NOX_NLN_STR_LINEARSYSTEM_HPP
 

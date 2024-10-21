@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Split conditions into map extrators
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_CONDITION_SELECTOR_HPP
 #define FOUR_C_FEM_CONDITION_SELECTOR_HPP
 

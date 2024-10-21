@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief \brief FPSI Coupling Object: Holds all objects on the Fluid-Poro-Interface and evaluates the
-Fluid-Poro-Coupling Matrixes!
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FPSI_COUPLING_HPP
 #define FOUR_C_FPSI_COUPLING_HPP
 

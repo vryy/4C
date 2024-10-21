@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Cut tets used for the Tessellation routine
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_tetmeshintersection.hpp"
 
 #include "4C_cut_boundarycell.hpp"

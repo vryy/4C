@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Read element sections of dat files.
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_ELEMENTREADER_HPP
 #define FOUR_C_IO_ELEMENTREADER_HPP
 

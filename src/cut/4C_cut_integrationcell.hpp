@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Create and handle integrationcells
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_INTEGRATIONCELL_HPP
 #define FOUR_C_CUT_INTEGRATIONCELL_HPP
 

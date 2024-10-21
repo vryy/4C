@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Auxiliar routine to boolify integral Yes/No data
-
-
-\level 0
-*/
-
 #ifndef FOUR_C_INPAR_BOOLIFYPARAMETERS_HPP
 #define FOUR_C_INPAR_BOOLIFYPARAMETERS_HPP
 

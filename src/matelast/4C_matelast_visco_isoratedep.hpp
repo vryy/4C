@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the isochoric contribution of a viscous rate dependent material
-law, modified from Pioletti, 1997
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_VISCO_ISORATEDEP_HPP
 #define FOUR_C_MATELAST_VISCO_ISORATEDEP_HPP
 

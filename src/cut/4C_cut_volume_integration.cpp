@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrates base functions over volume, distribute Gauss points and solve moment fitting
-equations
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_volume_integration.hpp"
 
 #include "4C_cut_boundingbox.hpp"

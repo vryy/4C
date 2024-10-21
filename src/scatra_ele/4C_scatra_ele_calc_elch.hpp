@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements for ion-transport equation
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_ELCH_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ELCH_HPP
 

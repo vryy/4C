@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief NOX's Newton with full step
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_FULLNEWTON_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage one nurbs discretization
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_nurbs_discretization.hpp"
 
 #include "4C_fem_general_utils_boundary_integration.hpp"

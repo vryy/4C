@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation class containing routines for dissolving reactions within
-       porous medium for ECM modeling
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_PORO_REAC_ECM_HPP
 #define FOUR_C_SCATRA_ELE_CALC_PORO_REAC_ECM_HPP
 

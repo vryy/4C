@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory that creates the visualization writer that is specified in the input file
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_WRITER_FACTORY_HPP
 #define FOUR_C_IO_VISUALIZATION_WRITER_FACTORY_HPP
 

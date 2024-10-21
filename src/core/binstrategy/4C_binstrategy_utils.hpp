@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utils class for use of binning strategy
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BINSTRATEGY_UTILS_HPP
 #define FOUR_C_BINSTRATEGY_UTILS_HPP
 

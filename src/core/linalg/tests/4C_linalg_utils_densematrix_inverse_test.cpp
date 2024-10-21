@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for linalg dense inverse calculation routines.
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_linalg_utils_densematrix_inverse.hpp"

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class implementing common functionality and dofset registration
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_BASE_HPP
 #define FOUR_C_FEM_DOFSET_BASE_HPP
 

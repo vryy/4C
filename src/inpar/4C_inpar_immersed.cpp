@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for immersed
-
-\level 1
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_inpar_immersed.hpp"
 
 #include "4C_fem_condition_definition.hpp"

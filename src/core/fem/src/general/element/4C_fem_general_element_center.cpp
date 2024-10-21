@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Center coordinates of an element
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_element_center.hpp"
 
 #include "4C_fem_general_element.hpp"

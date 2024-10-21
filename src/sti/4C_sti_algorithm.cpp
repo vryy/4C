@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief general coupling algorithm for scatra-thermo interaction
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_sti_algorithm.hpp"
 
 #include "4C_coupling_adapter.hpp"

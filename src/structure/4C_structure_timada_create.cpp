@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Creation of auxiliary time integration scheme for time step size adaptivity
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timada_create.hpp"
 
 #include "4C_structure_timada_joint.hpp"

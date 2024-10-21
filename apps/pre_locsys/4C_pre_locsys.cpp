@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Run time for locsys
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a viscous material contribution, calculated according to an FSLS-model
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_visco_fract.hpp"
 
 #include "4C_material_parameter_base.hpp"

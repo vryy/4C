@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Incomplete! - Purpose: Templated Evaluate file for blood scatra line3 element containing the
-action types for a reduced blood scatra element RedAirBloodScatraLine3. The actual implementation of
-the routines called during the possible actions is contained in red_air_blood_scatraLine3_impl.cpp
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

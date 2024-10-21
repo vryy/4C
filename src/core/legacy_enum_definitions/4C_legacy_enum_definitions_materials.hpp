@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief list of valid materials
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LEGACY_ENUM_DEFINITIONS_MATERIALS_HPP
 #define FOUR_C_LEGACY_ENUM_DEFINITIONS_MATERIALS_HPP
 

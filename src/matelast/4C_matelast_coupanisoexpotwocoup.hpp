@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the passive material behaviour of cardiac muscle
-according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MATELAST_COUPANISOEXPOTWOCOUP_HPP
 #define FOUR_C_MATELAST_COUPANISOEXPOTWOCOUP_HPP
 

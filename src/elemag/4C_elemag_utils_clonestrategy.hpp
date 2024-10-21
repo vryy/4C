@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Strategy to clone scatra discretization from elemag discretization
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_ELEMAG_UTILS_CLONESTRATEGY_HPP
 #define FOUR_C_ELEMAG_UTILS_CLONESTRATEGY_HPP
 

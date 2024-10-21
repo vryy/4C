@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class that provides all routines to handle cutsides which cut each other
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_selfcut.hpp"
 
 #include "4C_cut_kernel.hpp"

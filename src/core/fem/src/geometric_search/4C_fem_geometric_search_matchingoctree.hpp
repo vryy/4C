@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief connect nodes from two nodesets by their distance
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_MATCHINGOCTREE_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_MATCHINGOCTREE_HPP
 

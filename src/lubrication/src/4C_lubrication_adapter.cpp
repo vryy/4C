@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Lubrication field base algorithm
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_lubrication_adapter.hpp"
 
 #include "4C_fem_discretization.hpp"

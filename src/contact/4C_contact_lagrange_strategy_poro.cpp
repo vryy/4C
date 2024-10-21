@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Contact Strategy handling the porous no penetraction condition on the active contact
-interface
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_lagrange_strategy_poro.hpp"
 
 #include "4C_contact_defines.hpp"

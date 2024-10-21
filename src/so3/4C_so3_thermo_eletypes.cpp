@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief 3d TSI solid element
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_thermo_eletypes.hpp"
 
 #include "4C_io_linedefinition.hpp"

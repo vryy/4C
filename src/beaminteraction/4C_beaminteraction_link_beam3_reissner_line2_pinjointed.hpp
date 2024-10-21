@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for a linear Reissner beam element used as mechanical pin joint
-       between two other beam elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_LINK_BEAM3_REISSNER_LINE2_PINJOINTED_HPP
 #define FOUR_C_BEAMINTERACTION_LINK_BEAM3_REISSNER_LINE2_PINJOINTED_HPP
 

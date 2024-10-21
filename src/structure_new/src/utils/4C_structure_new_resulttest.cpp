@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief Structure specific result test class
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

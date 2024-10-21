@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Generic polynomials for HDG methods in 1D, 2D, 3D
-
-\level 2
-
- */
-
-
 #include "4C_fem_general_utils_polynomial.hpp"
 
 #include "4C_fem_general_utils_integration.hpp"

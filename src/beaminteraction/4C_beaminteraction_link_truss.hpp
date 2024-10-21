@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for a truss element used as mechanical link
-       between two beam elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_LINK_TRUSS_HPP
 #define FOUR_C_BEAMINTERACTION_LINK_TRUSS_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper class encapsulating the reaction terms and its derivatives
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_SCATRA_REACTION_COUPLING_HPP
 #define FOUR_C_MAT_SCATRA_REACTION_COUPLING_HPP
 

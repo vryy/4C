@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a coupled anisotropic neo-Hooke material with one fiber direction
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupanisoneohooke.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

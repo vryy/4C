@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief This holds the implementation of the non-abstract methods of the Mixture constituents
- interface
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_constituent.hpp"
 
 #include "4C_global_data.hpp"

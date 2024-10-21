@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for the readthedocs parser
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_create_rtdfiles_utils.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"

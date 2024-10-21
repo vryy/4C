@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of the base functionality of an exponential anisotropic summand
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPANISOEXPOBASE_HPP
 #define FOUR_C_MATELAST_COUPANISOEXPOBASE_HPP
 

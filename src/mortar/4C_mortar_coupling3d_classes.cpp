@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class for mortar coupling of ONE slave element and ONE master
-       element of a mortar interface in 3D (definition of sub-classes).
-
-\level 1
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_mortar_coupling3d_classes.hpp"
 
 #include "4C_fem_general_node.hpp"

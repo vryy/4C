@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for fsi with internal mesh tying or mesh sliding
-
-
-\level 3
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_adapter_fld_fluid_fsi_msht.hpp"
 
 #include "4C_fluid_utils_mapextractor.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a time integrator for prestressing
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_structure_new_impl_prestress.hpp"
 
 #include "4C_global_data.hpp"

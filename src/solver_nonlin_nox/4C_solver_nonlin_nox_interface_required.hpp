@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN extension of the %NOX::Epetra required
-       interface.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_HPP
 

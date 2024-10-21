@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all FSI algorithms
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_ALGORITHM_HPP
 #define FOUR_C_FSI_ALGORITHM_HPP
 

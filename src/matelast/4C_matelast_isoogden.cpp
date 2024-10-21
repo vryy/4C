@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric one-term Ogden material.
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isoogden.hpp"
 
 #include "4C_material_parameter_base.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Generalized conjugate residual linear system solver for FSI
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_linearsystem_gcr.hpp"
 
 #include "4C_linalg_serialdensematrix.hpp"

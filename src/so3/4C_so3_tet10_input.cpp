@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Solid Tet10 Element
-\level 2
-*----------------------------------------------------------------------*/
-
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_tet10.hpp"

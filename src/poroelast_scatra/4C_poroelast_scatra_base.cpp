@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  base class for all poroelasticity scalar transport interaction algorithms
-
-\level 2
-
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_scatra_base.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief  Provides range functionality for any given container. This is a forward implementation of
-c++20 ranges::views
-
-\level 0
-    */
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_STD_CXX20_RANGES_HPP
 #define FOUR_C_UTILS_STD_CXX20_RANGES_HPP
 

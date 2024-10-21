@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameter definitions for beam potential-based interactions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_beampotential.hpp"
 
 #include "4C_fem_condition_definition.hpp"

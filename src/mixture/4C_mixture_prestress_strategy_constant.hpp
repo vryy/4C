@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Constant prestretch strategy
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_HPP
 #define FOUR_C_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_HPP
 

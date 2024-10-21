@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of HDG transport element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_HDG_HPP
 #define FOUR_C_SCATRA_ELE_CALC_HDG_HPP
 

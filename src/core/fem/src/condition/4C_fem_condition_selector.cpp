@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Split conditions into map extractors
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_condition_selector.hpp"
 
 #include "4C_fem_condition.hpp"

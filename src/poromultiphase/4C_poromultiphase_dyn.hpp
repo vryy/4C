@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief entry point (global control routine) for poroelasticity multiphase flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_DYN_HPP
 #define FOUR_C_POROMULTIPHASE_DYN_HPP
 

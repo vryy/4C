@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scalar transport field base algorithm
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_SCATRA_BASE_ALGORITHM_HPP
 #define FOUR_C_ADAPTER_SCATRA_BASE_ALGORITHM_HPP
 

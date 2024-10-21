@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of utility methods for skeletal muscle
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_mat_muscle_utils.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

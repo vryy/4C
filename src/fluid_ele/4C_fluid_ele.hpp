@@ -1,22 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A C++ wrapper for the fluid element
-
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-In addition to that, it contains the interface between element call
-and Gauss point loop (depending on the fluid implementation)
-as well as some additional service routines (for the evaluation
-of errors, turbulence statistics etc.).
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_HPP
 #define FOUR_C_FLUID_ELE_HPP
 

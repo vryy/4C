@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief time-integration scheme with extensions for
-       cardiac monodomain problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_cardiac_monodomain_scheme.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Contains a local bounding volume hierarchy search implementation
-       based on bounding volumes.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_geometric_search_bvh.hpp"
 
 #include "4C_fem_geometric_search_access_traits.hpp"

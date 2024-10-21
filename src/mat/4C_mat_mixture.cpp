@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the mixture material holding a general mixturerule and mixture constituents
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_mixture.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

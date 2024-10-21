@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utilities to read and fill global data
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_GLOBAL_DATA_READ_HPP
 #define FOUR_C_GLOBAL_DATA_READ_HPP
 

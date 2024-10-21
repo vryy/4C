@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Template classes for interface coupling in the XFEM with slave element representation
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_cut_position.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling_impl.hpp"

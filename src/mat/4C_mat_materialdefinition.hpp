@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for material line parts
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MATERIALDEFINITION_HPP
 #define FOUR_C_MAT_MATERIALDEFINITION_HPP
 

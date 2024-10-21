@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief matrix transformation tools: Switch between different parallel
-distributions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #include "4C_mortar_matrix_transform.hpp"
 
 #include "4C_linalg_sparsematrix.hpp"

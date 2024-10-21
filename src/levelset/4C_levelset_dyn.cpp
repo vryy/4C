@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief entry point for level-set transport problems
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_levelset_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

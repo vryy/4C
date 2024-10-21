@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for poro elasticity
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_POROELAST_HPP
 #define FOUR_C_INPAR_POROELAST_HPP
 

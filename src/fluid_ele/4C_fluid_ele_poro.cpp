@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Fluid element for poroelasticity problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_poro.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

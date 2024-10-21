@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for solid elements
-
-\level 1
- *-----------------------------------------------------------------------*/
-
 #include "4C_so3_utils.hpp"
 
 #include "4C_fem_general_element.hpp"

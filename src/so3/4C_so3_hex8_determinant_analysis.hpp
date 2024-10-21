@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief determinant analysis for Solid Hex8 element
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SO3_HEX8_DETERMINANT_ANALYSIS_HPP
 #define FOUR_C_SO3_HEX8_DETERMINANT_ANALYSIS_HPP
 

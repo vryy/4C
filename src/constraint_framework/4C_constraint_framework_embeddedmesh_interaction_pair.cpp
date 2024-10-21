@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief one generic solid-to-solid interaction element pair
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_constraint_framework_embeddedmesh_interaction_pair.hpp"
 
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_utils.hpp"

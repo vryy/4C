@@ -1,8 +1,3 @@
-/*! \file
-\brief General rebalance functionality
-\level 3
-*/
-
 #ifndef FOUR_C_REBALANCE_HPP
 #define FOUR_C_REBALANCE_HPP
 

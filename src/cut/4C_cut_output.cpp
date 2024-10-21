@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Handles file writing of all cut related stuff (gmsh)
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_output.hpp"
 
 #include "4C_cut_boundarycell.hpp"

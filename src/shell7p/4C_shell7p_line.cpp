@@ -1,10 +1,3 @@
-/*! \file
- *
-\brief Line element associated to the shell 7-Parameter element
-
-\level 3
-*/
-
 #include "4C_shell7p_line.hpp"
 
 FOUR_C_NAMESPACE_OPEN

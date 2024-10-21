@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for the solid element utilities (e.g. stress/strain conversions)
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_solid_3D_ele_utils.hpp"

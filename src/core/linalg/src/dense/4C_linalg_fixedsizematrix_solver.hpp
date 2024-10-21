@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A solver for fixed size matrices
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_SOLVER_HPP
 #define FOUR_C_LINALG_FIXEDSIZEMATRIX_SOLVER_HPP
 

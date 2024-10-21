@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Classes for mortar contact coupling in 2D.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_coupling2d.hpp"
 
 #include "4C_contact_defines.hpp"

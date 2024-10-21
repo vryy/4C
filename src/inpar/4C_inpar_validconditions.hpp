@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Setup of the list of valid conditions for input
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_INPAR_VALIDCONDITIONS_HPP
 #define FOUR_C_INPAR_VALIDCONDITIONS_HPP
 

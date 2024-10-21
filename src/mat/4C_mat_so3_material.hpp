@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Common base class for all solid materials
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_SO3_MATERIAL_HPP
 #define FOUR_C_MAT_SO3_MATERIAL_HPP
 

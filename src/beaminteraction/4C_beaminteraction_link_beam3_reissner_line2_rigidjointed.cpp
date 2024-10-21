@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for a linear Reissner beam element used as mechanical link between two other beam
-elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_link_beam3_reissner_line2_rigidjointed.hpp"
 
 #include "4C_beam3_reissner.hpp"

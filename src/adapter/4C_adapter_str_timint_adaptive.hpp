@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structure field adapter for time step size adaptivity
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STR_TIMINT_ADAPTIVE_HPP
 #define FOUR_C_ADAPTER_STR_TIMINT_ADAPTIVE_HPP
 

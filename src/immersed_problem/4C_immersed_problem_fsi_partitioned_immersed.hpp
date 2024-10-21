@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief partitioned immersed fsi subclass
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_HPP
 #define FOUR_C_IMMERSED_PROBLEM_FSI_PARTITIONED_IMMERSED_HPP
 

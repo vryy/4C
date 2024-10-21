@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for linear solvers
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_solver.hpp"
 
 #include "4C_linear_solver_method.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief helper functions/classes for artery problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_UTILS_HPP
 #define FOUR_C_ART_NET_UTILS_HPP
 

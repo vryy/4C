@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief result tests for HDG problems
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_resulttest_hdg.hpp"
 
 #include "4C_fem_general_node.hpp"

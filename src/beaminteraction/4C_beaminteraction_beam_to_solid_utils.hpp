@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for beam-to-solid interactions.
-
-\level 3
-
-*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_UTILS_HPP
 

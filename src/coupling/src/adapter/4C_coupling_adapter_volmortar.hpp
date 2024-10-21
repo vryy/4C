@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief adapter for the volmortar framework
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_COUPLING_ADAPTER_VOLMORTAR_HPP
 #define FOUR_C_COUPLING_ADAPTER_VOLMORTAR_HPP
 

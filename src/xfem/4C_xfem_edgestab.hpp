@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the xfem fluid and ghost penalty stabilization based on EOS/CIP (edge-oriented,
-continuous interior penalty) scheme
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_EDGESTAB_HPP
 #define FOUR_C_XFEM_EDGESTAB_HPP
 

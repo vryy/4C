@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Derived class which manages the special requirements to the linear
-       solver for mesh tying problems.
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_contact_nox_nln_meshtying_linearsystem.hpp"  // base class
 
 #include "4C_contact_abstract_strategy.hpp"

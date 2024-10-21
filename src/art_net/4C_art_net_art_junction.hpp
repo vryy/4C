@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Method to deal with one dimensional artery juction bcs
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_ART_JUNCTION_HPP
 #define FOUR_C_ART_NET_ART_JUNCTION_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class for 2D-3D beam-to-solid volume mesh tying.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_2d-3d_base.hpp"
 
 #include "4C_geometry_pair_element_evaluation_functions.hpp"

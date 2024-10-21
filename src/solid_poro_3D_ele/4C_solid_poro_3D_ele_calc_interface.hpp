@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Interface of solid-poro elements
-
-\level 1
-    */
-
 #ifndef FOUR_C_SOLID_PORO_3D_ELE_CALC_INTERFACE_HPP
 #define FOUR_C_SOLID_PORO_3D_ELE_CALC_INTERFACE_HPP
 

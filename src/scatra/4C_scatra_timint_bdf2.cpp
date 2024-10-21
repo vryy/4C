@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief BDF2 time-integration scheme
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_bdf2.hpp"
 
 #include "4C_fluid_turbulence_dyn_smag.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-  \brief base class for partitioned algorithm for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_PARTITIONED_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_PARTITIONED_HPP
 

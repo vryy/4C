@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper function/class for multiphase porous flow problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_porofluidmultiphase_utils.hpp"
 
 #include "4C_adapter_porofluidmultiphase.hpp"

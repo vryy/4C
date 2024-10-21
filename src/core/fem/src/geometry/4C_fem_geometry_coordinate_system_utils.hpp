@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for coordinate systems
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRY_COORDINATE_SYSTEM_UTILS_HPP
 #define FOUR_C_FEM_GEOMETRY_COORDINATE_SYSTEM_UTILS_HPP
 

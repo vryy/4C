@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation methods of the porofluidmultiphase element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_fem_discretization.hpp"
 #include "4C_porofluidmultiphase_ele.hpp"
 #include "4C_porofluidmultiphase_ele_action.hpp"

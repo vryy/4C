@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief solid shell8 element formulation
-\level 1
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_so3_sh8.hpp"

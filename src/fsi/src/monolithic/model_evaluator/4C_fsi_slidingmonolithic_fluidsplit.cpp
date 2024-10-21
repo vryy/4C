@@ -1,15 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with sliding grids using a monolithic scheme
-with condensed fluid interface velocities
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #include "4C_fsi_slidingmonolithic_fluidsplit.hpp"
 
 #include "4C_adapter_fld_fluid_fsi.hpp"

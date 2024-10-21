@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for ScaTraHDG boundary elements
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_hdg_boundary_calc.hpp"
 
 #include "4C_fem_general_node.hpp"

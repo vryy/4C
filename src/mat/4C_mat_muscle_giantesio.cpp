@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the Giantesio active strain skeletal muscle material (active strain
-approach)
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_muscle_giantesio.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

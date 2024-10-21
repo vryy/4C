@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Structural single step solver for explicit dynamics
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_singlestep.hpp"
 
 #include "4C_solver_nonlin_nox_globaldata.hpp"

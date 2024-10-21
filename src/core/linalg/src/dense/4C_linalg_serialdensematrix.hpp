@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of serial dense matrix wrapper class
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_SERIALDENSEMATRIX_HPP
 #define FOUR_C_LINALG_SERIALDENSEMATRIX_HPP
 

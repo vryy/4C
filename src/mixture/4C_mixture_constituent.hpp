@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief This file holds the definition of a mixture constituent interface
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_HPP
 

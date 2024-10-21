@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for equation of state handler for smoothed particle hydrodynamics (SPH)
-interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_particle_interaction_sph_equationofstate.hpp"

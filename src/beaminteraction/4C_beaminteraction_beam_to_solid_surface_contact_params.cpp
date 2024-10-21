@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Data container holding all beam to solid surface contact input parameters.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_surface_contact_params.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_surface_visualization_output_params.hpp"

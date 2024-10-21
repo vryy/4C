@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A material parameter container
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_material_parameter_base.hpp"
 
 #include <Teuchos_RCP.hpp>

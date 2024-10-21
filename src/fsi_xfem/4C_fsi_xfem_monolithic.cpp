@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for monolithic FSI (XFSI) solved via a classical Newton scheme
-       taking into account changing fluid dofsets
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fsi_xfem_monolithic.hpp"
 
 #include "4C_adapter_ale_fpsi.hpp"

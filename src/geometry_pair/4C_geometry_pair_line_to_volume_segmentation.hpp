@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to volume interaction with full segmentation of the line.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_VOLUME_SEGMENTATION_HPP
 

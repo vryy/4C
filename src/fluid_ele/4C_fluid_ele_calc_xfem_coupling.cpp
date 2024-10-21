@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory class for providing an implementation for coupling with
-       Mixed/Stress/Hybrid methods or Nitsche's method to enforce
-       interface conditions in the XFEM weakly
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_calc_xfem_coupling.hpp"
 
 #include "4C_bele_bele3.hpp"

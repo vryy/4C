@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base algorithm for node-based coupling between poromultiphase_scatra-
-        framework and flow in artery networks including scalar transport
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_artery_coupling_nodebased.hpp"
 
 #include "4C_coupling_adapter.hpp"

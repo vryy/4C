@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief manages mesh based coupling of fluid and porous media
-xfluid class and the cut-library
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_coupling_fpi_mesh.hpp"
 
 #include "4C_fem_dofset_transparent_independent.hpp"

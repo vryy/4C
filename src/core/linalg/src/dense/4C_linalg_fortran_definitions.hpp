@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief build options and definition of fortran functions
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_FORTRAN_DEFINITIONS_HPP
 #define FOUR_C_LINALG_FORTRAN_DEFINITIONS_HPP
 

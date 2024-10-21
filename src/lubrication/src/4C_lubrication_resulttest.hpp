@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of lubrication calculation results
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LUBRICATION_RESULTTEST_HPP
 #define FOUR_C_LUBRICATION_RESULTTEST_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all model evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
 #include "4C_solver_nonlin_nox_floating_point_exception.hpp"

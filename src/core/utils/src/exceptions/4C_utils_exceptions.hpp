@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief central error printing functionality
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_EXCEPTIONS_HPP
 #define FOUR_C_UTILS_EXCEPTIONS_HPP
 

@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief solution algorithm for stationary problems
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LUBRICATION_TIMINT_STAT_HPP
 #define FOUR_C_LUBRICATION_TIMINT_STAT_HPP
 

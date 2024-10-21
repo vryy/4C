@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Creation of structural time integrators in accordance with user's wishes
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_create.hpp"
 
 #include "4C_fem_discretization.hpp"

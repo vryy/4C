@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field wrapper for fluid beam interactions
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_FLD_FBI_WRAPPER_HPP
 #define FOUR_C_ADAPTER_FLD_FBI_WRAPPER_HPP
 

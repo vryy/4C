@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for fsi with internal mesh tying or mesh sliding
-
-
-\level 3
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_FSI_MSHT_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_FSI_MSHT_HPP
 

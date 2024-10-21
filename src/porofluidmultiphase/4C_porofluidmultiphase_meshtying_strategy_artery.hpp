@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief routines for coupling with artery network
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_ARTERY_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_MESHTYING_STRATEGY_ARTERY_HPP
 

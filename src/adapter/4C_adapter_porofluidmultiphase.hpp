@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief adapter for multiphase porous flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_POROFLUIDMULTIPHASE_HPP
 #define FOUR_C_ADAPTER_POROFLUIDMULTIPHASE_HPP
 

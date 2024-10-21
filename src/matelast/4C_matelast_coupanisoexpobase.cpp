@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the base functionality of an exponential anisotropic summand
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupanisoexpobase.hpp"
 
 #include "4C_material_parameter_base.hpp"

@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class for a mortar coupling node
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_mortar_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

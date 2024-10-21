@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main control routine for monolithic scalar-thermo interaction
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_sti_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

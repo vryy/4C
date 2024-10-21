@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a coupled anisotropic neo-Hooke material with one fiber direction
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPANISONEOHOOKE_HPP
 #define FOUR_C_MATELAST_COUPANISONEOHOOKE_HPP
 

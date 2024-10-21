@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief DoF set for coupling a xfield and a field discretization at a common
-       interface
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_XFIELD_FIELD_COUPLING_DOFSET_HPP
 #define FOUR_C_XFEM_XFIELD_FIELD_COUPLING_DOFSET_HPP
 

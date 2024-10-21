@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Four-element Maxwell material model for reduced dimensional acinus elements with non-linear
-spring with exponential behaviour, inherits from Maxwell_0d_acinus
-
-The originally linear spring (Stiffness1) of the 4-element Maxwell model is substituted by an
-exponential pressure-volume relation (derivation: see Ismail Mahmoud's dissertation, chapter 3.4)
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_EXPONENTIAL_HPP
 #define FOUR_C_MAT_MAXWELL_0D_ACINUS_EXPONENTIAL_HPP
 

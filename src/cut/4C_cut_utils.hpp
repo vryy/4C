@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utils Header defining ours sets of geometrical objects
-       and containing many useful utility methods
-
-\level 2
-
-*------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_UTILS_HPP
 #define FOUR_C_CUT_UTILS_HPP
 

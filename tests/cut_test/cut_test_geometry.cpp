@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_intersection.hpp"  // for IntersectionStatus
 #include "4C_cut_kernel.hpp"
 #include "4C_cut_output.hpp"

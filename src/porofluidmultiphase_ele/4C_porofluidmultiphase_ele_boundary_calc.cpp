@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief implementation of evaluation routines of porofluidmultiphase boundary element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_ele_boundary_calc.hpp"
 
 #include "4C_fem_condition.hpp"

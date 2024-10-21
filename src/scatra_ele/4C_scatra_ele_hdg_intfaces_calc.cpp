@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of ScaTraHDG internal faces elements
-
-Integrate internal face terms on an internal faces element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_hdg_intfaces_calc.hpp"
 
 #include "4C_fem_discretization_faces.hpp"

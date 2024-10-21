@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a volumetric power law
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_volpow.hpp"
 
 #include "4C_material_parameter_base.hpp"

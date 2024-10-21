@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of the Combo active skeletal muscle material (modified and corrected generalized
-active strain approach) with variable time-dependent activation
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MUSCLE_COMBO_HPP
 #define FOUR_C_MAT_MUSCLE_COMBO_HPP
 

@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-  \brief  Utility Methods For Fluid Porous Structure Interaction Problems
-\level 3
-
- *-----------------------------------------------------------------------*/
 #ifndef FOUR_C_FPSI_UTILS_HPP
 #define FOUR_C_FPSI_UTILS_HPP
 

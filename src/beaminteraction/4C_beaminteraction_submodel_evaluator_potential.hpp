@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief submodel for potential-based beam interactions
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_POTENTIAL_HPP
 #define FOUR_C_BEAMINTERACTION_SUBMODEL_EVALUATOR_POTENTIAL_HPP
 

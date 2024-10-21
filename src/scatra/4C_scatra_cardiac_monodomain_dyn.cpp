@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief entry point for cardiac monodomain scalar transport problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_cardiac_monodomain_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

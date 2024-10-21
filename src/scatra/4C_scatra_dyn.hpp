@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief scalar transport control algorithm
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_DYN_HPP
 #define FOUR_C_SCATRA_DYN_HPP
 

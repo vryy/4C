@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for scatra
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_inpar_scatra.hpp"
 
 #include "4C_fem_condition_definition.hpp"

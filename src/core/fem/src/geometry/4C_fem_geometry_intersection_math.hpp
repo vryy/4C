@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief collection of math tools for the interface computation of two
-       curved meshes
-       !WARNING: Except Tolerances not used at the moment
-       (remove this comment and change level as soon as this functionality is tested again!)
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_INTERSECTION_MATH_HPP
 #define FOUR_C_FEM_GEOMETRY_INTERSECTION_MATH_HPP
 

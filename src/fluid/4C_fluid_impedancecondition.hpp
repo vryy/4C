@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief method to deal with three-element windkessel and other flow dependent pressure conditions
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_IMPEDANCECONDITION_HPP
 #define FOUR_C_FLUID_IMPEDANCECONDITION_HPP
 

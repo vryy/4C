@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Test routines for monolithic FSI convergence test
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_statustest.hpp"
 
 #include "4C_coupling_adapter.hpp"

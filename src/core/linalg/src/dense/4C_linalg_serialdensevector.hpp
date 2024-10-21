@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Specification of wrapper to a serial vector
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_SERIALDENSEVECTOR_HPP
 #define FOUR_C_LINALG_SERIALDENSEVECTOR_HPP
 

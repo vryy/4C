@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief implementation of the 3D solid-poro element including scatra functionality
-
- \level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_poro_scatra.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

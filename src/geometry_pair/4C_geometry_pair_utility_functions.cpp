@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the geometry pairs.
-
-\level 1
-*/
-// End doxygen header.
-
-
-
 #include "4C_geometry_pair_utility_functions.hpp"
 
 FOUR_C_NAMESPACE_OPEN

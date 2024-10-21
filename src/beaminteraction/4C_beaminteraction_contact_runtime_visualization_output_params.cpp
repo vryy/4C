@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all input parameters for vtk-based visualization of beam contact
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_contact_runtime_visualization_output_params.hpp"
 
 #include "4C_global_data.hpp"

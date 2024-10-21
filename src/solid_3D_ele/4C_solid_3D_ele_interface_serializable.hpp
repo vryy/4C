@@ -1,11 +1,3 @@
-
-/*! \file
-
-\brief An interface defining an serializable class
-
-\level 1
-*/
-
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"

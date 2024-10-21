@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Handles file writing of all cut related stuff (gmsh)
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_OUTPUT_HPP
 #define FOUR_C_CUT_OUTPUT_HPP
 

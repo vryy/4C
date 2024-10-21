@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Coupling Manager for eXtended Fluid Structural Coupling
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_XFEM_XFSCOUPLING_MANAGER_HPP
 #define FOUR_C_FSI_XFEM_XFSCOUPLING_MANAGER_HPP
 

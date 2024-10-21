@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
-        problems
-        Contains hard-coded derivatives and evaluation routines for the most commonly
-        used reaction functions to speed up calculation as opposed to the
-        SymbolicFunctionOfAnything, which use FAD
-
-\level 3
-
-    *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\file inpar_fbi.H
-
-\brief input parameter for Fluid-Beam Interaction
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_FBI_HPP
 #define FOUR_C_INPAR_FBI_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Base meshtying element for meshtying between a 3D beam and a 3D fluid element.
-
-\level 2
-
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_pair_base.hpp"
 
 #include "4C_beam3_euler_bernoulli.hpp"

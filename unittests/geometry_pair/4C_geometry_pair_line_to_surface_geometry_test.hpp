@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Create the geometry for the unit tests.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_GEOMETRY_TEST_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_SURFACE_GEOMETRY_TEST_HPP
 

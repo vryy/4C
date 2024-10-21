@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation class containing routines for calculation of scalar transport
-        within 1D-arteries (blood vessels)
-        only pressure-based formulation supports this
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_artery.hpp"
 
 #include "4C_fem_general_extract_values.hpp"

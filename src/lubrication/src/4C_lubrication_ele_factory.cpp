@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of Lubrication elements
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_lubrication_ele_factory.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief supplementary element calculation class providing general utility for thermodynamic scalar
-transport
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_sti_thermo.hpp"
 
 #include "4C_fem_discretization.hpp"

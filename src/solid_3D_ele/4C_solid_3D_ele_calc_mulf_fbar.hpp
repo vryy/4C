@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A displacement based solid element formulation with MULF prestressing
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_CALC_MULF_FBAR_HPP
 #define FOUR_C_SOLID_3D_ELE_CALC_MULF_FBAR_HPP
 

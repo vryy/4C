@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base algorithm for coupling 1D node to point in 3D (non-conforming) between
-        poromultiphase_scatra-framework and flow in artery networks
-        including scalar transport
-
-\level 3
-
-    *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_artery_coupling_nodetopoint.hpp"
 
 #include "4C_fem_condition_selector.hpp"

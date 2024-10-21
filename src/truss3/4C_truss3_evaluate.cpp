@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief three dimensional total Lagrange truss element (can be connected to beam3 elements and
-adapts assembly automatically according to the thereby changed number of nodal degrees of freedom)
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"

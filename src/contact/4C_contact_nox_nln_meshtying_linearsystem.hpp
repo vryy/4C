@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Derived class which manages the special requirements to the linear
-       solver for mesh tying problems.
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_HPP
 #define FOUR_C_CONTACT_NOX_NLN_MESHTYING_LINEARSYSTEM_HPP
 

@@ -1,29 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains the functions to establish local material law /
-       stress-strain law for isotropic material for a 3D hex element
-       following ideal von Mises plasticity and a linear elastic material law
-       (St.Venant Kirchhoff).
-
-       small strains
-
-       plastic materail with kinematic hardening
-        - independent yield stress level of degree of plastification
-        - constant uniaxial yield stress sigma_y = const.
-
-       extend to linear isotropic hardening
-        - yield stress no longer constant, depends on level of accumulated
-          plastic strain, i.e. \f$ \sigma_y \,=\, \sigma_y(\bar{\epsilon}_p)\f$
-
-       example input line:
-       MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
-
-\level 2
-*/
-/*----------------------------------------------------------------------*
- | definitions                                               dano 04/11 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_PLASTICLINELAST_HPP
 #define FOUR_C_MAT_PLASTICLINELAST_HPP
 

@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief A class for a crosslinker node
-
-
-\date Oct, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_CROSSLINKER_NODE_HPP
 #define FOUR_C_BEAMINTERACTION_CROSSLINKER_NODE_HPP
 

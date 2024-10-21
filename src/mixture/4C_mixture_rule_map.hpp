@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule for homogenized constrained mixtures with mass fractions defined as discrete
-values per element
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_RULE_MAP_HPP
 #define FOUR_C_MIXTURE_RULE_MAP_HPP
 

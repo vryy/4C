@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines for bfda test case
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_fluid_turbulence_statistics_bfda.hpp"
 
 #include "4C_comm_exporter.hpp"

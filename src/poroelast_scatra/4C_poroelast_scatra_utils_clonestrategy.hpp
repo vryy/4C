@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief strategy to clone porofluid from porous solid for scatra elements
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_SCATRA_UTILS_CLONESTRATEGY_HPP
 #define FOUR_C_POROELAST_SCATRA_UTILS_CLONESTRATEGY_HPP
 

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam-to-sphere potential-based interacting pair
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_POTENTIAL_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_POTENTIAL_PAIR_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief abstract interface for electrode and electrolyte materials carrying concentration and
-electric potential as degrees of freedom
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_elchsinglemat.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Meshtying element for rotational meshtying between a 3D beam and a 3D solid element.
-
-\level 3
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_pair_mortar_rotation.hpp"
 
 #include "4C_beam3_reissner.hpp"

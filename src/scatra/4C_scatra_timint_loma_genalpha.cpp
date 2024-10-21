@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Generalized-alpha time-integration scheme with extensions for
-       loma problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_timint_loma_genalpha.hpp"
 
 #include "4C_fluid_turbulence_dyn_smag.hpp"

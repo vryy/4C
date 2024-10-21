@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Definition of classes for the isochoric contribution of a Yeoh-type material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISOYEOH_HPP
 #define FOUR_C_MATELAST_ISOYEOH_HPP
 

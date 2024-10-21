@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations within a
-multi-scale framework
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"

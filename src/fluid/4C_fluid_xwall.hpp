@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of enrichment-based wall model
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_XWALL_HPP
 #define FOUR_C_FLUID_XWALL_HPP
 

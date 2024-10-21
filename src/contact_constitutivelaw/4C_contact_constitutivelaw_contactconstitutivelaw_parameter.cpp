@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implements a container class containing contact constitutivelaw parameters from the input
-file as well as a quick access wrapper for those parameters
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
 #include <Teuchos_RCP.hpp>

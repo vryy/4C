@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class of the non-linear structural solvers.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_generic.hpp"
 
 #include "4C_structure_new_timint_base.hpp"

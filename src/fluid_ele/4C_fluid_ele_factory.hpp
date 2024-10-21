@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory class going from the generic evaluation routines to the ones
-  templated by the element shape and specialization
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_FACTORY_HPP
 #define FOUR_C_FLUID_ELE_FACTORY_HPP
 

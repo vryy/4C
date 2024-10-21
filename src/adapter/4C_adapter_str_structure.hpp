@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Deprecated structure field adapter
-       (see ad_str_structure_new.H/.cpp for the new version)
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STR_STRUCTURE_HPP
 #define FOUR_C_ADAPTER_STR_STRUCTURE_HPP
 

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Factory to create the desired integrator object.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_INTEGRATOR_FACTORY_HPP
 #define FOUR_C_CONTACT_INTEGRATOR_FACTORY_HPP
 

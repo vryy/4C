@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief State class for (in)stationary XFEM fluid problems involving embedded
-fluid meshes
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_XFLUID_FLUID_STATE_HPP
 #define FOUR_C_FLUID_XFLUID_FLUID_STATE_HPP
 

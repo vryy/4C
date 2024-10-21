@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of Mortar matrices on the overlap
-       of two Mortar::Elements in 1D and 2D (derived version for contact)
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_integrator.hpp"
 
 #include "4C_contact_defines.hpp"

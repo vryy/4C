@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for biomedical simulations
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_bio.hpp"
 
 #include "4C_fem_condition_definition.hpp"

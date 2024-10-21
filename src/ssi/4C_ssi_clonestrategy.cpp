@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief mesh clone strategy for scatra-structure-interaction problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_ssi_clonestrategy.hpp"
 
 #include "4C_adapter_structure_scatra_ele.hpp"

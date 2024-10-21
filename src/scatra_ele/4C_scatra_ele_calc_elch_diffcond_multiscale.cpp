@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations within a
-multi-scale framework
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch_diffcond_multiscale.hpp"
 
 #include "4C_mat_elchmat.hpp"

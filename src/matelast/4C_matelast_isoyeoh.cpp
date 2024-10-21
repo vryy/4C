@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of a Yeoh-type material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isoyeoh.hpp"
 
 #include "4C_material_parameter_base.hpp"

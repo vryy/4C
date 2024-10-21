@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Forward Euler time integration for solid dynamics
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_expl_forwardeuler.hpp"
 
 #include "4C_global_data.hpp"

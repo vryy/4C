@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Contact utility functions related to parallel runs
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONTACT_UTILS_PARALLEL_HPP
 #define FOUR_C_CONTACT_UTILS_PARALLEL_HPP
 

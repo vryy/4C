@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Filter routines for dynamic Smagorinsky and dynamic Vreman model
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_turbulence_boxfilter.hpp"
 
 #include "4C_fem_general_element.hpp"

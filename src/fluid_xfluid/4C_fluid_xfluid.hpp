@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for fluid (in)stationary solvers with XFEM,
-       including instationary solvers for fluid and fsi problems coupled with an internal embedded
-interface
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_XFLUID_HPP
 #define FOUR_C_FLUID_XFLUID_HPP
 

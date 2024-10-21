@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief manages the different types of mesh based coupling conditions and thereby builds the bridge
-between the xfluid class and the cut-library
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_coupling_mesh.hpp"
 
 #include "4C_fem_dofset_transparent_independent.hpp"

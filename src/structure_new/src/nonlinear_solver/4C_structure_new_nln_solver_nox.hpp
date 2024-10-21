@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Structural non-linear %NOX::NLN solver.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_NLN_SOLVER_NOX_HPP
 #define FOUR_C_STRUCTURE_NEW_NLN_SOLVER_NOX_HPP
 

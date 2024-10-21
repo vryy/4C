@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief class for submodel beam contact
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_submodel_evaluator_beamcontact.hpp"
 
 #include "4C_beam3_base.hpp"

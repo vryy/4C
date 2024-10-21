@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Weakly compressible fluid according to Murnaghan-Tait
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_fluid_murnaghantait.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

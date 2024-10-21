@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper classes for  scalar-structure coupling
-
- \level 3
-
-
- *----------------------------------------------------------------------*/
-
 #include "4C_ssi_coupling.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

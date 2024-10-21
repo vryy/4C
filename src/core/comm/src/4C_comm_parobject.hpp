@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief functionality to pack, unpack and communicate classes with MPI
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_PAROBJECT_HPP
 #define FOUR_C_COMM_PAROBJECT_HPP
 

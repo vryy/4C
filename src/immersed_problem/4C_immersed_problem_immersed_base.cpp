@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for all immersed algorithms
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_immersed_problem_immersed_base.hpp"
 
 #include "4C_adapter_fld_wrapper.hpp"

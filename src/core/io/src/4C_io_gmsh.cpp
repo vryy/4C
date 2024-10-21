@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief simple element print library for Gmsh
-
-
-\level 2
-
-*/
-
-
 #include "4C_io_gmsh.hpp"
 
 #include "4C_fem_discretization.hpp"

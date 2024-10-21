@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief viscous damping handler for particle simulations
-\level 2
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_ALGORITHM_VISCOUS_DAMPING_HPP
 #define FOUR_C_PARTICLE_ALGORITHM_VISCOUS_DAMPING_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create a merit function evaluation object.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_MERITFUNCTION_FACTORY_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_MERITFUNCTION_FACTORY_HPP
 

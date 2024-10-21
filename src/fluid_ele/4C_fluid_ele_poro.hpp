@@ -1,18 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief A C++ wrapper for the poro fluid element
-
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_ELE_PORO_HPP
 #define FOUR_C_FLUID_ELE_PORO_HPP
 

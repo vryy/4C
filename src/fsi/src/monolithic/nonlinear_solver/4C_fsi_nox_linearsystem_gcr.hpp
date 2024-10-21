@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Generalized conjugate residual linear system solver for FSI
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_LINEARSYSTEM_GCR_HPP
 #define FOUR_C_FSI_NOX_LINEARSYSTEM_GCR_HPP
 

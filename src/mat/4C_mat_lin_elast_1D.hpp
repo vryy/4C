@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Linear elastic material in one dimension and material that supports growth due to an external
-quantity (e.g. concentration)
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_LIN_ELAST_1D_HPP
 #define FOUR_C_MAT_LIN_ELAST_1D_HPP
 

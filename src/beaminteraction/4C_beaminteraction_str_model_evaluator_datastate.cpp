@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Global state data container for the structural (time)
-       integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
 
 #include "4C_fem_discretization.hpp"

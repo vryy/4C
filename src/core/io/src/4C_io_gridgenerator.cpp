@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Create parametrized structured grid.
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_io_gridgenerator.hpp"
 
 #include "4C_comm_utils_factory.hpp"

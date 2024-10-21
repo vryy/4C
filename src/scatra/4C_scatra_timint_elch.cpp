@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra time integration for elch
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
 #include "4C_scatra_timint_elch.hpp"
 
 #include "4C_fem_nurbs_discretization.hpp"

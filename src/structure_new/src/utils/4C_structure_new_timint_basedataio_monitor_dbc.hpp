@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related monitoring reaction forces for the structural (time) integration
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_MONITOR_DBC_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_MONITOR_DBC_HPP
 

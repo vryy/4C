@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief material for heat transport due to Fourier-type thermal conduction and the Soret effect
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_soret.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

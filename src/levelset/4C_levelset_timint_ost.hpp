@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief one-step theta time integration scheme for level-set problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEVELSET_TIMINT_OST_HPP
 #define FOUR_C_LEVELSET_TIMINT_OST_HPP
 

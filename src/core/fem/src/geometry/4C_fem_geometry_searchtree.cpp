@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief provides a class with search tree
-
- \level 1
-
- */
 #include "4C_fem_geometry_searchtree.hpp"
 
 #include "4C_fem_geometry_intersection_service.hpp"

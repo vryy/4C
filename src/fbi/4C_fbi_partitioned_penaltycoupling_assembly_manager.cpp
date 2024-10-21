@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble pair based contributions into global matrices.
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_fbi_partitioned_penaltycoupling_assembly_manager.hpp"
 
 #include "4C_beaminteraction_contact_pair.hpp"

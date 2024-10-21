@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Generic class for all predictors.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_PREDICT_GENERIC_HPP
 #define FOUR_C_STRUCTURE_NEW_PREDICT_GENERIC_HPP
 

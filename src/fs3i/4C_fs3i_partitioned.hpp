@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief H-file associated with general algorithmic routines for
-       partitioned solution approaches to fluid-structure-scalar-scalar
-       interaction (FS3I), that is, algorithmic routines not specifically
-       related to partitioned solution approaches to one -or
-       two-way-coupled problem configurations, respectively
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FS3I_PARTITIONED_HPP
 #define FOUR_C_FS3I_PARTITIONED_HPP
 

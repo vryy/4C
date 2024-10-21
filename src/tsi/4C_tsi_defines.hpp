@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of preprocessor defines for tsi methods
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_TSI_DEFINES_HPP
 #define FOUR_C_TSI_DEFINES_HPP
 

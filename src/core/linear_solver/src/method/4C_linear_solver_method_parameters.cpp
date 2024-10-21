@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Computation of specific solver parameters
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_method_parameters.hpp"
 
 #include "4C_fem_discretization.hpp"

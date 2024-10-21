@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of all beam interaction terms
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beamcontact_str_model_evaluator_beaminteraction_old.hpp"
 
 #include "4C_beamcontact_beam3contact_manager.hpp"

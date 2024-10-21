@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base algorithm for line-based (non-conforming) coupling between
-        poromultiphase_scatra-framework and flow in artery networks
-        including scalar transport
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poromultiphase_scatra_artery_coupling_linebased.hpp"
 
 #include "4C_fem_general_extract_values.hpp"

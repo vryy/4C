@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Implementation of routines for calculation of shell element with EAS element technology
-
-\level 3
-*/
-
 #include "4C_shell7p_ele_calc_eas.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief pre_exodus .dat-file writer
-
-\level 1
-
-
-Here is everything related with writing a dat-file
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_PRE_EXODUS_WRITEDAT_HPP
 #define FOUR_C_PRE_EXODUS_WRITEDAT_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for an isotropic coupled material depending on the first Cauchy-Green
-invariant and the Jacobi determinant
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUP13APOW_HPP
 #define FOUR_C_MATELAST_COUP13APOW_HPP
 

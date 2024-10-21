@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for moving boundary problems
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_adapter_fld_fbi_movingboundary.hpp"
 #include "4C_adapter_fld_fluid_ale.hpp"
 #include "4C_adapter_fld_fluid_ale_xfem.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Implementation of a coupled Saint-Venant-Kirchhoff material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupSaintVenantKirchhoff.hpp"
 
 #include "4C_material_parameter_base.hpp"

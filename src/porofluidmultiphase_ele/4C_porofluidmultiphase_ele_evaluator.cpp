@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper class for evaluation of the governing equation of multiphase porou flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_ele_evaluator.hpp"
 
 #include "4C_global_data.hpp"

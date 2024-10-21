@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief main routine of the Ensight filter
-
- \level 1
-
- */
-
-
 #ifndef FOUR_C_POST_PROCESSOR_SINGLE_FIELD_WRITERS_HPP
 #define FOUR_C_POST_PROCESSOR_SINGLE_FIELD_WRITERS_HPP
 

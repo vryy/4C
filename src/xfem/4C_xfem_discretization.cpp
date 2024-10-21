@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a class to manage one discretization with changing dofs in xfem context
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_discretization.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

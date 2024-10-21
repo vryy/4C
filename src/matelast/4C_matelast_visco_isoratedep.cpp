@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of a viscous rate dependent material law,
-modified from Pioletti, 1997
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_visco_isoratedep.hpp"
 
 #include "4C_material_parameter_base.hpp"

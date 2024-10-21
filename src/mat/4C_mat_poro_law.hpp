@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief calculation classes for evaluation of constitutive relation for porosity
-
-
-\level 2
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_MAT_PORO_LAW_HPP
 #define FOUR_C_MAT_PORO_LAW_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Method to deal with one dimensional artery inlet bcs
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_ART_TERMINAL_BC_HPP
 #define FOUR_C_ART_NET_ART_TERMINAL_BC_HPP
 

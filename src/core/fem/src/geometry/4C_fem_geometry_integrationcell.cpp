@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief integration cell classes for domain and boundary integration
-
---> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE 4C SOON
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_geometry_integrationcell.hpp"
 
 #include "4C_fem_geometry_element_coordtrafo.hpp"

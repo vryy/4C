@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Methods to apply rotationally symmetric periodic boundary
-       conditions for fluid problems on element level
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ROTSYM_PERIODICBC_HPP
 #define FOUR_C_FLUID_ROTSYM_PERIODICBC_HPP
 

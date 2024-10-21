@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra elements for diffusion-conduction ion-transport equations
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_CALC_ELCH_DIFFCOND_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ELCH_DIFFCOND_HPP
 

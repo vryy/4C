@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief a derived strategy handling the Lagrange multiplier based TSI contact
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_lagrange_strategy_tsi.hpp"
 
 #include "4C_contact_defines.hpp"

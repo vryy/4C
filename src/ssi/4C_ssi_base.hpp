@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for all scalar structure algorithms
-
- \level 1
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_BASE_HPP
 #define FOUR_C_SSI_BASE_HPP
 

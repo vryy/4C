@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief a material defining the pressure-saturation relationship of
-        fluid phase within a multiphase porous fluid
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_FLUIDPORO_SINGLEPHASELAW_HPP
 #define FOUR_C_MAT_FLUIDPORO_SINGLEPHASELAW_HPP
 

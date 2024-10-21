@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for an isochoric Neo Hooke material
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_ISONEOHOOKE_HPP
 #define FOUR_C_MATELAST_ISONEOHOOKE_HPP
 

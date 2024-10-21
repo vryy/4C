@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief result test for multiphase porous fluid
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_RESULTTEST_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_RESULTTEST_HPP
 

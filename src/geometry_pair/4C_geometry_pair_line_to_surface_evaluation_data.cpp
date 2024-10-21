@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Container for parameters for line to surface pairs, as well as global evaluation data.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_line_to_surface_evaluation_data.hpp"
 
 #include "4C_geometry_pair_element_faces.hpp"

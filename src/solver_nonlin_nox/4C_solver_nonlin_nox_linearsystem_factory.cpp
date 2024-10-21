@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN factory to create a %::NOX::Epetra::LinearSystem.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_linearsystem_factory.hpp"
 
 #include "4C_cardiovascular0d_nox_nln_linearsystem.hpp"

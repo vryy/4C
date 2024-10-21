@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Compute (time and space) averaged values for turbulent flows
-       around a rotating cylinder and write them to files
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_turbulence_statistics_ccy.hpp"
 
 #include "4C_fem_discretization.hpp"

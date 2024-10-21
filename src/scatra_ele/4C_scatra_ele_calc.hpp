@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief main file containing routines for calculation of scatra element
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_CALC_HPP
 #define FOUR_C_SCATRA_ELE_CALC_HPP
 

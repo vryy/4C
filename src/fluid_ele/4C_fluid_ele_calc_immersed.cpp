@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief calc class for immersed problems
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_immersed.hpp"
 
 #include "4C_fluid_ele_immersed_base.hpp"

@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Incomplete! - Purpose: Internal implementation of RedAirBloodScatraLine3 element
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
-
 #include "4C_red_airways_air_blood_scatraLine3_impl.hpp"
 
 #include "4C_fem_discretization.hpp"

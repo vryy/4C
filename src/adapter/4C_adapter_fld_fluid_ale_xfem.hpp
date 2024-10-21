@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for xfem-ale-fluids with moving boundaries
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_ALE_XFEM_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_ALE_XFEM_HPP
 

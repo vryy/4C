@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with sliding grids using a monolithic scheme
-with condensed structure interface displacements
-
-
-\level 2
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_HPP
 #define FOUR_C_FSI_SLIDINGMONOLITHIC_STRUCTURESPLIT_HPP
 

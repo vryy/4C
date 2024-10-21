@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Deprecated wrapper for the mesh-tying and contact managers.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_contact_bridge.hpp"
 
 #include "4C_contact_manager.hpp"

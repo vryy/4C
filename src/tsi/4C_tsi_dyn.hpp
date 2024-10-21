@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for thermo-structure-interaction problems.
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_TSI_DYN_HPP
 #define FOUR_C_TSI_DYN_HPP
 

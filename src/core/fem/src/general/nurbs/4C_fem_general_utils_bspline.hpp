@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Specification of B-splines
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_BSPLINE_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_BSPLINE_HPP
 

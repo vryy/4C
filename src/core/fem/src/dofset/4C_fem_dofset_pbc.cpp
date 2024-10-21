@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A modified set of degrees of freedom for periodic boundary
-       conditions
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_dofset_pbc.hpp"
 
 #include "4C_fem_discretization.hpp"

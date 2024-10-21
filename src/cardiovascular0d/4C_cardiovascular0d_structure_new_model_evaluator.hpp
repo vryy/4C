@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all 0D cardiovascular model terms
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_HPP
 #define FOUR_C_CARDIOVASCULAR0D_STRUCTURE_NEW_MODEL_EVALUATOR_HPP
 

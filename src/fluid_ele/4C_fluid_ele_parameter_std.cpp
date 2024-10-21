@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Setting of general fluid parameter for element evaluation
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_ele_parameter_std.hpp"
 
 FOUR_C_NAMESPACE_OPEN

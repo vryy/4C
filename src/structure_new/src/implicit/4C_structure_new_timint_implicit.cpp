@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implicit structural time integration strategy.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_timint_implicit.hpp"
 
 #include "4C_fem_discretization.hpp"

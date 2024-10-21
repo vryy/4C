@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Central type object management.
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_PAROBJECTFACTORY_HPP
 #define FOUR_C_COMM_PAROBJECTFACTORY_HPP
 

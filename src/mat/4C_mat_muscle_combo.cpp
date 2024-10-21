@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the Combo active skeletal muscle material with variable time-dependent
-activations
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_muscle_combo.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,20 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief strategies for Newton-Raphson convergence check for monolithic scalar-structure interaction
-problems
-
-To keep the time integrator class for monolithic scalar-structure interaction problems as plain as
-possible, the convergence check for the Newton-Raphson iteration has been encapsulated within
-separate strategy classes. Every specific convergence check strategy (e.g., for monolithic
-scalar-structure interaction problems involving standard scalar transport or electrochemistry)
-computes, checks, and outputs different relevant vector norms and is implemented in a subclass
-derived from an abstract, purely virtual interface class.
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SSI_MONOLITHIC_CONVCHECK_STRATEGIES_HPP
 #define FOUR_C_SSI_MONOLITHIC_CONVCHECK_STRATEGIES_HPP
 

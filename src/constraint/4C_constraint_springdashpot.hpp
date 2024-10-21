@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods for spring and dashpot constraints / boundary conditions
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_SPRINGDASHPOT_HPP
 #define FOUR_C_CONSTRAINT_SPRINGDASHPOT_HPP
 

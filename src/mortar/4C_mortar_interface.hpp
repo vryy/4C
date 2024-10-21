@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief One mortar coupling interface
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_INTERFACE_HPP
 #define FOUR_C_MORTAR_INTERFACE_HPP
 

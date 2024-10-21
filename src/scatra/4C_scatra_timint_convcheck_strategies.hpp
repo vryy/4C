@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief strategies for Newton-Raphson convergence check for scalar transport problems
-
-\level 1
-
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_CONVCHECK_STRATEGIES_HPP
 #define FOUR_C_SCATRA_TIMINT_CONVCHECK_STRATEGIES_HPP
 

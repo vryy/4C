@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Setup of the list of valid contact constitutive laws for input
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
-
-
 #ifndef FOUR_C_INPAR_VALIDCONTACTCONSTITUTIVELAW_HPP
 #define FOUR_C_INPAR_VALIDCONTACTCONSTITUTIVELAW_HPP
 

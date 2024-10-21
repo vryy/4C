@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief one-step theta time integration scheme for level-set problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_levelset_timint_ost.hpp"
 
 #include "4C_inpar_validparameters.hpp"

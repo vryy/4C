@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Statics analysis, i.e. no capacity terms
-\level 1
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 06/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_STATICS_HPP
 #define FOUR_C_THERMO_TIMINT_STATICS_HPP
 

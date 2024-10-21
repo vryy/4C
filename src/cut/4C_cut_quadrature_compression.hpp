@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief see paper by Sudhakar
-
-
-\level 2
- */
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_CUT_QUADRATURE_COMPRESSION_HPP
 #define FOUR_C_CUT_QUADRATURE_COMPRESSION_HPP
 

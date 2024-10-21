@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Basic HDG weakly compressible time-integration scheme
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fluid_timint_hdg_weak_comp.hpp"
 
 #include "4C_fem_discretization_hdg.hpp"

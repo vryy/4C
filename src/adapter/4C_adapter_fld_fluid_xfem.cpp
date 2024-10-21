@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for xfem-fluids with moving boundaries
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_adapter_fld_fluid_xfem.hpp"
 
 #include "4C_adapter_fld_fluid_xfsi.hpp"

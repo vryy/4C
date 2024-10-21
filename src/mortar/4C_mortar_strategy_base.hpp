@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Generic class for all mortar solution strategies
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_STRATEGY_BASE_HPP
 #define FOUR_C_MORTAR_STRATEGY_BASE_HPP
 

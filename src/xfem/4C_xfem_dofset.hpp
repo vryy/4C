@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides a general XFEM dofset which uses the information from the cut-library to determine
-the number of dofs per node when multiple sets of degrees of freedom per node have to be used
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_DOFSET_HPP
 #define FOUR_C_XFEM_DOFSET_HPP
 

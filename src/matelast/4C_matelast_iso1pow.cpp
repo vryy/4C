@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of an isotropic general power-type material in
-terms of the first Cauchy-Green invariant
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_iso1pow.hpp"
 
 #include "4C_material_parameter_base.hpp"

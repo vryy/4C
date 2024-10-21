@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the appropriate DirichletNeumann Algorithm
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_dirichletneumann_factory.hpp"
 
 #include "4C_fsi_dirichletneumann.hpp"

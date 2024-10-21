@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_COMBO_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_COMBO_HPP
 

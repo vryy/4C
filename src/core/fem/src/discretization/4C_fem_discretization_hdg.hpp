@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A class to manage an enhanced discretization for hybridizable
-     discontinuous Galerkin methods (HDG)
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DISCRETIZATION_HDG_HPP
 #define FOUR_C_FEM_DISCRETIZATION_HDG_HPP
 

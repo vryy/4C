@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a cylcle of points (basic to create facets)
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_CYCLE_HPP
 #define FOUR_C_CUT_CYCLE_HPP
 

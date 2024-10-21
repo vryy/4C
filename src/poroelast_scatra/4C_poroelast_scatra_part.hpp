@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  base class for partitioned poroelasticity scalar transport interaction algorithms
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROELAST_SCATRA_PART_HPP
 #define FOUR_C_POROELAST_SCATRA_PART_HPP
 

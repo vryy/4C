@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Mesh tying for ale problems
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_ALE_MESHTYING_HPP
 #define FOUR_C_ALE_MESHTYING_HPP
 

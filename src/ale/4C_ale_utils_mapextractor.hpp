@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-
-\brief map extractor functionalities for interface problems for ALE field
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_ALE_UTILS_MAPEXTRACTOR_HPP
 #define FOUR_C_ALE_UTILS_MAPEXTRACTOR_HPP
 

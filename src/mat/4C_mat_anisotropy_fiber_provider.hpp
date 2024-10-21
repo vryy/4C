@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of the a pure virtual class of a fiber provider
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_FIBER_PROVIDER_HPP
 #define FOUR_C_MAT_ANISOTROPY_FIBER_PROVIDER_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief structure-specific utils and auxiliary functions
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_structure_aux.hpp"
 
 #include "4C_fem_condition_selector.hpp"

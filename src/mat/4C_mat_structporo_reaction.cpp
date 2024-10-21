@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief wrapper for structure material of porous media including reactive reference porosity
-
-
-\level 3
- *----------------------------------------------------------------------*/
-
 #include "4C_mat_structporo_reaction.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

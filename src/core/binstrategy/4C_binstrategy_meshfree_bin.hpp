@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief
-
-
-\level 2
-
-*---------------------------------------------------------------------------*/
 #ifndef FOUR_C_BINSTRATEGY_MESHFREE_BIN_HPP
 #define FOUR_C_BINSTRATEGY_MESHFREE_BIN_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write visualization output for a beam discretization in vtk/vtu format at runtime
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-/* headers */
 #include "4C_beam3_discretization_runtime_vtu_writer.hpp"
 
 #include "4C_beam3_base.hpp"

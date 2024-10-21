@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class containing geometric operations usually needed for the coupling of an embedded body
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FBI_IMMERSED_GEOMETRY_COUPLER_HPP
 #define FOUR_C_FBI_IMMERSED_GEOMETRY_COUPLER_HPP
 

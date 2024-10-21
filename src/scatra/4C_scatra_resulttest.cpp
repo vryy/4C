@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of scalar transport calculation results
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_resulttest.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a remodel fiber material with exponential strain energy function.
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_mixture_constituent_remodelfiber_material_exponential.hpp"
 
 #include "4C_mat_par_bundle.hpp"

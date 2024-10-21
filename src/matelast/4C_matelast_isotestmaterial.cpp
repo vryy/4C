@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the isochoric contribution of a material to test the isochoric parts of the
-Elasthyper-Toolbox.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_isotestmaterial.hpp"
 
 #include "4C_material_parameter_base.hpp"

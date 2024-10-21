@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Class performing coupling (condensation/recovery) for dual mortar
-       methods in (volume) monolithic multi-physics applications, i.e. in
-       block matrix systems. This also accounts for the correct condensation
-       in the off-diagonal matrix blocks
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mortar_multifield_coupling.hpp"
 
 #include "4C_coupling_adapter_mortar.hpp"

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief write visualization output for particle wall discretization in vtk/vtu format at runtime
-\level 2
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_WALL_DISCRETIZATION_RUNTIME_VTU_WRITER_HPP
 #define FOUR_C_PARTICLE_WALL_DISCRETIZATION_RUNTIME_VTU_WRITER_HPP
 

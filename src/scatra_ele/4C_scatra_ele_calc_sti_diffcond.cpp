@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluate heat transport within binary, concentrated electrolytes on element level
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_sti_diffcond.hpp"
 
 #include "4C_mat_soret.hpp"

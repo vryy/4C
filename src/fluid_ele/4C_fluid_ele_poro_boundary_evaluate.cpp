@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief evaluation routines for the fluid poro boundary element
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_calc.hpp"
 #include "4C_fluid_ele_boundary_factory.hpp"

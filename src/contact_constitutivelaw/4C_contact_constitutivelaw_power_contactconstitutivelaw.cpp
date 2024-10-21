@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
- *
-\brief implements a power law as contact constitutive law
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_contact_constitutivelaw_power_contactconstitutivelaw.hpp"
 
 #include "4C_global_data.hpp"

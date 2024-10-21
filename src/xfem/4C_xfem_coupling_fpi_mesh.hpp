@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief manages mesh based coupling of fluid and porous media
-xfluid class and the cut-library
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_COUPLING_FPI_MESH_HPP
 #define FOUR_C_XFEM_COUPLING_FPI_MESH_HPP
 

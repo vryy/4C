@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Define a data container that stores visualization data in the VTU data format
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_DATA_HPP
 #define FOUR_C_IO_VISUALIZATION_DATA_HPP
 

@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basic constraint class, dealing with constraints living on boundaries, code originally by
-Thomas Kloeppel
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
-
-
 #include "4C_constraint.hpp"
 
 #include "4C_fem_discretization.hpp"

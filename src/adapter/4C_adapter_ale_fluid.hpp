@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Wrapper for the ALE time integration for fluid problems with moving boundaries
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_ALE_FLUID_HPP
 #define FOUR_C_ADAPTER_ALE_FLUID_HPP
 

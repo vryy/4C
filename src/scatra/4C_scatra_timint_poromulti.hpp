@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief time integration schemes for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_POROMULTI_HPP
 #define FOUR_C_SCATRA_TIMINT_POROMULTI_HPP
 

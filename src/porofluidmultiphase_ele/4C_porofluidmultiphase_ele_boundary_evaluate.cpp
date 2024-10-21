@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation methods of the porofluidmultiphase boundary element
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"

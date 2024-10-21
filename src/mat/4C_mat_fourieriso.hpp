@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief material for heat conduction according to fourier's law
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- |  definitions                                              dano 09/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_FOURIERISO_HPP
 #define FOUR_C_MAT_FOURIERISO_HPP
 

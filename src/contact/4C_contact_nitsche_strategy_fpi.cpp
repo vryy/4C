@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Nitsche contact solving strategy for problems with FPI
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_contact_nitsche_strategy_fpi.hpp"
 
 #include "4C_contact_interface.hpp"

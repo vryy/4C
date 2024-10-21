@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-
-\level 3
-
-
-\brief Nonlinear Membrane Finite Element line
-
-*----------------------------------------------------------------------*/
 #include "4C_membrane.hpp"
 
 FOUR_C_NAMESPACE_OPEN

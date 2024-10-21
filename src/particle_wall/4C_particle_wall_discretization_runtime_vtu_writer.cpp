@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief write visualization output for particle wall discretization in vtk/vtu format at runtime
-\level 2
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_wall_discretization_runtime_vtu_writer.hpp"
 
 #include "4C_fem_discretization.hpp"

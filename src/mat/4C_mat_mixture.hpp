@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of the mixture material holding a general mixturerule and mixture constituents
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MIXTURE_HPP
 #define FOUR_C_MAT_MIXTURE_HPP
 

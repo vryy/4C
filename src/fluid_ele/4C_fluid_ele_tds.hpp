@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief time-dependent subgrid scale functionality
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_TDS_HPP
 #define FOUR_C_FLUID_ELE_TDS_HPP
 

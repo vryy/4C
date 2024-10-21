@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input quantities and globally accessible enumerations for scatra-thermo interaction
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_STI_HPP
 #define FOUR_C_INPAR_STI_HPP
 

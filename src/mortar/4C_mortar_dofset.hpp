@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of degrees of freedom special for mortar coupling
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_DOFSET_HPP
 #define FOUR_C_MORTAR_DOFSET_HPP
 

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all algorithms that perform a coupling between Navier-Stokes
-       and (active or passive) scalar transport equations
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_HPP
 #define FOUR_C_ADAPTER_SCATRA_FLUID_ALE_COUPLING_ALGO_HPP
 

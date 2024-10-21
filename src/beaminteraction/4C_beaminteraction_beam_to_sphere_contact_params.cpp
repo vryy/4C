@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all beam to sphere contact input parameters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_beam_to_sphere_contact_params.hpp"
 
 #include "4C_global_data.hpp"

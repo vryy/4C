@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief abstract interface for electrode and electrolyte materials carrying concentration and
-electric potential as degrees of freedom
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_ELCHSINGLEMAT_HPP
 #define FOUR_C_MAT_ELCHSINGLEMAT_HPP
 

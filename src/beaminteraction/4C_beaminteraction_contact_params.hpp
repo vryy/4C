@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding pointers to all subcontainers that in turn hold
-       all input parameters specific to their problem type
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_CONTACT_PARAMS_HPP
 #define FOUR_C_BEAMINTERACTION_CONTACT_PARAMS_HPP
 

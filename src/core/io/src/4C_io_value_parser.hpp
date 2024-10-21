@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Internal classes to read values from files
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_VALUE_PARSER_HPP
 #define FOUR_C_IO_VALUE_PARSER_HPP
 

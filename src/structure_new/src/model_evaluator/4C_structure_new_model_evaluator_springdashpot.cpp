@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all spring dashpot terms
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_model_evaluator_springdashpot.hpp"
 
 #include "4C_fem_discretization.hpp"

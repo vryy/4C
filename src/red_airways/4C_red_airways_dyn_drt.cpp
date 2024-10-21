@@ -1,16 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Main control routine for reduced dimensional airways network
- (time) integration. Includes routines for pure reduced modeling and for
- reduced_airway-tissue coupling.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_red_airways_dyn_drt.hpp"
 
 #include "4C_adapter_str_redairway.hpp"

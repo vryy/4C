@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integration of nitsche related terms for the ssi contact case
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_SSI_HPP
 #define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_SSI_HPP
 

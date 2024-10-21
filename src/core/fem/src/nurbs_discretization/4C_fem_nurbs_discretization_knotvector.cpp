@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief knot vectors for nurbs problems (isogeometric analysis)
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

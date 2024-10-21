@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic constraint class, dealing with multi point constraints
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_constraint_multipointconstraint.hpp"
 
 #include "4C_fem_discretization.hpp"

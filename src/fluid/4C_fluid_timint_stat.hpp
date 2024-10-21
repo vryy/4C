@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Basic fluid driver for stationary problems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FLUID_TIMINT_STAT_HPP
 #define FOUR_C_FLUID_TIMINT_STAT_HPP
 

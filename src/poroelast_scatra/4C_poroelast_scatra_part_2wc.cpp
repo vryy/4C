@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief partitioned two way coupled poroelasticity scalar transport interaction algorithms
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_scatra_part_2wc.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Define a data container that stores parameters for visualization output
-
-\level 0
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_VISUALIZATION_PARAMETERS_HPP
 #define FOUR_C_IO_VISUALIZATION_PARAMETERS_HPP
 

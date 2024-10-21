@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  partitioned two way coupled poroelasticity scalar transport interaction algorithms
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_SCATRA_PART_2WC_HPP
 #define FOUR_C_POROELAST_SCATRA_PART_2WC_HPP
 

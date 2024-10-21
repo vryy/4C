@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief solid material for  porous model with special implementations
-        for ECM model (dissolution of ECM)
-
-
-\level 3
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_mat_structporo_reaction_ecm.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,9 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for momentum formulation handler in smoothed particle hydrodynamics (SPH)
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_particle_interaction_sph_momentum_formulation.hpp"

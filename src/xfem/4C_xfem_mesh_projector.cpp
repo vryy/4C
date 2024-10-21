@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Projection of state vectors between overlapping meshes
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_xfem_mesh_projector.hpp"
 
 #include "4C_comm_exporter.hpp"

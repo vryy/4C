@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
 #include "4C_cut_meshintersection.hpp"
 #include "4C_fem_general_utils_local_connectivity_matrices.hpp"
 

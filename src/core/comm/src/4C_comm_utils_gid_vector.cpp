@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for std vector with nodal GIDs
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_utils_gid_vector.hpp"
 
 #include "4C_fem_discretization.hpp"

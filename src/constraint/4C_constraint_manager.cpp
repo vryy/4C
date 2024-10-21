@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class controlling constraints and containing the necessary data, code originally by Thomas
-Kloeppel
-
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_constraint_manager.hpp"
 
 #include "4C_constraint.hpp"

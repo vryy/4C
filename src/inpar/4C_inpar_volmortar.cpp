@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for volmortar
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_volmortar.hpp"
 
 #include "4C_coupling_volmortar.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief Generic polynomials for HDG methods in 1D, 2D, 3D
-
-\level 2
-
- */
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_POLYNOMIAL_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_POLYNOMIAL_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam-to-beam pair (two beam elements) connected by a mechanical link
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_link.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for reinitialization equation
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_scatra_ele_calc_lsreinit.hpp"
 
 #include "4C_fem_discretization.hpp"

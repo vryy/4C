@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Setting of general fluid parameter for element evaluation
-
-This file has to contain all parameters called in fluid_ele_calc.cpp.
-Additional parameters required in derived classes of FluidEleCalc have to
-be set in problem specific parameter lists derived from this class.
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_PARAMETER_HPP
 #define FOUR_C_FLUID_ELE_PARAMETER_HPP
 

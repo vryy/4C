@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A base class for binary trees and binary tree nodes providing common functionality
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_mortar_base_binarytree.hpp"
 
 #include "4C_fem_discretization.hpp"

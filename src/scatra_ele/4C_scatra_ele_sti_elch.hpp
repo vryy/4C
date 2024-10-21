@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief supplementary element calculation class providing general utility for evaluation of heat
-transport within electrochemical substances
-
-
-\level 2
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_STI_ELCH_HPP
 #define FOUR_C_SCATRA_ELE_STI_ELCH_HPP
 

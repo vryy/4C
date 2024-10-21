@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of LinExp artery element
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_art_net_artery_ele_calc_lin_exp.hpp"
 
 #include "4C_art_net_art_junction.hpp"

@@ -1,9 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief Unittests for demangle utility
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
 #include "4C_comm_broadcast_utils.hpp"

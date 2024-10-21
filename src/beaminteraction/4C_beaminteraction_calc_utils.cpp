@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief calc utils for beam interaction framework
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_beaminteraction_calc_utils.hpp"
 
 #include "4C_beam3_base.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using NonlinearCG
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_sd.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A base class for binary trees and binary tree nodes providing common functionality
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MORTAR_BASE_BINARYTREE_HPP
 #define FOUR_C_MORTAR_BASE_BINARYTREE_HPP
 

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for a triad interpolation scheme
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAM3_TRIAD_INTERPOLATION_HPP
 #define FOUR_C_BEAM3_TRIAD_INTERPOLATION_HPP
 

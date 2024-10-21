@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A condition of any kind
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_condition.hpp"
 
 #include "4C_fem_general_element.hpp"

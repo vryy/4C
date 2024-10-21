@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-  \brief main routine of the Ensight filter
-
-  \level 1
-
-*/
-
-
-
 #include "4C_post_processor_single_field_writers.hpp"
 
 #include "4C_fem_condition_utils.hpp"

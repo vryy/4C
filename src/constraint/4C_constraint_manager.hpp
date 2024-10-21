@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class controlling constraints and containing the necessary data, code originally by Thomas
-Kloeppel
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_MANAGER_HPP
 #define FOUR_C_CONSTRAINT_MANAGER_HPP
 

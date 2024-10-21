@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an isotropic coupled material depending on the first Cauchy-Green invariant
-and the Jacobi determinant
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coup13apow.hpp"
 
 #include "4C_material_parameter_base.hpp"

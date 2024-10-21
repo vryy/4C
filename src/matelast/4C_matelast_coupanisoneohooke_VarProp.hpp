@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the coupled anisotropic neo-Hooke material with one fiber direction
-with space-time varying coefficients
-
-\level 3
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MATELAST_COUPANISONEOHOOKE_VARPROP_HPP
 #define FOUR_C_MATELAST_COUPANISONEOHOOKE_VARPROP_HPP
 

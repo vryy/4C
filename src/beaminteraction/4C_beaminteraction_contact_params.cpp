@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding pointers to all subcontainers that in turn hold
-       all input parameters specific to their problem type
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_contact_params.hpp"
 
 #include "4C_beaminteraction_beam_to_beam_contact_params.hpp"

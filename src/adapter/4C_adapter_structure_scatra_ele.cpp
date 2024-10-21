@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-\brief factory for structure adapters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_adapter_structure_scatra_ele.hpp"
 
 #include "4C_fem_general_element.hpp"

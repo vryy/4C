@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief collection of service methods for intersection computations
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GEOMETRY_POSITION_ARRAY_HPP
 #define FOUR_C_FEM_GEOMETRY_POSITION_ARRAY_HPP
 

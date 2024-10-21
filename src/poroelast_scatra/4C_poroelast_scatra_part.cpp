@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  scalar transport in porous media
-
-\level 2
-
- *-----------------------------------------------------------------------*/
-
-/*
- *  Implementation of passive scalar transport in porous media.
- *  Done by Miguel Urrecha (miguel.urrecha@upm.es)
- */
-
-
 #include "4C_poroelast_scatra_part.hpp"
 
 FOUR_C_NAMESPACE_OPEN

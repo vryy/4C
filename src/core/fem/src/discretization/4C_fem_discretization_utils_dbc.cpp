@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utils methods to apply DBCs to the system-vectors of a discretization
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_fem_discretization_hdg.hpp"
 #include "4C_fem_discretization_utils.hpp"
 #include "4C_fem_nurbs_discretization.hpp"

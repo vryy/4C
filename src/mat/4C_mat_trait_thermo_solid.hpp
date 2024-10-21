@@ -1,10 +1,3 @@
-/*! \file
-\brief Interface for every material that can evaluate coupled thermo-solid material laws
-
-\level 3
-
-*/
-
 #include "4C_config.hpp"
 
 #include "4C_mat_monolithic_solid_scalar_material.hpp"

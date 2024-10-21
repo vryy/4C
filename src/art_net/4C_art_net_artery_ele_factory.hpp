@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of artery elements
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ART_NET_ARTERY_ELE_FACTORY_HPP
 #define FOUR_C_ART_NET_ARTERY_ELE_FACTORY_HPP
 

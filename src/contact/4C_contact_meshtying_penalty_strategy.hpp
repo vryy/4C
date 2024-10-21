@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Penalty mesh-tying solving strategy.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_PENALTY_STRATEGY_HPP
 #define FOUR_C_CONTACT_MESHTYING_PENALTY_STRATEGY_HPP
 

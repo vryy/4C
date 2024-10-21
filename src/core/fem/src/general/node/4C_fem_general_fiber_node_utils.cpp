@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of utility functions for fiber interpolation
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fem_general_fiber_node_utils.hpp"
 
 #include "4C_fem_general_fiber_node.hpp"

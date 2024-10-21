@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge
-within isothermal electrodes
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch_electrode.hpp"
 
 #include "4C_mat_material_factory.hpp"

@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief General algorithmic routines for partitioned solution approaches
-       to fluid-porous-structure-scalar-scalar interaction (FPS3I), that is,
-       algorithmic routines not specifically related to partitioned
-       solution approaches to one -or two-way-coupled problem
-       configurations, respectively.
-
-\level 3
-
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fs3i_fps3i_partitioned.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

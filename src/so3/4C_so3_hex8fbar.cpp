@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solid Hex8 element with F-bar modification
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_so3_hex8fbar.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for nonlinear solvers
-
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_inpar_solver_nonlin.hpp"
 
 #include "4C_solver_nonlin_nox_enum_lists.hpp"

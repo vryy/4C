@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Setup of the list of valid input parameters
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_validparameters.hpp"
 
 #include "4C_inpar_ale.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input parameters monitoring dirichlet boundary conditions
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_IO_monitor_structure_dbc.hpp"
 
 #include "4C_io_geometry_type.hpp"

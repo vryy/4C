@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with central difference scheme 2nd order (explicit)
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_centrdiff.hpp"
 
 #include "4C_contact_meshtying_contact_bridge.hpp"

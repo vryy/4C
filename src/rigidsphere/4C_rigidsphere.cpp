@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief spherical particle element for brownian dynamics
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_rigidsphere.hpp"
 
 #include "4C_beaminteraction_link_pinjointed.hpp"

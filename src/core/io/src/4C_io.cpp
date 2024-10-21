@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-
-\brief output context of one discretization
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_io.hpp"
 
 #include "4C_fem_discretization.hpp"

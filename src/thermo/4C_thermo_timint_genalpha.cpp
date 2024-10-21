@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Thermal time integration with generalised-alpha
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 10/09 |
- *----------------------------------------------------------------------*/
 #include "4C_thermo_timint_genalpha.hpp"
 
 #include "4C_thermo_ele_action.hpp"

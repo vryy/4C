@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-  \brief Ensight filter basis class
-
-  \level 1
-
-*/
-
-
-
 #include "4C_post_ensight_writer.hpp"
 
 #include "4C_fem_nurbs_discretization.hpp"

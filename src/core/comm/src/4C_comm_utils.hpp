@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Helper class for everything that deals with communication, e.g.
-       MPI, Epetra_Comm and further communicators
-\level 0
-*/
-
-
 #ifndef FOUR_C_COMM_UTILS_HPP
 #define FOUR_C_COMM_UTILS_HPP
 

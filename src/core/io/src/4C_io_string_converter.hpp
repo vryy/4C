@@ -1,13 +1,3 @@
-
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Functionalities to convert strings to arbitrary types
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_STRING_CONVERTER_HPP
 #define FOUR_C_IO_STRING_CONVERTER_HPP
 

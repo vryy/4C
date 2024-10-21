@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule for homogenized constrained mixtures with mass fractions defined through
-functions
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_rule_function.hpp"
 
 #include "4C_global_data.hpp"

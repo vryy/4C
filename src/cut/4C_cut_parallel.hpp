@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic parallel cut classes "Parallel"
-
-
-\level 1
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_CUT_PARALLEL_HPP
 #define FOUR_C_CUT_PARALLEL_HPP
 

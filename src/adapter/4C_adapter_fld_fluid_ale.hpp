@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solver for fluid field on a moving ALE mesh
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_ALE_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_ALE_HPP
 

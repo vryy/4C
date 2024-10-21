@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Central storage of element input line definitions
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #include "4C_fem_general_element_definition.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Line to volume interaction with Gauss point projection on the cylinder surface along the
-line.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_CROSS_SECTION_HPP
 #define FOUR_C_GEOMETRY_PAIR_LINE_TO_VOLUME_GAUSS_POINT_PROJECTION_CROSS_SECTION_HPP
 

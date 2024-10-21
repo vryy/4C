@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for fluid
-
-\level 1
-
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_FLUID_HPP
 #define FOUR_C_INPAR_FLUID_HPP
 

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines doing coordinate transformation between various coordinate systems
-       a integration cell is lying in
---> THIS FUNCTIONALITY IS JUST USED IN COMBUST AND WILL LEAVE 4C SOON
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FEM_GEOMETRY_INTEGRATIONCELL_COORDTRAFO_HPP
 #define FOUR_C_FEM_GEOMETRY_INTEGRATIONCELL_COORDTRAFO_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief implementation of the quadratic NURBS 27 element
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_nurbs27.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

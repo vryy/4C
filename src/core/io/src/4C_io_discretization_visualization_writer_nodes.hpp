@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write nodal coordinates and values at the nodes to a visualization file
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
 #define FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
 

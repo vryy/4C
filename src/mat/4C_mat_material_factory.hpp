@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Factory for materials
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_MATERIAL_FACTORY_HPP
 #define FOUR_C_MAT_MATERIAL_FACTORY_HPP
 

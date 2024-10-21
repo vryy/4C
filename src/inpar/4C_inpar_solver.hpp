@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for linear solvers
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_SOLVER_HPP
 #define FOUR_C_INPAR_SOLVER_HPP
 

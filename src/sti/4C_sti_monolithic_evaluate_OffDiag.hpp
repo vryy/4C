@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Evaluation of off-diagonal blocks for monolithic STI
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
 #define FOUR_C_STI_MONOLITHIC_EVALUATE_OFFDIAG_HPP
 

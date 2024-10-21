@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Coupling Manager for eXtended Fluid Structural Coupling
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fsi_xfem_XFScoupling_manager.hpp"
 
 #include "4C_adapter_str_structure.hpp"

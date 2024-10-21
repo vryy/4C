@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Input/output data container for the structural (time) integration
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief service methods for accessing knot vector and weights for a given
-       element of a nurbs discretisations
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
 #define FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
 

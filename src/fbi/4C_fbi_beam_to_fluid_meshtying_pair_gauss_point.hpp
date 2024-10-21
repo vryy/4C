@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Meshtying element for meshtying between a 1D beam and a 3D fluid element using Gauss point
-projection.
-
-\level 1
-*/
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_GAUSS_POINT_HPP
 

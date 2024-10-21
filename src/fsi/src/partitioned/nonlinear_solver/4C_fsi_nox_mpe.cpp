@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using minimal polynomial vector extrapolation
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_mpe.hpp"
 
 #include "4C_global_data.hpp"

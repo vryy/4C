@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief submodel for potential-based beam interactions
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_submodel_evaluator_potential.hpp"
 
 #include "4C_beam3_base.hpp"

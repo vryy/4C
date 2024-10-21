@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief utils functions related to volmortar
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_coupling_volmortar_utils.hpp"
 
 #include "4C_coupling_volmortar.hpp"

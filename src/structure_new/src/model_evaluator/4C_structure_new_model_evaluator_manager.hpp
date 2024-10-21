@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Manager of the model evaluator calls.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_MANAGER_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_MANAGER_HPP
 

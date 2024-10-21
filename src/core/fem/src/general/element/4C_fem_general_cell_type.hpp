@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definitions of cell types
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_CELL_TYPE_HPP
 #define FOUR_C_FEM_GENERAL_CELL_TYPE_HPP
 

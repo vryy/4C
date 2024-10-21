@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Contains a global distributed tree search implementation
-       based on bounding volumes.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_DISTRIBUTED_TREE_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_DISTRIBUTED_TREE_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief General utility methods for all Epetra objects
-
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_EPETRA_EXCEPTIONS_HPP
 #define FOUR_C_UTILS_EPETRA_EXCEPTIONS_HPP
 

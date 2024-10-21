@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief material for macro-scale elements in multi-scale simulations of scalar transport problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_scatra_multiscale.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

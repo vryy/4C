@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Helper functions for shell7p element
-
-\level 1
-*/
-
 #include "4C_shell7p_utils.hpp"
 
 #include "4C_comm_exporter.hpp"

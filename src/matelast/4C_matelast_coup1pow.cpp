@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an isotropic general power-type material in terms of the first Cauchy-Green
-invariant
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coup1pow.hpp"
 
 #include "4C_material_parameter_base.hpp"

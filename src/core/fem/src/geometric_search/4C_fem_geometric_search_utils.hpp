@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the geometric search.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GEOMETRIC_SEARCH_UTILS_HPP
 #define FOUR_C_FEM_GEOMETRIC_SEARCH_UTILS_HPP
 

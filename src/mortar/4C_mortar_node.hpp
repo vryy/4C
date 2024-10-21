@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief header for mortar node and data container
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_NODE_HPP
 #define FOUR_C_MORTAR_NODE_HPP
 

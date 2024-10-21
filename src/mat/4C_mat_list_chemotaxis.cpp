@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief
-
-This file contains the material for chemotactic scalars. It derives from MAT_matlist
-and adds everything to supervise all the MAT_scatra_chemotaxis materials. The chemotaxation
-itself is defined inside the MAT_scatra_chemotaxis materials. So MAT_matlist_chemotaxis
-is just a "control instance".
-
-
-\level 3
-*----------------------------------------------------------------------*/
-
-
 #include "4C_mat_list_chemotaxis.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

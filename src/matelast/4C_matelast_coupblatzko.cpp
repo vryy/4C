@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the Blatz and Ko material model according to Holzapfel, "Nonlinear solid
-mechanics", 2001.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupblatzko.hpp"
 
 #include "4C_material_parameter_base.hpp"

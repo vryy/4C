@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief cut boundary cell header file
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CUT_BOUNDARYCELL_HPP
 #define FOUR_C_CUT_BOUNDARYCELL_HPP
 

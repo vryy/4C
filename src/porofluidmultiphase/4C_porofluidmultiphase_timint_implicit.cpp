@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class of implicit integration schemes for porous multiphase
-        flow problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_timint_implicit.hpp"
 
 #include "4C_fem_general_assemblestrategy.hpp"

@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam-to-beam potential-based interacting pair (two beam elements)
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_POTENTIAL_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_POTENTIAL_PAIR_HPP
 

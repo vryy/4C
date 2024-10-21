@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic functionality for cutting a mesh
-
-
-\level 2
-*/
-/*------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_PARENTINTERSECTION_HPP
 #define FOUR_C_CUT_PARENTINTERSECTION_HPP
 

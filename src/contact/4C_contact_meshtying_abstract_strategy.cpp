@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Main abstract class for meshtying solution strategies
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_meshtying_abstract_strategy.hpp"
 
 #include "4C_comm_parobjectfactory.hpp"

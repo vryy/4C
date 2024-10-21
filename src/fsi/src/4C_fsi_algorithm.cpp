@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basis of all FSI algorithms
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fsi_algorithm.hpp"
 
 #include "4C_adapter_str_factory.hpp"

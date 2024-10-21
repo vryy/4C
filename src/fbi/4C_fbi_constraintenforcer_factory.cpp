@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the appropriate constraint enforcement strategy for fluid-beam interaction
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fbi_constraintenforcer_factory.hpp"
 
 #include "4C_fbi_adapter_constraintbridge.hpp"

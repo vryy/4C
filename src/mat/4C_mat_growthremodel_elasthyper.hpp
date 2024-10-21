@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This file is used to manage the homogenized constraint mixture during growth and remodeling
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_GROWTHREMODEL_ELASTHYPER_HPP
 #define FOUR_C_MAT_GROWTHREMODEL_ELASTHYPER_HPP
 

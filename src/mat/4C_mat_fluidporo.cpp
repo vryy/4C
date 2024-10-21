@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  fluid material for poroelasticity problems
-
-
-\level 2
- *-----------------------------------------------------------------------*/
-
 #include "4C_mat_fluidporo.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

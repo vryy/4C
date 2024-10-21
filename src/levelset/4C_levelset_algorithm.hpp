@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief level-set algorithm
-
-\level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEVELSET_ALGORITHM_HPP
 #define FOUR_C_LEVELSET_ALGORITHM_HPP
 

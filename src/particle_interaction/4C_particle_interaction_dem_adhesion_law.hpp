@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief adhesion law handler for discrete element method (DEM) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_DEM_ADHESION_LAW_HPP
 #define FOUR_C_PARTICLE_INTERACTION_DEM_ADHESION_LAW_HPP
 

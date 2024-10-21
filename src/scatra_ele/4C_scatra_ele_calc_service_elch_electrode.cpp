@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge
-within electrodes
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_mat_material_factory.hpp"

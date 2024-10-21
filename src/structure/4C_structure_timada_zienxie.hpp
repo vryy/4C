@@ -1,12 +1,3 @@
-/*======================================================================*/
-/*! \file
-\brief Zienkiewicz-Xie time step indicator for time adaptivity
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_STRUCTURE_TIMADA_ZIENXIE_HPP
 #define FOUR_C_STRUCTURE_TIMADA_ZIENXIE_HPP
 

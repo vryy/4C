@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief inner status test that restricts value of update vector
-
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_inner_statustest_upperbound.hpp"
 
 #include "4C_linalg_vector.hpp"

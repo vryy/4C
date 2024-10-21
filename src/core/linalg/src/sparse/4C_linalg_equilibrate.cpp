@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utilities for matrix equilibration
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_linalg_equilibrate.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_create.hpp"

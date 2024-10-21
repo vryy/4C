@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Adapter for the new structural time integration framework.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STR_STRUCTURE_NEW_HPP
 #define FOUR_C_ADAPTER_STR_STRUCTURE_NEW_HPP
 

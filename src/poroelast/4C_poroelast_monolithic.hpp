@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief  Basis of all monolithic poroelasticity algorithms
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROELAST_MONOLITHIC_HPP
 #define FOUR_C_POROELAST_MONOLITHIC_HPP
 

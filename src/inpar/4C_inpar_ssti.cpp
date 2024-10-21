@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief input parameters for solid-scatra-thermo-interaction
-
-\level 2
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_ssti.hpp"
 
 #include "4C_fem_condition_definition.hpp"

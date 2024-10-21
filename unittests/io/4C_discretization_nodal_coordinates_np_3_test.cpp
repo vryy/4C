@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-
-\brief Unittests for building the nodal coordinate vector of a discretization
-       based on a nodal rowmap
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_fem_discretization.hpp"

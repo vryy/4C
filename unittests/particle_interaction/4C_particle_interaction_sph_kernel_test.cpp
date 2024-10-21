@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief unittests for kernel handler for smoothed particle hydrodynamics (SPH) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_particle_interaction_sph_kernel.hpp"

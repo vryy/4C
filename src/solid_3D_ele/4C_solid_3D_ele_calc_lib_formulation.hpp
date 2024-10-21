@@ -1,10 +1,3 @@
-/*! \file
-
-\brief This file contains helper functions and type traits for the solid formulation
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_CALC_LIB_FORMULATION_HPP
 #define FOUR_C_SOLID_3D_ELE_CALC_LIB_FORMULATION_HPP
 

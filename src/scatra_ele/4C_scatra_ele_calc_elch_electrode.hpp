@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for conservation of mass concentration and electronic charge
-within isothermal electrodes
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_CALC_ELCH_ELECTRODE_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ELCH_ELECTRODE_HPP
 

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the structural time integration which gives fine grained
-       access in the time loop
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_adapter_str_timeloop.hpp"
 
 #include "4C_global_data.hpp"

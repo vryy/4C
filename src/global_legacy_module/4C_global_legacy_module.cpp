@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of registration of parallel objects
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_global_legacy_module.hpp"
 
 #include "4C_ale_ale2.hpp"

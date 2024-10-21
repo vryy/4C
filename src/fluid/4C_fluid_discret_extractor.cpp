@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief creates a second discretization as part of the complete discretization for inflow generation
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_discret_extractor.hpp"
 
 #include "4C_fem_condition_periodic.hpp"

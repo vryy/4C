@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory class for providing an implementation for coupling with
-       Mixed/Stress/Hybrid methods or Nitsche's method to enforce
-       interface conditions in the XFEM weakly
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_HPP
 #define FOUR_C_FLUID_ELE_CALC_XFEM_COUPLING_HPP
 

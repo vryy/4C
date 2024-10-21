@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam and solid contact pair (two elements)
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_BEAMCONTACT_BEAM3TOSOLIDCONTACT_HPP
 #define FOUR_C_BEAMCONTACT_BEAM3TOSOLIDCONTACT_HPP
 

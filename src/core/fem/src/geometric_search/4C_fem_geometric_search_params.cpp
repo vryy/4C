@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Data container class for geometric search parameters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fem_geometric_search_params.hpp"
 
 #include "4C_utils_parameter_list.hpp"

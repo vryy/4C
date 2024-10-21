@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of artery elements
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_art_net_artery_ele_factory.hpp"
 
 #include "4C_art_net_artery_ele_calc_lin_exp.hpp"

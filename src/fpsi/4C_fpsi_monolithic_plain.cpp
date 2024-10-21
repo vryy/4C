@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FPSI problem with matching grids using a monolithic scheme
-       in its plain form. Only interface ale displacements are condensed.
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*/
-// GENERAL
 #include "4C_fpsi_monolithic_plain.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief evaporation induced recoil pressure handler for smoothed particle hydrodynamics (SPH)
-       interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | headers                                                                   |
- *---------------------------------------------------------------------------*/
 #include "4C_particle_interaction_sph_surface_tension_recoilpressure_evaporation.hpp"
 
 #include "4C_particle_engine_container.hpp"

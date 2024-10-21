@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scalar transport elements for standard scalar transport problems
-
-\level 1
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_std.hpp"
 
 #include "4C_utils_singleton_owner.hpp"

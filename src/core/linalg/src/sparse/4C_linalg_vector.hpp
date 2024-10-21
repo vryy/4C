@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A wrapper for the Epetra_Vector
-
-\level 0
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_VECTOR_HPP
 #define FOUR_C_LINALG_VECTOR_HPP
 

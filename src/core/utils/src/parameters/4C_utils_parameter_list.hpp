@@ -1,12 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief A collection of helper functions for Teuchos::ParameterLists
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_PARAMETER_LIST_HPP
 #define FOUR_C_UTILS_PARAMETER_LIST_HPP
 

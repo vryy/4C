@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluate routines for Solid Hex8 element with F-bar modification
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"

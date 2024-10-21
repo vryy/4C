@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Evaluates flux between ScaTra and ScaTra on manifolds incl. coupling matrices
-
- \level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_ssi_manifold_utils.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

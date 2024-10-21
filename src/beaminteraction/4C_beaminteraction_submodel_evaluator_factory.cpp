@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the desired submodel evaluators.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_beaminteraction_submodel_evaluator_factory.hpp"
 
 #include "4C_beaminteraction_submodel_evaluator_beamcontact.hpp"

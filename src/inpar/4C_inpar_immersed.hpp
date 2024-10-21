@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Input parameters for immersed
-
-\level 1
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_INPAR_IMMERSED_HPP
 #define FOUR_C_INPAR_IMMERSED_HPP
 

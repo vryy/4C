@@ -1,10 +1,3 @@
-/*! \file
- *
-\brief Nonlinear Shell 7-Parameter Model Finite Element line evaluation
-
-\level 3
-*/
-
 #include "4C_fem_condition.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_extract_values.hpp"

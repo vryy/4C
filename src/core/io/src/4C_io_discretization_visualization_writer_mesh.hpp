@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write visualization output for a discretization, i.e., write the mesh and results on the mesh
-to disk
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_HPP
 #define FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_MESH_HPP
 

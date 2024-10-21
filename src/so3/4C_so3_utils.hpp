@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for solid elements
-
-\level 1
-*-----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SO3_UTILS_HPP
 #define FOUR_C_SO3_UTILS_HPP
 

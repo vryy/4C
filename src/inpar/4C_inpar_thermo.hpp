@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief list of input parameters
-\level 1
-
-
-*/
-
 #ifndef FOUR_C_INPAR_THERMO_HPP
 #define FOUR_C_INPAR_THERMO_HPP
 

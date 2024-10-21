@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for line to surface geometry pairs that rely on averaged nodal normals.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #include <gtest/gtest.h>
 
 #include "4C_geometry_pair_element.hpp"

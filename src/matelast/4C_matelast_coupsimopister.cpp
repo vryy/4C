@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the Simo and Pister material model except the volumetric term
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_coupsimopister.hpp"
 
 #include "4C_material_parameter_base.hpp"

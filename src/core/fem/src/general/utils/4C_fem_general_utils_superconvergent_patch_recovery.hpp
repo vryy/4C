@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for namespace Discret
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_SUPERCONVERGENT_PATCH_RECOVERY_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_SUPERCONVERGENT_PATCH_RECOVERY_HPP
 

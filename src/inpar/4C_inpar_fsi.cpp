@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\level 1
-
-
-\brief Input parameters for fluid structure interaction
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_inpar_fsi.hpp"
 
 #include "4C_fem_condition_definition.hpp"

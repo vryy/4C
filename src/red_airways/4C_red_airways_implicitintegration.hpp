@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Associated with control routine for reduced dimensional airways
-  solvers
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_RED_AIRWAYS_IMPLICITINTEGRATION_HPP
 #define FOUR_C_RED_AIRWAYS_IMPLICITINTEGRATION_HPP
 

@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A displacement based solid element formulation with linear kinematics
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_CALC_DISPLACEMENT_BASED_LINEAR_KINEMATICS_HPP
 #define FOUR_C_SOLID_3D_ELE_CALC_DISPLACEMENT_BASED_LINEAR_KINEMATICS_HPP
 

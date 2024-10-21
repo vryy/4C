@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using minimal polynomial vector extrapolation
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_NOX_MPE_HPP
 #define FOUR_C_FSI_NOX_MPE_HPP
 

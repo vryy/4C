@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief wrapper class for a user derived NOX PrePostOperator
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_GROUP_PREPOSTOPERATOR_HPP
 

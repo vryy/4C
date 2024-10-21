@@ -1,10 +1,3 @@
-/*! \file
- *
-\brief Nonlinear Shell 7-Parameter Model Finite Element evaluation
-
-\level 3
-*/
-
 #include "4C_global_data.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_mat_material_factory.hpp"

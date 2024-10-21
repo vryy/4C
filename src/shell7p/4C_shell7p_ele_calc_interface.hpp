@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Interface of Shell 7-Parameter Model Finite Elements
-
-\level 1
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_CALC_INTERFACE_HPP
 #define FOUR_C_SHELL7P_ELE_CALC_INTERFACE_HPP
 

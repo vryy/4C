@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FPSI problem with matching grids using a monolithic scheme
-       in its plain form without any fancy splitting and condensation stuff
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FPSI_MONOLITHIC_PLAIN_HPP
 #define FOUR_C_FPSI_MONOLITHIC_PLAIN_HPP
 

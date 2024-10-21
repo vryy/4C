@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief interface class for beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beamcontact_beam3contactinterface.hpp"
 
 #include "4C_beamcontact_beam3contact.hpp"

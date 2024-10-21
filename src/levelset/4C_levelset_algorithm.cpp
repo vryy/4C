@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base level-set algorithm
-
-    detailed description in header file levelset_algorithm.H
-
-\level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #include "4C_levelset_algorithm.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief porous medium algorithm with block matrices for splitting and condensation
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_monolithicsplit.hpp"
 
 #include "4C_adapter_fld_base_algorithm.hpp"

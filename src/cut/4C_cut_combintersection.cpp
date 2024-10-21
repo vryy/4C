@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic functionality for cutting a mesh with a level set function and/or a
-       mesh
-
-
-\level 2
-*/
-/*------------------------------------------------------------------------------------------------*/
 #include "4C_cut_combintersection.hpp"
 
 #include "4C_cut_levelsetintersection.hpp"

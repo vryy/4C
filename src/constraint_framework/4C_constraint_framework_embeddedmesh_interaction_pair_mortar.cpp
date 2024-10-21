@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Coupling pair element for enforcing Dirichlet boundary conditions between a 3D
-surface (interface) and a 3D solid element (background mesh) using mortar shape functions for the
-coupling.
-
-\level 3
-*/
-// End doxygen header.
-
 #include "4C_constraint_framework_embeddedmesh_interaction_pair_mortar.hpp"
 
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_mortar_manager.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief scatra_ele_calc_aniso.cpp
-
-\level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_ele_calc_aniso.hpp"
 
 #include "4C_fem_condition_utils.hpp"

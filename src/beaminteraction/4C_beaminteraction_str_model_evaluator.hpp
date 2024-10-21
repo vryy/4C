@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of all beam interaction terms
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_BEAMINTERACTION_STR_MODEL_EVALUATOR_HPP
 #define FOUR_C_BEAMINTERACTION_STR_MODEL_EVALUATOR_HPP
 

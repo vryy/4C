@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for LazyPtr clas
-
-\level 0
-*/
-
 #include <gtest/gtest.h>
 
 #include "4C_utils_lazy_ptr.hpp"

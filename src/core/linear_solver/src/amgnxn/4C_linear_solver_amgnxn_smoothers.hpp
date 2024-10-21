@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration
-\level 1
-Created on: Feb 27, 2014
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINEAR_SOLVER_AMGNXN_SMOOTHERS_HPP
 #define FOUR_C_LINEAR_SOLVER_AMGNXN_SMOOTHERS_HPP
 

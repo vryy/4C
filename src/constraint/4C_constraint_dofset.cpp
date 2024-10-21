@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A set of degrees of freedom for constraint problems
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_constraint_dofset.hpp"
 
 #include <algorithm>

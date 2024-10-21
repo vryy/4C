@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with Adams-Bashforth 2nd order (explicit)
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_AB2_HPP
 #define FOUR_C_STRUCTURE_TIMINT_AB2_HPP
 

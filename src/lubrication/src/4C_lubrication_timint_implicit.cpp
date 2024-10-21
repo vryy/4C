@@ -1,16 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Associated with control routine for Lubrication solvers,
-
-     including stationary solver.
-
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_lubrication_timint_implicit.hpp"
 
 #include "4C_fem_general_element.hpp"

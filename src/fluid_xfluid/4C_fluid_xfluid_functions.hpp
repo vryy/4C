@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Managing and evaluating of spatial functions for Xfluid problems
-
-\level 3
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_utils_function.hpp"

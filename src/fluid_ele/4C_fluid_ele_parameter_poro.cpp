@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of general fluid parameter for fluid in poroelast problem
-
-FluidEleParameter::set_element_poro_parameter(Teuchos::ParameterList& params)
-set all general porofluid parameter once for all elements.
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_parameter_poro.hpp"
 
 FOUR_C_NAMESPACE_OPEN

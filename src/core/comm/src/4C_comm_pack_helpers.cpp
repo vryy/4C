@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Functions to pack and extract data
-\level 0
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_comm_pack_helpers.hpp"
 
 FOUR_C_NAMESPACE_OPEN

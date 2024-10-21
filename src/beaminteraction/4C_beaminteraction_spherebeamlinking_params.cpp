@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all contractile cells input parameters
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_spherebeamlinking_params.hpp"
 
 #include "4C_global_data.hpp"

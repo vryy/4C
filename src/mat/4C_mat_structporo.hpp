@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief wrapper for structure material of porous media
-
-
-\level 2
- *-----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_STRUCTPORO_HPP
 #define FOUR_C_MAT_STRUCTPORO_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of utility functions for large rotations
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #include "4C_fem_general_largerotations.hpp"
 
 FOUR_C_NAMESPACE_OPEN

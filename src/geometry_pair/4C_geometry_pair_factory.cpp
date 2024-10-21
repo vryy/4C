@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief functions to create geometry pairs.
-
-\level 1
-*/
-
-
 #include "4C_geometry_pair_factory.hpp"
 
 #include "4C_geometry_pair_element.hpp"

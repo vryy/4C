@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief strategy to clone porofluid from porous solid
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_poroelast_utils_clonestrategy.hpp"
 
 #include "4C_fluid_ele_poro.hpp"

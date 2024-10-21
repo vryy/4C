@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Cut tets used for the Tessellation routine
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_TETMESHINTERSECTION_HPP
 #define FOUR_C_CUT_TETMESHINTERSECTION_HPP
 

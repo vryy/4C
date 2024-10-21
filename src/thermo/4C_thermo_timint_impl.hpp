@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief base class for all implicit time integrators in thermo-field
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                              bborn 08/09 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_IMPL_HPP
 #define FOUR_C_THERMO_TIMINT_IMPL_HPP
 

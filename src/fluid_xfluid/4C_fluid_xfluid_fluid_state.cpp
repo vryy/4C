@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief State class for (in)stationary XFEM fluid problems involving embedded
-fluid meshes
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_xfluid_fluid_state.hpp"
 
 #include "4C_fluid_utils.hpp"

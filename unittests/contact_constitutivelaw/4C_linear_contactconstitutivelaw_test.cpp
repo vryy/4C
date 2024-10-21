@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief unit testing functionality for the linear constact constitutivelaw
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_contact_constitutivelaw_linear_contactconstitutivelaw.hpp"

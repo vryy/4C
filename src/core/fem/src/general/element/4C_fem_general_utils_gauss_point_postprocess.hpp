@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Postprocessing utilities for Gauss point quantities
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_HPP
 

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class of all elements used in 4C
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENT_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENT_HPP
 

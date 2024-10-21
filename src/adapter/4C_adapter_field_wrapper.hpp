@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the field time integration - This Wrapper already implements the functionality to
-use StepIncrements, therefore set NOXCorrection == true!!!
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_FIELD_WRAPPER_HPP
 #define FOUR_C_ADAPTER_FIELD_WRAPPER_HPP
 

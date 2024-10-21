@@ -1,10 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class for a frictional contact node
-\level 2
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_contact_friction_node.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

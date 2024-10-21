@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the basic functionality for cutting a mesh
-
-
-\level 2
-*/
-/*------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_parentintersection.hpp"
 
 #include "4C_cut_volumecell.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid field adapter for embedded (ALE-)fluid-fluid problems using XFEM
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_ADAPTER_FLD_FLUID_FLUID_FSI_HPP
 #define FOUR_C_ADAPTER_FLD_FLUID_FLUID_FSI_HPP
 

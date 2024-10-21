@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluate heat transport within electrodes on element level
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_CALC_STI_ELECTRODE_HPP
 #define FOUR_C_SCATRA_ELE_CALC_STI_ELECTRODE_HPP
 

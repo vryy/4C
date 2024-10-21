@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Base class for all conditions
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_CONDITION_DEFINITION_HPP
 #define FOUR_C_FEM_CONDITION_DEFINITION_HPP
 

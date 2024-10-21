@@ -1,25 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief edge-oriented/continuous interior penalty stabilization for fluid (especially xfluid)
-problems.
-
-Literature:
-
-    Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty
-finite element method E.Burman, M.A.Fernandez and P.Hansbo (2006)
-
-
-    Finite element methods with symmetric stabilization for the transient
-convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods Appl. Mech. Engrg.
-198 (2009) 2508-2519
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_CALC_INTFACES_STAB_HPP
 #define FOUR_C_FLUID_ELE_CALC_INTFACES_STAB_HPP
 

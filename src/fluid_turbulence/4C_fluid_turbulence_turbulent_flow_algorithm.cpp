@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief algorithm for turbulent flows with separate inflow section
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_turbulence_turbulent_flow_algorithm.hpp"
 
 #include "4C_fluid_discret_extractor.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Converter to use Adapter::Coupling type objects in both coupling directions
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
-/* headers */
 #include "4C_coupling_adapter_converter.hpp"
 
 #include "4C_comm_exporter.hpp"

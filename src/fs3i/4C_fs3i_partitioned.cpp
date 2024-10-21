@@ -1,18 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief General algorithmic routines for partitioned solution approaches
-       to fluid-structure-scalar-scalar interaction (FS3I), that is,
-       algorithmic routines not specifically related to partitioned
-       solution approaches to one -or two-way-coupled problem
-       configurations, respectively
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
-
 #include "4C_fs3i_partitioned.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

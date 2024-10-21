@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  connecting time-integration schemes (OST, BDF2, GenAlpha, Stationary) with
-        elch-specific implementation (class ScaTraTimIntElch)
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_TIMINT_ELCH_SCHEME_HPP
 #define FOUR_C_SCATRA_TIMINT_ELCH_SCHEME_HPP
 

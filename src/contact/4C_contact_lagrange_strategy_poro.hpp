@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Contact Strategy handling the porous no penetraction condition on the active contact
-interface
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_LAGRANGE_STRATEGY_PORO_HPP
 #define FOUR_C_CONTACT_LAGRANGE_STRATEGY_PORO_HPP
 

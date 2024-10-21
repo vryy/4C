@@ -1,32 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains the functions to establish local material law /
-       stress-strain law for an isotropic material following finite strain
-       von-Mises plasticity with nonlinear isotropic hardening and general
-       hyperelasticity (for the time being: NeoHooke).
-
-       implementation is based on
-       Simo and Miehe: "Associative coupled thermoplasticity at finite strains:
-       Formulation, numerical analysis and implementation", in Computer Methods
-       in Applied Mechanics and Engineering, 98:41-104, 1992.
-
-       geometrically nonlinear, finite strains, rate-independent, thermo-plasticity
-
-       example input line:
-       [mm,ms,kg,K,GPa]
-       MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 7.8e-6
-         CTE 1e-5 INITTEMP 293 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715
-         HARDEXPO 16.93 YIELDSOFT 0.002 HARDSOFT 0.002 DISSFACT 0.9 TOL 1.0e-06
-
-         Seitz 11/16: There are still some linearizations for the plastic
-         heating terms missing, use with caution.
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 #include "4C_mat_thermoplastichyperelast.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

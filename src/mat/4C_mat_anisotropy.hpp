@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of the input functionality of anisotropy and coordinate systems
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_HPP
 #define FOUR_C_MAT_ANISOTROPY_HPP
 

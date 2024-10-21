@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief  Manage embedded mesh methods
-
-\level 3
- */
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_EMBEDDEDMESH_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_SUBMODELEVALUATOR_EMBEDDEDMESH_HPP
 

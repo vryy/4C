@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Evaluation of neumann loads for shell7p elements
-
-\level 3
-*/
-
 #include "4C_shell7p_ele_neumann_evaluator.hpp"
 
 #include "4C_fem_condition.hpp"

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROMULTIPHASE_ADAPTER_HPP
 #define FOUR_C_POROMULTIPHASE_ADAPTER_HPP
 

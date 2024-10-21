@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief single phase material for multiphase porous flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_FLUIDPORO_SINGLEPHASE_HPP
 #define FOUR_C_MAT_FLUIDPORO_SINGLEPHASE_HPP
 

@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-\brief Factory class to build predictor objects
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_predict_factory.hpp"
 
 // supported predictor classes

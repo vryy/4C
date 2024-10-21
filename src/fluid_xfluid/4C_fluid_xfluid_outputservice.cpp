@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Service class for XFluid-related output.
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_xfluid_outputservice.hpp"
 
 #include "4C_cut_cutwizard.hpp"

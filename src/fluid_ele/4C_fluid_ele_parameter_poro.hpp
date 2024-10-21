@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of general fluid parameter for porofluid
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_PARAMETER_PORO_HPP
 #define FOUR_C_FLUID_ELE_PARAMETER_PORO_HPP
 

@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief NOX's Newton with full step
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_nln_solver_fullnewton.hpp"
 
 #include "4C_structure_new_nln_solver_utils.hpp"

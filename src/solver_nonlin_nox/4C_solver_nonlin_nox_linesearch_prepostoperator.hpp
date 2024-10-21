@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_PREPOSTOPERATOR_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_PREPOSTOPERATOR_HPP
 

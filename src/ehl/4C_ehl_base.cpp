@@ -1,14 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for all elastohydrodynamic lubrication (lubrication structure interaction)
-algorithms
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_ehl_base.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"

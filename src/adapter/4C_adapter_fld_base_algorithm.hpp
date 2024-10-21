@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Fluid Base Algorithm
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_ADAPTER_FLD_BASE_ALGORITHM_HPP
 #define FOUR_C_ADAPTER_FLD_BASE_ALGORITHM_HPP
 

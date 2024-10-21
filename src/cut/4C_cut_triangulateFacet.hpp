@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Class to triangulate facets
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_TRIANGULATEFACET_HPP
 #define FOUR_C_CUT_TRIANGULATEFACET_HPP
 

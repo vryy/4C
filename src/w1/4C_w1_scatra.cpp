@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief a 2D solid-wall element with ScaTra coupling.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_scatra.hpp"
 
 #include "4C_fem_discretization.hpp"

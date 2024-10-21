@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides enum of actions. Motivation was to have a quick enum
-comparison instead of a cumbersome std::string compare.
-
-\level 1
-
-
-*---------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_ACTION_HPP
 #define FOUR_C_SCATRA_ELE_ACTION_HPP
 

@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief extracting maps of fluid discretizations
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_utils_mapextractor.hpp"
 
 #include "4C_fem_condition_selector.hpp"

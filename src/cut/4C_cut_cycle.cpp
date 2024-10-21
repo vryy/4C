@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief a cylcle of points (basic to create facets)
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_cycle.hpp"
 
 #include "4C_cut_edge.hpp"

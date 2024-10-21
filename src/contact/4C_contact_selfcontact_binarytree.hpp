@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Search tree for self-contact problems
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_SELFCONTACT_BINARYTREE_HPP
 #define FOUR_C_CONTACT_SELFCONTACT_BINARYTREE_HPP
 

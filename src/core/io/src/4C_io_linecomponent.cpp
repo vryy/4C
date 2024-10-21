@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Various components that make up an input line
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_io_linecomponent.hpp"
 
 #include "4C_io_input_parameter_container.hpp"

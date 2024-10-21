@@ -1,11 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief monolithic scalar-structure interaction
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_ssi_monolithic.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

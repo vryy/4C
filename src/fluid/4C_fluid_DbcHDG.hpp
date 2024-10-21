@@ -1,12 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief contains utils functions for Dirichlet Boundary Conditions of HDG discretizations
-
-\level 2
-
-*/
-
 #ifndef FOUR_C_FLUID_DBCHDG_HPP
 #define FOUR_C_FLUID_DBCHDG_HPP
 

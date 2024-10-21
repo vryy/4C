@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for solid-to-solid interactions.
-
-\level 3
-
-*/
-
 #include "4C_constraint_framework_embeddedmesh_solid_to_solid_utils.hpp"
 
 #include "4C_constraint_framework_embeddedmesh_interaction_pair_mortar.hpp"

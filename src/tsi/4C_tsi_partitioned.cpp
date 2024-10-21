@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief  Basis of all TSI algorithms that perform a coupling between the linear
-        momentum equation and the heat conduction equation
-
-\level 1
-*/
-
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 12/09 |
- *----------------------------------------------------------------------*/
 #include "4C_tsi_partitioned.hpp"
 
 #include "4C_adapter_str_structure.hpp"

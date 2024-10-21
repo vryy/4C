@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a remodel constituent with explicit integration of the local evolution
-equations
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mixture_constituent_remodelfiber_expl.hpp"
 
 #include "4C_global_data.hpp"

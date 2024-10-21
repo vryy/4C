@@ -1,18 +1,3 @@
-
-/*! \file
-\brief Associated with control routine for artery solvers,
-
-     including instationary solvers based on
-
-     o two-step Taylor-Galerkin
-
-\level 2
-
-
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ART_NET_EXPLICITINTEGRATION_HPP
 #define FOUR_C_ART_NET_EXPLICITINTEGRATION_HPP
 

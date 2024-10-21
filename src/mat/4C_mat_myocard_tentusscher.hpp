@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief ten tusscher myocard material model
-
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*
- |  definitions                                              cbert 08/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MYOCARD_TENTUSSCHER_HPP
 #define FOUR_C_MAT_MYOCARD_TENTUSSCHER_HPP
 

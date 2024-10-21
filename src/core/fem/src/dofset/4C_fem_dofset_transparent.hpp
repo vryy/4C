@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A set of degrees of freedom special for contact
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_TRANSPARENT_HPP
 #define FOUR_C_FEM_DOFSET_TRANSPARENT_HPP
 

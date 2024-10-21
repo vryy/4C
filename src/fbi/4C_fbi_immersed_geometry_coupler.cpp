@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Class containing geometric operations usually needed for the coupling of an embedded body.
-The current implementation does not scale at all!
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #include "4C_fbi_immersed_geometry_coupler.hpp"
 
 #include "4C_binstrategy.hpp"

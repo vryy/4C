@@ -1,11 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Factory to create the desired meshtying strategy.
-
-
-\level 2
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_STRATEGY_FACTORY_HPP
 #define FOUR_C_CONTACT_MESHTYING_STRATEGY_FACTORY_HPP
 

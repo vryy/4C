@@ -1,17 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base xfem Neumann boundary conditions
-
-\level 2
-
-
-\warning think about removing these routines!!!
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_xfem_neumann.hpp"
 
 #include "4C_fem_discretization.hpp"

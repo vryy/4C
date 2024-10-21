@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule for very simple mixture materials
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_RULE_SIMPLE_HPP
 #define FOUR_C_MIXTURE_RULE_SIMPLE_HPP
 

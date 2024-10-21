@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the specific functionality for cutting a mesh with other meshes
-
-\level 3
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_MESHINTERSECTION_HPP
 #define FOUR_C_CUT_MESHINTERSECTION_HPP
 

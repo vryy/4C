@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief porous medium algorithm with matrix split for condensation of
-      no-penetration constraint
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_MONOLITHICSPLIT_NOPENETRATION_HPP
 #define FOUR_C_POROELAST_MONOLITHICSPLIT_NOPENETRATION_HPP
 

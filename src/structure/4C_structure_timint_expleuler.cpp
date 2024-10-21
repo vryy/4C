@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with forward Euler (explicit)
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
-/* macros */
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_structure_timint_expleuler.hpp"
 
 #include "4C_contact_meshtying_contact_bridge.hpp"

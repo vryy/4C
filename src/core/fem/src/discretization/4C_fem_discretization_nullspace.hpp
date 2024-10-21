@@ -1,8 +1,3 @@
-/*! \file
-\brief Nullspace computation for a discretization
-\level 0
-*/
-
 #ifndef FOUR_C_FEM_DISCRETIZATION_NULLSPACE_HPP
 #define FOUR_C_FEM_DISCRETIZATION_NULLSPACE_HPP
 

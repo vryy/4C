@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-\brief All functionality for electromagnetic element evaluations
-
-\level 2
-
- */
-/*--------------------------------------------------------------------------*/
-
 #include "4C_elemag_ele_calc.hpp"
 
 #include "4C_elemag_ele_action.hpp"

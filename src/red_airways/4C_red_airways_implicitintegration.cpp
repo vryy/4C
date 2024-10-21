@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Associated with control routine for reduced dimensional airways
-  solvers
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_red_airways_implicitintegration.hpp"
 
 #include "4C_fem_condition_utils.hpp"

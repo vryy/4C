@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief implementation of the 3D solid-poro element
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_PORO_HPP
 #define FOUR_C_SO3_PORO_HPP
 

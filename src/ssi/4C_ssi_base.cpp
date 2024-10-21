@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for all scalar structure algorithms
-
- \level 1
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_ssi_base.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

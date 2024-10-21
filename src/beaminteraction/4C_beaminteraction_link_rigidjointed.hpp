@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief One beam-to-beam pair (two beam elements) connected by a mechanical link
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_LINK_RIGIDJOINTED_HPP
 #define FOUR_C_BEAMINTERACTION_LINK_RIGIDJOINTED_HPP
 

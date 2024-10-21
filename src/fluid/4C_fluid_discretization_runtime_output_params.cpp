@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related to output at runtime for the fluid field
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_fluid_discretization_runtime_output_params.hpp"
 
 #include "4C_inpar_fluid.hpp"

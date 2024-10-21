@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class that provides the common functionality for a mesh cut based on a level set field or on
-surface meshes
-
-\level 3
-*------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CUT_CUTWIZARD_HPP
 #define FOUR_C_CUT_CUTWIZARD_HPP
 

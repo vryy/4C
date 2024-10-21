@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Control routine for thermo-structure-interaction problems.
-
-
-\level 2
-*/
-
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 12/09 |
- *----------------------------------------------------------------------*/
 #include "4C_tsi_dyn.hpp"
 
 #include "4C_adapter_str_structure.hpp"

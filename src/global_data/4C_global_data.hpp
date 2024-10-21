@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief internal representation of an input file
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_GLOBAL_DATA_HPP
 #define FOUR_C_GLOBAL_DATA_HPP
 

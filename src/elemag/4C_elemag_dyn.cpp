@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Main control routine for electromagnetic simulations
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_elemag_dyn.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

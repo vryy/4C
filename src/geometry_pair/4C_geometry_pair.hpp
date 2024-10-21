@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base class for two or more elements that interact geometrically, e.g. contact or meshtying
-problems.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_HPP
 #define FOUR_C_GEOMETRY_PAIR_HPP
 

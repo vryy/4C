@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic tools used in XFEM routines
-
-\level 3
-
-
-\warning this file should be cleaned up
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_UTILS_HPP
 #define FOUR_C_XFEM_UTILS_HPP
 

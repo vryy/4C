@@ -1,16 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief FSI Wrapper for the ALE time integration with internal mesh tying or mesh sliding interface
-
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
-/* header inclusions */
 #include "4C_adapter_ale_fsi_msht.hpp"
 
 #include "4C_ale_utils_mapextractor.hpp"

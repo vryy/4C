@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility methods for scatra
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_UTILS_HPP
 #define FOUR_C_SCATRA_ELE_CALC_UTILS_HPP
 

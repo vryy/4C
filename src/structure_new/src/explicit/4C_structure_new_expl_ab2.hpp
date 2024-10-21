@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Adams-Bashforth-2 time integration for solid dynamics
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_EXPL_AB2_HPP
 #define FOUR_C_STRUCTURE_NEW_EXPL_AB2_HPP
 

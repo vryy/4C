@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief L2 projection on nodes
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_L2_PROJECTION_HPP
 #define FOUR_C_FEM_GENERAL_L2_PROJECTION_HPP
 

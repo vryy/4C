@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief result testing functionality for scalar-structure interaction problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_ssi_resulttest.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"

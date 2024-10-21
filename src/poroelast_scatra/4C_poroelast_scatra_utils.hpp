@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief utility functions for poroelast coupled with scatra problems
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROELAST_SCATRA_UTILS_HPP
 #define FOUR_C_POROELAST_SCATRA_UTILS_HPP
 

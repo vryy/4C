@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for Blatz and Ko material model according to Holzapfel, "Nonlinear
-solid mechanics", 2001.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPBLATZKO_HPP
 #define FOUR_C_MATELAST_COUPBLATZKO_HPP
 

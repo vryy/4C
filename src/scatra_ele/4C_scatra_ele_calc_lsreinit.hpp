@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of scatra elements for reinitialization equation
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SCATRA_ELE_CALC_LSREINIT_HPP
 #define FOUR_C_SCATRA_ELE_CALC_LSREINIT_HPP
 

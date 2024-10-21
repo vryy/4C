@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of a cylinder coordinate system manager
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_anisotropy_cylinder_coordinate_system_manager.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

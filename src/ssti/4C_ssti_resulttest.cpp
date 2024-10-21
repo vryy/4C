@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief result testing functionality for scalar-structure-thermo interaction problems
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_ssti_resulttest.hpp"
 
 #include "4C_io_linedefinition.hpp"

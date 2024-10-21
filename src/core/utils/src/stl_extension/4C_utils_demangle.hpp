@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Utility to demangle typeid names
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_DEMANGLE_HPP
 #define FOUR_C_UTILS_DEMANGLE_HPP
 

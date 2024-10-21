@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief helper methods/classes for multiphase porous fluid flow problems
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_POROFLUIDMULTIPHASE_UTILS_HPP
 #define FOUR_C_POROFLUIDMULTIPHASE_UTILS_HPP
 

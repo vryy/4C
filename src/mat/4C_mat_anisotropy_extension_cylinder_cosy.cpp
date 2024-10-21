@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of a cylinder coordinate system anisotropy extension to be used by anisotropic
-materials with @Mat::Anisotropy
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mat_anisotropy_extension_cylinder_cosy.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluating of arbitrary symbolic expressions, which contain literals
-       ('1.0', 'pi', etc) operations ('+', '-', 'sin', etc.).
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_SYMBOLIC_EXPRESSION_HPP
 #define FOUR_C_UTILS_SYMBOLIC_EXPRESSION_HPP
 

@@ -1,8 +1,3 @@
-/*! \file
-\brief Helpers for fluid element nullspace computation
-\level 0
-*/
-
 #ifndef FOUR_C_FLUID_ELE_NULLSPACE_HPP
 #define FOUR_C_FLUID_ELE_NULLSPACE_HPP
 

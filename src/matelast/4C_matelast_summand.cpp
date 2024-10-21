@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of an interface class for materials of the (visco)elasthyper toolbox.
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_matelast_summand.hpp"
 
 #include "4C_global_data.hpp"

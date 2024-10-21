@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for MueLu preconditioner
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_linear_solver_preconditioner_muelu.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Structure field adapter for time step size adaptivity within monolithic FSI
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_adapter_str_fsi_timint_adaptive.hpp"
 
 #include "4C_global_data.hpp"

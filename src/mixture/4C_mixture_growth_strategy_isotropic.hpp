@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Declaration of an isotropic growth strategy for the growth remodel mixture rule
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_HPP
 #define FOUR_C_MIXTURE_GROWTH_STRATEGY_ISOTROPIC_HPP
 

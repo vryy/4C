@@ -1,12 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Mesh sliding for ale problems
-
-
-\level 3
-*/
-/*--------------------------------------------------------------------------*/
 #ifndef FOUR_C_ALE_MESHSLIDING_HPP
 #define FOUR_C_ALE_MESHSLIDING_HPP
 

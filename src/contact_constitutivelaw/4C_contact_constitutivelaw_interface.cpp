@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Contact interface used for constitutive laws
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #include "4C_contact_constitutivelaw_interface.hpp"
 
 #include "4C_contact_constitutivelaw_contactconstitutivelaw.hpp"

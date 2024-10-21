@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Collection of a bunch of possible element functions/methods
-       to pass information down to the structural elements and
-       vice versa
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_HPP
 #define FOUR_C_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_HPP
 

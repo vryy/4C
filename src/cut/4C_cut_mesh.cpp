@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief class that holds information about a mesh that is cut or about a cutmesh that cuts another
-mesh
-
-\level 3
- *------------------------------------------------------------------------------------------------*/
 #include "4C_cut_mesh.hpp"
 
 #include "4C_cut_boundarycell.hpp"

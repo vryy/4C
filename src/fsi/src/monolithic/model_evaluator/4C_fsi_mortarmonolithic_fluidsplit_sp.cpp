@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with non-matching grids using a monolithic scheme
-in saddle-point formulation with Lagrange multipliers discretized on the fluid interface
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------------*/
-
-
 #include "4C_fsi_mortarmonolithic_fluidsplit_sp.hpp"
 
 #include "4C_adapter_ale_fsi.hpp"

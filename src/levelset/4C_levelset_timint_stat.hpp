@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief stationary time integration scheme for level-set problems (for coupled problems only)
-       just a dummy
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEVELSET_TIMINT_STAT_HPP
 #define FOUR_C_LEVELSET_TIMINT_STAT_HPP
 

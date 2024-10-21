@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief strategies for Newton-Raphson convergence check for scalar transport problems
-
-\level 1
-
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_timint_convcheck_strategies.hpp"
 
 #include "4C_fem_discretization.hpp"

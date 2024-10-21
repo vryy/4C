@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for the volumetic contribution suggested by Ogden, see "Doll, S. and
-Schweizerhof, K. On the Development of Volumetric Strain Energy Functions Journal of Applied
-Mechanics, 2000"
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_VOLOGDEN_HPP
 #define FOUR_C_MATELAST_VOLOGDEN_HPP
 

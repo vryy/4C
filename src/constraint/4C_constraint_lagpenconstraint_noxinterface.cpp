@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Concrete mplementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
-       (pure) virtual routines.
-
-\level 3
-
-
-\date July 29, 2016
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_constraint_lagpenconstraint_noxinterface.hpp"
 
 #include "4C_fem_condition.hpp"

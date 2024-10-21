@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief evaluate methods for porous media using the p1 approach (mixed approach)
-
- \level 2
-
- *----------------------------------------------------------------------*/
-
 #include "4C_global_data.hpp"
 #include "4C_mat_fluidporo.hpp"
 #include "4C_mat_structporo.hpp"

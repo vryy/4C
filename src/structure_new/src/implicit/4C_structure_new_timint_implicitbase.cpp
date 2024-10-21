@@ -1,17 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief This class summarizes the functionality which all
-       implicit time integration strategies share and have in
-       common.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #include "4C_structure_new_timint_implicitbase.hpp"
 
 #include "4C_linalg_blocksparsematrix.hpp"

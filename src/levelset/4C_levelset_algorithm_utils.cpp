@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief base level-set algorithm: collection of useful helper functions
-
-    detailed description in header file levelset_algorithm.H
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #include "4C_fem_general_extract_values.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_control.hpp"

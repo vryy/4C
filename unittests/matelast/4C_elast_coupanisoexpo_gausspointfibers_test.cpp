@@ -1,16 +1,3 @@
-
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Testcases for the CoupAnisoExpoBase summand with gauss point fibers
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"

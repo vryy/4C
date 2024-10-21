@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solid Hex8 element with F-bar modification
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_HEX8FBAR_HPP
 #define FOUR_C_SO3_HEX8FBAR_HPP
 

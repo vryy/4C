@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief prestress functionality in solid elements
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_prestress.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

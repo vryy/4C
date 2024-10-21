@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport
-problems. This material handles the communication between micro and macro materials
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SCATRA_MICRO_MACRO_COUPLING_HPP
 #define FOUR_C_MAT_SCATRA_MICRO_MACRO_COUPLING_HPP
 

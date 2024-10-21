@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of free service functions for elements
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_so3_element_service.hpp"
 
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"

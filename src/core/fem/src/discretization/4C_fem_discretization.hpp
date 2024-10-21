@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Main class to manage a discretization
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DISCRETIZATION_HPP
 #define FOUR_C_FEM_DISCRETIZATION_HPP
 

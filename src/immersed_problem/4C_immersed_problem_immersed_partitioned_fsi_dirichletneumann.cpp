@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief partitioned immersed fsi algorithm for neumann-(dirichlet-neumann) like coupling
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #include "4C_immersed_problem_immersed_partitioned_fsi_dirichletneumann.hpp"
 
 #include "4C_adapter_fld_fluid_immersed.hpp"

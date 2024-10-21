@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Contact interface for contact using micro information like the roughness profile
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_INTERFACE_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_INTERFACE_HPP
 

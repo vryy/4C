@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Structural time integration with one-step-theta
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_TIMINT_OST_HPP
 #define FOUR_C_STRUCTURE_TIMINT_OST_HPP
 

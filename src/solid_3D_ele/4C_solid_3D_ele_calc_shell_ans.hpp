@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A displacement based solid-shell element formulation with ANS
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_3D_ELE_CALC_SHELL_ANS_HPP
 #define FOUR_C_SOLID_3D_ELE_CALC_SHELL_ANS_HPP
 

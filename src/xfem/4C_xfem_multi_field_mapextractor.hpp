@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief MultiFieldMapExtractor class to handle different discretizations
-       with joint interfaces
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_MULTI_FIELD_MAPEXTRACTOR_HPP
 #define FOUR_C_XFEM_MULTI_FIELD_MAPEXTRACTOR_HPP
 

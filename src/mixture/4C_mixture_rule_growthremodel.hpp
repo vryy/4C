@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mixture rule for growth and remodeling simulations with homogenized constrained mixtures
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_RULE_GROWTHREMODEL_HPP
 #define FOUR_C_MIXTURE_RULE_GROWTHREMODEL_HPP
 

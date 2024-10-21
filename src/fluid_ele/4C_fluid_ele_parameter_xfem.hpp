@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Setting of specific XFEM based fluid parameter for element evaluation
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_ELE_PARAMETER_XFEM_HPP
 #define FOUR_C_FLUID_ELE_PARAMETER_XFEM_HPP
 

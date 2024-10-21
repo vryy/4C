@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief entry point for level-set transport problems
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LEVELSET_DYN_HPP
 #define FOUR_C_LEVELSET_DYN_HPP
 

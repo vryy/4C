@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory of electromagnetic elements
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_elemag_ele_factory.hpp"
 
 #include "4C_elemag_diff_ele_calc.hpp"

@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of functions for parallel redistribution
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_rebalance_binning_based.hpp"
 
 #include "4C_binstrategy.hpp"

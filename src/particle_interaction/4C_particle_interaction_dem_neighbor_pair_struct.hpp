@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief neighbor pair struct for discrete element method (DEM) interactions
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_HPP
 #define FOUR_C_PARTICLE_INTERACTION_DEM_NEIGHBOR_PAIR_STRUCT_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basic discretization-related tools used in XFEM routines
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_DISCRETIZATION_UTILS_HPP
 #define FOUR_C_XFEM_DISCRETIZATION_UTILS_HPP
 

@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problems using a Dirichlet-Neumann partitioned approach
-coupling the displacements
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
-
 #ifndef FOUR_C_FSI_DIRICHLETNEUMANN_DISP_HPP
 #define FOUR_C_FSI_DIRICHLETNEUMANN_DISP_HPP
 

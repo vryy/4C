@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Data container holding all beam to fluid volume meshtying input parameters.
-
-\level 1
-*/
-
-
 #include "4C_fbi_beam_to_fluid_meshtying_params.hpp"
 
 #include "4C_fbi_beam_to_fluid_meshtying_output_params.hpp"

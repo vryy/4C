@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Element types of the 2D solid-poro element including scatra functionality.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_w1_poro_scatra_eletypes.hpp"
 
 #include "4C_io_linedefinition.hpp"

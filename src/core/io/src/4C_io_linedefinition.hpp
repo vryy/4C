@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of one line of an input file.
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_LINEDEFINITION_HPP
 #define FOUR_C_IO_LINEDEFINITION_HPP
 

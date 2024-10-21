@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief mortar coupling terms of ehl
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_COUPLING_EHL_MORTAR_HPP
 #define FOUR_C_ADAPTER_COUPLING_EHL_MORTAR_HPP
 

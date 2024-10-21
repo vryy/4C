@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a coupled Saint-Venant-Kirchhoff material
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPSAINTVENANTKIRCHHOFF_HPP
 #define FOUR_C_MATELAST_COUPSAINTVENANTKIRCHHOFF_HPP
 

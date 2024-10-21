@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Create bounding volumes for the geometric search unit tests
-
-\level 3
-
-*-----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_GEOMETRIC_SEARCH_CREATE_BOUNDING_VOLUMES_TEST_HPP
 #define FOUR_C_GEOMETRIC_SEARCH_CREATE_BOUNDING_VOLUMES_TEST_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief partitioned immersed fsi algorithm for neumann-(dirichlet-neumann) like coupling
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_IMMERSED_PROBLEM_IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_HPP
 #define FOUR_C_IMMERSED_PROBLEM_IMMERSED_PARTITIONED_FSI_DIRICHLETNEUMANN_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utilities for the Anisotropy classes
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_ANISOTROPY_UTILS_HPP
 #define FOUR_C_MAT_ANISOTROPY_UTILS_HPP
 

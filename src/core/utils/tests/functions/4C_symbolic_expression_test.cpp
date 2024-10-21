@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief Unittests for Parser
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #include <gtest/gtest.h>
 
 #include "4C_unittest_utils_assertions_test.hpp"

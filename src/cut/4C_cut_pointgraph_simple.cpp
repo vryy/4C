@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Create a simple point graph for 1-D and 2-D elements ( embedded in a
-       higher dimensional space )
-
-
-\date Nov 12, 2016
-
-\level 2
-
- *------------------------------------------------------------------------------------------------*/
-
 #include "4C_cut_pointgraph_simple.hpp"
 
 #include "4C_cut_facet.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief contains base class for a generic output filter (ensight and vtk are derived from this
- class)
-
-
- \level 1
- */
-
 #ifndef FOUR_C_POST_FILTER_BASE_HPP
 #define FOUR_C_POST_FILTER_BASE_HPP
 

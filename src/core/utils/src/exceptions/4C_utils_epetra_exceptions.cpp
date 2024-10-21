@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief General utility methods for all Epetra objects
-
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_utils_epetra_exceptions.hpp"
 
 #include <Epetra_Object.h>

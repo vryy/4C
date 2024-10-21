@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input related methods of 3D nonlinear Reissner beam element
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beam3_reissner.hpp"
 #include "4C_fem_general_largerotations.hpp"
 #include "4C_io_linedefinition.hpp"

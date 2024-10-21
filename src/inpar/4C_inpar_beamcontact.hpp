@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameter definitions for beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_INPAR_BEAMCONTACT_HPP
 #define FOUR_C_INPAR_BEAMCONTACT_HPP
 

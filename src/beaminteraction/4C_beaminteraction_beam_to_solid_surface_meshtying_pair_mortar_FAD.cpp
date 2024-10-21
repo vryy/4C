@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Mortar mesh tying element for between a 3D beam and a surface element, coupling terms are
-evaluated with FAD.
-
-\level 3
-*/
-
 #include "4C_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_FAD.hpp"
 
 #include "4C_beam3_reissner.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the appropriate geometry coupler strategy for fluid-beam interaction
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fbi_immersedcoupler_factory.hpp"
 
 #include "4C_fbi_immersed_geometry_coupler.hpp"

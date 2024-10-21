@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- *
- *\brief Utility functions for fluid beam interaction related calculations
- *
- *\level 3
- *
- */
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FBI_CALC_UTILS_HPP
 #define FOUR_C_FBI_CALC_UTILS_HPP
 

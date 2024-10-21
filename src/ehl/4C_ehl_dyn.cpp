@@ -1,13 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief control routine for elastohydrodynamic lubrication (lubrication structure interaction)
-
-\level 3
-
-*/
-/*--------------------------------------------------------------------------*/
-
 #include "4C_ehl_dyn.hpp"
 
 #include "4C_ehl_monolithic.hpp"

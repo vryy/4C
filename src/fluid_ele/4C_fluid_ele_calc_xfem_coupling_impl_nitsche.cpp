@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Template classes for Nitsche-based interface coupling in the XFEM
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_fluid_ele_calc_xfem_coupling.hpp"
 #include "4C_fluid_ele_calc_xfem_coupling_impl.hpp"
 #include "4C_fluid_ele_parameter_xfem.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/** \file
-
-\brief Special coupling routines to handle the possible changing number of DoFs
-       from node to node during XFEM simulations
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_XFEM_XFIELD_FIELD_COUPLING_HPP
 #define FOUR_C_XFEM_XFIELD_FIELD_COUPLING_HPP
 

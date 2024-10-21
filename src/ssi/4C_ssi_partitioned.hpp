@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief base class for partitioned scalar structure interaction
-
- \level 2
-
-
- *------------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_SSI_PARTITIONED_HPP
 #define FOUR_C_SSI_PARTITIONED_HPP
 

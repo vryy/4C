@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------------*/
-/*! \file
-\brief particle input generator for particle simulations
-\level 3
-*/
-/*---------------------------------------------------------------------------*/
-
-/*---------------------------------------------------------------------------*
- | definitions                                                               |
- *---------------------------------------------------------------------------*/
 #ifndef FOUR_C_PARTICLE_ALGORITHM_INPUT_GENERATOR_HPP
 #define FOUR_C_PARTICLE_ALGORITHM_INPUT_GENERATOR_HPP
 

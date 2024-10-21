@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief header for projector functions
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_PROJECTOR_HPP
 #define FOUR_C_MORTAR_PROJECTOR_HPP
 

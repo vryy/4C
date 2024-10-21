@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Iterators for the symbol table.
-
-
-\level 1
-
-Iterate the symbol table and visit all entries.
-
----------------------------------------------------------------------*/
-
 #include "4C_io_legacy_table_iter.hpp"
 
 #include "4C_utils_exceptions.hpp"

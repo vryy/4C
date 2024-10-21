@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief material for multiphase porous fluid
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
-
 #include "4C_mat_fluidporo_multiphase.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

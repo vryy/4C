@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Methods to apply meshtying to fluid and scatra systems
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_MESHTYING_HPP
 #define FOUR_C_FLUID_MESHTYING_HPP
 

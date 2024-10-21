@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Cubic spline interpolation
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_utils_cubic_spline_interpolation.hpp"
 
 #include "4C_utils_exceptions.hpp"

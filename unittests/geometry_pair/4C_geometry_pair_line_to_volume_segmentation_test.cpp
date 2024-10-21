@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Unit tests for line to volume geometry pairs with the segmentation algorithm.
-
-\level 1
-*/
-// End doxygen header.
-
-
 #include <gtest/gtest.h>
 
 #include "4C_geometry_pair_line_to_volume_segmentation.hpp"

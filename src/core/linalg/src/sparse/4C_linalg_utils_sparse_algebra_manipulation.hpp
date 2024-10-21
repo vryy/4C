@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of sparse matrix manipulation methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_HPP
 #define FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_MANIPULATION_HPP
 

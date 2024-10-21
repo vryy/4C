@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Concrete implementation of the structural and all related
-       parameter interfaces.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_structure_new_model_evaluator_data.hpp"
 
 #include "4C_comm_exporter.hpp"

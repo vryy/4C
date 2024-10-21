@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Data packing for sending over MPI
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_PACK_BUFFER_HPP
 #define FOUR_C_COMM_PACK_BUFFER_HPP
 

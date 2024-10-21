@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utils methods concerning the discretization
-
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_discretization_utils.hpp"
 
 #include "4C_fem_discretization.hpp"

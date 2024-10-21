@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief interface class for templated classes beam3contact and beam3contactnew
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMCONTACT_BEAM3CONTACTINTERFACE_HPP
 #define FOUR_C_BEAMCONTACT_BEAM3CONTACTINTERFACE_HPP
 

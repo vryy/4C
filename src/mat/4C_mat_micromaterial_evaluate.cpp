@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief class for handling of micro-macro transitions
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_comm_exporter.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_comm_utils.hpp"

@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Functionality for reading nodes
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_io_meshreader.hpp"
 
 #include "4C_fem_discretization.hpp"

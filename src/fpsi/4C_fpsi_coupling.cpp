@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief FPSI Coupling Object: Holds all objects on the Fluid-Poro-Interface and evaluates the
-Fluid-Poro-Coupling Matrixes!
-
-
-\level 3
-*/
-///*----------------------------------------------------------------------*/
-// GENERAL includes
 #include "4C_fpsi_coupling.hpp"
 
 #include "4C_adapter_ale_fpsi.hpp"

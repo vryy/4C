@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Inverse dense matrices up to 4x4 and other inverse methods.
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_UTILS_DENSEMATRIX_INVERSE_HPP
 #define FOUR_C_LINALG_UTILS_DENSEMATRIX_INVERSE_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A service method allowing the application of initial conditions
-       for nurbs discretisations.
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_fem_nurbs_discretization_initial_condition.hpp"
 
 #include "4C_fem_discretization.hpp"

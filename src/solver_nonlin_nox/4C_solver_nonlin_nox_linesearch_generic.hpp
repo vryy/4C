@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief generic class for %NOX::NLN backtracking line search
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_LINESEARCH_GENERIC_HPP
 

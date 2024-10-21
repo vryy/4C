@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Input parameters for structure
-
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_structure.hpp"
 
 #include "4C_fem_condition_definition.hpp"

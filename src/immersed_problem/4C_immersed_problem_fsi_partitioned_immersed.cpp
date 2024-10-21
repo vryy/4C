@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief partitioned immersed fsi subclass
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #include "4C_immersed_problem_fsi_partitioned_immersed.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

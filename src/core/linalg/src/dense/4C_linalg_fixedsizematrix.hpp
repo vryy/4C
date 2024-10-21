@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief a templated fixed size dense matrix
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_FIXEDSIZEMATRIX_HPP
 #define FOUR_C_LINALG_FIXEDSIZEMATRIX_HPP
 

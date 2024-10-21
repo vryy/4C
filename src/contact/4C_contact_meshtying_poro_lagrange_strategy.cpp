@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief Meshtying of porous media using Lagrange multipliers
-
-// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Matthias Mayr
-// Originates from contact_poro_lagrange_strategy
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------*/
-
 #include "4C_contact_meshtying_poro_lagrange_strategy.hpp"
 
 #include "4C_inpar_contact.hpp"

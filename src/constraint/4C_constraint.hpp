@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Basic constraint class, dealing with constraints living on boundaries, code originally by
-Thomas Kloeppel
-
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_CONSTRAINT_HPP
 #define FOUR_C_CONSTRAINT_HPP
 

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief a common base class for all solid elements
-
-\level 2
-
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_so3_base.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

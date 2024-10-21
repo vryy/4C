@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all multipoint constraint equation terms
-
-\level 3
-    */
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_CONSTRAINT_FRAMEWORK_EQUATION_MPC_HPP
 #define FOUR_C_CONSTRAINT_FRAMEWORK_EQUATION_MPC_HPP
 

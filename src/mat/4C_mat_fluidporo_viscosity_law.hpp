@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief calculation classes for evaluation of constitutive relation for viscosity for multiphase
- porous flow
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_FLUIDPORO_VISCOSITY_LAW_HPP
 #define FOUR_C_MAT_FLUIDPORO_VISCOSITY_LAW_HPP
 

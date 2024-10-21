@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief time integration schemes for scalar transport within multiphase porous medium
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_scatra_timint_poromulti.hpp"
 
 #include "4C_fem_discretization.hpp"

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Nonlinear viscosity according to a modified power law
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MODPOWERLAW_HPP
 #define FOUR_C_MAT_MODPOWERLAW_HPP
 

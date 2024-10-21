@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief base class of time integration schemes for porous fluid
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_fluid_timint_poro.hpp"
 
 #include "4C_fem_general_node.hpp"

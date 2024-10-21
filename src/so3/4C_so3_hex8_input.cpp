@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Solid Hex8 element
-
-\level 1
-
-*----------------------------------------------------------------------*/
-
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_robinson.hpp"
 #include "4C_mat_so3_material.hpp"

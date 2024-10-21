@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN extension of the %NOX::Epetra jacobian
-       interface.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_HPP
 

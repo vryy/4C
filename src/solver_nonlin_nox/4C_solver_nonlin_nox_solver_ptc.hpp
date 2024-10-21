@@ -1,16 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a pseudo transient non-linear
-       solver.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_SOLVER_PTC_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_SOLVER_PTC_HPP
 

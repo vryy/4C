@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A set of degrees of freedom for constraint problems
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONSTRAINT_DOFSET_HPP
 #define FOUR_C_CONSTRAINT_DOFSET_HPP
 

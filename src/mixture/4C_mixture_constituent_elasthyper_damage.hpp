@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Definition of a hyperelastic constituent with a damage process
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_HPP
 #define FOUR_C_MIXTURE_CONSTITUENT_ELASTHYPER_DAMAGE_HPP
 

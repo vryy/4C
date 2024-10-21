@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Solve FSI problem with non-matching grids using a monolithic scheme
-in saddle-point formulation with Lagrange multipliers discretized on the fluid interface
-
-\level 2
-*/
-
-/*----------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_HPP
 #define FOUR_C_FSI_MORTARMONOLITHIC_FLUIDSPLIT_SP_HPP
 

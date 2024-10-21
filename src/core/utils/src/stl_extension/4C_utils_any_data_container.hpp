@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Any data container based on vectors of std::any data.
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_UTILS_ANY_DATA_CONTAINER_HPP
 #define FOUR_C_UTILS_ANY_DATA_CONTAINER_HPP
 

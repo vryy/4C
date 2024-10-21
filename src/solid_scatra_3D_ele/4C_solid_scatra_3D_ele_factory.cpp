@@ -1,11 +1,3 @@
-/*! \file
-
-\brief Factory of solid-scatra elements
-
-\level 1
-*/
-
-
 #include "4C_solid_scatra_3D_ele_factory.hpp"
 
 #include "4C_fem_general_cell_type_traits.hpp"

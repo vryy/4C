@@ -1,25 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for fluid (in)stationary solvers,
-
-     including instationary solvers based on
-
-     o a one-step-theta time-integration scheme,
-
-     o a two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm),
-
-     o two variants of a generalized-alpha time-integration scheme
-
-     and a stationary solver.
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
 #undef WRITEOUTSTATISTICS
 
 #include "4C_fluid_implicit_integration.hpp"

@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Interface class for contact constitutive laws
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_contact_constitutivelaw_contactconstitutivelaw.hpp"
 
 #include "4C_contact_constitutivelaw_brokenrational_contactconstitutivelaw.hpp"

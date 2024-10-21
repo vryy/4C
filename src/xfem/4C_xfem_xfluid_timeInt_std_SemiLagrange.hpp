@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief provides the SemiLagrangean class
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_HPP
 #define FOUR_C_XFEM_XFLUID_TIMEINT_STD_SEMILAGRANGE_HPP
 

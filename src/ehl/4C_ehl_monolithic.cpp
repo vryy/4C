@@ -1,18 +1,3 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief basis of all monolithic EHL algorithms that perform a coupling between
-       the structure field equation and lubrication field equations
-
-\level 3
-*/
-/*--------------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------*
- | headers                                                  wirtz 01/16 |
- *----------------------------------------------------------------------*/
 #include "4C_ehl_monolithic.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"

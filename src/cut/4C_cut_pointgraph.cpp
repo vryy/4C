@@ -1,13 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief PointGraph, Graph Algorithm to create Facets from lines and edges
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_cut_pointgraph.hpp"
 
 #include "4C_cut_mesh.hpp"

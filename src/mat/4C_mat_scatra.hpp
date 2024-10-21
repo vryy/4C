@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief scalar transport material
-
-\level 1
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SCATRA_HPP
 #define FOUR_C_MAT_SCATRA_HPP
 

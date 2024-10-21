@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Proxy to a set of degrees of freedom
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_DOFSET_PROXY_HPP
 #define FOUR_C_FEM_DOFSET_PROXY_HPP
 

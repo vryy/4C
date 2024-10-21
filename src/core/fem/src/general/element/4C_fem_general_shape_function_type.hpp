@@ -1,10 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of shape function types
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_SHAPE_FUNCTION_TYPE_HPP
 #define FOUR_C_FEM_GENERAL_SHAPE_FUNCTION_TYPE_HPP
 

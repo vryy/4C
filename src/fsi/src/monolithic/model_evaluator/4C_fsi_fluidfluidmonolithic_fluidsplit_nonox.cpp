@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Class for monolithic fluid-fluid-FSI using XFEM
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fsi_fluidfluidmonolithic_fluidsplit_nonox.hpp"
 
 #include "4C_adapter_ale_xffsi.hpp"

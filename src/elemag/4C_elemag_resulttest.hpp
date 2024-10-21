@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief testing of electromagnetic calculation results
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_ELEMAG_RESULTTEST_HPP
 #define FOUR_C_ELEMAG_RESULTTEST_HPP
 

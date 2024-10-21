@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of classes for a volumetric general power-type material in terms of the Jacobi
-determinant
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUP3POW_HPP
 #define FOUR_C_MATELAST_COUP3POW_HPP
 

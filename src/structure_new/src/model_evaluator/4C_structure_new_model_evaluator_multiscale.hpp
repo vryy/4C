@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Handle multiscale relevant aspects
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_MULTISCALE_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_MULTISCALE_HPP
 

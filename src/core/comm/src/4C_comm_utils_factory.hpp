@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods for namespace Discret
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_COMM_UTILS_FACTORY_HPP
 #define FOUR_C_COMM_UTILS_FACTORY_HPP
 

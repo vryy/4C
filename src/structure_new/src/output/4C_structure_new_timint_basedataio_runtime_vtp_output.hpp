@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief input parameters related to VTP output at runtime for the structural (time) integration
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_HPP
 #define FOUR_C_STRUCTURE_NEW_TIMINT_BASEDATAIO_RUNTIME_VTP_OUTPUT_HPP
 

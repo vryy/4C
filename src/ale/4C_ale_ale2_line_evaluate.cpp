@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluate ALE2 elements
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_ale_ale2.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_exceptions.hpp"

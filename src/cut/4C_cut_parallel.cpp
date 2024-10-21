@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief provides the basic parallel cut classes "Parallel"
-
-\level 1
-
- *------------------------------------------------------------------------------------------------*/
-
-
 #include "4C_cut_parallel.hpp"
 
 #include "4C_comm_exporter.hpp"

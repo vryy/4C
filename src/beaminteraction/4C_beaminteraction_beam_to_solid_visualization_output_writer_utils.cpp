@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility functions for the beam-to-solid visualization output writers.
-
-\level 3
-
-*/
-
-
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_utils.hpp"
 
 #include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"

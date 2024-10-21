@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of the hyperelastic constituent
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_constituent_elasthyperbase.hpp"
 
 #include "4C_global_data.hpp"

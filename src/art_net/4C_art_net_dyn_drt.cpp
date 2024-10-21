@@ -1,16 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Main control routine for all arterial network  solvers,
-
-     including instationary solvers based on
-
-     o
-
-
-\level 3
-
-*----------------------------------------------------------------------*/
-
 #include "4C_art_net_dyn_drt.hpp"
 
 #include "4C_adapter_art_net.hpp"

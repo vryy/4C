@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief container class holding parameters for element evaluation (singleton)
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
-
 #include "4C_porofluidmultiphase_ele_parameter.hpp"
 
 #include "4C_utils_exceptions.hpp"

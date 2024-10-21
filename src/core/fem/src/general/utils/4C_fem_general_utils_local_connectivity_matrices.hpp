@@ -1,19 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Provide a node numbering scheme together with a set of shape functions
-
-The surface mapping gives the node numbers such that the 2D shape functions can be used
-Nodal mappings describe the relation between volume, surface and line node numbering.
-They should be used as the only reference for such relationships.
-The numbering of elements with linear shape functions is included in higher
-order elements, such that e.g. the hex8 volume element uses only the first 8 nodes of the hex27
-mapping
-
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_LOCAL_CONNECTIVITY_MATRICES_HPP
 

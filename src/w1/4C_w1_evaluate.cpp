@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief This file contains the main evaluate methods of a wall1 element.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_elements_jacobian.hpp"

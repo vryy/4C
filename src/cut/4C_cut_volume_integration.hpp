@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Integrates base functions over volume, distribute Gauss points and solve moment fitting
-equations
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_CUT_VOLUME_INTEGRATION_HPP
 #define FOUR_C_CUT_VOLUME_INTEGRATION_HPP
 

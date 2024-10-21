@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief wrapper for structure material of porous media including reactive reference porosity
-
-
-\level 3
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_MAT_STRUCTPORO_REACTION_HPP
 #define FOUR_C_MAT_STRUCTPORO_REACTION_HPP
 

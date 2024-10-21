@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Entry routines for FSI problems and some other problem types as well
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_DYN_HPP
 #define FOUR_C_FSI_DYN_HPP
 

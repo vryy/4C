@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation and assembly of all multipoint constraint terms resulting
- from periodic displacement boundary conditions for representative volume elements (RVEs)
- and linear coupled degrees of freedom.
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_config.hpp"
 
 #include "4C_constraint_framework_submodelevaluator_mpc.hpp"

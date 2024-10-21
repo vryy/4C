@@ -1,13 +1,3 @@
-/*! \file
-
-\brief Meshtying element for meshtying between a 3D beam and a 3D fluid element using mortar shape
-functions.
-
-\level 3
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_MORTAR_HPP
 #define FOUR_C_FBI_BEAM_TO_FLUID_MESHTYING_PAIR_MORTAR_HPP
 

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Contact utility functions related to parallel runs
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------------*/
-
 #include "4C_contact_utils_parallel.hpp"
 
 #include "4C_global_data.hpp"

@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Transport of passive scalars in Navier-Stokes velocity field
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_scatra_algorithm.hpp"
 
 #include "4C_coupling_adapter_volmortar.hpp"

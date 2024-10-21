@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief H-file associated with algorithmic routines for partitioned
-       solution approaches to fluid-porous-structure-scalar-scalar interaction
-       (FPS3I) specifically related to one-way-coupled problem
-       configurations
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fs3i_fps3i_partitioned_1wc.hpp"
 
 #include "4C_adapter_fld_poro.hpp"

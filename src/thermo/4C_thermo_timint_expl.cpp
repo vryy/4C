@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Explicit time integration for thermal dynamics
-
-\level 3
-
-*/
-
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 01/12 |
- *----------------------------------------------------------------------*/
 #include "4C_thermo_timint_expl.hpp"
 
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

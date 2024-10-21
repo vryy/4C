@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief convert problem type string to enum
-\level 1
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_inpar_problemtype.hpp"
 
 #include "4C_fem_general_shape_function_type.hpp"

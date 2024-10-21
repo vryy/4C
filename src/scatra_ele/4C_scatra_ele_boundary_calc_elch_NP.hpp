@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra boundary elements for Nernst-Planck formulation
-
-
-\level 2
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_NP_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_NP_HPP
 

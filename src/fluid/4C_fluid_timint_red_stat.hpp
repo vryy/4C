@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Stationary driver for reduced models
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TIMINT_RED_STAT_HPP
 #define FOUR_C_FLUID_TIMINT_RED_STAT_HPP
 

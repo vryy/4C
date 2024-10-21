@@ -1,18 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of RedAirway element. Methods implemented here
-       are called by airway_evaluate.cpp by Discret::ELEMENTS::RedAirway::evaluate()
-       with the corresponding action.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
-
 #include "4C_red_airways_airway_impl.hpp"
 
 #include "4C_fem_condition.hpp"

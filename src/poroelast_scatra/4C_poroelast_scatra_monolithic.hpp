@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief monolithic coupling algorithm for scalar transport within porous medium
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_POROELAST_SCATRA_MONOLITHIC_HPP
 #define FOUR_C_POROELAST_SCATRA_MONOLITHIC_HPP
 

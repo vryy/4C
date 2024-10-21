@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief standard routines for calculation of fluid element
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_std.hpp"
 
 #include "4C_fluid_ele_parameter_std.hpp"

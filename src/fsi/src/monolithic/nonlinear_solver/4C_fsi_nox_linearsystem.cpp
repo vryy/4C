@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief FSI linear system interface to the nonlinear solver NOX
-
-\level 3
-*/
-
-/*----------------------------------------------------------------------*/
-
 #include "4C_fsi_nox_linearsystem.hpp"
 
 #include "4C_global_data.hpp"

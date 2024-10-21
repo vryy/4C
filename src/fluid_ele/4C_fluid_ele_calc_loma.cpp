@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Low-Mach-number flow routines for calculation of fluid element
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele_calc_loma.hpp"
 
 #include "4C_fem_nurbs_discretization_utils.hpp"

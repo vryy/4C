@@ -1,21 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief  update dofrowmap and dofsets for periodic boundary conditions
-
-        o effects distribution of master and slave nodes. Master and
-          slave are owned by one proc afterwards.
-        o effects ghosting of nodes. Master and slave nodes are ghosted
-          in pairs.
-        o passes list of coupled nodes to the dofset
-
-\level 0
-
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_condition_periodic.hpp"
 
 #include "4C_comm_utils.hpp"

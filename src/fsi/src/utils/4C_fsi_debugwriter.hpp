@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief write debug information for fsi applications
-\level 2
-*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FSI_DEBUGWRITER_HPP
 #define FOUR_C_FSI_DEBUGWRITER_HPP
 

@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Data for airway elements
-\level 3
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_RED_AIRWAYS_ELEM_PARAMS_HPP
 #define FOUR_C_RED_AIRWAYS_ELEM_PARAMS_HPP
 

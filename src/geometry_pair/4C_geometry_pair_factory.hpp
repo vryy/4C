@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief functions to create geometry pairs.
-
-\level 1
-
-*/
-// End doxygen header.
-
-
 #ifndef FOUR_C_GEOMETRY_PAIR_FACTORY_HPP
 #define FOUR_C_GEOMETRY_PAIR_FACTORY_HPP
 

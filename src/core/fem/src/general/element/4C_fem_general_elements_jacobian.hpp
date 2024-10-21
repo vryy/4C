@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Collection of general element utility functions
-
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENTS_JACOBIAN_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENTS_JACOBIAN_HPP
 

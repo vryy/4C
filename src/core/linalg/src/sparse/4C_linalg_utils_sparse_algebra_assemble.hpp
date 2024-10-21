@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of algebraic assemble methods for namespace Core::LinAlg
-
-\level 0
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_HPP
 #define FOUR_C_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_HPP
 

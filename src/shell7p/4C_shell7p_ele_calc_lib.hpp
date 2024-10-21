@@ -1,10 +1,3 @@
-/*! \file
-
-\brief A library of free functions for the shell7p element calculation
-
-\level 3
-*/
-
 #ifndef FOUR_C_SHELL7P_ELE_CALC_LIB_HPP
 #define FOUR_C_SHELL7P_ELE_CALC_LIB_HPP
 

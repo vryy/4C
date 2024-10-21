@@ -1,14 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-\brief factory for structure adapters
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_ADAPTER_STRUCTURE_SCATRA_ELE_HPP
 #define FOUR_C_ADAPTER_STRUCTURE_SCATRA_ELE_HPP
 

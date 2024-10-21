@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief solid shell8 element formulation
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
-
 #include "4C_so3_sh8.hpp"
 
 #include "4C_fem_discretization.hpp"

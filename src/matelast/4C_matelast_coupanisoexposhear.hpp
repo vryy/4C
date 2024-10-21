@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definitions of classes for the exponential shear behavior for fibers
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MATELAST_COUPANISOEXPOSHEAR_HPP
 #define FOUR_C_MATELAST_COUPANISOEXPOSHEAR_HPP
 

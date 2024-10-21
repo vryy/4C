@@ -1,15 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble the fbi coupling contributions
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
-
-
 #ifndef FOUR_C_FBI_FLUID_ASSEMBLY_STRATEGY_HPP
 #define FOUR_C_FBI_FLUID_ASSEMBLY_STRATEGY_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief evaluation of ScaTra boundary elements for thermodynamic electrodes
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_boundary_calc_elch_electrode_sti_thermo.hpp"
 
 #include "4C_fem_general_utils_boundary_integration.hpp"

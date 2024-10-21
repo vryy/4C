@@ -1,15 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief element type class of meshfree multibin, creating the same
-
-
-\level 2
-
-*/
-/*---------------------------------------------------------------------*/
-
-
 #include "4C_binstrategy_meshfree_multibin.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

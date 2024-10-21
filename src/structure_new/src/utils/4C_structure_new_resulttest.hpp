@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-\brief Structure specific result test class
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #ifndef FOUR_C_STRUCTURE_NEW_RESULTTEST_HPP
 #define FOUR_C_STRUCTURE_NEW_RESULTTEST_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Definition of a hyperelastic constituent with a damage process and a 2D membrane material
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mixture_constituent_elasthyper_elastin_membrane.hpp"
 
 #include "4C_global_data.hpp"

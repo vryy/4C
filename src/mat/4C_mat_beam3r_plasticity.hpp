@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief constitutive relations for beam cross-section resultants (hyperelastic stored energy
-function)
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_BEAM3R_PLASTICITY_HPP
 #define FOUR_C_MAT_BEAM3R_PLASTICITY_HPP
 

@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief A Kirchhoff-Love shell element based
-
-\level 1
-
-*/
-
 #ifndef FOUR_C_SHELL_KL_NURBS_HPP
 #define FOUR_C_SHELL_KL_NURBS_HPP
 

@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Factory of solid-poro elements
-
-\level 1
-*/
-
 #include "4C_solid_poro_3D_ele_factory.hpp"
 
 FOUR_C_NAMESPACE_OPEN

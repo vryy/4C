@@ -1,10 +1,3 @@
-/*! \file
-
-\brief Factory of solid-scatra elements
-
-\level 1
-*/
-
 #ifndef FOUR_C_SOLID_SCATRA_3D_ELE_FACTORY_HPP
 #define FOUR_C_SOLID_SCATRA_3D_ELE_FACTORY_HPP
 

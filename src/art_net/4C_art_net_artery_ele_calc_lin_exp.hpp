@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of LinExp artery element
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_ART_NET_ARTERY_ELE_CALC_LIN_EXP_HPP
 #define FOUR_C_ART_NET_ARTERY_ELE_CALC_LIN_EXP_HPP
 

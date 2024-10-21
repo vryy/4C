@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
 #include "4C_solver_nonlin_nox_inner_statustest_armijo.hpp"  // class definition
 
 #include "4C_linalg_vector.hpp"

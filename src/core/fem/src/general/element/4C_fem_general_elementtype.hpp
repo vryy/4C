@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Type definitions for elements
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FEM_GENERAL_ELEMENTTYPE_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENTTYPE_HPP
 

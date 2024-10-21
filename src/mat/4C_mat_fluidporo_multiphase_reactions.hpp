@@ -1,11 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief a fluid material for porous multiphase flow with reactions (mass sources and sinks)
-
-   \level 3
-
- *----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_HPP
 #define FOUR_C_MAT_FLUIDPORO_MULTIPHASE_REACTIONS_HPP
 

@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implements the constraintenforcement technique of a penalty approach (Mortar and GPTS) (for
-fluid-beam interaction).
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FBI_CONSTRAINTENFORCER_PENALTY_HPP
 #define FOUR_C_FBI_CONSTRAINTENFORCER_PENALTY_HPP
 

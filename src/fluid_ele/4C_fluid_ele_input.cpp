@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief read_element method of the fluid element implementation
-
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_fluid_ele.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_mat_material_factory.hpp"

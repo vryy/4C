@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Generic class for all mortar solution strategies
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
-
 #include "4C_mortar_strategy_base.hpp"
 
 #include "4C_fem_discretization.hpp"

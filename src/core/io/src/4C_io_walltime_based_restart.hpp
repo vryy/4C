@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Utility to write restart information based on a wall time interval
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
-
 #ifndef FOUR_C_IO_WALLTIME_BASED_RESTART_HPP
 #define FOUR_C_IO_WALLTIME_BASED_RESTART_HPP
 

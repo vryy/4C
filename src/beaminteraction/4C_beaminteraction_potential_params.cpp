@@ -1,13 +1,3 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief data container holding all input parameters relevant for potential based beam interactions
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
 #include "4C_beaminteraction_potential_params.hpp"
 
 #include "4C_beaminteraction_potential_runtime_visualization_output_params.hpp"

@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief result tests for HDG problems
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_RESULTTEST_HDG_HPP
 #define FOUR_C_SCATRA_RESULTTEST_HDG_HPP
 

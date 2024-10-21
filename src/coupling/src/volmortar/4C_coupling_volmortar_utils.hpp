@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
- \brief utils functions related to volmortar
-
-\level 2
-
- *----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_COUPLING_VOLMORTAR_UTILS_HPP
 #define FOUR_C_COUPLING_VOLMORTAR_UTILS_HPP
 

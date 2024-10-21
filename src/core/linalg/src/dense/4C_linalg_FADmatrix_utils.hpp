@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A collection of helper methods and classes using automatic differentiation with FAD;
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_LINALG_FADMATRIX_UTILS_HPP
 #define FOUR_C_LINALG_FADMATRIX_UTILS_HPP
 

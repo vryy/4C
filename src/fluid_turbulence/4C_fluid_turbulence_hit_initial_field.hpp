@@ -1,14 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief routines to initialize homogeneous isotropic turbulence simulations
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_FLUID_TURBULENCE_HIT_INITIAL_FIELD_HPP
 #define FOUR_C_FLUID_TURBULENCE_HIT_INITIAL_FIELD_HPP
 

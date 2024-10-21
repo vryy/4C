@@ -1,14 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief colored graph to create volumecells from facets
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-
 #ifndef FOUR_C_CUT_COLOREDGRAPH_HPP
 #define FOUR_C_CUT_COLOREDGRAPH_HPP
 

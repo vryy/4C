@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Declaration of general 4C sparse matrix class
-
-\level 0
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_LINALG_SPARSEMATRIX_HPP
 #define FOUR_C_LINALG_SPARSEMATRIX_HPP
 

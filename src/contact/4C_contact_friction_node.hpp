@@ -1,9 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A class for a frictional contact node
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_FRICTION_NODE_HPP
 #define FOUR_C_CONTACT_FRICTION_NODE_HPP
 

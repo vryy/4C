@@ -1,13 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implements the constraint enforcement technique of a penalty approach (Mortar and GPTS) (for
-fluid-beam interaction)
-
-\level 2
-
-*----------------------------------------------------------------------*/
-
 #include "4C_fbi_constraintenforcer_penalty.hpp"
 
 #include "4C_adapter_fld_fbi_movingboundary.hpp"

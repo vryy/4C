@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Thermal time integration with forward Euler order (explicit)
-\level 3
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 01/12 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_THERMO_TIMINT_EXPLEULER_HPP
 #define FOUR_C_THERMO_TIMINT_EXPLEULER_HPP
 

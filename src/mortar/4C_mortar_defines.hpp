@@ -1,11 +1,3 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of preprocessor defines for mortar methods
-
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_DEFINES_HPP
 #define FOUR_C_MORTAR_DEFINES_HPP
 

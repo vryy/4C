@@ -1,12 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Prestress strategy for the membrane part of elastin
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
 #ifndef FOUR_C_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_HPP
 #define FOUR_C_MIXTURE_ELASTIN_MEMBRANE_PRESTRESS_STRATEGY_HPP
 

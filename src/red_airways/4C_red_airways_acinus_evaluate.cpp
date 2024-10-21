@@ -1,17 +1,3 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Templated Evaluate file for acinus element containing the action
-       types for a reduced acinus element RedAcinus. The actual
-       implementation of the routines called during the possible actions
-       is contained in acinus_impl.cpp
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"

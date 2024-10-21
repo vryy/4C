@@ -1,15 +1,3 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal classes to read elements and nodes
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
 #include "4C_io_inputreader.hpp"
 
 #include "4C_fem_general_node.hpp"
