@@ -24,7 +24,6 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
@@ -937,7 +936,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   Core::LinAlg::SerialDenseMatrix locations;
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -967,14 +966,13 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
 
   Core::FE::PolynomialSpaceTensor<nsd_, Core::FE::LagrangePolynomial> poly(poly1d);
 
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if we have the right number of polynomials
-  if (poly.Size() != 125) FOUR_C_THROW("wrong number of polynomials");
+  FOUR_C_ASSERT(poly.size() == 125, "wrong number of polynomials");
 #endif
 
   initialize_shapes(ele);
   shapes_->evaluate(*ele);
-
 
   if (elevec1.numRows() > 0)
   {
@@ -1000,16 +998,13 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_force_on_dof_vec_for_hi
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
           sum += values(k) * locations(d, k);
-        if (not(sum + 1e-9 > xsi(d) and sum - 1e-9 < xsi(d)))
-        {
-          std::cout << "Gauss point:  " << xsi(d) << "  coordinate:  " << sum << std::endl;
-          FOUR_C_THROW("Plausibility check failed! Problem might be sequence of polynomials");
-        }
+        FOUR_C_ASSERT(sum + 1e-9 > xsi(d) and sum - 1e-9 < xsi(d),
+            "Plausibility check failed! Problem might be sequence of polynomials");
 #endif
       }
 
@@ -1054,7 +1049,7 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
   std::array<double, numsamppoints> loc1D = {-0.8, -0.4, 0.0, 0.4, 0.8};
 
   Core::LinAlg::SerialDenseMatrix locations;
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
   locations.shape(3, 125);
   int l = 0;
   for (int i = 0; i < numsamppoints; i++)
@@ -1112,16 +1107,13 @@ int Discret::ELEMENTS::FluidEleCalcHDG<distype>::project_initial_field_for_hit(
           sum += values(k) * elevec2(6 * k + d);
         f(d) = sum;
 
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
         // check plausibility via comparison of quadrature coordinates
         sum = 0.0;
         for (unsigned int k = 0; k < numsamppoints * numsamppoints * numsamppoints; ++k)
           sum += values(k) * locations(d, k);
-        if (not(sum + 1e-9 > xsi(d) and sum - 1e-9 < xsi(d)))
-        {
-          std::cout << "Gauss point:  " << xsi(d) << "  coordinate:  " << sum << std::endl;
-          FOUR_C_THROW("Plausibility check failed! Problem might be sequence of polynomials");
-        }
+        FOUR_C_ASSERT(sum + 1e-9 > xsi(d) and sum - 1e-9 < xsi(d),
+            "Plausibility check failed! Problem might be sequence of polynomials");
 #endif
       }
 

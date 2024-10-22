@@ -860,11 +860,11 @@ namespace Core::LinAlg
     inline void multiply(
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -886,11 +886,11 @@ namespace Core::LinAlg
     inline void multiply_nn(
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -912,11 +912,11 @@ namespace Core::LinAlg
     inline void multiply_nt(
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
@@ -938,11 +938,11 @@ namespace Core::LinAlg
     inline void multiply_tn(
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -964,11 +964,11 @@ namespace Core::LinAlg
     inline void multiply_tt(
         ValueTypeOut* out, const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
@@ -990,11 +990,11 @@ namespace Core::LinAlg
     inline void multiply(ValueTypeOut* out, const ValueTypeInfac infac,
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -1016,11 +1016,11 @@ namespace Core::LinAlg
     inline void multiply_nn(ValueTypeOut* out, const ValueTypeInfac infac,
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -1042,11 +1042,11 @@ namespace Core::LinAlg
     inline void multiply_nt(ValueTypeOut* out, const ValueTypeInfac infac,
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
@@ -1068,11 +1068,11 @@ namespace Core::LinAlg
     inline void multiply_tn(ValueTypeOut* out, const ValueTypeInfac infac,
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -1094,11 +1094,11 @@ namespace Core::LinAlg
     inline void multiply_tt(ValueTypeOut* out, const ValueTypeInfac infac,
         const ValueTypeLeft* const left, const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
@@ -1121,11 +1121,11 @@ namespace Core::LinAlg
         const ValueTypeInfac infac, const ValueTypeLeft* const left,
         const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -1148,11 +1148,11 @@ namespace Core::LinAlg
         const ValueTypeInfac infac, const ValueTypeLeft* const left,
         const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -1175,11 +1175,11 @@ namespace Core::LinAlg
         const ValueTypeInfac infac, const ValueTypeLeft* const left,
         const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
@@ -1202,11 +1202,11 @@ namespace Core::LinAlg
         const ValueTypeInfac infac, const ValueTypeLeft* const left,
         const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
@@ -1229,11 +1229,11 @@ namespace Core::LinAlg
         const ValueTypeInfac infac, const ValueTypeLeft* const left,
         const ValueTypeRight* const right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
@@ -1253,8 +1253,8 @@ namespace Core::LinAlg
     template <class ValueType>
     inline ValueType invert1x1(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       const ValueType det = in[0];
       if (det == 0.0) FOUR_C_THROW("determinant of 1x1 matrix is zero");
@@ -1265,8 +1265,8 @@ namespace Core::LinAlg
     template <class ValueType>
     inline ValueType invert2x2(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       const ValueType det = in[0] * in[1 + 1 * 2] - in[1] * in[1 * 2];
       if (det == 0.0) FOUR_C_THROW("determinant of 2x2 matrix is zero");
@@ -1282,8 +1282,8 @@ namespace Core::LinAlg
     template <class ValueType>
     inline ValueType invert3x3(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       out[0] = in[1 + 1 * 3] * in[2 + 2 * 3] - in[2 + 1 * 3] * in[1 + 2 * 3];
       out[1] = in[2] * in[1 + 2 * 3] - in[1] * in[2 + 2 * 3];
@@ -1312,8 +1312,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline ValueType invert(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       static_assert(i == j, "Cannot compute inverse of non-square matrix");
 
@@ -1441,8 +1441,8 @@ namespace Core::LinAlg
     {
       if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
       {
-#ifdef FOUR_C_DEBUG
-        if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+        FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
         // std::memcpy(out, in, i*j*sizeof(value_type));
         std::copy(in, in + i * j, out);
@@ -1457,9 +1457,9 @@ namespace Core::LinAlg
         class ValueTypeIn>
     inline void update(ValueTypeOut* out, const ValueTypeInfac infac, const ValueTypeIn* in)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
-        if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
+        FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out = infac * (*in);
       for (unsigned int c = 1; c < i * j; ++c) *(++out) = infac * (*(++in));
@@ -1470,9 +1470,9 @@ namespace Core::LinAlg
     inline void update(const ValueTypeOutfac outfac, ValueTypeOut* out, const ValueTypeInfac infac,
         const ValueTypeIn* in)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
-        if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
+        FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
@@ -1492,11 +1492,11 @@ namespace Core::LinAlg
         class ValueTypeRight>
     inline void update(ValueTypeOut* out, const ValueTypeLeft* left, const ValueTypeRight* right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       *out = *left + *right;
       for (unsigned int c = 1; c < i * j; ++c) *(++out) = *(++left) + *(++right);
@@ -1507,11 +1507,11 @@ namespace Core::LinAlg
     inline void update(ValueTypeOut* out, const ValueTypeLeftfac leftfac, const ValueTypeLeft* left,
         const ValueTypeRightfac rightfac, const ValueTypeRight* right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       *out = leftfac * (*left) + rightfac * (*right);
       for (unsigned int c = 1; c < i * j; ++c)
@@ -1524,11 +1524,11 @@ namespace Core::LinAlg
         const ValueTypeLeftfac leftfac, const ValueTypeLeft* left, const ValueTypeRightfac rightfac,
         const ValueTypeRight* right)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_left>)
-        if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if constexpr (std::is_same_v<value_type_out, value_type_right>)
-        if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeLeft>)
+        FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeRight>)
+        FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
@@ -1547,9 +1547,9 @@ namespace Core::LinAlg
     template <class ValueTypeOut, unsigned int i, unsigned int j, class ValueTypeIn>
     inline void update_t(ValueTypeOut* out, const ValueTypeIn* in)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
-        if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
+        FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
         for (unsigned int c1 = 0; c1 < i; c1 += 1) *(out++) = in[c2 + c1 * j];
@@ -1559,9 +1559,9 @@ namespace Core::LinAlg
         class ValueTypeIn>
     inline void update_t(ValueTypeOut* out, const ValueTypeInfac infac, const ValueTypeIn* in)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
-        if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
+        FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
         for (unsigned int c1 = 0; c1 < i; c1 += 1) *(out++) = infac * in[c2 + c1 * j];
@@ -1572,9 +1572,9 @@ namespace Core::LinAlg
     inline void update_t(const ValueTypeOutfac outfac, ValueTypeOut* out,
         const ValueTypeInfac infac, const ValueTypeIn* in)
     {
-#ifdef FOUR_C_DEBUG
-      if constexpr (std::is_same_v<value_type_out, value_type_in>)
-        if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      if constexpr (std::is_same_v<ValueTypeOut, ValueTypeIn>)
+        FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
@@ -1594,8 +1594,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void elementwise_multiply(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out *= *in;
       for (unsigned c = 1; c < i * j; ++c) *(++out) *= *(++in);
@@ -1604,8 +1604,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void elementwise_multiply(const ValueType fac, ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out *= fac * (*in);
       for (unsigned c = 1; c < i * j; ++c) *(++out) *= fac * (*(++in));
@@ -1614,9 +1614,9 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void elementwise_multiply(ValueType* out, const ValueType* left, const ValueType* right)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       *out = (*left) * (*right);
       for (unsigned c = 1; c < i * j; ++c) *(++out) = (*(++left)) * (*(++right));
@@ -1626,9 +1626,9 @@ namespace Core::LinAlg
     inline void elementwise_multiply(
         ValueType* out, const ValueType infac, const ValueType* left, const ValueType* right)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       *out = infac * (*left) * (*right);
       for (unsigned c = 1; c < i * j; ++c) *(++out) = infac * (*(++left)) * (*(++right));
@@ -1638,9 +1638,9 @@ namespace Core::LinAlg
     inline void elementwise_multiply(const ValueType outfac, ValueType* out, const ValueType infac,
         const ValueType* left, const ValueType* right)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {
@@ -1658,8 +1658,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void elementwise_divide(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out /= *in;
       for (unsigned c = 1; c < i * j; ++c) *(++out) /= *(++in);
@@ -1668,8 +1668,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void elementwise_divide(const ValueType fac, ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out = fac * (*out) / (*in);
       for (unsigned c = 1; c < i * j; ++c)
@@ -1683,9 +1683,9 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void elementwise_divide(ValueType* out, const ValueType* left, const ValueType* right)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       *out = (*left) / (*right);
       for (unsigned c = 1; c < i * j; ++c) *(++out) = (*(++left)) / (*(++right));
@@ -1695,9 +1695,9 @@ namespace Core::LinAlg
     inline void elementwise_divide(
         ValueType* out, const ValueType infac, const ValueType* left, const ValueType* right)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       *out = infac * (*left) / (*right);
       for (unsigned c = 1; c < i * j; ++c) *(++out) = infac * (*(++left)) / (*(++right));
@@ -1707,9 +1707,9 @@ namespace Core::LinAlg
     inline void elementwise_divide(const ValueType outfac, ValueType* out, const ValueType infac,
         const ValueType* left, const ValueType* right)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == left) FOUR_C_THROW("'out' and 'left' point to same memory location");
-      if (out == right) FOUR_C_THROW("'out' and 'right' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != left, "'out' and 'left' point to same memory location");
+      FOUR_C_ASSERT(out != right, "'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {
@@ -1750,7 +1750,7 @@ namespace Core::LinAlg
     inline void crossproduct(
         ValueTypeOut* out, const ValueTypeLeft* left, const ValueTypeRight* right)
     {
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
       if (i != 3 || j != 1) FOUR_C_THROW("cross product only for 3x1 matrices available");
 #endif
       out[0] = left[1] * right[2] - left[2] * right[1];
@@ -1782,8 +1782,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void abs(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out = *in >= 0 ? *in : -*in;
       for (unsigned int c = 1; c < i * j; ++c)
@@ -1797,8 +1797,8 @@ namespace Core::LinAlg
     template <class ValueType, unsigned int i, unsigned int j>
     inline void reciprocal(ValueType* out, const ValueType* in)
     {
-#ifdef FOUR_C_DEBUG
-      if (out == in) FOUR_C_THROW("'out' and 'in' point to same memory location");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(out != in, "'out' and 'in' point to same memory location");
 #endif
       *out = 1.0 / (*in);
       for (unsigned int c = 1; c < i * j; ++c)
@@ -3333,7 +3333,7 @@ namespace Core::LinAlg
   template <unsigned int rows, unsigned int cols, class ValueType>
   inline ValueType& Matrix<rows, cols, ValueType>::operator()(unsigned int r, unsigned int c)
   {
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (r >= rows or c >= cols)
       FOUR_C_THROW("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
@@ -3344,7 +3344,7 @@ namespace Core::LinAlg
   inline const ValueType& Matrix<rows, cols, ValueType>::operator()(
       unsigned int r, unsigned int c) const
   {
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (r >= rows or c >= cols)
       FOUR_C_THROW("Indices %i,%i out of range in Matrix<%i,%i>.", r, c, rows, cols);
 #endif
@@ -3355,7 +3355,7 @@ namespace Core::LinAlg
   inline ValueType& Matrix<rows, cols, ValueType>::operator()(unsigned int r)
   {
     static_assert((cols == 1) or (rows == 1), "cannot call 1-d access function on 2-d matrix");
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif
@@ -3366,7 +3366,7 @@ namespace Core::LinAlg
   inline const ValueType& Matrix<rows, cols, ValueType>::operator()(unsigned int r) const
   {
     static_assert((cols == 1) or (rows == 1), "cannot call 1-d access function on 2-d matrix");
-#ifdef FOUR_C_DEBUG
+#ifdef FOUR_C_ENABLE_ASSERTIONS
     if (r >= (cols == 1 ? rows : cols))
       FOUR_C_THROW("Index %i out of range in Matrix<%i,%i>.", r, rows, cols);
 #endif

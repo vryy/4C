@@ -8,8 +8,6 @@
 #ifndef FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
 #define FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
 
-// #define DEBUG_INSERT_POLICY
-
 #include "4C_config.hpp"
 
 #include "4C_utils_exceptions.hpp"
@@ -131,19 +129,6 @@ namespace Core::Gen
     { /* empty */
     }
 
-    void set_debug_mode(bool isdebug)
-    {
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      _isdebug = isdebug;
-#else
-      std::stringstream msg;
-      msg << __LINE__ << " - " << __FUNCTION__ << " in " << __FILE__ << ":\n";
-      msg << "Set the define \"DEBUG_INSERT_POLICY\" first to"
-             " use the debug functionality!";
-      FOUR_C_THROW(msg.str());
-#endif
-    }
-
     /** @brief return a constant number of offset values
      *
      *   The default strategy does not use this feature. See quick_insert_policy
@@ -151,9 +136,6 @@ namespace Core::Gen
      *
      *  @author hiermeier @date 11/17 */
     static size_t capacity_offset() { return 0; }
-
-   protected:
-    bool _isdebug = false;
   };
 
   /*--------------------------------------------------------------------------*/
@@ -297,11 +279,10 @@ namespace Core::Gen
      *  @author hiermeier @date 11/17 */
     T& repetitive_access(const Key k, const int rep_count, pairedvector_type& data, size_t& entries)
     {
-#if defined(FOUR_C_DEBUG) || defined(DEBUG_INSERT_POLICY)
-      if (rep_count < -1)
-        FOUR_C_THROW(
-            "The repetition counter is not allowed to "
-            "be smaller than -1!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+      FOUR_C_ASSERT(rep_count < -1,
+          "The repetition counter is not allowed to "
+          "be smaller than -1!");
 #endif
 
       switch (rep_count)
@@ -312,11 +293,10 @@ namespace Core::Gen
         }
         case 0:
         {
-#if defined(FOUR_C_DEBUG) || defined(DEBUG_INSERT_POLICY)
-          if (prev_repcount_ != -1 and prev_repcount_ != rep_count and !isfilled_)
-            FOUR_C_THROW(
-                "At the end of each repetition Complete "
-                "must be called!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+          FOUR_C_ASSERT(prev_repcount_ != -1 and prev_repcount_ != rep_count and !isfilled_,
+              "At the end of each repetition Complete "
+              "must be called!");
 #endif
           init_id_map();
           isfilled_ = false;
@@ -324,11 +304,10 @@ namespace Core::Gen
         }
         default:
         {
-#if defined(FOUR_C_DEBUG) || defined(DEBUG_INSERT_POLICY)
-          if (prev_repcount_ != rep_count and !isfilled_)
-            FOUR_C_THROW(
-                "At the end of each repetition Complete "
-                "must be called!");
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+          FOUR_C_ASSERT(prev_repcount_ != rep_count and !isfilled_,
+              "At the end of each repetition Complete "
+              "must be called!");
 #endif
           isfilled_ = false;
           prev_repcount_ = rep_count;
@@ -358,13 +337,6 @@ namespace Core::Gen
       isfilled_ = true;
       // reset id-index after each single complete call
       id_index_ = 0;
-
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "\nCOMPLETE\n";
-      }
-#endif
 
       return unique_entries;
     }
@@ -398,13 +370,6 @@ namespace Core::Gen
       id_map_.clear();
       id_map_.reserve(id_map_size_);
       prev_repcount_ = 0;
-
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << __FUNCTION__ << std::endl;
-      }
-#endif
     }
 
     T& first_access(const Key k, pairedvector_type& data, size_t& entries)
@@ -425,32 +390,12 @@ namespace Core::Gen
         ++entries;
       }
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "repetition count  = " << prev_repcount_ << "\n";
-        std::cout << "_id_map index     = " << id_index_ << "\n";
-        std::cout << "data id           = " << id_map_.back() << "\n";
-        std::cout << "size of _id_map   = " << id_map_.size() << "\n";
-        std::cout << "key               = " << k << "\n\n";
-      }
-#endif
-
       return it->second;
     }
 
     T& subsequent_access(const Key k, pairedvector_type& data, size_t& entries)
     {
       pair_type& curr_pair = data[get_id()];
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "index #" << id_index_ << std::endl;
-        std::cout << "repetition count = " << prev_repcount_ << "\n";
-        std::cout << "stored key       = " << curr_pair.first << "\n";
-        std::cout << "received key     = " << k << "\n\n";
-      }
-#endif
       if (curr_pair.first != k)
       {
         std::stringstream msg;
@@ -701,44 +646,11 @@ namespace Core::Gen
       if (non_unique_vec_.size() < merged_entries + 1)
         non_unique_vec_.resize(merged_entries + 1, pair_type());
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "unique_vec:\n";
-        print(unique_vec);
-        std::cout << "_non_unique_vec:\n";
-        print(non_unique_vec_);
-      }
-#endif
-
       std::copy(unique_vec.begin(), unique_vec.begin() + unique_entries,
           non_unique_vec_.begin() + non_unique_entries_);
 
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "merged _non_unique_vec + unique_vec:\n";
-        print(non_unique_vec_);
-      }
-#endif
-
       // group the entries
       const size_t num_grps = group_data(non_unique_vec_.begin(), merged_entries);
-
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "sorted merged _non_unique_vec + unique_vec:\n";
-        print(non_unique_vec_);
-      }
-#endif
-
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "number of groups = " << num_grps << "\n";
-      }
-#endif
 
       if (unique_vec.size() < num_grps) unique_vec.resize(num_grps);
 
@@ -751,16 +663,6 @@ namespace Core::Gen
       // reset the remaining part of the unique vector
       if (corrected_length < unique_entries)
         std::fill(last_result, unique_vec.begin() + unique_entries, pair_type());
-
-#if defined(DEBUG_INSERT_POLICY) || defined(FOUR_C_DEBUG)
-      if (this->_isdebug)
-      {
-        std::cout << "corrected num_unique = " << corrected_length << "\n";
-        std::cout << "new unique data:\n";
-        print(unique_vec);
-        std::cout << "\n\n";
-      }
-#endif
 
       return corrected_length;
     }

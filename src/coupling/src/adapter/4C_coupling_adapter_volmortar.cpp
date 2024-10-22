@@ -294,11 +294,11 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::MortarVolCoupl::ma
 void Coupling::Adapter::MortarVolCoupl::master_to_slave(
     const Core::LinAlg::MultiVector<double>& mv, Core::LinAlg::MultiVector<double>& sv) const
 {
-#ifdef FOUR_C_DEBUG
-  if (not mv.Map().PointSameAs(p21_->DomainMap())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv.Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
-  if (sv.NumVectors() != mv.NumVectors())
-    FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  FOUR_C_ASSERT(mv.Map().PointSameAs(p21_->domain_map()), "master dof map vector expected");
+  FOUR_C_ASSERT(sv.Map().PointSameAs(p21_->row_map()), "slave dof map vector expected");
+  FOUR_C_ASSERT(sv.NumVectors() == mv.NumVectors(), "column number mismatch %d!=%d",
+      sv.NumVectors(), mv.NumVectors());
 #endif
 
   // safety check
@@ -383,11 +383,11 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::MortarVolCoup
 void Coupling::Adapter::MortarVolCoupl::slave_to_master(
     const Core::LinAlg::MultiVector<double>& sv, Core::LinAlg::MultiVector<double>& mv) const
 {
-#ifdef FOUR_C_DEBUG
-  if (not mv.Map().PointSameAs(p12_->RowMap())) FOUR_C_THROW("master dof map vector expected");
-  if (not sv.Map().PointSameAs(p21_->RowMap())) FOUR_C_THROW("slave dof map vector expected");
-  if (sv.NumVectors() != mv.NumVectors())
-    FOUR_C_THROW("column number mismatch %d!=%d", sv.NumVectors(), mv.NumVectors());
+#ifdef FOUR_C_ENABLE_ASSERTIONS
+  FOUR_C_ASSERT(mv.Map().PointSameAs(p12_->row_map()), "master dof map vector expected");
+  FOUR_C_ASSERT(sv.Map().PointSameAs(p21_->row_map()), "slave dof map vector expected");
+  FOUR_C_ASSERT(sv.NumVectors() == mv.NumVectors(), "column number mismatch %d!=%d",
+      sv.NumVectors(), mv.NumVectors());
 #endif
 
   // safety check
