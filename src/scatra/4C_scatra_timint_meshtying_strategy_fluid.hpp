@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Fluid-fluid meshtying strategy for standard scalar transport problems
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
 #define FOUR_C_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_HPP
 

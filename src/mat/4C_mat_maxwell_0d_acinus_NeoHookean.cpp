@@ -1,21 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Four-element Maxwell material model for reduced dimensional acinus elements simplified to
-linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
-
-Necessary input lines:
-(material section)
-MAT 3 MAT_0D_MAXWELL_ACINUS_OGDEN Stiffness1 1.0 Stiffness2 5249.1 Viscosity1 3221.86 Viscosity2
-1000.0 // acinus properties;
-(element section)
-1 RED_ACINUS LINE2 2 3 MAT 3 TYPE NeoHookean AcinusVolume 300 AlveolarDuctVolume 0.03711
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_mat_maxwell_0d_acinus_NeoHookean.hpp"
 

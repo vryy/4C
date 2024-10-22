@@ -1,17 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Four-element Maxwell material model for reduced dimensional
-acinus elements with non-linear Ogden-like spring, inherits from Maxwell_0d_acinus
-
-The originally linear spring (Stiffness1) of the 4-element Maxwell model is substituted by a
-non-linear pressure-volume relation derived from the Ogden strain energy function considering pure
-volumetric expansion (derivation: see Christian Roth's dissertation, Appendix B)
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_OGDEN_HPP
 #define FOUR_C_MAT_MAXWELL_0D_ACINUS_OGDEN_HPP
 

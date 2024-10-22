@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Minimal implementation of the parameter interface for the element
-<--> time integrator data exchange
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FEM_GENERAL_ELEMENTS_PARAMSMINIMAL_HPP
 #define FOUR_C_FEM_GENERAL_ELEMENTS_PARAMSMINIMAL_HPP

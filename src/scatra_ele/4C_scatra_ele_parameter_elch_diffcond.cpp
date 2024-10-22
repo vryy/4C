@@ -1,19 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief singleton class holding all static diffusion-conduction parameters required for element
-evaluation
-
-This singleton class holds all static diffusion-conduction parameters required for element
-evaluation. All parameters are usually set only once at the beginning of a simulation, namely during
-initialization of the global time integrator, and then never touched again throughout the
-simulation. This parameter class needs to coexist with more general parameter classes holding
-additional static parameters required for scalar transport element evaluation.
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_parameter_elch_diffcond.hpp"
 
 #include "4C_inpar_elch.hpp"

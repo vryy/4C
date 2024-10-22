@@ -1,16 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Derived class which manages the special requirements to the linear
-       solver for structural-constraint problems.
-
-
-\date Jul 15, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_HPP
 #define FOUR_C_CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_HPP

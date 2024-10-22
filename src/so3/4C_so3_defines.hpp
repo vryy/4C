@@ -1,11 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief A set of preprocessor defines for solid element methods
-
-
-\level 3
-*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_SO3_DEFINES_HPP
 #define FOUR_C_SO3_DEFINES_HPP
 
@@ -17,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /* Material debugging options                                           */
 /************************************************************************/
 
-//#define MATERIALFDCHECK /* check constitutive matrix via finite differences */
+// #define MATERIALFDCHECK /* check constitutive matrix via finite differences */
 
 FOUR_C_NAMESPACE_CLOSE
 

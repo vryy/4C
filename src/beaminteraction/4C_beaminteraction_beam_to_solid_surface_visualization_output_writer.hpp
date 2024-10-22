@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to handle beam to solid surface output creation.
-
-\level 3
-
-*/
-// End doxygen header.
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VISUALIZATION_OUTPUT_WRITER_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_SURFACE_VISUALIZATION_OUTPUT_WRITER_HPP

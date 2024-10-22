@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material that stores a list of species and phases for electrochemistry applications
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_MAT_ELCHMAT_HPP
 #define FOUR_C_MAT_ELCHMAT_HPP

@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief A set of utility functions for beam contact
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_HPP
 

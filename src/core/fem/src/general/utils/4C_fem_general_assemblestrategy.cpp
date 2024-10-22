@@ -1,16 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Routines for handing a collection of element matrices and vectors to the actual assembly
-calls into one global sparse matrix and global load vector
-
-\level 0
-
-
-*/
-/*----------------------------------------------------------------------*/
-
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fem_general_assemblestrategy.hpp"
 

@@ -1,12 +1,10 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief evaluation of ScaTra elements for ion-transport equation
-
-\level 2
-
-*/
-/*--------------------------------------------------------------------------*/
 #include "4C_scatra_ele_calc_elch.hpp"
 
 #include "4C_scatra_ele_parameter_std.hpp"

@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief  Coupling Manager for eXtended Fluid Poro Coupling
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FSI_XFEM_XFPCOUPLING_MANAGER_HPP
 #define FOUR_C_FSI_XFEM_XFPCOUPLING_MANAGER_HPP

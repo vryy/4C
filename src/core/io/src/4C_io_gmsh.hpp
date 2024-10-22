@@ -1,21 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- *  * \brief simple element print library for Gmsh
- *
- * Useful for debugging, only output per processor (no communication supported)
- *
- * For a complete description, see the section about post processing formats in the Gmsh
-documentation.
- *
- * Most routines come in pairs: one gives a std::string as return argument, another pipes
- * the same std::string directly to an output stream. The latter avoid numerous std::string copies
- * and should be much faster when large discretizations are piped into a file.
- *
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-
-\level 2
-
- */
 #ifndef FOUR_C_IO_GMSH_HPP
 #define FOUR_C_IO_GMSH_HPP
 

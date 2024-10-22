@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Provide 1D, 2D and 3D shape functions
-
-The corresponding graphics and a detailed description can be found in
-the 4C guide in the Convention chapter.
-
-\level 0
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_HPP
 #define FOUR_C_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_HPP
 

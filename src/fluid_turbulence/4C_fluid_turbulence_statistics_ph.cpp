@@ -1,16 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Write (time and space) averaged values to file for
-turbulent flow over a periodic hill
-literature see Froehlich Mellen Rodi Temmerman Leschziner (2004) and Rapp Breuer Manhart Peller
-(2010) created in a Semesterarbeit by Stephan Jaeger 2015
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_fluid_turbulence_statistics_ph.hpp"
 
 #include "4C_comm_exporter.hpp"

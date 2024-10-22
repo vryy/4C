@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief auxiliary material for macro-scale elements in multi-scale simulations of scalar transport
-problems. This material handles the communication between micro and macro materials
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_scatra_micro_macro_coupling.hpp"
 
 #include "4C_global_data.hpp"

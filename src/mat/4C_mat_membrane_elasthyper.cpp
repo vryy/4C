@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief hyperelastic toolbox for membranes assuming incompressibility and plane stress
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-The input line should read
-MAT 0 MAT_Membrane_ElastHyper NUMMAT 2 MATIDS 1 2 DENS 0
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                               sfuchs 08/2017 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_membrane_elasthyper.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

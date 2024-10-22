@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief Wrapper for the ALE time integration for fluid problems with moving boundaries
-
-\level 2
-
-
- */
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_ADAPTER_ALE_FLUID_HPP
 #define FOUR_C_ADAPTER_ALE_FLUID_HPP

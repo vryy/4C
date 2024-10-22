@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-\level 2
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-*/
-
-
-/*----------------------------------------------------------------------*
- | headers                                                  seitz 07/13 |
- *----------------------------------------------------------------------*/
 #include "4C_so3_plast_ssn.hpp"
 
 #include "4C_comm_utils_factory.hpp"

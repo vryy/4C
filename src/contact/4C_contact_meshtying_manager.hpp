@@ -1,11 +1,10 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\level 1
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-
-\brief 4C implementation of main class to control all meshtying
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
 #define FOUR_C_CONTACT_MESHTYING_MANAGER_HPP
 

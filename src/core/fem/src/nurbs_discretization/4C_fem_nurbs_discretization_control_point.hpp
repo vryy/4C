@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief   This is basically a (3d-) node with an additional weight.
-   The weight is required for the evaluation of the nurbs
-   basis functions.
-
-   note that X() is not the coordinate of some grid point
-   anymore, it's just the control point position
-
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_CONTROL_POINT_HPP
 #define FOUR_C_FEM_NURBS_DISCRETIZATION_CONTROL_POINT_HPP
 

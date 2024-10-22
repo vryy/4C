@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Meshtying element for meshtying between a 3D beam and a 3D solid element using mortar shape
-functions for the traction.
-
-\level 3
-*/
-// End doxygen header.
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_MORTAR_HPP

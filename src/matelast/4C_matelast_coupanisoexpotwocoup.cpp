@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of the passive material behaviour of cardiac muscle
-according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium", 2009.
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_matelast_coupanisoexpotwocoup.hpp"
 

@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Coupling pair element for enforcing Dirichlet boundary conditions between a 3D
-surface (interface) and a 3D solid element (background mesh) using mortar shape functions for the
-coupling.
-
-\level 3
-*/
-// End doxygen header.
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_constraint_framework_embeddedmesh_interaction_pair_mortar.hpp"
 

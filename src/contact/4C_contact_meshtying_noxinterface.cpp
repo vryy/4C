@@ -1,13 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Concrete implementation of all the %NOX::Nln::CONSTRAINT::Interface::Required
-       (pure) virtual routines.
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_contact_meshtying_noxinterface.hpp"
 

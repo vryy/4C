@@ -1,43 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Write (time and space) averaged values to file for
-turbulent flow past a square cylinder
-
-o Create sets for various evaluation lines in domain
-  (Construction based on a round robin communication pattern):
-  - centerline in x1-direction
-  - centerline (with respect to cylinder center) in x2-direction
-  - lines in wake at x1=7.5 and x1=11.5 in x2-direction
-  - lines around cylinder
-
-o loop nodes closest to centerlines
-
-  - generate 4 toggle vectors (u,v,w,p), for example
-
-                            /  1  u dof in homogeneous plane
-                 toggleu_  |
-                            \  0  elsewhere
-
-  - pointwise multiplication velnp.*velnp for second order
-    moments
-
-o values on lines are averaged in time over all steps between two
-  outputs
-
-Required parameters are the number of velocity degrees of freedom (3)
-and the basename of the statistics outfile. These parameters are
-expected to be contained in the fluid time integration parameter list
-given on input.
-
-This method is intended to be called every upres_ steps during fluid
-output
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_SQC_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_SQC_HPP

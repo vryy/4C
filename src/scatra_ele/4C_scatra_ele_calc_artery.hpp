@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief evaluation class containing routines for calculation of scalar transport
-        within 1D-arteries (blood vessels)
-        only pressure-based formulation supports this
-
-   \level 3
-
- *----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_SCATRA_ELE_CALC_ARTERY_HPP
 #define FOUR_C_SCATRA_ELE_CALC_ARTERY_HPP

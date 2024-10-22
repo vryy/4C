@@ -1,27 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Robinson's visco-plastic material
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-      The visco-plastic Robinson's material is only admissible in small strain
-      regime. So we can use this material for geometrically linear and
-      geometrically nonlinear analysis.
-      In original implementation, on material level it is decided if calculation
-      uses linear or Green-Lagrange strains
-      --> In 4C a strain vector is passed to material, that can be linear or
-      Green-Lagrange strain
-
-      example input line:
-      MAT 1 MAT_Struct_Robinson  KIND Arya_NarloyZ  YOUNG POLY 2 1.47e9 -7.05e5
-        NUE 0.34  DENS 8.89e-3  THEXPANS 0.0  INITTEMP 293.15  HRDN_FACT 3.847e-12  HRDN_EXPO 4.0
-        SHRTHRSHLD POLY 2 69.88e8 -0.067e8   RCVRY 6.083e-3  ACTV_ERGY 40000.0
-        ACTV_TMPR 811.0  G0 0.04  M_EXPO 4.365  BETA POLY 3 0.8 0.0 0.533e-6
-        H_FACT 1.67e16
-      12.01.12 as first step only implement geometric non-linear case, i.e., total Lagrange
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_ROBINSON_HPP
 #define FOUR_C_MAT_ROBINSON_HPP
 

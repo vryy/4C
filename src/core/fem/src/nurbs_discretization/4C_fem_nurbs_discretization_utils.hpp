@@ -1,13 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief service methods for accessing knot vector and weights for a given
-       element of a nurbs discretisations
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
 #define FOUR_C_FEM_NURBS_DISCRETIZATION_UTILS_HPP
 

@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This file is used to manage the homogenized constraint mixture during growth and remodeling
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-The input line should read
-MAT 1 MAT_GrowthRemodel_ElastHyper NUMMATRF 2 MATIDSRF 11 21 NUMMATEL3D 1 MATIDSEL3D 31 NUMMATEL2D 1
-MATIDSEL2D 41 MATIDELPENALTY 51 ELMASSFRAC 0.23 DENS 1050 PRESTRETCHELASTINCIR 1.34
-PRESTRETCHELASTINAX 1.25 THICKNESS 1.4099822832e-3 MEANPRESSURE 13332.2668 RADIUS 1e-2 DAMAGE 1
-GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_mat_growthremodel_elasthyper.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

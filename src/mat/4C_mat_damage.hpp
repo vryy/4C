@@ -1,35 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains the functions to establish local material law /
-       stress-strain law for isotropic material following nonlinear isotropic
-       von Mises plasticity and a linear elastic material law
-       (St.Venant Kirchhoff).
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-       isotropic hardening
-       - describing the nonlinear (piecewise) hardening curve via \f$ sigma_y
-          \ and \f$strainbar_p_ref \ from input file
-
-       geometric linear, for small strains including isotropic ductile damage
-       - simplified Lemaitre model only considers isotropic hardening
-
-       ductile isotropic damage
-       - elasticity-damage coupling, cf. de Souza Neto Compuatational plasticity Chapt. 12
-       - Lemaitre's elastoplastic damage theory (simplified version without
-         kinematic hardening)
-       - isotropic hardening internal variable \f$ R\
-       - damage variable \f$ D\
-
-       ductile isotropic damage according to the book of de Souza Neto et al
-       "Computational methods for plasticity", chapter 12
-
-       example input line:
-       MAT 1 MAT_Struct_Damage YOUNG 206.9 NUE 0.29 DENS 0.0 SAMPLENUM 2
-         SIGMA_Y 0.45 0.65 EPSBAR_P 0.0 1.0 DAMDEN 0.0035 DAMEXP 1.0
-         DAMTHRESHOLD 1.0e-06 KINHARD 17 KINHARD_REC 21 TOL 1.0e-6
-
-\level 2
-
-*/
 #ifndef FOUR_C_MAT_DAMAGE_HPP
 #define FOUR_C_MAT_DAMAGE_HPP
 

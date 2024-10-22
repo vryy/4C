@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for the field time integration - This Wrapper already implements the functionality to
-use StepIncrements, therefore set NOXCorrection == true!!!
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_ADAPTER_FIELD_WRAPPER_HPP
 #define FOUR_C_ADAPTER_FIELD_WRAPPER_HPP

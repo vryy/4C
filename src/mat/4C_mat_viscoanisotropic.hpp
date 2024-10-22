@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Anisotropic viscohyperelastic material
-The input line should read
-MAT 1 MAT_VISCOANISO KAPPA 1.6667E04 MUE 33.3556 DENS 0.0000000001 K1 100.0 K2 1.0 GAMMA 20.0
-BETA_ISO 1.E4 BETA_ANISO 1.E4 RELAX_ISO 0.0010001 RELAX_ANISO 0
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 2
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_VISCOANISOTROPIC_HPP
 #define FOUR_C_MAT_VISCOANISOTROPIC_HPP
 

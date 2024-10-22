@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Service routines for Solid Hex8 element
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_so3_hex8.hpp"

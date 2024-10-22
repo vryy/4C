@@ -1,18 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief This class is inherited from dofset and replaces the
-       method assign_degrees_of_freedom by a version that does not query
-       the static_dofsets_ list for the max GID, but always starts from
-       0. Also, it does not register with the static_dofsets_ list. This
-       class is intended to be used for xfem approaches. It provides a
-       dofset without xfem dofs for output routines.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FEM_DOFSET_INDEPENDENT_HPP
 #define FOUR_C_FEM_DOFSET_INDEPENDENT_HPP

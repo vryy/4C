@@ -1,16 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-Viscohyperelastic material model containing the following parts:
-IsoNeohooke + VolSussmannBathe with Generalized Maxwell (just on isochoric part).
-The input line should read
-MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.0 POISSON 0.499 DENS 0.1 YOUNGS_FAST 100.0 RELAX 10.0 THETA
-0.5
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 2
-
-
-*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_VISCONEOHOOKE_HPP
 #define FOUR_C_MAT_VISCONEOHOOKE_HPP
 

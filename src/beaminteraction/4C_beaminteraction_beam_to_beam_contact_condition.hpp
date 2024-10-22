@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Object to hold and manage a beam-to-beam condition.
-
-\level 3
-*/
-// End doxygen header.
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_CONDITION_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_CONDITION_HPP

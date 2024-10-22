@@ -1,33 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains the functions to establish local material law /
-       stress-strain law for isotropic material for a 3D hex element
-       following perfectly von Mises plasticity and a linear elastic material law
-       (St.Venant Kirchhoff).
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-       small strains
-
-       perfect plasticity:
-        - no hardening allowed
-        - independent yield stress level of degree of plastification
-        - constant uniaxial yield stress \f$ \sigma_y \,=\, const.\f$
-
-       extend to linear kinematic hardening
-        - describing the Bauschinger effect via \f$ Hkin \,=\, const.\f$
-        - constant uniaxial yield stress \f$ \sigma_y \,=\, const.\f$
-
-       extend to linear isotropic hardening
-        - yield stress no longer constant, depends on level of accumulated
-          plastic strain, i.e. \f$ \sigma_y \,=\, \sigma_y(\bar{\epsilon}_p)\f$
-
-       example input line:
-       MAT 1 MAT_Struct_PlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
-\level 2
-*/
-/*----------------------------------------------------------------------*
- | headers                                                   dano 04/11 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_plasticlinelast.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

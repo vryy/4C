@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief This file contains the material for reactive scalars. It derives from MAT_matlist
-and adds everything to supervise all the MAT_scatra_raction materials. The reactions
-itself are defined inside the MAT_scatra_raction materials. So MAT_matlist_reactions
-is just a "control instance".
-
-\level 2
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_MAT_LIST_REACTIONS_HPP
 #define FOUR_C_MAT_LIST_REACTIONS_HPP

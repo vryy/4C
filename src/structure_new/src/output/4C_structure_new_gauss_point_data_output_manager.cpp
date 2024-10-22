@@ -1,10 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a Gauss point data output handler
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 
 #include "4C_comm_exporter.hpp"

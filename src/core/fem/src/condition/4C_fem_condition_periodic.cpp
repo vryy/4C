@@ -1,20 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief  update dofrowmap and dofsets for periodic boundary conditions
-
-        o effects distribution of master and slave nodes. Master and
-          slave are owned by one proc afterwards.
-        o effects ghosting of nodes. Master and slave nodes are ghosted
-          in pairs.
-        o passes list of coupled nodes to the dofset
-
-\level 0
-
-
-
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fem_condition_periodic.hpp"
 

@@ -1,19 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief A modified set of degrees of freedom for periodic boundary
-       conditions. This class is inherited from dofset and replaces the
-       method assign_degrees_of_freedom by a version which uses a map
-       of coupled nodes provided by the periodic boundary conditions to
-       assign the same degrees of freedom to coupled pairs of master and
-       slavenodes. It is absolutely mandatory that for each slave node
-       on this proc the master is (ghosted) on this proc, too!
-
-\level 0
-
-
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FEM_DOFSET_PBC_HPP
 #define FOUR_C_FEM_DOFSET_PBC_HPP

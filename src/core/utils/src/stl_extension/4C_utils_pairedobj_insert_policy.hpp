@@ -1,15 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief These classes are meant as policies for the paired objects and
-       are NOT supposed to be accessed directly. Use the methods of the derived
-       classes, instead.
-
-\level 1
-
-
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP
 #define FOUR_C_UTILS_PAIREDOBJ_INSERT_POLICY_HPP

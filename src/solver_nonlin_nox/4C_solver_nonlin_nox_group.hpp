@@ -1,15 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN implementation of a %::NOX::Epetra::Group
-       to handle unconstrained problems.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_GROUP_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_GROUP_HPP

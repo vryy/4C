@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief generic material that stores a list of materials, where each material itself defines the
-properties of e.g. one species in a scalar transport problem, or one phase in a fluid problem
-
-\level 1
-
-
-*/
-/*----------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_mat_list.hpp"
 

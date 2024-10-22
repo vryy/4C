@@ -1,40 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief A very simple symbol table implementation.
-
-
-\level 1
-
----------------------------------------------------------------------*/
-/*!
-
-Control files describe binary output. The control files are meant to be human readable and very
-flexible but still must be read back. To accomplish this we need a small parser and a way to
-represent these files internally. And here it is.
-
-A control file consists of definitions. Simple definitions look like
-this:
-
-attr_name = value
-
-where value might be a string, an integer or a double constant. (It's
-easily possible to enhance the parser to understand mathematical
-expressions. Speak up if you need this.) Additionally you can group
-your definitions:
-
-group_name:
-    attr_name_1 = value
-    attr_name_2 = value
-
-This looks a little like python and indeed indentions do matter
-here. But on the other hand you can have many groups using the same
-name. That's convenient because restart information is written every
-some steps into identical groups.
-
-Files that follow this scheme can be read into a simple symbol
-table. This table can be queried for those values quite easily.
-
-*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_IO_LEGACY_TYPES_HPP
 #define FOUR_C_IO_LEGACY_TYPES_HPP

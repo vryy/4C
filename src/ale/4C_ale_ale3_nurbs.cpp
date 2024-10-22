@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief A nurbs implementation of the ale3 element
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------------*/
 #include "4C_ale_ale3_nurbs.hpp"
 
 #include "4C_so3_nullspace.hpp"

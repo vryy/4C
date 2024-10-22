@@ -1,13 +1,9 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief Write nodal coordinates and values at the nodes to a visualization file
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP
 #define FOUR_C_IO_DISCRETIZATION_VISUALIZATION_WRITER_NODES_HPP

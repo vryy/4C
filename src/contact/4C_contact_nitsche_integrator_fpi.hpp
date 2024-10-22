@@ -1,13 +1,10 @@
-/*---------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief A class to perform integrations of nitsche related terms for the fpi contact case
-
-\level 3
-
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_NITSCHE_INTEGRATOR_FPI_HPP
 #define FOUR_C_CONTACT_NITSCHE_INTEGRATOR_FPI_HPP
 

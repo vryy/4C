@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Implementation of a mixed-logarithmic neo-Hooke material according to example 1 in
-"Stupkiewicz. An ALE formulation for implicit time integration of quasi-steady state wear problems.
-Comput. Methods Appl. Mech. Engrg. 260, 2013"
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_matelast_couplogmixneohooke.hpp"
 

@@ -1,13 +1,10 @@
-/*-----------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Concrete implementation of the structural and all related parameter interfaces.
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
 #ifndef FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_HPP
 #define FOUR_C_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_HPP
 

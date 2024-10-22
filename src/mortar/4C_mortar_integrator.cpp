@@ -1,12 +1,9 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A class to perform integrations of Mortar matrices on the overlap
-of two Mortar::Elements in 1D and 2D
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_mortar_integrator.hpp"
 

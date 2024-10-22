@@ -1,36 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Write (time and space) averaged values to file for
-turbulent flow over a periodic hill
-
-o Create sets for various evaluation lines in domain
-  (Construction based on a round robin communication pattern):
-  - 21 lines in x2-direction
-  - line along lower wall
-
-  - generate 4 toggle vectors (u,v,w,p), for example
-
-                            /  1  u dof in homogeneous plane
-                 toggleu_  |
-                            \  0  elsewhere
-
-  - pointwise multiplication velnp.*velnp for second order
-    moments
-
-o values on lines are averaged in time over all steps between two
-  outputs
-
-Required parameters are the number of velocity degrees of freedom (3)
-and the basename of the statistics outfile. These parameters are
-expected to be contained in the fluid time integration parameter list
-given on input.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_PH_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_PH_HPP

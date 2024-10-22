@@ -1,23 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief general Field adapter - In the end should be the base class for all
-'fields' like structure, fluid, ale, poro,... (in principle every coupled
-problem can be seen as field, if it is coupled into a bigger system).
-
-
-This base class makes it easier to use one algorithm for different
-subfields! (e.g. basically same algorithm for fsi_xfem and fpsi_xfem)
-
-At the moment this class is on the same level as AlgorithmBase for Algorithms
-... It would be an option to use this class also as Base Class for AlgorithmBase as most of the
-functions there exist also for fields.
-(e.g. Dt(),....) --> Should be discussed!
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_ADAPTER_FIELD_HPP
 #define FOUR_C_ADAPTER_FIELD_HPP

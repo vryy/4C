@@ -1,15 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Structure field adapter for time step size adaptivity
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_adapter_str_timint_adaptive.hpp"
 
 #include "4C_structure_timada.hpp"

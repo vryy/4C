@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Factory to create the appropriate DirichletNeumann Algorithm
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fsi_dirichletneumann_factory.hpp"
 

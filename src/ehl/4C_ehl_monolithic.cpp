@@ -1,18 +1,10 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief basis of all monolithic EHL algorithms that perform a coupling between
-       the structure field equation and lubrication field equations
-
-\level 3
-*/
-/*--------------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------*
- | headers                                                  wirtz 01/16 |
- *----------------------------------------------------------------------*/
 #include "4C_ehl_monolithic.hpp"
 
 #include "4C_adapter_coupling_ehl_mortar.hpp"

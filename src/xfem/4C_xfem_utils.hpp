@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Basic tools used in XFEM routines
-
-\level 3
-
-
-\warning this file should be cleaned up
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_XFEM_UTILS_HPP
 #define FOUR_C_XFEM_UTILS_HPP

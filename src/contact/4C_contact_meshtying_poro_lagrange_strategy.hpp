@@ -1,14 +1,10 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-// Masterthesis of h.Willmann under supervision of Anh-Tu Vuong and Matthias Mayr
-// Originates from contact_poro_lagrange_strategy
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Meshtying of porous media using Lagrange multipliers
-
-
-\level 3
-*/
-/*-----------------------------------------------------------------------*/
 #ifndef FOUR_C_CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_HPP
 #define FOUR_C_CONTACT_MESHTYING_PORO_LAGRANGE_STRATEGY_HPP
 

@@ -1,20 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief This file contains the hyperelastic toolbox with application to finite
-strain plasticity using a semi-smooth Newton method. It allows summing up
-several summands of isotropic non-splitted type to build
-a hyperelastic strain energy function.
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-The input line should read
-MAT 1 MAT_PlasticElastHyper NUMMAT 1 MATIDS 2 DENS 1.0 INITYIELD 0.45 ISOHARD 0.12924
-EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0 CTE 1.0e-5 INITTEMP 293 YIELDSOFT 0.002 HARDSOFT 0.002
-VISC 1e-4 VISC_TEMP 0.003 PL_SPIN_CHI -50 rY_11 1.0 rY_22 0.9 rY_33 0.9 rY_12 0.7 rY_23 0.57385
-rY_13 0.7
-
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_PLASTICELASTHYPER_HPP
 #define FOUR_C_MAT_PLASTICELASTHYPER_HPP
 

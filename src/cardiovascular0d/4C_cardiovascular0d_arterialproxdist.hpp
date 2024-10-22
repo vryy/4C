@@ -1,27 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Monolithic coupling of 3D structure Cardiovascular0D models
-
-\level 2
-
-
-An arterial 0D flow model derived from physical considerations of mass and momentum balance in the
-proximal and distal arterial part, incl. valves (formulation proposed by Cristobal Bertoglio)
-(DESIGN SURF CARDIOVASCULAR 0D ARTERIAL PROX DIST CONDITIONS):
-
--> variables are p_v, p_arp, q_arp, p_ard
-
-      [dV_v/dt + (p_v - p_at)/R_atv(p_v,p_at) + (p_v - p_arp)/R_arv(p_v,p_arp)]   [ 0 ]
-Res = [C_arp * d(p_arp)/dt + q_arp - (p_v - p_arp)/R_arv                      ]   [ 0 ]
-      [(L_arp/R_arp) * d(q_arp)/dt + q_arp + (p_ard - p_arp)/R_arp            ] = [ 0 ]
-      [C_ard * d(p_ard)/dt + (p_ard - p_ref)/R_ard - q_arp                    ]   [ 0 ]
-
-with nonlinear valve resistances R_atv(p_v,p_at), R_arv(p_v,p_arp) - caution when using this since
-its physical correctness is doubted by the code author! - reproduce classical piecewise linear
-valves with k_p -> 0
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_CARDIOVASCULAR0D_ARTERIALPROXDIST_HPP
 #define FOUR_C_CARDIOVASCULAR0D_ARTERIALPROXDIST_HPP

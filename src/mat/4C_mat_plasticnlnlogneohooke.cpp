@@ -1,27 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Contains the functions to establish local material law /
-       stress-strain law for isotropic material following finite strain
-       von-Mises plasticity with linear isotropic hardening
-       and logarithmic hyperelastic material (i.e. linear relation
-       between Kirchhoff-stress and logarithmic strain; aka Hencky
-       material model).
-       The principal stress based implementation follows
-       Bonet and Wood: "Nonlinear continuum mechanics for finite element analysis."
-       Cambridge University Press, Cambridge, 2008
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-       geometrically nonlinear, finite strains, rate-independent
-
-       example input line:
-       MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93 VISC 1.0 RATE_DEPENDENCY 0.1
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*
- | headers                                                              |
- *----------------------------------------------------------------------*/
 #include "4C_mat_plasticnlnlogneohooke.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

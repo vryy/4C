@@ -1,15 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Collection of functions that are not problem-specific
-
-The functions in this file are not problem-specific and may be useful for a number of applications.
-
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_UTILS_FUNCTION_LIBRARY_HPP
 #define FOUR_C_UTILS_FUNCTION_LIBRARY_HPP
 

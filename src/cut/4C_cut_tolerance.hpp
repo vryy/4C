@@ -1,12 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Central file for !all! Tolerances used in the cut
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_CUT_TOLERANCE_HPP
 #define FOUR_C_CUT_TOLERANCE_HPP
@@ -91,15 +88,15 @@
 #define DIRECTDIV_GAUSSRULE 7  // 7 for test cases
 
 // Construct the integration rules directly on the local coordinate system of the element
-//#define LOCAL
+// #define LOCAL
 
 // utilized quadrature compression (for Details see paper by Sudhakar et al.)
-//#define QUADCOMP
+// #define QUADCOMP
 
 // if we want to use cln outside of cut kernel (e.g. for calculation of local position of point on
 // edge or arc length in the pointgraph). Should be ajusted for memory containter in order to be
 // usable
-//#define CLN_CALC_OUTSIDE_KERNEL
+// #define CLN_CALC_OUTSIDE_KERNEL
 
 
 // limiting error, until which precision will be increased

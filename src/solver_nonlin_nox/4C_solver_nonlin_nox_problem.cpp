@@ -1,16 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief This class manages some of the necessary factory calls
-       if a %NOX::NLN solver is supposed to be used. Therefore a
-       lean function call becomes possible.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 #define SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP

@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A dofset that does not rely on same GID/LID numbers but uses
-       a defined node mapping instead (not implemented for element DOFs).
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FEM_DOFSET_DEFINEDMAPPING_WRAPPER_HPP
 #define FOUR_C_FEM_DOFSET_DEFINEDMAPPING_WRAPPER_HPP

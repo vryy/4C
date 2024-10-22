@@ -1,38 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Material law for superelastic isotropic material
-       following finite strain with linear and exponential
-       flow rules.
-       The implementation follows
-       Auricchio F. and Taylor R.: "Shape-memory alloys: modelling and numerical
-       simulations of finite-strain superelastic behavior."
-       Computer Methods in Applied Mechanics and Engineering, 1997
-           and
-       Auricchio F.: A robust integration-algorithm for a finite-strain
-       shape-memory-alloy superelastic model."
-       International Journal of Plasticity, 2001
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-
-       geometrically nonlinear, finite strains, rate-independent, isothermal
-
-       example input line for the exponential model:
-       MAT 1 MAT_Struct_SuperElastSMA YOUNG 60000 DENS 1.0 NUE 0.3 EPSILON_L 0.075
-       T_AS_s 0 T_AS_f 0 T_SA_s 0 T_SA_f 0 C_AS 0 C_SA 0 SIGMA_AS_s 520 SIGMA_AS_f 750
-       SIGMA_SA_s 550 SIGMA_SA_f 200 ALPHA 0.15 MODEL 1 BETA_AS 250 BETA_SA 20
-
-       example input line for the linear model:
-       MAT 1 MAT_Struct_SuperElastSMA YOUNG 60000 DENS 1.0 NUE 0.3 EPSILON_L 0.075
-       T_AS_s 0 T_AS_f 0 T_SA_s 0 T_SA_f 0 C_AS 0 C_SA 0 SIGMA_AS_s 520 SIGMA_AS_f 600
-       SIGMA_SA_s 300 SIGMA_SA_f 200 ALPHA 0.15 MODEL 2 BETA_AS 0 BETA_SA 0
-
-\level 3
-
-
-
-*/
-/*----------------------------------------------------------------------*
- | headers                                                hemmler 09/16 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_superelastic_sma.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

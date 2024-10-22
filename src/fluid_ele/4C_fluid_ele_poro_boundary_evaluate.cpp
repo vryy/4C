@@ -1,13 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief evaluation routines for the fluid poro boundary element
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fluid_ele_action.hpp"
 #include "4C_fluid_ele_boundary_calc.hpp"

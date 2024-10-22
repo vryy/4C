@@ -1,18 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief NeoHooke-like material for AAA
-This file contains the routines required for aneurysmatic artery wall following
-Raghavan and Vorp [2000]
-
-The material is a special case of a generalised pover law neo-Hookean material
-
-the input line should read
-  MAT 1 MAT_Struct_AAANeoHooke YOUNG 1.044E7 BETA 188.1E5 NUE 0.3 DENS 1.0
-
-\level 3
-
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_mat_aaaneohooke.hpp"
 

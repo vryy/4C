@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief 1D constitutive equation for growth (Linear in Cauchy fiber stress)
-
-\level 3
-
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_POISSON_TURNOVER_HPP
 #define FOUR_C_MIXTURE_GROWTH_EVOLUTION_LINEAR_CAUCHY_POISSON_TURNOVER_HPP

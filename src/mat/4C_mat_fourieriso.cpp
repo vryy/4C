@@ -1,17 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief heat condution according to fourier's law
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-
-the input line should read
-  MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- |  headers                                                  dano 09/09 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_fourieriso.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

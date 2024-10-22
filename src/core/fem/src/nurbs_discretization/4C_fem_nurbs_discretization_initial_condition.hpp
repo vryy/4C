@@ -1,22 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief A service method allowing the application of initial conditions
-       for nurbs discretisations.
-
-Since nurbs shape functions are not interpolating, it is not as
-straightforward to apply initial conditions to the degrees of freedom.
-(dofs are always associated with control points, i.e. the location
-associated with the 'node'=control point is not the physical location
-and the value at the control point is not the prescribed value at this
-position since dofs associated with neighbouring control points influence
-the function value as well)
-
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_FEM_NURBS_DISCRETIZATION_INITIAL_CONDITION_HPP
 #define FOUR_C_FEM_NURBS_DISCRETIZATION_INITIAL_CONDITION_HPP
 

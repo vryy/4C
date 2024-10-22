@@ -1,15 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods to transfer a turbulent inflow profile from a (usually
-periodic boundary condition) separate domain to a name Dirichlet
-boundary of the actual domain
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fluid_turbulence_transfer_turb_inflow.hpp"
 

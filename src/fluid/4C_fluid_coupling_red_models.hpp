@@ -1,15 +1,10 @@
-/*-----------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Method to deal with coupling between 3D fluid and 0/1D vascular
-problem
-
-
-\level 3
-*/
-/*-----------------------------------------------------------*/
-
-// #ifdef D_COUPLED_ARTNET
 #ifndef FOUR_C_FLUID_COUPLING_RED_MODELS_HPP
 #define FOUR_C_FLUID_COUPLING_RED_MODELS_HPP
 

@@ -1,16 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Everything concerning EAS technology for so3_ssn_plast
-       Mainly copied from so_hex8_eas.cpp. Redundancy needed,
-       because of hard coded Gauss point in the so_hex8
-       which do not coincide with the intrepid Gauss points
-       used in the so3_ssn_plast.
-\level 2
-*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-/*----------------------------------------------------------------------*
- | headers                                                  seitz 04/14 |
- *----------------------------------------------------------------------*/
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"

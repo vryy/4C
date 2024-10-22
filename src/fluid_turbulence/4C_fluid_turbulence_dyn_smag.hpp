@@ -1,31 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Filter methods for the dynamic Smagorinsky model
-
-References are
-
-    M. Germano, U. Piomelli, P. Moin, W.H. Cabot:
-    A dynamic subgrid-scale eddy viscosity model
-    (Phys. Fluids 1991)
-
-    or
-
-    D.K. Lilly:
-    A proposed modification of the Germano subgrid-scale closure method
-    (Phys. Fluids 1992)
-
-    or
-    A.E. Tejada-Martinez
-    Dynamic subgrid-scale modeling for large eddy simulation of turbulent
-    flows with a stabilized finite element method
-    (Phd thesis, Rensselaer Polytechnic Institute, Troy, New York)
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_DYN_SMAG_HPP
 #define FOUR_C_FLUID_TURBULENCE_DYN_SMAG_HPP

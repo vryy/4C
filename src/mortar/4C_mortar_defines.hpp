@@ -1,11 +1,10 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
-\brief A set of preprocessor defines for mortar methods
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 1
-
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_DEFINES_HPP
 #define FOUR_C_MORTAR_DEFINES_HPP
 
@@ -37,12 +36,12 @@ FOUR_C_NAMESPACE_OPEN
 /************************************************************************/
 
 // GMSH DEBUGGING OPTIONS
-//#define MORTARGMSH1          /* gmsh output of interface in each time step */
-//#define MORTARGMSH2          /* gmsh output of interface in each iteration */
-//#define MORTARGMSH3          /* gmsh output of interface at t = 0.0 */
-//#define MORTARGMSHCELLS      /* gmsh output of intcells in each iteration */
-//#define MORTARGMSHTN         /* gmsh output of all treenodes */
-//#define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
+// #define MORTARGMSH1          /* gmsh output of interface in each time step */
+// #define MORTARGMSH2          /* gmsh output of interface in each iteration */
+// #define MORTARGMSH3          /* gmsh output of interface at t = 0.0 */
+// #define MORTARGMSHCELLS      /* gmsh output of intcells in each iteration */
+// #define MORTARGMSHTN         /* gmsh output of all treenodes */
+// #define MORTARGMSHCTN        /* gmsh output of coupling treenodes */
 
 FOUR_C_NAMESPACE_CLOSE
 

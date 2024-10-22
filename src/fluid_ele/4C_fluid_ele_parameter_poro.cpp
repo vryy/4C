@@ -1,16 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluation of general fluid parameter for fluid in poroelast problem
-
-FluidEleParameter::set_element_poro_parameter(Teuchos::ParameterList& params)
-set all general porofluid parameter once for all elements.
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fluid_ele_parameter_poro.hpp"
 

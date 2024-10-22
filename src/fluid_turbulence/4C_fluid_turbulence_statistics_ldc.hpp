@@ -1,38 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Write (time and space) averaged values to file.
-
-o Create sets for centerlines in x1-, x2- and x3-direction
-  (Construction based on a round robin communication pattern)
-
-o loop nodes closest to centerlines
-
-  - generate 4 toggle vectors (u,v,w,p), for example
-
-                            /  1  u dof in homogeneous plane
-                 toggleu_  |
-                            \  0  elsewhere
-
-  - pointwise multiplication velnp.*velnp for second order
-    moments
-
-o values on centerlines are averaged in time over all steps between two
-  outputs
-
-Required parameters are the number of velocity degrees of freedom (3)
-and the basename of the statistics outfile. These parameters are
-expected to be contained in the fluid time integration parameter list
-given on input.
-
-This method is intended to be called every upres_ steps during fluid
-output.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_LDC_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_LDC_HPP

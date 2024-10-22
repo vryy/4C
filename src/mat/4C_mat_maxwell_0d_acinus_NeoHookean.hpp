@@ -1,13 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Four-element Maxwell material model for reduced dimensional acinus elements simplified to
-linear spring (Stiffness1) only (Neo Hookean), inherits from Maxwell_0d_acinus
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
 #define FOUR_C_MAT_MAXWELL_0D_ACINUS_NEOHOOKEAN_HPP
 

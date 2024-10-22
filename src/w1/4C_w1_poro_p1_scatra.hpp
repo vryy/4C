@@ -1,24 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief A 2D wall element for solid-part of porous medium using p1 (mixed) approach including scatra
-functionality
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*/
-/*!
-
- \brief a 2D wall element for solid-part of porous medium using p1 (mixed) approach including scatra
-functionality
-
- \level 2
-
-*----------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_W1_PORO_P1_SCATRA_HPP
 #define FOUR_C_W1_PORO_P1_SCATRA_HPP

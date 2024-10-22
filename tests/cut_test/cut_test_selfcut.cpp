@@ -1,10 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 1
-
-*----------------------------------------------------------------------*/
 #include "4C_cut_meshintersection.hpp"
 #include "4C_cut_options.hpp"
 #include "4C_cut_side.hpp"

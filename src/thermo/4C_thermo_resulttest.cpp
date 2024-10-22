@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief testing of structure calculation results
-
-\level 1
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 08/09 |
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 08/09 |
- *----------------------------------------------------------------------*/
 #include "4C_thermo_resulttest.hpp"
 
 #include "4C_fem_general_node.hpp"

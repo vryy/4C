@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-
-\brief  Provides range functionality for any given container. This is a forward implementation of
-c++20 ranges::views
-
-\level 0
-    */
-/*----------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_UTILS_STD_CXX20_RANGES_HPP
 #define FOUR_C_UTILS_STD_CXX20_RANGES_HPP

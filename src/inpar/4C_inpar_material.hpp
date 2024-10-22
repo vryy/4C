@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief list of valid materials
-
-\level 1
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* definitions */
 #ifndef FOUR_C_INPAR_MATERIAL_HPP
 #define FOUR_C_INPAR_MATERIAL_HPP
 

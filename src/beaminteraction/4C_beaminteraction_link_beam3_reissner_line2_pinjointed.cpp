@@ -1,13 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Wrapper for a linear Reissner beam element used as mechanical pin joint
-       between two other beam elements
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_beaminteraction_link_beam3_reissner_line2_pinjointed.hpp"
 

@@ -1,12 +1,10 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief class to handle contact between a 3D beam element and a rigid sphere
-
-\level 3
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
 #ifndef FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
 #define FOUR_C_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_HPP
 

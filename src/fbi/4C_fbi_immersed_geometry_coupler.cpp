@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Class containing geometric operations usually needed for the coupling of an embedded body.
-The current implementation does not scale at all!
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #include "4C_fbi_immersed_geometry_coupler.hpp"
 
 #include "4C_binstrategy.hpp"

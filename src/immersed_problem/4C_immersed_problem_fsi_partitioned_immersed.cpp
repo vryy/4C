@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief partitioned immersed fsi subclass
-
-\level 1
-
-
-*----------------------------------------------------------------------*/
 #include "4C_immersed_problem_fsi_partitioned_immersed.hpp"
 
 #include "4C_adapter_str_fsiwrapper.hpp"

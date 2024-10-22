@@ -1,13 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Class containing geometric operations usually needed for the coupling of an embedded
-body using a binning strategy to pre-sort the beam elements, for which an octree search needs to be
-performed afterwards
-
-\level 3
-
-*----------------------------------------------------------------------*/
 #include "4C_fbi_immersed_geometry_coupler_binning.hpp"
 
 #include "4C_beam3_base.hpp"

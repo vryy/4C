@@ -1,19 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-This file contains a framework, which allows for the linear interpolation between two different
-strain energy functions, where the interpolation ratio come from 'outside'. For now this is supposed
-to come from the idea, that there is a scalar quantity (e.g. foam cells) which induces growth. The
-grown volume fraction thereby consists of another material (e.g. softer or stiffer material
-parameters or totally different strain energy function).
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 2
-
-
-
-*/
-
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_SCALARDEPINTERP_HPP
 #define FOUR_C_MAT_SCALARDEPINTERP_HPP
 

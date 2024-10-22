@@ -1,16 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Evaluating of arbitrary symbolic expressions, which contain literals
-       ('1.0', 'pi', etc) operations ('+', '-','sin', etc.).
-       The parsed expression is organised in a syntax tree whose nodes can
-       either hold an operation or a literal.
-
-\level 0
-
-*/
-/*---------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_utils_symbolic_expression.hpp"
 

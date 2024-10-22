@@ -1,19 +1,9 @@
-/*--------------------------------------------------------------------------*/
-/*! \file
-
-\brief singleton class holding all static parameters required for Lubrication element evaluation
-
-This singleton class holds all static parameters required for Lubrication element evaluation. All
-parameters are usually set only once at the beginning of a simulation, namely during initialization
-of the global time integrator, and then never touched again throughout the simulation. This
-parameter class needs to coexist with the general parameter class holding all general static
-parameters required for Lubrication element evaluation.
-
-\level 3
-
-
-*/
-/*--------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_LUBRICATION_ELE_PARAMETER_HPP
 #define FOUR_C_LUBRICATION_ELE_PARAMETER_HPP

@@ -1,17 +1,10 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Wrapper for the ALE time integration for fluid problems with moving boundaries
-
-\level 2
-
- */
-/*----------------------------------------------------------------------------*/
-
-
-
-/*----------------------------------------------------------------------------*/
-/* header inclusions */
 #include "4C_adapter_ale_fluid.hpp"
 
 #include "4C_ale_utils_mapextractor.hpp"

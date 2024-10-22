@@ -1,12 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-\brief Deprecated wrapper for the mesh-tying and contact managers.
-
-\level 2
-
-
-*/
-/*---------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_contact_meshtying_contact_bridge.hpp"
 

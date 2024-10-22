@@ -1,10 +1,9 @@
-/*! \file
-
-    * \brief Declaration of the solid-poro pressure-velocity-based element
-    * This file contains the element-specific service routines such as Pack, Unpack, NumDofPerNode
-etc.
-\level 1
-                */
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_SOLID_PORO_3D_ELE_PRESSURE_VELOCITY_BASED_HPP
 #define FOUR_C_SOLID_PORO_3D_ELE_PRESSURE_VELOCITY_BASED_HPP

@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Material for a 1D artery, contains its initial diameter, thickness, dynamic
-       viscosity and density of the fluid flowing in it, Young's modulus and Poisson ratio and
-       external constant tissue pressures for the nodes
-
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_mat_cnst_1d_art.hpp"
 

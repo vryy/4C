@@ -1,12 +1,10 @@
-/*-----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 2
-
-\brief Base class for contact and meshtying managers (structural problems only)
-       all other problem types use mortar adapters
-*/
-/*---------------------------------------------------------------------*/
 #ifndef FOUR_C_MORTAR_MANAGER_BASE_HPP
 #define FOUR_C_MORTAR_MANAGER_BASE_HPP
 

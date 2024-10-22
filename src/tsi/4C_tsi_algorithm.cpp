@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief  Basis of all TSI algorithms that perform a coupling between the linear
-        momentum equation and the heat conduction equation
-\level 2
-*/
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 12/09 |
- *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | headers                                                   dano 12/09 |
- *----------------------------------------------------------------------*/
 #include "4C_tsi_algorithm.hpp"
 
 #include "4C_adapter_str_factory.hpp"

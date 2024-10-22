@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Computation of mean values of nodal/cp quantities. The
-means are computed as time averages
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_MEAN_GENERAL_HPP

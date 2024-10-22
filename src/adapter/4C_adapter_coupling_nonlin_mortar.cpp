@@ -1,17 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief A class providing coupling capabilities based on non-linear
-       mortar methods
-
-\level 2
-
-
-*----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- |  headers                                                  farah 10/14|
- *----------------------------------------------------------------------*/
 #include "4C_adapter_coupling_nonlin_mortar.hpp"
 
 #include "4C_contact_element.hpp"

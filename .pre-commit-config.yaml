@@ -48,6 +48,19 @@ repos:
       - id: no-commit-to-branch
         name: Don't commit to main
 
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.5.5
+    hooks:
+      - id: insert-license
+        types_or: [c++, c]
+        exclude: 'mm$'
+        args:
+          - --license-filepath
+          - utilities/license_header.txt
+          - --comment-style
+          - '//'
+          - --detect-license-in-X-top-lines=1
+
   - repo: local
     hooks:
       - id: check-venv-up-to-date
@@ -57,14 +70,6 @@ repos:
         always_run: true
         pass_filenames: false
         fail_fast: true
-
-      - id: cpp-header
-        name: C++ file headers
-        description: 'Check that all C++ files have the correct header'
-        language: system
-        types_or: [c++, c]
-        entry: utilities/python-venv/bin/check-file-header
-        exclude: 'mm$'
 
       - id: cpp-filename-includes
         name: C++ file names and include style

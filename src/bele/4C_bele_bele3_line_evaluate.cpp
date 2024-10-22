@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief dummy 3D boundary element without any physics
-
-
-\level 2
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_bele_bele3.hpp"
 #include "4C_fem_condition.hpp"

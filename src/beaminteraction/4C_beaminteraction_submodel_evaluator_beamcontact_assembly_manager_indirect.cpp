@@ -1,15 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Class to assemble pair based contributions into global matrices. The pairs in this class can
-not be directly assembled into the global matrices. They have to be assembled into the global
-coupling matrices M and D first.
-
-
-\level 3
-
-*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.hpp"
 

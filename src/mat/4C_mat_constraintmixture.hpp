@@ -1,26 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief This file contains routines for constraint mixture growth and remodeling.
-example input line
-MAT 1 MAT_ConstraintMixture DENS 0.001 MUE 1.0 NUE 0.49 PHIE 0.08
-PREELA 1.0 K1 1.0 K2 1.0 NUMHOM 1 PRECOLL 1.06 DAMAGE 1.5 K1M 1.0 K2M 1.0
-PHIM 1.0 PREMUS 1.0 SMAX 0.0 KAPPA 1.0E6 LIFETIME 5.0 GROWTHFAC 0.5
-HOMSTR 6.75E4 SHEARGROWTHFAC 0.0 HOMRAD 1.0 STARTTIME 5.0
-INTEGRATION Explicit TOL 1.0E-4 GROWTHFORCE Single ELASTINDEGRAD None
-MASSPROD Lin INITSTRETCH None CURVE 0 DEGOPTION Cos MAXMASSPRODFAC 4.0
-STOREHISTORY No
-
-
-Here an approach for growth and remodeling of an artery is modeled.
-For a detailed description see:
-- Humphrey, J. & Rajagopal, K.: A constrained mixture model for arterial
-  adaptations to a sustained step change in blood flow,
-  Biomechanics and Modeling in Mechanobiology, 2003, 2, 109-126
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_MAT_CONSTRAINTMIXTURE_HPP
 #define FOUR_C_MAT_CONSTRAINTMIXTURE_HPP

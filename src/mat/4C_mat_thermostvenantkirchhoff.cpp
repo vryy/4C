@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief St.Venant Kirchhoff with an additional temperature dependent term
-       describing heat expansion
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-       example input line:
-       MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 2 YOUNG 1.48e8 1.48e5 NUE 0.3 DENS
-       9.130e-6 THEXPANS 1.72e-5 INITTEMP 293.15
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*
- | headers                                                   dano 02/10 |
- *----------------------------------------------------------------------*/
 #include "4C_mat_thermostvenantkirchhoff.hpp"
 
 #include "4C_comm_pack_helpers.hpp"

@@ -1,15 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Adapter Layer for Structures with Algebraic Constraints
-
-\level 2
-
-
-*/
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "4C_adapter_str_constr_merged.hpp"
 
 #include "4C_constraint_manager.hpp"

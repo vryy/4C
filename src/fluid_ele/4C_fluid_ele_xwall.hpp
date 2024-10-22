@@ -1,17 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Implementation of enrichment-wall fluid elements.
-In addition to that, it contains the interface between element call
-and Gauss point loop (depending on the fluid implementation)
-as well as some additional service routines (for the evaluation
-of errors, turbulence statistics etc.)
-
-
-\level 2
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_ELE_XWALL_HPP
 #define FOUR_C_FLUID_ELE_XWALL_HPP

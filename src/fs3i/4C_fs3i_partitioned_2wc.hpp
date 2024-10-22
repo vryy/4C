@@ -1,16 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief H-file associated with algorithmic routines for partitioned
-       solution approaches to fluid-structure-scalar-scalar interaction
-       (FS3I) specifically related to two-way-coupled problem
-       configurations
-
-\level 2
-
-
-
-*----------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FS3I_PARTITIONED_2WC_HPP
 #define FOUR_C_FS3I_PARTITIONED_2WC_HPP

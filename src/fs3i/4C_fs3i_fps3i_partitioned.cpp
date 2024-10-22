@@ -1,16 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief General algorithmic routines for partitioned solution approaches
-       to fluid-porous-structure-scalar-scalar interaction (FPS3I), that is,
-       algorithmic routines not specifically related to partitioned
-       solution approaches to one -or two-way-coupled problem
-       configurations, respectively.
-
-\level 3
-
-
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fs3i_fps3i_partitioned.hpp"
 

@@ -1,24 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Control routine for fluid (in)stationary solvers,
-
-     including instationary solvers based on
-
-     o a one-step-theta time-integration scheme,
-
-     o a two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm),
-
-     o two variants of a generalized-alpha time-integration scheme
-
-     and a stationary solver.
-
-
-\level 1
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #undef WRITEOUTSTATISTICS
 

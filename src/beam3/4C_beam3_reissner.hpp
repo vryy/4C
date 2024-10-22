@@ -1,21 +1,9 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief 3D nonlinear Reissner beam element
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-/* 3D nonlinear Reissner beam element of type II (according to "The interpolation
- * of rotations and its application to finite element models of geometrically exact
- * rods", Romero 2004)
- *
- * Attention: For this implementation, prescribed 3D rotation values have no
- * direct physical interpretation so far because DBC handling is always additive in 4C.
- * For 2D rotations, multiplicative and additive increments are identical and
- * rotations can be prescribed without problems. */
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_BEAM3_REISSNER_HPP
 #define FOUR_C_BEAM3_REISSNER_HPP

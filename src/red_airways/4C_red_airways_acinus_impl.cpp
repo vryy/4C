@@ -1,17 +1,9 @@
-/*---------------------------------------------------------------------*/
-/*! \file
-
-\brief Internal implementation of RedAcinus element. Methods implemented here
-       are called by acinus_evaluate.cpp by Discret::ELEMENTS::RedAcinus::evaluate()
-       with the corresponding action.
-
-
-\level 3
-
-*/
-/*---------------------------------------------------------------------*/
-
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_red_airways_acinus_impl.hpp"
 

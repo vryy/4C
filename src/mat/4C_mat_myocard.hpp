@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief myocard material
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 3
-
-*/
-
-/*----------------------------------------------------------------------*
- |  definitions                                              cbert 08/13 |
- *----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MYOCARD_HPP
 #define FOUR_C_MAT_MYOCARD_HPP
 

@@ -1,25 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Associated with control routine for con.-diff.(in)stat. solvers,
-
-     including instationary solvers based on
-
-     o one-step-theta time-integration scheme
-
-     o two-step BDF2 time-integration scheme
-       (with potential one-step-theta start algorithm)
-
-     o implicit characteristic Galerkin (ICG) time-integration scheme (level-set transport)
-
-     o explicit taylor galerkin (TG) time-integration schemes (level-set transport)
-
-     and stationary solver.
-
-\level 1
-
-
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_SCATRA_TIMINT_IMPLICIT_HPP
 #define FOUR_C_SCATRA_TIMINT_IMPLICIT_HPP

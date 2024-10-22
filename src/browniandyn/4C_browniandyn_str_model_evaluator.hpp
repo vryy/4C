@@ -1,17 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief model evaluator for brownian (stochastic and damping)
-       forces
-
-
-\date May, 2016
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_BROWNIANDYN_STR_MODEL_EVALUATOR_HPP
 #define FOUR_C_BROWNIANDYN_STR_MODEL_EVALUATOR_HPP

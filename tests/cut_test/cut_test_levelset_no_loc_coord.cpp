@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief Test for the CUT Library
-
-\level 1
-
-*----------------------------------------------------------------------*/
-// Issues with non-local cut!
-// Tried to be resolved here (Only for small deformation created from cubit).
-// Sheared elements needs to be tested separately
-// m.w. 05.2015
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_cut_element.hpp"
 #include "4C_cut_levelsetintersection.hpp"

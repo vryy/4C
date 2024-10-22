@@ -1,12 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Implements the constraint enforcement technique of a penalty approach (Mortar and GPTS) (for
-fluid-beam interaction)
-
-\level 2
-
-*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_fbi_constraintenforcer_penalty.hpp"
 

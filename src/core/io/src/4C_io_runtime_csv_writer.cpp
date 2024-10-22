@@ -1,11 +1,10 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-\brief Write output in csv format at runtime in serial
-\level 2
-*/
-/*-----------------------------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-/* headers */
 #include "4C_io_runtime_csv_writer.hpp"
 
 #include "4C_io.hpp"

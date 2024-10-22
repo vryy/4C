@@ -1,17 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Base of four-element Maxwell material model for reduced dimensional
-acinus elements
-
-Four-element Maxwell model consists of a parallel configuration of a spring (Stiffness1),
-spring-dashpot (Stiffness2 and Viscosity1) and dashpot (Viscosity2) element
-(derivation: see Ismail Mahmoud's dissertation, chapter 3.4)
-
-
-\level 3
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_MAT_MAXWELL_0D_ACINUS_HPP
 #define FOUR_C_MAT_MAXWELL_0D_ACINUS_HPP
 

@@ -1,15 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
-        problems
-        Contains hard-coded derivatives and evaluation routines for the most commonly
-        used reaction functions to speed up calculation as opposed to the
-        SymbolicFunctionOfAnything, which use FAD
-
-\level 3
-
-    *----------------------------------------------------------------------*/
-
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_HPP
 #define FOUR_C_POROMULTIPHASE_SCATRA_FUNCTION_HPP

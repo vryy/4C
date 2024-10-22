@@ -1,42 +1,9 @@
-/*-----------------------------------------------------------------------------------------------*/
-/*! \file
-
-\brief three dimensional nonlinear Kirchhoff beam element based on a C1 curve
-
-\level 2
-
-*/
-/*-----------------------------------------------------------------------------------------------*/
-
-/*
-3D nonlinear Kirchhoff-like beam element. It can be switched between a variant with weak enforcement
-of the Kirchhoff constraint and variant with strong enforcement of the Kirchhoff constraint. This
-variant with weak constraint enforcement is based on a rotation interpolation that is similar to
-beam3r. As the beam curve has to be C^1-continous, it is interpolated with Hermite polynomials of
-order 3. Therefore each of the two boundary nodes has 7 dofs. With the flag rotvec_ is can be
-switched between to sets of degrees of freedom on the boundary node. The first set (rotvec_==true)
-is
-[\v{d}_1, \v{theta}_1, t_1, \v{d}_2, \v{theta}_2, t_2, \alpha_3], where \v{d}_i is the vector of
-nodal positions on the boundary nodes,\v{theta}_i is a pseudo rotation vector describing the nodal
-triad orientation on the boundary nodes (and therewith also the orientation of the boundary tangent
-vectors), t_i is the length of the boudary tangent vectors, and alpha_3 is the scalar relative
-rotation angle between reference and matrial triad at the interior node. In contrary, the second
-variant (rotvec_==false) of this element has the dofs:
-[\v{d}_1, \v{t}_1, \alpha_1, \v{d}_2, \v{t}_2, \alpha_2, \alpha_3], where \v{t}_i is the nodal
-tangent vector (orientation and length) at the boundary nodes, and alpha_i are the scalar relative
-rotation angles between reference and matrial triad at the boundary nodes and the interior node.
-Besides these two boundary nodes the element has BEAM3K_COLLOCATION_POINTS-2 interior nodes which
-one scalar DoF alpha_i, respectively.
-
-
-Attention: Since so far linearizations are calculated with FAD, the rotation increments in the case
-(rotvec_==true) are of an additive nature, which is in strong contrast to the beam3r implementation,
-where the iterative rotation increments are multiplicative. Consequently, the inhomogeneous
-rotational Dirichlet conditions of beam3k can be interpreted as additive increments added to the
-initial values (i.e. if the initial value is zero, the Dirichlet values in the input file are the
-total nodal rotation angles). This is not true for beam3r, where prescribed 3D rotation values have
-no direct physical interpretation. For 2D rotations both variants are identical.
-*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_BEAM3_KIRCHHOFF_HPP
 #define FOUR_C_BEAM3_KIRCHHOFF_HPP

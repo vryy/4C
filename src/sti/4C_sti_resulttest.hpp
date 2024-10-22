@@ -1,12 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief result testing functionality for scatra-thermo interaction problems
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_STI_RESULTTEST_HPP
 #define FOUR_C_STI_RESULTTEST_HPP
 

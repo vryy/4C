@@ -1,14 +1,9 @@
-/*----------------------------------------------------------------------------*/
-/*! \file
-\brief material stores parameters for ion species in electrolyte solution. The scl material is
-derived for a binary electrolyte assuming a mobile ionic species in a fixed anion lattice.
-Local electroneutrality is dismissed, which enables formation of Space-Charge-Layers (SCLs).
-
-\level 2
-
-
-*/
-/*----------------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_MAT_SCL_HPP
 #define FOUR_C_MAT_SCL_HPP

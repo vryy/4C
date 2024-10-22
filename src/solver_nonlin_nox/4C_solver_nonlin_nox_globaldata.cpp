@@ -1,16 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief Kind of a data container class, which holds many variables
-       and objects, which are necessary to setup a NOX::NLN
-       solution strategy.
-
-
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_solver_nonlin_nox_globaldata.hpp"  // class definition
 

@@ -1,14 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
- *
-  \brief Interface class for contact constitutive law parameters, i.e. paramters for laws that
-relate the contact gap to the contact pressure based on micro interactions
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 3
-
-*/
-/*----------------------------------------------------------------------*/
-/* macros */
 #ifndef FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 #define FOUR_C_CONTACT_CONSTITUTIVELAW_CONTACTCONSTITUTIVELAW_PARAMETER_HPP
 

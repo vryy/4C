@@ -1,14 +1,9 @@
-/*-----------------------------------------------------------*/
-/*! \file
-
-\brief %NOX::NLN Weighted root mean square test of the solution
-       increment. A detailed description can be found in the NOX
-       documentation.
-
-\level 3
-
-*/
-/*-----------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_HPP
 #define FOUR_C_SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_HPP

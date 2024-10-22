@@ -1,11 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Evaluate boundary conditions for scalar transport problems
-
-\level 2
-
- *----------------------------------------------------------------------*/
 #include "4C_fem_discretization.hpp"
 #include "4C_mat_elchmat.hpp"
 #include "4C_scatra_ele.hpp"

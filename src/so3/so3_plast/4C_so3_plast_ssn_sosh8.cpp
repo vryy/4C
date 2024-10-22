@@ -1,22 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief
-This file contains everything additionally needed for plastic solid shell elements.
-Basically, it is a copy of the elastic so_sh8 element. (Virtual inheritance in the
-solid elements would help to reduce this code redundancy.)
-
-The Solid-Shell element technology is based on the work of
-(1) Vu-Quoc, Tan: "Optimal solid shells for non-linear analyses
-                   of multilayer composites", CMAME 2003
-(2) Klinkel, Gruttmann, Wagner: "A robust non-linear solid shell element
-                                 based on a mixed variational fromulation"
-
-Refer also to the Semesterarbeit of Alexander Popp, 2006
-
-\level 2
-*/
-
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_so3_plast_ssn_sosh8.hpp"
 

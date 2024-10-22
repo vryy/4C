@@ -1,18 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief abstract interface for parameter classes required for scalar transport element evaluation
-
-This abstract, purely virtual singleton class provides a common inheritance interface for several
-derived singleton classes holding static parameters required for scalar transport element
-evaluation, e.g., general parameters, turbulence parameters, and problem specific parameters. All
-parameters are usually set only once at the beginning of a simulation, namely during initialization
-of the global time integrator, and then never touched again throughout the simulation.
-
-
-\level 1
-*/
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_PARAMETER_BASE_HPP
 #define FOUR_C_SCATRA_ELE_PARAMETER_BASE_HPP
 

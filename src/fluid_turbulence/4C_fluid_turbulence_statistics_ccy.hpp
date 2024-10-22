@@ -1,33 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Compute (time and space) averaged values for turbulent flows
-       around a rotating cylinder and write them to files.
-
-o Create set of all available homogeneous shells
-  (Construction based on a round robin communication pattern)
-
-o loop shells (e.g. radial shell coordinates)
-
-  - pointwise in-plane average of first- and second order moments
-
-o Write pointwise statistics for first and second order moments
-  ->   .flow_statistic
-
-Required parameters are the number of velocity degrees of freedom (3),
-the normal direction to the plane, in which the average values in space
-should be computed, and the basename of the statistics outfile. These
-parameters are expected to be contained in the fluid time integration
-parameter list given on input.
-
-This method is intended to be called every upres_ steps during fluid
-output.
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_STATISTICS_CCY_HPP
 #define FOUR_C_FLUID_TURBULENCE_STATISTICS_CCY_HPP

@@ -1,9 +1,9 @@
-/*! \file
-
-\brief A library of free functions for a solid-scatra element with Nitsche contact
-
-\level 1
-*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_SOLID_SCATRA_3D_ELE_CALC_LIB_NITSCHE_HPP
 #define FOUR_C_SOLID_SCATRA_3D_ELE_CALC_LIB_NITSCHE_HPP

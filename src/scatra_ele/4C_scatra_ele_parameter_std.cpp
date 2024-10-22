@@ -1,22 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief singleton class holding all static parameters required for the evaluation of a standard
-scalar transport element
-
-This singleton class holds all static parameters required for the evaluation of a standard scalar
-transport element, e.g., stabilization parameters and finite difference check parameters. All
-parameters are usually set only once at the beginning of a simulation, namely during initialization
-of the global time integrator, and then never touched again throughout the simulation. Enhanced
-scalar transport problems, such as electrochemistry and levelset problems, instantiate additional,
-problem specific singleton classes holding additional static parameters required for element
-evaluation. These additional singleton classes are not meant to be derived from, but rather to
-coexist with this general class.
-
-\level 1
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_scatra_ele_parameter_std.hpp"
 
 #include "4C_scatra_ele_parameter_timint.hpp"

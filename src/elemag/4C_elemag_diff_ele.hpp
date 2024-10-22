@@ -1,17 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief A C++ wrapper for the electromagnetic diffusion element
-
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-<pre>
-\level 2
-
-</pre>
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_ELEMAG_DIFF_ELE_HPP
 #define FOUR_C_ELEMAG_DIFF_ELE_HPP

@@ -1,15 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief Routines for ScaTraHDG element
-
-Scatra element based on the hybridizable discontinuous Galerkin method instead
-of the usual Lagrangian polynomials for standard transport elements
-
-\level 3
-
-
-*/
 #ifndef FOUR_C_SCATRA_ELE_HDG_HPP
 #define FOUR_C_SCATRA_ELE_HDG_HPP
 

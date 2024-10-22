@@ -1,17 +1,9 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-
-\brief Methods to transfer a turbulent inflow profile a from a master
-boundary to a slave boundary on a seperate domain.
-The slave boundary must have an additional Dirichlet condition, the
-master boundary will usually be a periodic boundary (but is not required
-to)
-
-
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
 #ifndef FOUR_C_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP
 #define FOUR_C_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_HPP

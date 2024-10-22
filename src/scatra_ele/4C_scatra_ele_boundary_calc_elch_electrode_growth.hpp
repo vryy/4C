@@ -1,13 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\brief evaluation of ScaTra boundary elements for isothermal electrodes exhibiting surface layer
-growth, e.g., lithium plating
-
-\level 2
-
- */
-/*----------------------------------------------------------------------*/
 #ifndef FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_HPP
 #define FOUR_C_SCATRA_ELE_BOUNDARY_CALC_ELCH_ELECTRODE_GROWTH_HPP
 

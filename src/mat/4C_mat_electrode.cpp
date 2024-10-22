@@ -1,11 +1,10 @@
-/*----------------------------------------------------------------------*/
-/*! \file
-\brief electrode material carrying concentration and electric potential as degrees of freedom
+// This file is part of 4C multiphysics licensed under the
+// GNU Lesser General Public License v3.0 or later.
+//
+// See the LICENSE.md file in the top-level for license information.
+//
+// SPDX-License-Identifier: LGPL-3.0-or-later
 
-\level 2
-
-*/
-/*----------------------------------------------------------------------*/
 #include "4C_mat_electrode.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
