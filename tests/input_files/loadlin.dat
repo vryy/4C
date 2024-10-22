@@ -2834,5 +2834,3 @@ STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -2.28391510321914843e+01 T
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 0.11 1 VALUES 0 1 1 1
--------------------------------------------------------------------------END
-//                              END

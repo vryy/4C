@@ -2110,5 +2110,3 @@ FLUID DIS fluid NODE 190 QUANTITY pressure VALUE 2.759311293e+01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 410 QUANTITY velx VALUE -2.956322345e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 410 QUANTITY vely VALUE -2.918663532e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 410 QUANTITY pressure VALUE 1.337480174e+01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END

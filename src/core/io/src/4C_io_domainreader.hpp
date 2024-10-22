@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_inputreader.hpp"
-
+#include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
 
 #include <memory>
@@ -27,6 +26,7 @@ namespace Core::FE
 namespace Core::IO
 {
   class LineDefinition;
+  class DatFileReader;
 
   namespace GridGenerator
   {
@@ -52,11 +52,9 @@ namespace Core::IO
       \param reader (i) the dat file reader
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, const Core::IO::DatFileReader& reader,
+    DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
         std::string sectionname);
 
-    //! Destructor
-    virtual ~DomainReader() = default;
     /// give the discretization this reader fills
     Teuchos::RCP<Core::FE::Discretization> my_dis() const { return dis_; }
 
@@ -89,7 +87,7 @@ namespace Core::IO
     std::string name_;
 
     /// the main dat file reader
-    const Core::IO::DatFileReader& reader_;
+    Core::IO::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;

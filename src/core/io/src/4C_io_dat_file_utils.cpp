@@ -7,6 +7,8 @@
 
 #include "4C_io_dat_file_utils.hpp"
 
+#include "4C_io_inputreader.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 void Core::IO::DatFileUtils::print_section_header(std::ostream& out, const std::string& header)
@@ -69,8 +71,6 @@ std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
 Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& reader,
     const std::string& section, const std::vector<Input::LineDefinition>& possible_lines)
 {
-  const std::vector<const char*> lines_in_section = reader.section("--" + section);
-
   std::vector<std::string> unparsed_lines;
   std::vector<Input::LineDefinition> parsed_lines;
 
@@ -94,13 +94,10 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
     unparsed_lines.emplace_back(input_line);
   };
 
-  for (const auto& input_line : lines_in_section)
+  for (const auto& input_line : reader.lines_in_section("--" + section))
   {
-    process_line(input_line);
+    process_line(std::string(input_line));
   }
-
-  FOUR_C_ASSERT(
-      unparsed_lines.size() + parsed_lines.size() == lines_in_section.size(), "Internal error.");
 
   return {parsed_lines, unparsed_lines};
 }

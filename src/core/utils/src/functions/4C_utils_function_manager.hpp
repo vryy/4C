@@ -15,16 +15,12 @@
 #include "4C_utils_demangle.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_RCP.hpp>
+
 #include <any>
 #include <functional>
 #include <typeindex>
 #include <vector>
-
-namespace Teuchos
-{
-  template <class T>
-  class RCP;
-}
 
 FOUR_C_NAMESPACE_OPEN
 

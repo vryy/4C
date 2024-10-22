@@ -319,5 +319,3 @@ NODE        40 COORD  5.0000000000000000e-01  5.0000000000000000e-01  3.00000000
 4 SOLIDSCATRA HEX8 21 22 23 24 25 26 27 28 MAT 2 KINEM nonlinear TYPE ElchDiffCond
 5 SOLIDSCATRA HEX8 29 30 31 32 33 34 35 36 MAT 3 KINEM nonlinear TYPE ElchElectrode
 6 SOLIDSCATRA HEX8 30 37 38 31 34 39 40 35 MAT 3 KINEM nonlinear TYPE ElchElectrode
----------------------------------------------------------------END
-// END

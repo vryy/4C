@@ -426,4 +426,3 @@ NODE 115 COORD 1 0 0
 53 SOLID HEX8 89 91 95 93 105 107 111 109 MAT 1 KINEM nonlinear
 54 SOLID HEX8 91 92 96 95 107 108 112 111 MAT 1 KINEM nonlinear
 55 BEAM3R HERM2LINE3 113 115 114 MAT 2 TRIADS 0 0 0 0 0 0 0 0 0
------------------------------------------------------------------------------END

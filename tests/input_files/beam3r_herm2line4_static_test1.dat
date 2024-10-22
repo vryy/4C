@@ -81,4 +81,3 @@ STRUCTURE DIS structure NODE 16 QUANTITY dispy VALUE -1.37313966690822884e+01 TO
 STRUCTURE DIS structure NODE 16 QUANTITY dispz VALUE  5.36108861719445571e+01 TOLERANCE 1e-8
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME t
------------------------------------------------------------------------------END

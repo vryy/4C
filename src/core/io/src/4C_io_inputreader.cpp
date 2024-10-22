@@ -51,10 +51,101 @@ namespace
 
 namespace Core::IO
 {
+  namespace Internal
+  {
+
+    StreamLineIterator::StreamLineIterator(std::istream& stream)
+        : StreamLineIterator(stream, std::numeric_limits<int>::max())
+    {
+    }
+
+    StreamLineIterator::StreamLineIterator(std::istream& stream, int max_reads)
+        : stream_(&stream), max_reads_(max_reads)
+    {
+      ++(*this);
+    }
+
+
+    StreamLineIterator::StreamLineIterator() : line_number_(-1) {}
+
+
+    StreamLineIterator& StreamLineIterator::operator++()
+    {
+      if (stream_)
+      {
+        if (line_number_ < max_reads_ && std::getline(*stream_, line_))
+        {
+          line_number_++;
+        }
+        else
+        {
+          // we hit EOF, set special value
+          line_number_ = -1;
+        }
+      }
+
+      return *this;
+    }
+
+
+    StreamLineIterator::reference StreamLineIterator::operator*() const { return line_; }
+    bool StreamLineIterator::operator==(const StreamLineIterator& other) const
+    {
+      return line_number_ == other.line_number_;
+    }
+
+
+    bool StreamLineIterator::operator!=(const StreamLineIterator& other) const
+    {
+      return !(*this == other);
+    }
+
+
+    DatFileLineIterator::DatFileLineIterator(
+        std::variant<StreamLineIterator, PreReadIterator> iterator)
+        : iterator_(std::move(iterator))
+    {
+    }
+
+
+    DatFileLineIterator& DatFileLineIterator::operator++()
+    {
+      std::visit([](auto& it) { ++it; }, iterator_);
+      return *this;
+    }
+
+
+    DatFileLineIterator::reference DatFileLineIterator::operator*() const
+    {
+      return std::visit([](const auto& it) -> reference { return *it; }, iterator_);
+    }
+
+
+    bool DatFileLineIterator::operator==(const DatFileLineIterator& other) const
+    {
+      if (other.iterator_.index() != iterator_.index()) return false;
+
+      if (iterator_.index() == 0)
+      {
+        return std::get<0>(iterator_) == std::get<0>(other.iterator_);
+      }
+      else
+      {
+        return std::get<1>(iterator_) == std::get<1>(other.iterator_);
+      }
+    }
+
+
+    bool DatFileLineIterator::operator!=(const DatFileLineIterator& other) const
+    {
+      return !(*this == other);
+    }
+  }  // namespace Internal
+
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   DatFileReader::DatFileReader(std::string filename)
-      : filename_(std::move(filename)), comm_(Teuchos::null), numrows_(0), outflag_(0)
+      : filename_(std::move(filename)), comm_(Teuchos::null), outflag_(0)
   {
   }
 
@@ -79,48 +170,18 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::ifstream::pos_type DatFileReader::excluded_section_position(const std::string& section) const
-  {
-    auto i = excludepositions_.find(section);
-    if (i == excludepositions_.end())
-    {
-      return -1;
-    }
-    return i->second.first;
-  }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  unsigned int DatFileReader::excluded_section_length(const std::string& section) const
-  {
-    auto i = excludepositions_.find(section);
-    if (i == excludepositions_.end())
-    {
-      return 0;
-    }
-    return i->second.second;
-  }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
   bool DatFileReader::read_section(std::string name, Teuchos::ParameterList& list)
   {
     if (name.length() < 3 or name[0] != '-' or name[1] != '-')
       FOUR_C_THROW("Illegal section name '%s'", name.c_str());
 
     // The section name is desired from outside. Thus, we consider it as valid
-    knownsections_[name] = true;
+    record_section_used(name);
 
     Teuchos::ParameterList& sublist = find_sublist(name.substr(2), list);
 
-    if (positions_.find(name) == positions_.end()) return false;
-
-    for (size_t pos = positions_[name] + 1; pos < lines_.size(); ++pos)
+    for (const auto& line : lines_in_section(name))
     {
-      const std::string line = lines_[pos];
-
       // If the line starts with dashes we found the beginning of the next section and terminate
       // the read process of the current section.
       if (line[0] == '-' and line[1] == '-')
@@ -128,41 +189,13 @@ namespace Core::IO
         break;
       }
 
-      const auto& [key, value] = read_key_value(line);
+      const auto& [key, value] = read_key_value(std::string(line));
 
       add_entry(key, value, sublist);
     }
 
     return true;
   }
-
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  std::vector<const char*> DatFileReader::section(const std::string& name)
-  {
-    // The section name is desired from outside. Thus, we consider it as valid
-    knownsections_[name] = true;
-
-    std::vector<const char*> sec;
-
-    auto i = positions_.find(name);
-    if (i != positions_.end())
-    {
-      for (size_t pos = i->second + 1; pos < lines_.size(); ++pos)
-      {
-        const char* line = lines_[pos];
-        if (line[0] == '-' and line[1] == '-')
-        {
-          break;
-        }
-        sec.push_back(line);
-      }
-    }
-
-    return sec;
-  }
-
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -176,246 +209,233 @@ namespace Core::IO
     std::string sectionname = name + "-NODE TOPOLOGY";
     std::string marker = std::string("--") + sectionname;
 
-    auto position = positions_.find(marker);
-    if (position != positions_.end())
+    for (const auto& l : lines_in_section(marker))
     {
-      for (size_t pos = position->second + 1; pos < lines_.size(); ++pos)
+      int dobj;
+      int nodeid;
+      std::string nname;
+      std::string dname;
+      std::string disname;
+      std::array<int, 3> dir = {0, 0, 0};
+
+      std::istringstream stream{std::string(l)};
+      stream >> nname;
+      if (not stream) FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l.data());
+
+      if (nname == "NODE")  // plain old reading of the design nodes from the .dat-file
       {
-        const char* l = lines_[pos];
-        if (l[0] == '-' and l[1] == '-')
+        stream >> nodeid >> dname >> dobj;
+        topology[dobj - 1].insert(nodeid - 1);
+      }
+      else  // fancy specification of the design nodes by specifying min or max of the domain
+      {     // works best on rectangular domains ;)
+        if (nname == "CORNER" && name == "DNODE")
         {
-          break;
-        }
-
-        int dobj;
-        int nodeid;
-        std::string nname;
-        std::string dname;
-        std::string disname;
-        std::array<int, 3> dir = {0, 0, 0};
-
-        std::istringstream stream(l);
-        stream >> nname;
-        if (not stream) FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
-
-        if (nname == "NODE")  // plain old reading of the design nodes from the .dat-file
-        {
-          stream >> nodeid >> dname >> dobj;
-          topology[dobj - 1].insert(nodeid - 1);
-        }
-        else  // fancy specification of the design nodes by specifying min or max of the domain
-        {     // works best on rectangular domains ;)
-          if (nname == "CORNER" && name == "DNODE")
+          std::string tmp;
+          stream >> disname;
+          for (int i = 0; i < 3; ++i)
           {
-            std::string tmp;
-            stream >> disname;
-            for (int i = 0; i < 3; ++i)
-            {
-              stream >> tmp;
-              if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' ||
-                  (tmp[1] != '+' && tmp[1] != '-'))
-                FOUR_C_THROW("Illegal design node definition.");
-              dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
-            }
-            stream >> dname >> dobj;
-          }
-          else if (nname == "EDGE" && name == "DLINE")
-          {
-            std::string tmp;
-            stream >> disname;
-            for (int i = 0; i < 2; ++i)
-            {
-              stream >> tmp;
-              if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' ||
-                  (tmp[1] != '+' && tmp[1] != '-'))
-                FOUR_C_THROW("Illegal design node definition.");
-              dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
-            }
-            stream >> dname >> dobj;
-          }
-          else if (nname == "SIDE" && name == "DSURF")
-          {
-            std::string tmp;
-            stream >> disname;
             stream >> tmp;
             if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
               FOUR_C_THROW("Illegal design node definition.");
             dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
-            stream >> dname >> dobj;
           }
-          else if (nname == "VOLUME" && name == "DVOL")
+          stream >> dname >> dobj;
+        }
+        else if (nname == "EDGE" && name == "DLINE")
+        {
+          std::string tmp;
+          stream >> disname;
+          for (int i = 0; i < 2; ++i)
           {
-            stream >> disname;
-            stream >> dname >> dobj;
+            stream >> tmp;
+            if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
+              FOUR_C_THROW("Illegal design node definition.");
+            dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
           }
-          else
-          {
-            FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l);
-          }
+          stream >> dname >> dobj;
+        }
+        else if (nname == "SIDE" && name == "DSURF")
+        {
+          std::string tmp;
+          stream >> disname;
+          stream >> tmp;
+          if (tmp.size() != 2 || tmp[0] < 'x' || tmp[0] > 'z' || (tmp[1] != '+' && tmp[1] != '-'))
+            FOUR_C_THROW("Illegal design node definition.");
+          dir[tmp[0] - 'x'] = (tmp[1] == '+') ? 1 : -1;
+          stream >> dname >> dobj;
+        }
+        else if (nname == "VOLUME" && name == "DVOL")
+        {
+          stream >> disname;
+          stream >> dname >> dobj;
+        }
+        else
+        {
+          FOUR_C_THROW("Illegal line in section '%s': '%s'", marker.c_str(), l.data());
+        }
 
-          const Core::FE::Discretization& actdis = get_discretization(disname);
+        const Core::FE::Discretization& actdis = get_discretization(disname);
 
-          std::vector<double> box_specifications;
-          if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
+        std::vector<double> box_specifications;
+        if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
+        {
+          box_specifications = cached_box_specifications_[disname];
+        }
+        else
+        {
+          for (int init = 0; init < 9; ++init) box_specifications.push_back(0.0);
+          if (comm_->MyPID() == 0)  // Reading is done by proc 0
           {
-            box_specifications = cached_box_specifications_[disname];
-          }
-          else
-          {
-            for (int init = 0; init < 9; ++init) box_specifications.push_back(0.0);
-            if (comm_->MyPID() == 0)  // Reading is done by proc 0
+            // get original domain section from the *.dat-file
+            std::string dommarker = "--" + disname + " DOMAIN";
+            std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
+            auto di = excludepositions_.find(dommarker);
+            if (di != excludepositions_.end())
             {
-              // get original domain section from the *.dat-file
-              std::string dommarker = "--" + disname + " DOMAIN";
-              std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
-              auto di = excludepositions_.find(dommarker);
-              if (di != excludepositions_.end())
+              std::ifstream tmpfile(filename_.c_str());
+              tmpfile.seekg(di->second.first);
+              std::string line;
+              while (getline(tmpfile, line))
               {
-                std::ifstream tmpfile(filename_.c_str());
-                tmpfile.seekg(di->second.first);
-                std::string line;
-                while (getline(tmpfile, line))
+                // remove comments, trailing and leading whitespaces
+                // compact internal whitespaces
+                line = Core::Utils::strip_comment(line);
+
+                // line is now empty
+                if (line.size() == 0) continue;
+
+                if (line.find("--") == 0)
                 {
-                  // remove comments, trailing and leading whitespaces
-                  // compact internal whitespaces
-                  line = Core::Utils::strip_comment(line);
+                  break;
+                }
+                else
+                {
+                  std::istringstream t;
+                  t.str(line);
+                  std::string key;
+                  t >> key;
 
-                  // line is now empty
-                  if (line.size() == 0) continue;
-
-                  if (line.find("--") == 0)
+                  if (key == "LOWER_BOUND")
                   {
-                    break;
+                    t >> box_specifications[0] >> box_specifications[1] >> box_specifications[2];
                   }
-                  else
+                  else if (key == "UPPER_BOUND")
                   {
-                    std::istringstream t;
-                    t.str(line);
-                    std::string key;
-                    t >> key;
-
-                    if (key == "LOWER_BOUND")
-                    {
-                      t >> box_specifications[0] >> box_specifications[1] >> box_specifications[2];
-                    }
-                    else if (key == "UPPER_BOUND")
-                    {
-                      t >> box_specifications[3] >> box_specifications[4] >> box_specifications[5];
-                    }
-                    else if (key == "ROTATION")
-                    {
-                      t >> box_specifications[6] >> box_specifications[7] >> box_specifications[8];
-                    }
+                    t >> box_specifications[3] >> box_specifications[4] >> box_specifications[5];
+                  }
+                  else if (key == "ROTATION")
+                  {
+                    t >> box_specifications[6] >> box_specifications[7] >> box_specifications[8];
                   }
                 }
               }
-              else
-                FOUR_C_THROW("Inputreader: Couldn't find domain section for discretization %s !",
-                    disname.c_str());
             }
-            // All other processors get this info broadcasted
-            comm_->Broadcast(
-                box_specifications.data(), static_cast<int>(box_specifications.size()), 0);
-            cached_box_specifications_[disname] = box_specifications;
+            else
+              FOUR_C_THROW("Inputreader: Couldn't find domain section for discretization %s !",
+                  disname.c_str());
           }
-
-          // determine the active discretizations bounding box
-          std::array<double, 6> bbox;
-          for (size_t i = 0; i < sizeof(bbox) / sizeof(bbox[0]); ++i)
-            bbox[i] = box_specifications[i];
-
-          // manipulate the bounding box according to the specified condition
-          for (size_t i = 0; i < 3; ++i)
-          {
-            switch (dir[i])
-            {
-              case 0:
-                bbox[i + 0] = std::numeric_limits<double>::max();
-                bbox[i + 3] = -std::numeric_limits<double>::max();
-                break;
-              case -1:
-                bbox[i] += tolerance_n;
-                bbox[i + 3] = std::numeric_limits<double>::max();
-                break;
-              case 1:
-                bbox[i] = -std::numeric_limits<double>::max();
-                bbox[i + 3] -= tolerance_n;
-                break;
-              default:
-                FOUR_C_THROW("Invalid BC specification");
-            }
-          }
-
-          // collect all nodes which are outside the adapted bounding box
-          std::set<int> dnodes;
-          for (const auto* node : actdis.my_row_node_range())
-          {
-            const auto& coord = node->x();
-            std::array<double, 3> coords;
-            coords[0] = coord[0];
-            coords[1] = coord[1];
-            coords[2] = coord[2];
-            // rotate back to identify condition, if a rotation is defined
-            static const int rotoffset = 6;
-            for (int rotaxis = 2; rotaxis > -1; --rotaxis)
-            {
-              if (box_specifications[rotaxis + rotoffset] != 0.0)
-              {
-                std::array<double, 3> coordm;
-                coordm[0] = (box_specifications[0] + box_specifications[3]) / 2.;
-                coordm[1] = (box_specifications[1] + box_specifications[4]) / 2.;
-                coordm[2] = (box_specifications[2] + box_specifications[5]) / 2.;
-                // add rotation around mitpoint here.
-                std::array<double, 3> dx;
-                dx[0] = coords[0] - coordm[0];
-                dx[1] = coords[1] - coordm[1];
-                dx[2] = coords[2] - coordm[2];
-
-                double calpha = cos(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
-                double salpha = sin(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
-
-                coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
-                coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];
-                coords[2] = coordm[2];
-
-                coords[(rotaxis + 1) % 3] +=
-                    calpha * dx[(rotaxis + 1) % 3] + salpha * dx[(rotaxis + 2) % 3];
-                coords[(rotaxis + 2) % 3] +=
-                    calpha * dx[(rotaxis + 2) % 3] - salpha * dx[(rotaxis + 1) % 3];
-                coords[rotaxis] += dx[rotaxis];
-              }
-            }
-
-            if ((coords[0] <= bbox[0] || coords[0] >= bbox[3]) &&
-                (coords[1] <= bbox[1] || coords[1] >= bbox[4]) &&
-                (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
-              dnodes.insert(node->id());
-          }
-          Core::LinAlg::gather_all(dnodes, *comm_);
-          topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
+          // All other processors get this info broadcasted
+          comm_->Broadcast(
+              box_specifications.data(), static_cast<int>(box_specifications.size()), 0);
+          cached_box_specifications_[disname] = box_specifications;
         }
 
-        if (dname.substr(0, name.length()) != name)
-          FOUR_C_THROW("Illegal line in section '%s': '%s'\n%s found, where %s was expected",
-              marker.c_str(), l, dname.substr(0, name.length()).c_str(), name.c_str());
-      }
-      if (topology.size() > 0)
-      {
-        int max_num_dobj = topology.rbegin()->first;
-        if (max_num_dobj >= static_cast<int>(dobj_fenode.size()))
-          dobj_fenode.resize(max_num_dobj + 1);
-        // copy all design object entries
-        for (auto& topo : topology)
+        // determine the active discretizations bounding box
+        std::array<double, 6> bbox;
+        for (size_t i = 0; i < sizeof(bbox) / sizeof(bbox[0]); ++i) bbox[i] = box_specifications[i];
+
+        // manipulate the bounding box according to the specified condition
+        for (size_t i = 0; i < 3; ++i)
         {
-          // we copy from a std::set, thus the gids are sorted
-          dobj_fenode[topo.first].reserve(topo.second.size());
-          dobj_fenode[topo.first].assign(topo.second.begin(), topo.second.end());
+          switch (dir[i])
+          {
+            case 0:
+              bbox[i + 0] = std::numeric_limits<double>::max();
+              bbox[i + 3] = -std::numeric_limits<double>::max();
+              break;
+            case -1:
+              bbox[i] += tolerance_n;
+              bbox[i + 3] = std::numeric_limits<double>::max();
+              break;
+            case 1:
+              bbox[i] = -std::numeric_limits<double>::max();
+              bbox[i + 3] -= tolerance_n;
+              break;
+            default:
+              FOUR_C_THROW("Invalid BC specification");
+          }
         }
+
+        // collect all nodes which are outside the adapted bounding box
+        std::set<int> dnodes;
+        for (const auto* node : actdis.my_row_node_range())
+        {
+          const auto& coord = node->x();
+          std::array<double, 3> coords;
+          coords[0] = coord[0];
+          coords[1] = coord[1];
+          coords[2] = coord[2];
+          // rotate back to identify condition, if a rotation is defined
+          static const int rotoffset = 6;
+          for (int rotaxis = 2; rotaxis > -1; --rotaxis)
+          {
+            if (box_specifications[rotaxis + rotoffset] != 0.0)
+            {
+              std::array<double, 3> coordm;
+              coordm[0] = (box_specifications[0] + box_specifications[3]) / 2.;
+              coordm[1] = (box_specifications[1] + box_specifications[4]) / 2.;
+              coordm[2] = (box_specifications[2] + box_specifications[5]) / 2.;
+              // add rotation around mitpoint here.
+              std::array<double, 3> dx;
+              dx[0] = coords[0] - coordm[0];
+              dx[1] = coords[1] - coordm[1];
+              dx[2] = coords[2] - coordm[2];
+
+              double calpha = cos(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
+              double salpha = sin(-box_specifications[rotaxis + rotoffset] * M_PI / 180);
+
+              coords[0] = coordm[0];  //+ calpha*dx[0] + salpha*dx[1];
+              coords[1] = coordm[1];  //+ -salpha*dx[0] + calpha*dx[1];
+              coords[2] = coordm[2];
+
+              coords[(rotaxis + 1) % 3] +=
+                  calpha * dx[(rotaxis + 1) % 3] + salpha * dx[(rotaxis + 2) % 3];
+              coords[(rotaxis + 2) % 3] +=
+                  calpha * dx[(rotaxis + 2) % 3] - salpha * dx[(rotaxis + 1) % 3];
+              coords[rotaxis] += dx[rotaxis];
+            }
+          }
+
+          if ((coords[0] <= bbox[0] || coords[0] >= bbox[3]) &&
+              (coords[1] <= bbox[1] || coords[1] >= bbox[4]) &&
+              (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
+            dnodes.insert(node->id());
+        }
+        Core::LinAlg::gather_all(dnodes, *comm_);
+        topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
+      }
+
+      if (dname.substr(0, name.length()) != name)
+        FOUR_C_THROW("Illegal line in section '%s': '%s'\n%s found, where %s was expected",
+            marker.c_str(), l.data(), dname.substr(0, name.length()).c_str(), name.c_str());
+    }
+    if (topology.size() > 0)
+    {
+      int max_num_dobj = topology.rbegin()->first;
+      if (max_num_dobj >= static_cast<int>(dobj_fenode.size()))
+        dobj_fenode.resize(max_num_dobj + 1);
+      // copy all design object entries
+      for (auto& topo : topology)
+      {
+        // we copy from a std::set, thus the gids are sorted
+        dobj_fenode[topo.first].reserve(topo.second.size());
+        dobj_fenode[topo.first].assign(topo.second.begin(), topo.second.end());
       }
     }
 
     // The section name is desired from outside. Thus, we consider it as valid
-    knownsections_[marker] = true;
+    record_section_used(marker);
   }
 
 
@@ -464,7 +484,7 @@ namespace Core::IO
 
     // another valid section name was found
     const std::string sectionname = "--" + field + " KNOTVECTORS";
-    knownsections_[sectionname] = true;
+    record_section_used(sectionname);
 
     if (myrank == 0)
     {
@@ -487,67 +507,17 @@ namespace Core::IO
     //--------------------------------------------------------------------
     //--------------------------------------------------------------------
     {
-      // open input file --- this is done on all procs
-      std::ifstream file;
-      file.open(filename_.c_str());
-
       // temporary string
       std::string tmp;
-
-      // flag indicating knot vector section in input
-      bool knotvectorsection = false;
-
       // loop lines in file
-      for (; file;)
+      for (const auto& line : lines_in_section(sectionname))
       {
-        // read piece of file until next seperator (whitespace, newline)
-        file >> tmp;
-
-        // if this a new section, i.e. starts like ------
-        if ((tmp[0] == '-' && tmp[1] == '-'))
-        {
-          // check whether it is the knotvectorsection
-          // only the knotvector section of this discretisation type is of interest
-          std::string::size_type loc = tmp.rfind(field);
-
-          if (loc == std::string::npos)
-          {
-            knotvectorsection = false;
-
-            // there is nothing more to be done in this line
-            continue;
-          }
-          else
-          {
-            // continue reading of second keyword
-            file >> tmp;
-
-            // check whether second keyword is knotvector
-            loc = tmp.rfind("KNOTVECTORS");
-
-            if (loc != std::string::npos)
-            {
-              // if this is true, we are at the beginning of a
-              // knot section
-              knotvectorsection = true;
-              // there is nothing more to be done in this line
-              continue;
-            }
-            else
-            {
-              knotvectorsection = false;
-
-              // there is nothing more to be done in this line
-              continue;
-            }
-          }
-        }
-
         // count number of patches in knotvector section of
         // this discretisation
-        if (knotvectorsection)
         {
           std::string::size_type loc;
+          std::istringstream file{std::string{line}};
+          file >> tmp;
 
           // check for the number of dimensions
           loc = tmp.rfind("NURBS_DIMENSION");
@@ -610,19 +580,11 @@ namespace Core::IO
       // we will read them and put them
       std::vector<Teuchos::RCP<std::vector<double>>> patch_knots(nurbs_dim);
 
-      // open input file --- this is done on all procs
-      std::ifstream file;
-
-      file.open(filename_.c_str());
-
       // temporary string
       std::string tmp;
 
       // start to read something when read is true
       bool read = false;
-
-      // flag indicating knot vector section in input
-      bool knotvectorsection = false;
 
       // index for number of patch
       int npatch = 0;
@@ -640,186 +602,142 @@ namespace Core::IO
       std::vector<int> count_vals(nurbs_dim);
 
       // loop lines in file
-      for (; file;)
+      for (const auto& line : lines_in_section(sectionname))
       {
+        std::istringstream file{std::string{line}};
         file >> tmp;
 
-        // if this a new section
-        if ((tmp[0] == '-' && tmp[1] == '-'))
+        // check for a new patch
+        std::string::size_type loc = tmp.rfind("BEGIN");
+        if (loc != std::string::npos)
         {
-          // check whether it is the knotvectorsection
-          // only the knotvector section of this discretisation
-          // type is of interest
-          std::string::size_type loc = tmp.rfind(field);
+          file >> tmp;
 
-          if (loc == std::string::npos)
+          // activate reading
+          read = true;
+
+          actdim = -1;
+
+          // create vectors for knots in this patch
+          for (int rr = 0; rr < nurbs_dim; ++rr)
           {
-            knotvectorsection = false;
-
-            // there is nothing more to be done in this line
-            continue;
+            patch_knots[rr] = Teuchos::make_rcp<std::vector<double>>();
+            (*(patch_knots[rr])).clear();
           }
-          else
+
+          // reset counter for knot values
+          for (int rr = 0; rr < nurbs_dim; rr++)
           {
-            // continue reading of second keyword
-            file >> tmp;
-
-            // check whether second keyword is knotvector
-            loc = tmp.rfind("KNOTVECTORS");
-
-            if (loc != std::string::npos)
-            {
-              // if this is true, we are at the beginning of a
-              // knot section
-              knotvectorsection = true;
-              // there is nothing more to be done in this line
-              continue;
-            }
-            else
-            {
-              knotvectorsection = false;
-
-              // there is nothing more to be done in this line
-              continue;
-            }
+            count_vals[rr] = 0;
           }
+
+          continue;
         }
 
-        // do reading in knotvecor section
-        if (knotvectorsection)
+        // get ID of patch we are currently reading
+        loc = tmp.rfind("ID");
+        if (loc != std::string::npos)
         {
-          // check for a new patch
-          std::string::size_type loc = tmp.rfind("BEGIN");
-          if (loc != std::string::npos)
+          std::string str_npatch;
+          file >> str_npatch;
+
+          char* endptr = nullptr;
+          npatch = static_cast<int>(strtol(str_npatch.c_str(), &endptr, 10));
+          npatch--;
+
+          continue;
+        }
+
+        // get number of knots in the knotvector direction
+        // we are currently reading
+        loc = tmp.rfind("NUMKNOTS");
+        if (loc != std::string::npos)
+        {
+          std::string str_numknots;
+          file >> str_numknots;
+
+          // increase dimesion for knotvector (i.e. next time
+          // we'll fill the following knot vector)
+          actdim++;
+          if (actdim > nurbs_dim)
           {
-            file >> tmp;
+            FOUR_C_THROW(
+                "too many knotvectors, we only need one for each dimension (nurbs_dim = %d)\n",
+                nurbs_dim);
+          }
 
-            // activate reading
-            read = true;
+          char* endptr = nullptr;
+          n_x_m_x_l[actdim] = static_cast<int>(strtol(str_numknots.c_str(), &endptr, 10));
 
-            actdim = -1;
+          continue;
+        }
 
-            // create vectors for knots in this patch
-            for (int rr = 0; rr < nurbs_dim; ++rr)
+        // get number of bspline polinomial associated with
+        // knots in this direction
+        loc = tmp.rfind("DEGREE");
+        if (loc != std::string::npos)
+        {
+          std::string str_degree;
+          file >> str_degree;
+
+          char* endptr = nullptr;
+          degree[actdim] = static_cast<int>(strtol(str_degree.c_str(), &endptr, 10));
+
+          continue;
+        }
+
+        // get type of knotvector (interpolated or periodic)
+        loc = tmp.rfind("TYPE");
+        if (loc != std::string::npos)
+        {
+          std::string type;
+
+          file >> type;
+          knotvectortype[actdim] = type;
+
+          continue;
+        }
+
+        // locate end of patch
+        loc = tmp.rfind("END");
+        if (loc != std::string::npos)
+        {
+          for (int rr = 0; rr < nurbs_dim; ++rr)
+          {
+            disknots->set_knots(
+                rr, npatch, degree[rr], n_x_m_x_l[rr], knotvectortype[rr], patch_knots[rr]);
+          }
+          file >> tmp;
+          // stop reading of knot values if we are here
+          read = false;
+
+          for (int rr = 0; rr < nurbs_dim; rr++)
+          {
+            if (n_x_m_x_l[rr] != count_vals[rr])
             {
-              patch_knots[rr] = Teuchos::make_rcp<std::vector<double>>();
-              (*(patch_knots[rr])).clear();
+              FOUR_C_THROW("not enough knots read in dim %d (%d!=NUMKNOTS=%d), nurbs_dim=%d\n", rr,
+                  count_vals[rr], n_x_m_x_l[rr], nurbs_dim);
             }
-
-            // reset counter for knot values
-            for (int rr = 0; rr < nurbs_dim; rr++)
-            {
-              count_vals[rr] = 0;
-            }
-
-            continue;
           }
 
-          // get ID of patch we are currently reading
-          loc = tmp.rfind("ID");
-          if (loc != std::string::npos)
-          {
-            std::string str_npatch;
-            file >> str_npatch;
+          // count for sanity check
+          count_read++;
 
-            char* endptr = nullptr;
-            npatch = static_cast<int>(strtol(str_npatch.c_str(), &endptr, 10));
-            npatch--;
+          continue;
+        }
 
-            continue;
-          }
+        //  reading of knot values if read is true and no
+        // other keyword was found
+        if (read)
+        {
+          char* endptr = nullptr;
 
-          // get number of knots in the knotvector direction
-          // we are currently reading
-          loc = tmp.rfind("NUMKNOTS");
-          if (loc != std::string::npos)
-          {
-            std::string str_numknots;
-            file >> str_numknots;
+          double dv = strtod(tmp.c_str(), &endptr);
 
-            // increase dimesion for knotvector (i.e. next time
-            // we'll fill the following knot vector)
-            actdim++;
-            if (actdim > nurbs_dim)
-            {
-              FOUR_C_THROW(
-                  "too many knotvectors, we only need one for each dimension (nurbs_dim = %d)\n",
-                  nurbs_dim);
-            }
+          // count for sanity check
+          count_vals[actdim]++;
 
-            char* endptr = nullptr;
-            n_x_m_x_l[actdim] = static_cast<int>(strtol(str_numknots.c_str(), &endptr, 10));
-
-            continue;
-          }
-
-          // get number of bspline polinomial associated with
-          // knots in this direction
-          loc = tmp.rfind("DEGREE");
-          if (loc != std::string::npos)
-          {
-            std::string str_degree;
-            file >> str_degree;
-
-            char* endptr = nullptr;
-            degree[actdim] = static_cast<int>(strtol(str_degree.c_str(), &endptr, 10));
-
-            continue;
-          }
-
-          // get type of knotvector (interpolated or periodic)
-          loc = tmp.rfind("TYPE");
-          if (loc != std::string::npos)
-          {
-            std::string type;
-
-            file >> type;
-            knotvectortype[actdim] = type;
-
-            continue;
-          }
-
-          // locate end of patch
-          loc = tmp.rfind("END");
-          if (loc != std::string::npos)
-          {
-            for (int rr = 0; rr < nurbs_dim; ++rr)
-            {
-              disknots->set_knots(
-                  rr, npatch, degree[rr], n_x_m_x_l[rr], knotvectortype[rr], patch_knots[rr]);
-            }
-            file >> tmp;
-            // stop reading of knot values if we are here
-            read = false;
-
-            for (int rr = 0; rr < nurbs_dim; rr++)
-            {
-              if (n_x_m_x_l[rr] != count_vals[rr])
-              {
-                FOUR_C_THROW("not enough knots read in dim %d (%d!=NUMKNOTS=%d), nurbs_dim=%d\n",
-                    rr, count_vals[rr], n_x_m_x_l[rr], nurbs_dim);
-              }
-            }
-
-            // count for sanity check
-            count_read++;
-
-            continue;
-          }
-
-          //  reading of knot values if read is true and no
-          // other keyword was found
-          if (read)
-          {
-            char* endptr = nullptr;
-
-            double dv = strtod(tmp.c_str(), &endptr);
-
-            // count for sanity check
-            count_vals[actdim]++;
-
-            (*(patch_knots[actdim])).push_back(dv);
-          }
+          (*(patch_knots[actdim])).push_back(dv);
         }
       }  // end loop through file
 
@@ -945,13 +863,52 @@ namespace Core::IO
       if (not file) FOUR_C_THROW("unable to open file: %s", filename_.c_str());
 
       std::list<std::string> content;
-      bool ignoreline = false;
-      std::string line;
-      unsigned int* linecount = nullptr;
+      std::string current_excluded_section_name{};
+      unsigned current_section_linecount = 0;
 
-      // loop all input lines
+      const auto name_of_excluded_section = [&exclude](const std::string& section_header)
+      {
+        auto it = std::find_if(exclude.begin(), exclude.end(),
+            [&section_header](const std::string& section)
+            { return section_header.find(section) != std::string::npos; });
+
+        if (it != exclude.end())
+          return *it;
+        else
+          return std::string{};
+      };
+
+      std::string line;
+
+      const auto finalize_section_read = [&](int number_of_lines)
+      {
+        if (!current_excluded_section_name.empty())
+        {
+          excludepositions_[current_excluded_section_name].second = number_of_lines;
+        }
+
+        const auto maybe_excluded_section = name_of_excluded_section(line);
+        if (!maybe_excluded_section.empty())
+        {
+          // Start a new excluded section. This starts at the next line.
+          excludepositions_[maybe_excluded_section].first = file.tellg();
+          current_excluded_section_name = maybe_excluded_section;
+        }
+        else
+        {
+          current_excluded_section_name.clear();
+        }
+
+        current_section_linecount = 0;
+      };
+
+      // First loop over all input lines. This reads the actual file contents and determines
+      // whether a line is to be read immediately or should be excluded because it is in one of
+      // the excluded sections.
       while (getline(file, line))
       {
+        ++current_section_linecount;
+
         // remove comments, trailing and leading whitespaces
         // compact internal whitespaces
         line = Core::Utils::strip_comment(line);
@@ -959,75 +916,44 @@ namespace Core::IO
         // line is now empty
         if (line.size() == 0) continue;
 
-        // exclude all special sections
-        // this includes the section header and all lines in that section
-        if (ignoreline)
+        // This line starts a new section
+        if (line.find("--") == 0)
         {
-          if (line.find("--") == 0)
-          {
-            ignoreline = false;
-            linecount = nullptr;
-          }
-          else
-          {
-            *linecount += 1;
-          }
+          // finalize the last excluded section. Subtract the current line which is not part of
+          // the section anymore.
+          finalize_section_read(current_section_linecount - 1);
         }
 
-        // Two sections to be ignored can follow each other. We need
-        // independent tests.
-        if (!ignoreline)
+        if (!current_excluded_section_name.empty())
         {
-          // remember all section positions
-          if (line.find("--") == 0)
-          {
-            for (auto& i : exclude)
-            {
-              if (line.find(i) != std::string::npos)
-              {
-                if (excludepositions_.find(i) != excludepositions_.end())
-                  FOUR_C_THROW("section '%s' defined more than once", i.c_str());
-                std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[i];
-                p.first = file.tellg();
-                p.second = 0;
-                linecount = &p.second;
-                ignoreline = true;
-                break;
-              }
-            }
-          }
+          // We are in an excluded section. Skip the line.
+          continue;
         }
 
-        // remember line
-        if (!ignoreline && line.length() > 0)
-        {
-          content.push_back(line);
-          arraysize += static_cast<int>(line.length()) + 1;
-        }
+        // This line contains content that we want to read now.
+        content.push_back(line);
+        // Count the number of characters in the line + 1 for the null-terminator we will add later.
+        arraysize += static_cast<int>(line.length()) + 1;
       }
-
-      // setup global variables
-      numrows_ = static_cast<int>(content.size());
+      // Finalize the last section
+      finalize_section_read(current_section_linecount);
 
       // allocate space for copy of file
       inputfile_.clear();
       inputfile_.reserve(arraysize);
+      lines_.reserve(content.size());
 
-      // CAUTION: We allocate one more row pointer that necessary. This
-      // pointer will be used to point to temporary lines when the
-      // excluded section are read (on proc 0). Of course that's just
-      // another EVIL HACK. Don't tell anybody.
-      lines_.reserve(numrows_ + 1);
-
-      lines_.push_back(inputfile_.data());
+      std::size_t pos = 0u;
       for (auto& i : content)
       {
         inputfile_.insert(inputfile_.end(), i.begin(), i.end());
+        // This fixup is crucial in the current implementation to get a null-terminated string
+        // we can view with string_view without supplying a length.
         inputfile_.push_back('\0');
-        lines_.push_back(&(inputfile_.back()) + 1);
+        lines_.emplace_back(&inputfile_[pos]);
+        // Next entry would begin here.
+        pos = inputfile_.size();
       }
-      // add the slot for the temporary line...
-      lines_.back() = nullptr;
 
       if (inputfile_.size() != static_cast<size_t>(arraysize))
       {
@@ -1043,16 +969,17 @@ namespace Core::IO
 
     if (comm->NumProc() > 1)
     {
+      int num_lines = lines_.size();
       /* Now that we use a variable number of bytes per line we have to
        * communicate the buffer size as well. */
       comm->Broadcast(&arraysize, 1, 0);
-      comm->Broadcast(&numrows_, 1, 0);
+      comm->Broadcast(&num_lines, 1, 0);
 
       if (comm->MyPID() > 0)
       {
         /*--------------------------------------allocate space for copy of file */
         inputfile_.resize(arraysize);
-        lines_.reserve(numrows_ + 1);
+        lines_.reserve(num_lines);
       }
 
       // There are no char based functions available! Do it by hand!
@@ -1062,21 +989,23 @@ namespace Core::IO
 
       MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 
-      /* We have not yet set the row pointers on procs > 0. So do it now. */
       if (comm->MyPID() > 0)
       {
-        lines_.push_back(inputfile_.data());
-        for (int i = 0; i < arraysize; ++i)
+        // Chunk the raw input file into lines: whenever encountering a null-terminator,
+        // add the line that just ended to the vector of lines.
+        std::size_t pos = 0u;
+        for (std::size_t i = 0; i < inputfile_.size(); ++i)
         {
           if (inputfile_[i] == '\0')
           {
-            lines_.push_back(&inputfile_[i + 1]);
+            lines_.emplace_back(&inputfile_[pos]);
+            pos = i + 1;
           }
         }
 
-        if (static_cast<int>(lines_.size()) != numrows_ + 1)
-          FOUR_C_THROW("line count mismatch: %d lines expected but %d lines received", numrows_ + 1,
-              lines_.size());
+        FOUR_C_THROW_UNLESS(static_cast<int>(lines_.size()) == num_lines,
+            "line count mismatch: %d lines expected but %d lines received", num_lines,
+            lines_.size());
       }
 
       // distribute excluded section positions
@@ -1098,49 +1027,62 @@ namespace Core::IO
 
     // Now finally find the section names. We have to do this on all
     // processors, so it cannot be done while reading.
-    for (std::vector<char*>::size_type i = 0; i < lines_.size() - 1; ++i)
+    std::vector<std::pair<std::size_t, std::string>> section_header_lines;
+    for (std::vector<char*>::size_type i = 0; i < lines_.size(); ++i)
     {
-      char* l = lines_[i];
-      if (l and l[0] == '-' and l[1] == '-')
+      const std::string_view l = lines_[i];
+      if (l[0] == '-' and l[1] == '-')
       {
         std::string line(l);
 
         // take the last "--" and all that follows as section name
         std::string::size_type loc = line.rfind("--");
         std::string sectionname = line.substr(loc);
-        if (positions_.find(sectionname) != positions_.end())
-          FOUR_C_THROW("section '%s' defined more than once", sectionname.c_str());
-        positions_[sectionname] = i;
-        knownsections_[sectionname] = false;  // initialize as unknown
+        section_header_lines.emplace_back(i, sectionname);
       }
     }
 
-    if (positions_.find("--END") == positions_.end())
-      FOUR_C_THROW("end section missing. incomplete dat file?");
+    // Include a past-the-end pseudo section such that the last actual section can use the
+    // past-the-end position for its position
+    section_header_lines.emplace_back(lines_.size(), "unused");
+
+    // Leave out the past-the-end section
+    for (unsigned i = 0; i < section_header_lines.size() - 1; ++i)
+    {
+      const auto& [position, name] = section_header_lines[i];
+      const auto& [next_position, _] = section_header_lines[i + 1];
+
+      if (positions_.find(name) != positions_.end())
+        FOUR_C_THROW("section '%s' defined more than once", name.c_str());
+
+      // Shift by 1 to start after the header itself
+      positions_[name] = {position + 1, next_position};
+      // Remember the section name to later check if it was ever queried.
+      knownsections_[name] = false;
+    }
 
     // the following section names are always regarded as valid
-    knownsections_["--END"] = true;
-    knownsections_["--TITLE"] = true;
-    knownsections_["--FUNCT1"] = true;
-    knownsections_["--FUNCT2"] = true;
-    knownsections_["--FUNCT3"] = true;
-    knownsections_["--FUNCT4"] = true;
-    knownsections_["--FUNCT5"] = true;
-    knownsections_["--FUNCT6"] = true;
-    knownsections_["--FUNCT7"] = true;
-    knownsections_["--FUNCT8"] = true;
-    knownsections_["--FUNCT9"] = true;
-    knownsections_["--FUNCT10"] = true;
-    knownsections_["--FUNCT11"] = true;
-    knownsections_["--FUNCT12"] = true;
-    knownsections_["--FUNCT13"] = true;
-    knownsections_["--FUNCT14"] = true;
-    knownsections_["--FUNCT15"] = true;
-    knownsections_["--FUNCT16"] = true;
-    knownsections_["--FUNCT17"] = true;
-    knownsections_["--FUNCT18"] = true;
-    knownsections_["--FUNCT19"] = true;
-    knownsections_["--FUNCT20"] = true;
+    record_section_used("--TITLE");
+    record_section_used("--FUNCT1");
+    record_section_used("--FUNCT2");
+    record_section_used("--FUNCT3");
+    record_section_used("--FUNCT4");
+    record_section_used("--FUNCT5");
+    record_section_used("--FUNCT6");
+    record_section_used("--FUNCT7");
+    record_section_used("--FUNCT8");
+    record_section_used("--FUNCT9");
+    record_section_used("--FUNCT10");
+    record_section_used("--FUNCT11");
+    record_section_used("--FUNCT12");
+    record_section_used("--FUNCT13");
+    record_section_used("--FUNCT14");
+    record_section_used("--FUNCT15");
+    record_section_used("--FUNCT16");
+    record_section_used("--FUNCT17");
+    record_section_used("--FUNCT18");
+    record_section_used("--FUNCT19");
+    record_section_used("--FUNCT20");
   }
 
 
@@ -1177,6 +1119,11 @@ namespace Core::IO
           "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 
     return printout;
+  }
+
+  void DatFileReader::record_section_used(const std::string& section_name)
+  {
+    knownsections_[section_name] = true;
   }
 
   std::pair<std::string, std::string> read_key_value(const std::string& line)

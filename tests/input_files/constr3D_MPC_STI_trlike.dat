@@ -457,5 +457,3 @@ NODE 243 COORD 5.0000000000000e-01 5.0000000000000e-01 -5.0000000745058e-02
 128 SOLID HEX8 211 213 216 214 238 240 243 241 MAT 1 KINEM nonlinear TECH eas_mild
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -1.0e-02 TOLERANCE 1e-5
--------------------------------------------------------------------------END
-//                              END

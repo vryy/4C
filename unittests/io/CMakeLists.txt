@@ -3,7 +3,6 @@ set(TESTNAME unittests_io)
 set(SOURCE_LIST
     # cmake-format: sortable
     4C_discretization_nodal_coordinates_test.cpp
-    4C_domainreader_test.cpp
     4C_gridgenerator_test.cpp
     )
 

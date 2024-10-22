@@ -8216,5 +8216,3 @@ FLUID DIS fluid NODE 1610 QUANTITY pressure VALUE 1.841253727e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE 1277 QUANTITY tractionx VALUE -1.987759876e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE 1277 QUANTITY tractiony VALUE 9.513520826e-03 TOLERANCE 1e-6
 FLUID DIS fluid NODE 1277 QUANTITY tractionz VALUE 3.249899835e-02 TOLERANCE 1e-6
--------------------------------------------------------------------------END
-//                              END

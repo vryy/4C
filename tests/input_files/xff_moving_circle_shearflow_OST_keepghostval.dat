@@ -895,5 +895,4 @@ XFLUID DIS fluid NODE 194 QUANTITY velx VALUE 5.26847178146926720e-01 TOLERANCE 
 XFLUID DIS fluid NODE 194 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-11
 XFLUID DIS fluid NODE 194 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-11
 XFLUID DIS fluid NODE 194 QUANTITY pressure VALUE 9.00 TOLERANCE 1e-11
--------------------------------------------------------------------------END
 //                              END

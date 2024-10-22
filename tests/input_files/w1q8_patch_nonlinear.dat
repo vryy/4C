@@ -96,5 +96,3 @@ NODE 20 COORD 0.0000000000000000e+00 5.0000000000000000e-01 0.0000000000000000e+
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 9.8538733696824019e-03 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -7.5152954887286774e-17 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

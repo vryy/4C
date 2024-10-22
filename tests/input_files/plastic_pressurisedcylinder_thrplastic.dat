@@ -762,5 +762,3 @@ STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-6
 STRUCTURE DIS structure NODE 241 QUANTITY dispx VALUE 4.3600352929129410e-01 TOLERANCE 1.0e-6
 STRUCTURE DIS structure NODE 241 QUANTITY dispy VALUE 0.0 TOLERANCE 1.0e-6
 STRUCTURE DIS structure NODE 241 QUANTITY dispz VALUE 0.0 TOLERANCE 1.0e-6
--------------------------------------------------------------------------END
-//  END

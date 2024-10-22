@@ -444,4 +444,3 @@ NODE        99 COORD  3.0000000000000001e-03  5.0000000000000001e-04 -5.00000000
    34 TRANSP HEX8  78 83 84 79 92 95 96 93    MAT 3 TYPE ElchElectrodeThermo
    35 TRANSP HEX8  80 79 87 88 94 93 97 98    MAT 3 TYPE ElchElectrodeThermo
    36 TRANSP HEX8  79 84 90 87 93 96 99 97    MAT 3 TYPE ElchElectrodeThermo
----------------------------------------------------------------END

@@ -12,7 +12,6 @@
 
 #include "4C_fem_condition.hpp"
 #include "4C_io_input_parameter_container.hpp"
-#include "4C_io_inputreader.hpp"
 #include "4C_io_linecomponent.hpp"
 
 #include <Teuchos_Array.hpp>
@@ -30,6 +29,11 @@ namespace Core::FE
 {
   class Discretization;
 }  // namespace Core::FE
+
+namespace Core::IO
+{
+  class DatFileReader;
+}
 
 namespace Core::Conditions
 {

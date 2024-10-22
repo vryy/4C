@@ -729,4 +729,3 @@ UPPER_BOUND  1.6  1.6  0.05
 INTERVALS   16 16 1
 ELEMENTS    FLUID HEX8 MAT 1 NA Euler
 PARTITION   auto
--------------------------------------------------------------------------END

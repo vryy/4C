@@ -346,5 +346,3 @@ NODE 16 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 5 SOLID HEX8 2 4 8 1 5 11 13 9 MAT 1 KINEM nonlinear
 6 SOLID HEX8 6 4 8 14 3 2 1 10 MAT 1 KINEM nonlinear
 7 SOLID HEX8 3 2 5 7 6 4 11 12 MAT 1 KINEM nonlinear
--------------------------------------------------------------------------END
-//                              END

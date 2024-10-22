@@ -220,5 +220,3 @@ NODE 61 COORD 5.0000000000000000e-01 1.5000000000000000e+00 0.0000000000000000e+
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 36 QUANTITY dispx VALUE 2.88377113975309574e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 36 QUANTITY dispy VALUE -4.72223215117701864e-02 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END

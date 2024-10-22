@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include "4C_io_input_parameter_container.hpp"
-#include "4C_io_inputreader.hpp"
 
 #include <filesystem>
 #include <functional>
@@ -23,6 +22,11 @@
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
+
+namespace Core::IO
+{
+  class DatFileReader;
+}
 
 namespace Input
 {

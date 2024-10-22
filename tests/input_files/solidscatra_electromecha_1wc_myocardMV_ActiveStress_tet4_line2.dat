@@ -9917,7 +9917,6 @@ NODE 950 COORD 1.9021   -0.6180    5.0000
 // checking z-displacement of 4 points on top of the cylinder
 STRUCTURE DIS structure NODE 348 QUANTITY dispz VALUE -1.96208248532166001e-03 TOLERANCE 1e-6
 SCATRA DIS scatra NODE 348 QUANTITY phi VALUE  1.63455456059468007e+00 TOLERANCE 1e-6
----------------------------------------------------------------END
 // 4154 TRANSP LINE2 929 931 MAT 102 FIBER1 1.0 0.0 0.0 // small line
 // 4155 TRANSP LINE2 931 932 MAT 102 FIBER1 1.0 0.0 0.0 // small line
 // 4156 TRANSP LINE2 932 933 MAT 102 FIBER1 1.0 0.0 0.0 // small line

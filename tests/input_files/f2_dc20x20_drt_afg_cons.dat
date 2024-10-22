@@ -1465,5 +1465,3 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 10 100000 DESCRIPTION s
 FLUID DIS fluid NODE 173 QUANTITY velx VALUE -1.139979279e-02 TOLERANCE 1e-9
 FLUID DIS fluid NODE 173 QUANTITY vely VALUE 1.026982163e-04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 173 QUANTITY pressure VALUE 1.862001047e-03 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

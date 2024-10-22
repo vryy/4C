@@ -8729,5 +8729,3 @@ NODE      1552 COORD  1.6499999999999998e-01  5.2000000000000002e-01  2.69000000
    5366 ART LINE2  478 479    MAT 3 GP 3 TYPE PressureBased DIAM 0.9
    5367 ART LINE2  479 480    MAT 3 GP 3 TYPE PressureBased DIAM 0.9
    5368 ART LINE2  480 433    MAT 3 GP 3 TYPE PressureBased DIAM 0.9
----------------------------------------------------------------END
-// END

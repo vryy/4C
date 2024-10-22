@@ -310,5 +310,3 @@ NODE 71    COORD  0.0000000000000000e+00  -6.0000000000000009e-01  -1.0000000000
 91 SOLID TET4 59 61 60 64 MAT 1 KINEM nonlinear
 92 SOLID TET4 71 65 59 61 MAT 1 KINEM nonlinear
 93 SOLID TET4 68 59 64 71 MAT 1 KINEM nonlinear
----------------------------------------------------------------END
-// END

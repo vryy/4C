@@ -119,4 +119,3 @@ NODE 12 COORD 3 3 5
 STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 0.0466255 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.0158305 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.3577896 TOLERANCE 1e-4
------------------------------------------------------------------------------END

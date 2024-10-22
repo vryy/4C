@@ -13,7 +13,6 @@
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
-#include "4C_io_inputreader.hpp"
 
 #include <Epetra_CrsGraph.h>
 #include <Teuchos_ParameterList.hpp>
@@ -22,6 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
+  class DatFileReader;
+
   /*!
     \brief helper class to read a mesh
 
@@ -82,7 +83,7 @@ namespace Core::IO
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
     void add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
-        const Core::IO::DatFileReader& reader, const std::string& sectionname,
+        Core::IO::DatFileReader& reader, const std::string& sectionname,
         const Core::IO::GeometryType geometrysource, const std::string* geofilepath);
 
     /// do the actual reading

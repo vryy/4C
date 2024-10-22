@@ -661,5 +661,3 @@ XFLUID DIS fluid NODE 3 QUANTITY velx VALUE 5.0e00 TOLERANCE 1e-7
 XFLUID DIS fluid NODE 3 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-7
 XFLUID DIS fluid NODE 3 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-7
 XFLUID DIS fluid NODE 3 QUANTITY pressure VALUE 3.0e00 TOLERANCE 1e-7
--------------------------------------------------------------------------END
-//                              END

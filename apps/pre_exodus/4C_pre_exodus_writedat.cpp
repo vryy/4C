@@ -12,6 +12,8 @@
 #include "4C_inpar_validconditions.hpp"
 #include "4C_pre_exodus_reader.hpp"
 
+#include <fstream>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
@@ -41,10 +43,6 @@ int EXODUS::write_dat_file(const std::string& datfile, const EXODUS::Mesh& mymes
 
   // write elements
   EXODUS::write_dat_eles(eledefs, mymesh, dat);
-
-  // write END
-  dat << "---------------------------------------------------------------END\n"
-         "// END\n";
 
   // close datfile
   if (dat.is_open()) dat.close();

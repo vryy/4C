@@ -647,5 +647,3 @@ FLUID DIS fluid NODE 90 QUANTITY tractionz VALUE -1.071191746e-16 TOLERANCE 1e-9
 FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1e-25
 FLUID DIS fluid NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1e-25
 FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1e-25
--------------------------------------------------------------------------END
-//                              END

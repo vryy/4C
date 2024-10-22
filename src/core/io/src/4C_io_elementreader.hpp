@@ -10,9 +10,11 @@
 
 #include "4C_config.hpp"
 
-#include "4C_io_inputreader.hpp"
-
 #include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
+#include <vector>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -22,6 +24,8 @@ namespace Core::FE
 }  // namespace Core::FE
 namespace Core::IO
 {
+  class DatFileReader;
+
   /*----------------------------------------------------------------------*/
   /*!
     \brief helper class to read the elements of a discretization
@@ -66,7 +70,7 @@ namespace Core::IO
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, const Core::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
         std::string sectionname);
 
     /*!
@@ -79,7 +83,7 @@ namespace Core::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, const Core::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
         std::string sectionname, std::string elementtype);
 
     /*!
@@ -92,7 +96,7 @@ namespace Core::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, const Core::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
         std::string sectionname, const std::set<std::string>& elementtypes);
 
     //! Destructor
@@ -141,7 +145,7 @@ namespace Core::IO
 
    private:
     /// Get the overall number of elements and their corresponding global IDs
-    std::pair<int, std::vector<int>> get_element_size_and_i_ds() const;
+    std::pair<int, std::vector<int>> get_element_size_and_ids() const;
 
     /// Read the file and get element information, distribute them to each processor
     void get_and_distribute_elements(const int nblock, const int bsize);
@@ -150,7 +154,7 @@ namespace Core::IO
     std::string name_;
 
     /// the main dat file reader
-    const Core::IO::DatFileReader& reader_;
+    Core::IO::DatFileReader& reader_;
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;

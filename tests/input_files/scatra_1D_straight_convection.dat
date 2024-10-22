@@ -104,5 +104,3 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 9.803921569e-01 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 9 QUANTITY phi VALUE 9.996155325e-01 TOLERANCE 1e-09
--------------------------------------------------------------------------END
-//                              END

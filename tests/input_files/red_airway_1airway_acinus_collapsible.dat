@@ -45,5 +45,3 @@ NODE 3 DNODE 2
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS red_airway NODE 2 QUANTITY pressure VALUE 1.19641641220455153e+00 TOLERANCE 1e-9
 RED_AIRWAY DIS red_airway ELEMENT 2 QUANTITY acini_volume VALUE 1.14576649990875246e+00 TOLERANCE 1.0e-6
--------------------------------------------------------------------------END
-//                              END

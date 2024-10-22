@@ -147,6 +147,4 @@ ARTNET DIS artery NODE 8 QUANTITY pressure VALUE 3.33333333333333441e-03 TOLERAN
 //SCATRA DIS scatra NODE 10 QUANTITY phi2 VALUE 3.96138500508088909e-01 TOLERANCE 1e-13  // exact solution
 SCATRA DIS artery_scatra NODE 10 QUANTITY phi1 VALUE 6.40981653740224200e-01 TOLERANCE 1e-13
 SCATRA DIS artery_scatra NODE 10 QUANTITY phi2 VALUE 3.09299802508270993e-01 TOLERANCE 1e-13
--------------------------------------------------------------------------END
 
-//                              END

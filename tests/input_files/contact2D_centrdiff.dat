@@ -4594,5 +4594,3 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 409 QUANTITY dispx VALUE -2.90394754738405980e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 409 QUANTITY dispy VALUE -2.74596147785453160e-01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END

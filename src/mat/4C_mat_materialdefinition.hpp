@@ -12,7 +12,6 @@
 /* headers */
 #include "4C_config.hpp"
 
-#include "4C_io_inputreader.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_mat_par_bundle.hpp"
 

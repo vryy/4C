@@ -476,5 +476,3 @@ STRUCTURE DIS structure NODE 58 QUANTITY dispx VALUE -9.999899940e-01 TOLERANCE 
 STRUCTURE DIS structure NODE 106 QUANTITY dispx VALUE -9.999799880e-01 TOLERANCE 1e-9
 FSI NODE 1 QUANTITY lambdax VALUE 4.00225984918949429e+00 TOLERANCE 1e-8
 FSI NODE 34 QUANTITY lambdax VALUE 4.00225984918486422e+00 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END

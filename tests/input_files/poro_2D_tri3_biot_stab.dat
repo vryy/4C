@@ -1215,5 +1215,3 @@ NODE       266 COORD  8.0146899601931679e-02  2.4822111073954675e-01  0.00000000
    468 WALLT3PORO TRI3  260 234 236    MAT 1 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 3 0
    469 WALLT3PORO TRI3  200 202 237    MAT 1 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 3 0
    470 WALLT3PORO TRI3  200 237 56    MAT 1 KINEM linear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 3 0
----------------------------------------------------------------END
-// END

@@ -2079,5 +2079,3 @@ FLUID DIS fluid NODE 358 QUANTITY vely VALUE 0 TOLERANCE 1e-12
 FLUID DIS fluid NODE 358 QUANTITY velz VALUE 0.394264934276 TOLERANCE 1e-08
 //Node in the vicinity of the immersed beam
 FLUID DIS fluid NODE 48 QUANTITY velz VALUE 0.375463121248 TOLERANCE 1e-08
----------------------------------------------------------------END
-// END

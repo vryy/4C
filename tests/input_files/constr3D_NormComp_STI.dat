@@ -1871,5 +1871,3 @@ NODE 988 COORD 5.00000000e-01 3.00000012e-01 -3.00000012e-01
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 2e-15
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 2e-15
--------------------------------------------------------------------------END
-//                              END

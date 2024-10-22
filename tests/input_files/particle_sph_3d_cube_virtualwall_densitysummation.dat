@@ -1079,4 +1079,3 @@ NODE 8 COORD  -0.025 0.025 0.025
 4 MEMBRANE4 QUAD4 4 3 7 6 MAT 3 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
 5 MEMBRANE4 QUAD4 1 4 6 5 MAT 3 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
 6 MEMBRANE4 QUAD4 2 3 7 8 MAT 3 KINEM nonlinear THICK 0.01 STRESS_STRAIN plane_stress
--------------------------------------------------------------------------END

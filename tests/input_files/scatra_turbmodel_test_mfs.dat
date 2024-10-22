@@ -49020,4 +49020,3 @@ FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1.0e-16
 FLUID DIS fluid NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1.0e-16
 FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1.0e-16
 SCATRA DIS scatra NODE 1 QUANTITY phi VALUE -1.0 TOLERANCE 1.0e-16
--------------------------------------------------------------------------END

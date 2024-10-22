@@ -646,5 +646,3 @@ NODE        99 COORD  0.0000000000000000e+00 -2.5000000000000000e+00 -2.50000000
 30 SOLIDSCATRA HEX8 78 83 84 79 92 95 96 93 MAT 2 KINEM nonlinear TYPE ElchElectrode
 31 SOLIDSCATRA HEX8 80 79 87 88 94 93 97 98 MAT 2 KINEM nonlinear TYPE ElchElectrode
 32 SOLIDSCATRA HEX8 79 84 90 87 93 96 99 97 MAT 2 KINEM nonlinear TYPE ElchElectrode
----------------------------------------------------------------END
-// END

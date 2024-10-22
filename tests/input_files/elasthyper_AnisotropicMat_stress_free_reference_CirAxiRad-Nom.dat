@@ -366,5 +366,3 @@ STRUCTURE DIS structure NODE 143 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 170 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 170 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 170 QUANTITY dispz VALUE 0.0 TOLERANCE 1e-14
--------------------------------------------------------------------------END
-//                              END

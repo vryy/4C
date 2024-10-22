@@ -146,5 +146,3 @@ NODE        35 COORD  0.0000000000000000e+00  0.0000000000000000e+00  5.00000000
    10 TRANSP TET10  11 3 15 4 12 25 17 14 10 20    MAT 1 TYPE ElchElectrode
    11 TRANSP TET10  2 11 16 4 35 19 34 9 14 21    MAT 1 TYPE ElchElectrode
    12 TRANSP TET10  1 11 2 4 13 35 5 8 14 9    MAT 1 TYPE ElchElectrode
----------------------------------------------------------------END
-// END

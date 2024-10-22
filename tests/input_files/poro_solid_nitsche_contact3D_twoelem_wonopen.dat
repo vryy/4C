@@ -278,5 +278,3 @@ FLUID DIS porofluid NODE 8 QUANTITY velx VALUE -1.51905626509464412e-03 TOLERANC
 FLUID DIS porofluid NODE 8 QUANTITY vely VALUE  1.51905626509473628e-03 TOLERANCE 1e-10
 FLUID DIS porofluid NODE 8 QUANTITY velz VALUE -2.84826928288361893e-03 TOLERANCE 1e-10 //has to be equal to velz of structure!!!
 FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE  1.33686656217005071e-02 TOLERANCE 1e-10
----------------------------------------------------------------END
-// END

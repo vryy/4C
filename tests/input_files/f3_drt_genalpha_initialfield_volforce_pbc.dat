@@ -646,5 +646,3 @@ FLUID DIS fluid NODE 85 QUANTITY pressure VALUE 3.995208594e-13 TOLERANCE 1e-9
 FLUID DIS fluid NODE 90 QUANTITY tractionx VALUE 1.046385089e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 90 QUANTITY tractiony VALUE -6.346485837e-15 TOLERANCE 1e-9
 FLUID DIS fluid NODE 90 QUANTITY tractionz VALUE -1.071191746e-16 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END

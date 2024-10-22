@@ -261,4 +261,3 @@ NODE 65 COORD 5 0 0.2
 18 BEAM3R HERM2LINE3 59 61 60 MAT 2 TRIADS 0 0 0 0 0 0 0 0 0
 19 BEAM3R HERM2LINE3 61 63 62 MAT 2 TRIADS 0 0 0 0 0 0 0 0 0
 20 BEAM3R HERM2LINE3 63 65 64 MAT 2 TRIADS 0 0 0 0 0 0 0 0 0
------------------------------------------------------------------------------END

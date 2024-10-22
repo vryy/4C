@@ -997,6 +997,4 @@ STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -2.98923024568651871e-03 TOL
 STRUCTURE DIS structure NODE 81 QUANTITY dispx VALUE -4.22538977856093216e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 81 QUANTITY dispy VALUE 1.57776936632137246e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 81 QUANTITY dispz VALUE -5.11630483008258070e-04 TOLERANCE 1e-8
--------------------------------------------------------------------------END
-//                              END
 //                              END

@@ -49013,5 +49013,3 @@ FLUID DIS fluid NODE 8438 QUANTITY velz VALUE -2.29069923294612787e-13 TOLERANCE
 FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1e-20
 FLUID DIS fluid NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1e-20
 FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1e-20
--------------------------------------------------------------------------END
-//                              END

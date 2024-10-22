@@ -1385,5 +1385,3 @@ STRUCTURE DIS structure NODE 21 QUANTITY dispx VALUE -5.23998794474572413e-04 TO
 STRUCTURE DIS structure NODE 21 QUANTITY dispy VALUE 0 TOLERANCE 1.0e-8 NAME dispy_x1
 STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 0 TOLERANCE 1.0e-8 NAME dispz_x1
 THERMAL DIS thermo NODE 1 QUANTITY temp VALUE 281.567302177435693 TOLERANCE 1.0e-8
--------------------------------------------------------------------------END
-//                              END

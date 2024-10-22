@@ -1087,5 +1087,4 @@ NODE 236 COORD 1.5 2.75 0.5
 44 SOLID HEX8 221 222 223 224 229 230 231 232  MAT 1 KINEM nonlinear
 45 SOLID HEX8 224 223 225 226 232 231 233 234  MAT 1 KINEM nonlinear
 46 SOLID HEX8 226 225 227 228 234 233 235 236  MAT 1 KINEM nonlinear
------------------------------------------------------------------------------END
 

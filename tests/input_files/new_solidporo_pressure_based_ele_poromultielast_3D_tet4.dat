@@ -151,4 +151,3 @@ NODE 15 COORD 0.5 0.5 0.5
 26 SOLIDPORO_PRESSURE_BASED TET4 11 9 10 15 MAT 2 KINEM nonlinear
 27 SOLIDPORO_PRESSURE_BASED TET4 11 12 9 15 MAT 2 KINEM nonlinear
 28 SOLIDPORO_PRESSURE_BASED TET4 11 14 12 15 MAT 2 KINEM nonlinear
----------------------------------------------------------------------------END

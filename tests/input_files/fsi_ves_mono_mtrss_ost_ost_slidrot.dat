@@ -5711,6 +5711,4 @@ FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.93102106573548019e-05 TOLERANCE 
 FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.93141726468635447e-05 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.50738411734525966e-05 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.50762116377724224e-05 TOLERANCE 1e-9
--------------------------------------------------------------------------END
-//                              END
 //                              END

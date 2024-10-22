@@ -37,58 +37,52 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& proble
     Core::IO::DatFileReader& reader, CONTACT::CONSTITUTIVELAW::Bundle& bundle)
 {
   std::string name = "--CONTACT CONSTITUTIVE LAWS";
-  std::vector<const char*> section = reader.section(name);
-
-  if (section.size() > 0)
+  for (const auto& i : reader.lines_in_section(name))
   {
-    for (auto& i : section)
+    Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(std::string{i});
+
+    // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
+    // reading the last entry inside This is required since the material parameters can be
+    // specified in an arbitrary order in the input file. So it might happen that the last entry
+    // is extracted before all of the previous ones are.
+    condline->seekp(0, condline->end);
+    *condline << " ";
+
+    Core::IO::ValueParser parser(*condline, "While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+
+    parser.consume("LAW");
+    const int id = parser.read<int>();
+    const std::string name = parser.read<std::string>();
+
+    // Remove the parts that were already read.
+    condline->str(condline->str().erase(0, (size_t)condline->tellg()));
+
+    if (name == coconstlawname_)
     {
-      Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(i);
+      if (id <= -1) FOUR_C_THROW("Illegal negative ID provided");
 
-      // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
-      // reading the last entry inside This is required since the material parameters can be
-      // specified in an arbitrary order in the input file. So it might happen that the last entry
-      // is extracted before all of the previous ones are.
-      condline->seekp(0, condline->end);
-      *condline << " ";
+      // check if material ID is already in use
+      if (bundle.find(id) != -1)
+        FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
 
-      Core::IO::ValueParser parser(
-          *condline, "While reading 'CONTACT CONSTITUTIVE LAWS' section: ");
+      // the read-in contact constitutive law line
+      Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
+          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
+              id, coconstlawtype_, coconstlawname_);
+      // fill the latter
 
-      parser.consume("LAW");
-      const int id = parser.read<int>();
-      const std::string name = parser.read<std::string>();
+      for (const auto& j : inputline_)
+        condline = j->read(LawDefinition::name(), condline, *container);
 
-      // Remove the parts that were already read.
-      condline->str(condline->str().erase(0, (size_t)condline->tellg()));
+      // current material input line contains bad elements
+      if (condline->str().find_first_not_of(' ') != std::string::npos)
+        FOUR_C_THROW(
+            "Specification of material '%s' contains the following unknown, redundant, or "
+            "incorrect elements: '%s'",
+            coconstlawname_.c_str(), condline->str().c_str());
 
-      if (name == coconstlawname_)
-      {
-        if (id <= -1) FOUR_C_THROW("Illegal negative ID provided");
-
-        // check if material ID is already in use
-        if (bundle.find(id) != -1)
-          FOUR_C_THROW("More than one contact constitutivelaw with 'Law %d'", id);
-
-        // the read-in contact constitutive law line
-        Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-            Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
-                id, coconstlawtype_, coconstlawname_);
-        // fill the latter
-
-        for (const auto& j : inputline_)
-          condline = j->read(LawDefinition::name(), condline, *container);
-
-        // current material input line contains bad elements
-        if (condline->str().find_first_not_of(' ') != std::string::npos)
-          FOUR_C_THROW(
-              "Specification of material '%s' contains the following unknown, redundant, or "
-              "incorrect elements: '%s'",
-              coconstlawname_.c_str(), condline->str().c_str());
-
-        // put contact constitutive law in map of laws
-        bundle.insert(id, container);
-      }
+      // put contact constitutive law in map of laws
+      bundle.insert(id, container);
     }
   }
 }

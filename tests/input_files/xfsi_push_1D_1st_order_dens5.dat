@@ -1029,5 +1029,4 @@ XFLUID DIS fluid NODE 105 QUANTITY velx VALUE -3.70000000000000e-01 TOLERANCE 1e
 XFLUID DIS fluid NODE 105 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-5
 XFLUID DIS fluid NODE 105 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-5
 XFLUID DIS fluid NODE 105 QUANTITY pressure VALUE 5.400000000000000e-00 TOLERANCE 1e-5
--------------------------------------------------------------------------END
 //                              END

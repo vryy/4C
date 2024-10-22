@@ -80,5 +80,3 @@ NODE        16 COORD  3.0e-01  1.0e-01  0.0e-01
    3 TRANSPHDG HEX8  10 9 13 14 12 11 15 16    MAT 1 TYPE HdgCardMono DEG 0 SPC 0 FIBER1 1.0 0.0 0.0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.44947347289450734e+00 TOLERANCE 1E-6
--------------------------------------------------------------------------END
-// END

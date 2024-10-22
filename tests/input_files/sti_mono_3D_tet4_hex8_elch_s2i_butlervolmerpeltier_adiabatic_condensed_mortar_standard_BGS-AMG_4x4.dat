@@ -2898,4 +2898,3 @@ NODE       728 COORD  2.9999999999999999e-02  3.9000000000000000e-02  2.00000000
    816 TRANSP HEX8  696 700 723 721 698 702 724 722    MAT 6 TYPE ElchElectrodeThermo
    817 TRANSP HEX8  700 704 725 723 702 706 726 724    MAT 6 TYPE ElchElectrodeThermo
    818 TRANSP HEX8  704 708 727 725 706 710 728 726    MAT 6 TYPE ElchElectrodeThermo
----------------------------------------------------------------END

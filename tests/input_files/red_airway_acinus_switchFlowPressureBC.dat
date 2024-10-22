@@ -55,5 +55,3 @@ NODE 3 DNODE 2
 ----------------------------------------------------------RESULT DESCRIPTION
 RED_AIRWAY DIS red_airway NODE 1 QUANTITY pressure VALUE 1.03275287288897857e+03 TOLERANCE 1.0e-8
 RED_AIRWAY DIS red_airway NODE 2 QUANTITY flow_in VALUE -2.72848410531878471e-11 TOLERANCE 1.0e-8
--------------------------------------------------------------------------END
-//                              END

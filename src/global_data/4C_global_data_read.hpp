@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include "4C_global_data.hpp"
-#include "4C_io_inputreader.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

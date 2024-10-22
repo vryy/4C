@@ -1223,5 +1223,3 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 1.2 
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 280 QUANTITY dispx VALUE  5.99967909532280741e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 280 QUANTITY dispy VALUE -1.08487844547111489e+00 TOLERANCE 1e-8
----------------------------------------------------------------END
-//                              END

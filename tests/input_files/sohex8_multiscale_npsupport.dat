@@ -4,5 +4,4 @@ MATERIALS                       1
 PROBLEMTYP                      NP_Supporting_Procs
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_Multiscale MICROFILE dummy.dat MICRODIS_NUM -1
--------------------------------------------------------------------------END
 //                              END

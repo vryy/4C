@@ -124,5 +124,4 @@ NODE        25 COORD  0.0000000000000000e+00  1.0000000000000000e+00  0.00000000
    14 WALL QUAD4  23 18 16 21    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
    15 WALL QUAD4  24 19 18 23    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
    16 WALL QUAD4  25 20 19 24    MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
----------------------------------------------------------------END
 // END
