@@ -50,20 +50,6 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
     act = RedInterAcinarDep::calc_elem_volumes;
   else if (action == "get_coupled_values")
     act = RedInterAcinarDep::get_coupled_values;
-  else if (action == "get_junction_volume_mix")
-    act = RedInterAcinarDep::get_junction_volume_mix;
-  else if (action == "solve_scatra")
-    act = RedInterAcinarDep::solve_scatra;
-  else if (action == "calc_cfl")
-    act = RedInterAcinarDep::calc_cfl;
-  else if (action == "eval_nodal_essential_values")
-    act = RedInterAcinarDep::eval_nodal_ess_vals;
-  else if (action == "solve_blood_air_transport")
-    act = RedInterAcinarDep::solve_blood_air_transport;
-  else if (action == "update_scatra")
-    act = RedInterAcinarDep::update_scatra;
-  else if (action == "eval_PO2_from_concentration")
-    act = RedInterAcinarDep::eval_PO2_from_concentration;
   else
   {
     FOUR_C_THROW("Unknown type of action (%s) for inter-acinar linker element", action.c_str());
@@ -113,41 +99,6 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
           this, params, discretization, lm, mat);
     }
     break;
-    case get_junction_volume_mix:
-    {
-      // do nothing
-    }
-    break;
-    case solve_scatra:
-    {
-      // do nothing
-    }
-    break;
-    case calc_cfl:
-    {
-      // do nothing
-    }
-    break;
-    case solve_blood_air_transport:
-    {
-      // do nothing
-    }
-    break;
-    case eval_nodal_ess_vals:
-    {
-      // do nothing
-    }
-    break;
-    case eval_PO2_from_concentration:
-    {
-      // do nothing
-    }
-    break;
-    case update_scatra:
-    {
-      // do nothing
-    }
-    break;
     default:
       FOUR_C_THROW("Unknown type of action for reduced dimensional acinuss");
       break;
@@ -164,7 +115,6 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterLis
 {
   return 0;
 }
-
 
 /*----------------------------------------------------------------------*
  |  do nothing (public)                                     ismail 09/12|

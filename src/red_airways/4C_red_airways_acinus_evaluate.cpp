@@ -14,7 +14,6 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -47,24 +46,6 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
     act = RedAcinus::calc_elem_volumes;
   else if (action == "get_coupled_values")
     act = RedAcinus::get_coupled_values;
-  else if (action == "get_junction_volume_mix")
-    act = RedAcinus::get_junction_volume_mix;
-  else if (action == "solve_scatra")
-    act = RedAcinus::solve_scatra;
-  else if (action == "solve_junction_scatra")
-    act = RedAcinus::solve_junction_scatra;
-  else if (action == "calc_cfl")
-    act = RedAcinus::calc_cfl;
-  else if (action == "eval_nodal_essential_values")
-    act = RedAcinus::eval_nodal_ess_vals;
-  else if (action == "solve_blood_air_transport")
-    act = RedAcinus::solve_blood_air_transport;
-  else if (action == "update_scatra")
-    act = RedAcinus::update_scatra;
-  else if (action == "update_elem12_scatra")
-    act = RedAcinus::update_elem12_scatra;
-  else if (action == "eval_PO2_from_concentration")
-    act = RedAcinus::eval_PO2_from_concentration;
   else
   {
     FOUR_C_THROW("Unknown type of action (%s) for reduced dimensional acinus", action.c_str());
@@ -117,40 +98,6 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
           this, params, discretization, lm, mat);
     }
     break;
-    case get_junction_volume_mix:
-    {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->get_junction_volume_mix(
-          this, params, discretization, elevec1, lm, mat);
-    }
-    break;
-    case update_scatra:
-    {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->update_scatra(
-          this, params, discretization, lm, mat);
-    }
-    break;
-    case update_elem12_scatra:
-    {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->update_elem12_scatra(
-          this, params, discretization, lm, mat);
-    }
-    break;
-    case calc_cfl:
-    {
-      // do  nothing
-    }
-    break;
-    case solve_blood_air_transport:
-    {
-      // do nothing
-    }
-    break;
-    case eval_nodal_ess_vals:
-    {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->eval_nodal_essential_values(
-          this, params, discretization, elevec1, elevec2, elevec3, lm, mat);
-    }
-    break;
     default:
       FOUR_C_THROW("Unkown type of action for reduced dimensional acinuss");
   }  // end of switch(act)
@@ -183,53 +130,6 @@ int Discret::ELEMENTS::RedAcinus::evaluate_dirichlet(Teuchos::ParameterList& par
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   return 0;
-}
-
-
-/*----------------------------------------------------------------------*
- | get optimal gaussrule for discretisation type                        |
- |                                                                      |
- *----------------------------------------------------------------------*/
-Core::FE::GaussRule1D Discret::ELEMENTS::RedAcinus::get_optimal_gaussrule(
-    const Core::FE::CellType& distype)
-{
-  Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
-  switch (distype)
-  {
-    case Core::FE::CellType::line2:
-      rule = Core::FE::GaussRule1D::line_2point;
-      break;
-    case Core::FE::CellType::line3:
-      rule = Core::FE::GaussRule1D::line_3point;
-      break;
-    default:
-      FOUR_C_THROW("unknown number of nodes for gaussrule initialization");
-      break;
-  }
-  return rule;
-}
-
-
-/*----------------------------------------------------------------------*
- | Check, whether higher order derivatives for shape functions          |
- | (dxdx, dxdy, ...) are necessary|                                     |
- *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAcinus::is_higher_order_element(const Core::FE::CellType distype) const
-{
-  bool hoel = true;
-  switch (distype)
-  {
-    case Core::FE::CellType::line3:
-      hoel = true;
-      break;
-    case Core::FE::CellType::line2:
-      hoel = false;
-      break;
-    default:
-      FOUR_C_THROW("distype unknown!");
-      break;
-  }
-  return hoel;
 }
 
 FOUR_C_NAMESPACE_CLOSE

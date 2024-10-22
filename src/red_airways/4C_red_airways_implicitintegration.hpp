@@ -117,12 +117,6 @@ namespace Airway
     void non_lin_solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
-    \brief solve the scalar transport
-
-    */
-    void solve_scatra(Teuchos::ParameterList& CouplingTo3DParams);
-
-    /*!
       \brief build linear system matrix and rhs
 
       \param vel new guess at velocity, cross-sectional area, and pressure
@@ -160,12 +154,6 @@ namespace Airway
     */
     void output(bool CoupledTo3D = false,
         Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
-
-    /*!
-    \brief Output for UQ problemtype
-
-    */
-    void output_uq(Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
 
     /*!
     \brief Adjust acini_volume with prestress
@@ -222,20 +210,6 @@ namespace Airway
 
     /// provide access to the Dirichlet map
     Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
-
-    /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
-    ///
-    /// This method provides backward compatability only. Formerly, the Dirichlet conditions
-    /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
-    /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichlet();
-
-    /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
-    ///
-    /// This method provides backward compatability only. Formerly, the Dirichlet conditions
-    /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
-    /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inv_dirichlet();
 
     Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
     {
@@ -425,31 +399,6 @@ namespace Airway
 
     //@}
 
-    //! @name scalar transport variables inside airways
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dscatraO2_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dVolumeO2_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acinarDO2_;
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2np_;
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> junctionVolumeInMix_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> jVDofRowMix_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> junVolMix_Corrector_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> diffusionArea_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cfls_;
-
-    bool solveScatra_;
     bool compAwAcInter_;
 
     //@}
@@ -484,22 +433,6 @@ namespace Airway
     Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumenm_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumen_;
     Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumenp_;
-
-    // saving vector for nodal O2 concentration
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2np_;
-
-    // saving vector for element inlet O2 concentration
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e1scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e1scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e1scatraO2np_;
-
-    // saving vector for element outlet O2 concentration
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e2scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e2scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_e2scatraO2np_;
-    //@}
 
     //! Error vector that shows the convergenece of the nonlinear problem
     Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;

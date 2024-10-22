@@ -65,24 +65,6 @@ namespace Discret
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
-      virtual void get_junction_volume_mix(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
-          std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) = 0;
-
-      virtual void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) = 0;
-
-      virtual void update_elem12_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) = 0;
-
-      virtual void eval_nodal_essential_values(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& nodal_surface,
-          Core::LinAlg::SerialDenseVector& nodal_volume,
-          Core::LinAlg::SerialDenseVector& nodal_flow, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) = 0;
-
       /// Internal implementation class for acinus element
       static RedAcinusImplInterface* impl(Discret::ELEMENTS::RedAcinus* acinus);
     };
@@ -166,28 +148,6 @@ namespace Discret
       void get_coupled_values(RedAcinus* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material> material) override;
-
-      /*!
-        \Essential functions to evaluate mixed volume flowing into a junction
-      */
-      void get_junction_volume_mix(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& volumeMix_np,
-          std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material> material) override;
-
-      void update_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) override;
-
-      void update_elem12_scatra(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) override;
-
-      void eval_nodal_essential_values(RedAcinus* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& nodal_surface,
-          Core::LinAlg::SerialDenseVector& nodal_volume,
-          Core::LinAlg::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) override;
-
 
      private:
     };

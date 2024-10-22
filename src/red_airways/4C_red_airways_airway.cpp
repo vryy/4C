@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
 #include "4C_comm_pack_helpers.hpp"
-#include "4C_fem_discretization.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_red_airways_elementbase.hpp"
@@ -132,7 +131,6 @@ Core::FE::CellType Discret::ELEMENTS::RedAirway::shape() const
       return Core::FE::CellType::line3;
     default:
       FOUR_C_THROW("unexpected number of nodes %d", num_node());
-      break;
   }
 }
 
@@ -171,8 +169,6 @@ void Discret::ELEMENTS::RedAirway::pack(Core::Communication::PackBuffer& data) c
   add_to_pack(data, airway_params_.p_crit_open);
   add_to_pack(data, airway_params_.p_crit_close);
   add_to_pack(data, airway_params_.open_init);
-
-  return;
 }
 
 
@@ -212,8 +208,6 @@ void Discret::ELEMENTS::RedAirway::unpack(Core::Communication::UnpackBuffer& buf
   extract_from_pack(buffer, airway_params_.open_init);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
-
-  return;
 }
 
 

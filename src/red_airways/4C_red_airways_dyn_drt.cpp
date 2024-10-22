@@ -9,7 +9,6 @@
 
 #include "4C_adapter_str_redairway.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_validparameters.hpp"
 #include "4C_io_control.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
@@ -20,8 +19,6 @@
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include <cstdlib>
-#include <ctime>
 #include <iostream>
 
 FOUR_C_NAMESPACE_OPEN
@@ -106,12 +103,7 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   airwaystimeparams.set("tolerance", rawdyn.get<double>("TOLERANCE"));
   // Maximum number of iterations
   airwaystimeparams.set("maximum iteration steps", rawdyn.get<int>("MAXITERATIONS"));
-  // SolveScatra
-  if (rawdyn.get<bool>("SOLVESCATRA"))
-    airwaystimeparams.set("SolveScatra", true);
-  else
-    airwaystimeparams.set("SolveScatra", false);
-  // compute Interdependency
+
   if (rawdyn.get<bool>("COMPAWACINTER"))
     airwaystimeparams.set("CompAwAcInter", true);
   else
@@ -125,7 +117,6 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   }
   else
     airwaystimeparams.set("CalcV0PreStress", false);
-
 
 
   // 6. Create all vectors and variables associated with the time

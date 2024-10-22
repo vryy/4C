@@ -156,43 +156,4 @@ bool Discret::ELEMENTS::RedInterAcinarDep::read_element(const std::string& elety
 }
 
 
-/*----------------------------------------------------------------------*
-| Read in the Scatra elements                                           |
-*-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirBloodScatra::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container)
-{
-  const int ndim = Global::Problem::instance()->n_dim();
-  if (ndim != 3)
-    FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
-
-  // read number of material model
-  const int generation = -2;
-  generation_ = generation;
-
-  elem_params_["DiffusionCoefficient"] = container.get<double>("DiffusionCoefficient");
-  elem_params_["WallThickness"] = container.get<double>("WallThickness");
-  elem_params_["PercentageOfDiffusionArea"] = container.get<double>("PercentageOfDiffusionArea");
-
-  return true;
-}
-
-
-/*----------------------------------------------------------------------*
-| Read in the Scatra elements                                           |
-*-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirBloodScatraLine3::read_element(const std::string& eletype,
-    const std::string& distype, const Core::IO::InputParameterContainer& container)
-{
-  const int ndim = Global::Problem::instance()->n_dim();
-  if (ndim != 3)
-    FOUR_C_THROW("Problem defined as %dd, but found Reduced dimensional Scatra element.", ndim);
-
-  elem_params_["DiffusionCoefficient"] = container.get<double>("DiffusionCoefficient");
-  elem_params_["WallThickness"] = container.get<double>("WallThickness");
-  elem_params_["PercentageOfDiffusionArea"] = container.get<double>("PercentageOfDiffusionArea");
-
-  return true;
-}
-
 FOUR_C_NAMESPACE_CLOSE
