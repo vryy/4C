@@ -69,9 +69,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   maxiter_ = params_.get<int>("maximum iteration steps");
   // tolerance of nonlinear solution
   non_lin_tol_ = params_.get<double>("tolerance");
-  // solve scatra
-  solveScatra_ = params_.get<bool>("SolveScatra");
-  // solve scatra
+  // solve Aw-AC-Interdependency
   compAwAcInter_ = params_.get<bool>("CompAwAcInter");
 
   // calculate acini volume0 flag; option for acini volume adjustment via prestress
@@ -232,35 +230,6 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   acini_e_volume_strain_ = Core::LinAlg::create_vector(*elementcolmap, true);
   acini_max_strain_location_ = Core::LinAlg::create_vector(*elementcolmap, true);
 
-  // Initialize "scalar transpor" variables
-  if (solveScatra_)
-  {
-    // Nodal values of the scalar transport
-    scatraO2nm_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    scatraO2n_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    scatraO2np_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    dscatraO2_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    dVolumeO2_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    acinarDO2_ = Core::LinAlg::create_vector(*dofrowmap, true);
-
-    // Element values of the scalar transport (Needed to resolve the
-    // the transport at the branching parts
-    e1scatraO2nm_ = Core::LinAlg::create_vector(*elementcolmap, true);
-    e1scatraO2n_ = Core::LinAlg::create_vector(*elementcolmap, true);
-    e1scatraO2np_ = Core::LinAlg::create_vector(*elementcolmap, true);
-
-    e2scatraO2nm_ = Core::LinAlg::create_vector(*elementcolmap, true);
-    e2scatraO2n_ = Core::LinAlg::create_vector(*elementcolmap, true);
-    e2scatraO2np_ = Core::LinAlg::create_vector(*elementcolmap, true);
-
-    cfls_ = Core::LinAlg::create_vector(*elementrowmap, true);
-
-    junctionVolumeInMix_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    junVolMix_Corrector_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    jVDofRowMix_ = Core::LinAlg::create_vector(*dofrowmap, true);
-    diffusionArea_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  }
-
   // Vectors used for solution process
   // right hand side vector and right hand side corrector
   rhs_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -283,15 +252,7 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
   evaluation_data.generations = generations_;
   evaluation_data.acini_bc = acini_bc_;
   evaluation_data.acini_e_volume = acini_e_volumenp_;
-  evaluation_data.solveScatra = solveScatra_;
   evaluation_data.elemVolume = elemVolumenp_;
-  if (solveScatra_)
-  {
-    evaluation_data.junVolMix_Corrector = junVolMix_Corrector_;
-    evaluation_data.scatranp = scatraO2np_;
-    evaluation_data.e1scatranp = e1scatraO2np_;
-    evaluation_data.e2scatranp = e2scatraO2np_;
-  }
   evaluation_data.elemArea0 = elemArea0_;
   eleparams.set("action", "get_initial_state");
 
@@ -316,18 +277,6 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     {
       (*radii_)[i] = 0.5 * ((*radii_in)[i] + (*radii_out)[i]);
     }
-  }
-
-  if (solveScatra_)
-  {
-    scatraO2n_->Update(1.0, *scatraO2np_, 0.0);
-    scatraO2nm_->Update(1.0, *scatraO2np_, 0.0);
-
-    e1scatraO2n_->Update(1.0, *e1scatraO2np_, 0.0);
-    e1scatraO2nm_->Update(1.0, *e1scatraO2np_, 0.0);
-
-    e2scatraO2n_->Update(1.0, *e2scatraO2np_, 0.0);
-    e2scatraO2nm_->Update(1.0, *e2scatraO2np_, 0.0);
   }
 
   acini_e_volumen_->Update(1.0, *acini_e_volumenp_, 0.0);
@@ -398,8 +347,6 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     }
   }
 
-  std::vector<Core::Conditions::Condition*> conds;
-  discret_->get_condition("RedAirwayScatraExchangeCond", conds);
 }  // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
 
@@ -707,12 +654,6 @@ void Airway::RedAirwayImplicitTimeInt::time_step(
   {
     FOUR_C_THROW("[%s] is not a defined solver",
         (Teuchos::getStringValue<RedAirwaysDyntype>(params_, "solver type").c_str()));
-  }
-
-  // Solve scatra if required
-  if (solveScatra_)
-  {
-    this->solve_scatra(*CouplingTo3DParams);
   }
 
   // Update solution: current solution becomes old solution of next timestep
@@ -1235,318 +1176,6 @@ void Airway::RedAirwayImplicitTimeInt::solve(
 }  // RedAirwayImplicitTimeInt::Solve
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | the solver for solving the scalar transport             ismail 02/13 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void Airway::RedAirwayImplicitTimeInt::solve_scatra(Teuchos::ParameterList& CouplingTo3DParams)
-{
-  //---------------------------------------------------------------------
-  // Get the largest CFL number in the airways to scale down
-  // the time if CFL>1
-  //---------------------------------------------------------------------
-  double cflmax = 0.0;
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "calc_cfl");
-
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-
-    evaluation_data.elemVolumenp = elemVolumenp_;
-    evaluation_data.qin_np = qin_np_;
-    evaluation_data.qout_np = qout_np_;
-
-    evaluation_data.dt = dta_;
-    evaluation_data.time = time_;
-
-    evaluation_data.cfl = cfls_;
-
-    cfls_->PutScalar(0.0);
-
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->clear_state();
-
-    // get largest CFL number
-    cfls_->NormInf(&cflmax);
-
-    if (!myrank_) std::cout << "MAX CFL NUMBER IS!!!" << cflmax << std::endl;
-  }
-
-  //---------------------------------------------------------------------
-  // Get the junctions area in which a scatran is flowing
-  //---------------------------------------------------------------------
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "get_junction_volume_mix");
-
-    // set vector values needed to evaluate O2 transport elements
-    discret_->clear_state();
-
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-
-    evaluation_data.qin_n = qin_n_;
-    evaluation_data.qout_n = qout_n_;
-    evaluation_data.qin_np = qin_np_;
-    evaluation_data.qout_np = qout_np_;
-
-    evaluation_data.acinar_vn = acini_e_volumen_;
-    evaluation_data.acinar_vnp = acini_e_volumenp_;
-
-    evaluation_data.dt = dta_;
-    evaluation_data.time = time_;
-
-    junctionVolumeInMix_->PutScalar(0.0);
-    evaluation_data.elemVolumenp = elemVolumenp_;
-
-    discret_->evaluate(
-        eleparams, sysmat_, Teuchos::null, junctionVolumeInMix_, Teuchos::null, Teuchos::null);
-  }
-  //---------------------------------------------------------------------
-  // Find/ Solve the scatran that is flowing forward
-  //---------------------------------------------------------------------
-  {
-    scatraO2np_->PutScalar(0.0);
-    e1scatraO2np_->PutScalar(0.0);
-    e2scatraO2np_->PutScalar(0.0);
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "solve_scatra");
-
-    // set vector values needed to evaluate O2 transport elements
-    discret_->clear_state();
-    discret_->set_state("scatran", scatraO2n_);
-
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-
-    evaluation_data.e1scatran = e1scatraO2n_;
-    evaluation_data.e1scatranp = e1scatraO2np_;
-
-    evaluation_data.e2scatran = e2scatraO2n_;
-    evaluation_data.e2scatranp = e2scatraO2np_;
-
-    discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
-
-    evaluation_data.qin_n = qin_n_;
-    evaluation_data.qout_n = qout_n_;
-    evaluation_data.qin_np = qin_np_;
-    evaluation_data.qout_np = qout_np_;
-
-    evaluation_data.acinar_vn = acini_e_volumen_;
-    evaluation_data.acinar_vnp = acini_e_volumenp_;
-
-    evaluation_data.elemVolumenp = elemVolumenp_;
-    evaluation_data.elemVolumen = elemVolumen_;
-
-    evaluation_data.dt = dta_;
-    evaluation_data.time = time_;
-
-    const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dummy =
-        Core::LinAlg::create_vector(*dofrowmap, true);
-    discret_->evaluate(eleparams, sysmat_, Teuchos::null, scatraO2np_, dummy, Teuchos::null);
-    discret_->clear_state();
-  }
-  //---------------------------------------------------------------------
-  // Reconvert the scatran from 'number of moles' into a concentration
-  //---------------------------------------------------------------------
-  {
-    Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
-    int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
-    if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-  }
-  for (int i = 0; i < scatraO2np_->MyLength(); i++)
-  {
-    if ((*jVDofRowMix_)[i] != 0.0)
-    {
-      (*scatraO2np_)[i] /= (*jVDofRowMix_)[i];
-    }
-  }
-
-  //---------------------------------------------------------------------
-  // Solve the scatran for the nodes that recieve their values from the
-  // neighbouring element/airway-branch
-  //---------------------------------------------------------------------
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "solve_junction_scatra");
-
-    // set vector values needed to evaluate O2 transport elements
-    discret_->clear_state();
-
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-
-    evaluation_data.e1scatranp = e1scatraO2np_;
-    evaluation_data.e2scatranp = e2scatraO2np_;
-
-    discret_->set_state("scatranp", scatraO2np_);
-
-    evaluation_data.qin_np = qin_np_;
-    evaluation_data.qout_np = qout_np_;
-    evaluation_data.qin_n = qin_n_;
-    evaluation_data.qout_n = qout_n_;
-
-    evaluation_data.dt = dta_;
-    evaluation_data.time = time_;
-
-    evaluation_data.elemVolumenp = elemVolumenp_;
-    discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
-
-    discret_->evaluate(
-        eleparams, sysmat_, Teuchos::null, scatraO2np_, junctionVolumeInMix_, Teuchos::null);
-    discret_->clear_state();
-  }
-
-  //---------------------------------------------------------------------
-  // Solve the scatra between air and blood region
-  //---------------------------------------------------------------------
-  // define an empty capillary flowrate vector
-  const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  // Diffusion surface (from the acinar side)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_surfaces =
-      Core::LinAlg::create_vector(*dofrowmap, true);
-  // Fluid volume
-  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_volumes =
-      Core::LinAlg::create_vector(*dofrowmap, true);
-  // Average concentration in Acini and in Capillar
-  Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_avg_conc =
-      Core::LinAlg::create_vector(*dofrowmap, true);
-
-  {
-    // get the diffusion surfaces at the acini
-    Teuchos::ParameterList eleparams;
-    eleparams.set("action", "eval_nodal_essential_values");
-
-    // set vector values of flow rates
-    discret_->set_state("scatranp", scatraO2np_);
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-    evaluation_data.acinar_v = acini_e_volumenp_;
-
-    // set vector values of flow rates
-    eleparams.set("time step size", dta_);
-    eleparams.set("time step size", dta_);
-    // TODO used to be "qnp" and was likely unused
-    evaluation_data.qin_np = qin_np_;
-
-    evaluation_data.qin_n = qin_n_;
-    evaluation_data.qout_n = qout_n_;
-    evaluation_data.elemVolumenp = elemVolumenp_;
-
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, nodal_surfaces, nodal_volumes, nodal_avg_conc);
-    discret_->clear_state();
-  }
-
-  // evaluate the transport of O2 between air and blood
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "solve_blood_air_transport");
-
-    discret_->set_state("areanp", nodal_surfaces);
-    discret_->set_state("volumenp", nodal_volumes);
-    discret_->set_state("scatranp", nodal_avg_conc);
-
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-    evaluation_data.elemVolumenp = elemVolumenp_;
-    evaluation_data.dt = dta_;
-    evaluation_data.time = time_;
-
-    dscatraO2_->PutScalar(0.0);
-    dVolumeO2_->PutScalar(0.0);
-    acinarDO2_->PutScalar(0.0);
-    discret_->evaluate(eleparams, Teuchos::null, Teuchos::null, dscatraO2_, dVolumeO2_, acinarDO2_);
-    discret_->clear_state();
-  }
-
-  //---------------------------------------------------------------------
-  // Update scatra
-  //---------------------------------------------------------------------
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "update_scatra");
-
-    // set vector values needed to evaluate O2 transport elements
-    discret_->clear_state();
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-
-    evaluation_data.qin_np = qin_np_;
-    evaluation_data.qin_n = qin_n_;
-    evaluation_data.qout_n = qout_n_;
-    evaluation_data.e1scatranp = e1scatraO2np_;
-    evaluation_data.e2scatranp = e2scatraO2np_;
-    evaluation_data.dscatranp = dscatraO2_;
-    discret_->set_state("dscatranp", dscatraO2_);
-    discret_->set_state("avg_scatranp", nodal_avg_conc);
-    discret_->set_state("scatranp", scatraO2np_);
-    evaluation_data.elemVolumenp = elemVolumenp_;
-
-    discret_->evaluate(
-        eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->clear_state();
-  }
-  scatraO2np_->Update(1.0, *dscatraO2_, 1.0);
-  //---------------------------------------------------------------------
-  // Update element12 scatra
-  //---------------------------------------------------------------------
-  {
-    // create the parameters for the discretization
-    Teuchos::ParameterList eleparams;
-    // action for elements
-    eleparams.set("action", "update_elem12_scatra");
-
-    // set vector values needed to evaluate O2 transport elements
-    discret_->clear_state();
-
-    // note: We use an RCP because ParameterList wants something printable and comparable
-    Discret::ReducedLung::EvaluationData& evaluation_data =
-        Discret::ReducedLung::EvaluationData::get();
-
-    evaluation_data.qin_np = qin_np_;
-    evaluation_data.qin_n = qin_n_;
-    evaluation_data.qout_n = qout_n_;
-    evaluation_data.e1scatranp = e1scatraO2np_;
-    evaluation_data.e2scatranp = e2scatraO2np_;
-    discret_->set_state("dscatranp", dscatraO2_);
-    discret_->set_state("scatranp", scatraO2np_);
-    discret_->set_state("junctionVolumeInMix", junctionVolumeInMix_);
-    evaluation_data.elemVolumenp = elemVolumenp_;
-    discret_->evaluate(
-        eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    discret_->clear_state();
-  }
-}  // RedAirwayImplicitTimeInt::SolveScatra
-
-
 /*----------------------------------------------------------------------*
  | Call elements to calculate system matrix/rhs and assemble.           |
  | This function is currently not used but will be kept empty until     |
@@ -1592,18 +1221,6 @@ void Airway::RedAirwayImplicitTimeInt::time_update()
 
   elemVolumenm_->Update(1.0, *elemVolumen_, 0.0);
   elemVolumen_->Update(1.0, *elemVolumenp_, 0.0);
-
-  if (solveScatra_)
-  {
-    scatraO2nm_->Update(1.0, *scatraO2n_, 0.0);
-    scatraO2n_->Update(1.0, *scatraO2np_, 0.0);
-
-    e1scatraO2nm_->Update(1.0, *e1scatraO2n_, 0.0);
-    e1scatraO2n_->Update(1.0, *e1scatraO2np_, 0.0);
-
-    e2scatraO2nm_->Update(1.0, *e2scatraO2n_, 0.0);
-    e2scatraO2n_->Update(1.0, *e2scatraO2np_, 0.0);
-  }
 
   return;
 }  // RedAirwayImplicitTimeInt::TimeUpdate
@@ -1653,20 +1270,6 @@ void Airway::RedAirwayImplicitTimeInt::init_save_state()
   saved_elemVolumen_ = Core::LinAlg::create_vector(*elementcolmap, true);
   saved_elemVolumenp_ = Core::LinAlg::create_vector(*elementcolmap, true);
 
-  // saving vector for nodal O2 concentration
-  saved_scatraO2nm_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  saved_scatraO2n_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  saved_scatraO2np_ = Core::LinAlg::create_vector(*dofrowmap, true);
-
-  // saving vector for element inlet O2 concentration
-  saved_e1scatraO2nm_ = Core::LinAlg::create_vector(*elementcolmap, true);
-  saved_e1scatraO2n_ = Core::LinAlg::create_vector(*elementcolmap, true);
-  saved_e1scatraO2np_ = Core::LinAlg::create_vector(*elementcolmap, true);
-
-  // saving vector for element outlet O2 concentration
-  saved_e2scatraO2nm_ = Core::LinAlg::create_vector(*elementcolmap, true);
-  saved_e2scatraO2n_ = Core::LinAlg::create_vector(*elementcolmap, true);
-  saved_e2scatraO2np_ = Core::LinAlg::create_vector(*elementcolmap, true);
 }  // RedAirwayImplicitTimeInt::InitSaveState()
 
 
@@ -1710,24 +1313,6 @@ void Airway::RedAirwayImplicitTimeInt::save_state()
   saved_elemVolumenm_->Update(1.0, *elemVolumenm_, 0.0);
   saved_elemVolumen_->Update(1.0, *elemVolumen_, 0.0);
   saved_elemVolumenp_->Update(1.0, *elemVolumenp_, 0.0);
-
-  if (solveScatra_)
-  {
-    // save nodal O2 concentration
-    saved_scatraO2nm_->Update(1.0, *scatraO2nm_, 0.0);
-    saved_scatraO2n_->Update(1.0, *scatraO2n_, 0.0);
-    saved_scatraO2np_->Update(1.0, *scatraO2np_, 0.0);
-
-    // save element inlet O2 concentration
-    saved_e1scatraO2nm_->Update(1.0, *e1scatraO2nm_, 0.0);
-    saved_e1scatraO2n_->Update(1.0, *e1scatraO2n_, 0.0);
-    saved_e1scatraO2np_->Update(1.0, *e1scatraO2np_, 0.0);
-
-    // save element outlet O2 concentration
-    saved_e2scatraO2nm_->Update(1.0, *e2scatraO2nm_, 0.0);
-    saved_e2scatraO2n_->Update(1.0, *e2scatraO2n_, 0.0);
-    saved_e2scatraO2np_->Update(1.0, *e2scatraO2np_, 0.0);
-  }
 
   return;
 }  // RedAirwayImplicitTimeInt::SaveState
@@ -1774,24 +1359,6 @@ void Airway::RedAirwayImplicitTimeInt::load_state()
   elemVolumen_->Update(1.0, *saved_elemVolumen_, 0.0);
   elemVolumenp_->Update(1.0, *saved_elemVolumenp_, 0.0);
 
-  if (solveScatra_)
-  {
-    // save nodal O2 concentration
-    scatraO2nm_->Update(1.0, *saved_scatraO2nm_, 0.0);
-    scatraO2n_->Update(1.0, *saved_scatraO2n_, 0.0);
-    scatraO2np_->Update(1.0, *saved_scatraO2np_, 0.0);
-
-    // save element inlet O2 concentration
-    e1scatraO2nm_->Update(1.0, *saved_e1scatraO2nm_, 0.0);
-    e1scatraO2n_->Update(1.0, *saved_e1scatraO2n_, 0.0);
-    e1scatraO2np_->Update(1.0, *saved_e1scatraO2np_, 0.0);
-
-    // save element outlet O2 concentration
-    e2scatraO2nm_->Update(1.0, *saved_e2scatraO2nm_, 0.0);
-    e2scatraO2n_->Update(1.0, *saved_e2scatraO2n_, 0.0);
-    e2scatraO2np_->Update(1.0, *saved_e2scatraO2np_, 0.0);
-  }
-
   return;
 }  // RedAirwayImplicitTimeInt::LoadState
 
@@ -1827,108 +1394,6 @@ void Airway::RedAirwayImplicitTimeInt::output(
     output_.write_vector("pn", pn_);
     output_.write_vector("pnp", pnp_);
     output_.write_vector("p_nonlin", p_nonlin_);
-
-    if (solveScatra_)
-    {
-      output_.write_vector("scatraO2np", scatraO2np_);
-      output_.write_vector("scatraO2n", scatraO2n_);
-      output_.write_vector("scatraO2nm", scatraO2nm_);
-      output_.write_vector("dVO2", dVolumeO2_);
-      {
-        // Export PO2
-        // create the parameters for the discretization
-        Teuchos::ParameterList eleparams;
-
-        // note: We use an RCP because ParameterList wants something printable and comparable
-        Discret::ReducedLung::EvaluationData& evaluation_data =
-            Discret::ReducedLung::EvaluationData::get();
-        // action for elements
-        evaluation_data.elemVolumenp = elemVolumenp_;
-        eleparams.set("action", "eval_PO2_from_concentration");
-
-        const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Core::LinAlg::Vector<double>> po2 =
-            Core::LinAlg::create_vector(*dofrowmap, true);
-        discret_->clear_state();
-
-        evaluation_data.po2 = po2;
-        discret_->set_state("scatranp", scatraO2np_);
-        evaluation_data.acinar_vnp = acini_e_volumenp_;
-
-        discret_->evaluate(
-            eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-        discret_->clear_state();
-        output_.write_vector("PO2", po2);
-      }
-      // Export acinar PO2
-      {
-        // create the parameters for the discretization
-        Teuchos::ParameterList eleparams;
-        // note: We use an RCP because ParameterList wants something printable and comparable
-        Discret::ReducedLung::EvaluationData& evaluation_data =
-            Discret::ReducedLung::EvaluationData::get();
-        // action for elements
-        evaluation_data.elemVolumenp = elemVolumenp_;
-        eleparams.set("action", "eval_PO2_from_concentration");
-
-        const Epetra_Map* dofrowmap = discret_->dof_row_map();
-        Teuchos::RCP<Core::LinAlg::Vector<double>> po2 =
-            Core::LinAlg::create_vector(*dofrowmap, true);
-        discret_->clear_state();
-
-        evaluation_data.po2 = po2;
-        discret_->set_state("scatranp", acinarDO2_);
-        evaluation_data.acinar_vnp = acini_e_volumenp_;
-
-        discret_->evaluate(
-            eleparams, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-        discret_->clear_state();
-        output_.write_vector("AcinarPO2", po2);
-      }
-      {
-        Epetra_Export exporter(e1scatraO2np_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e1scatraO2np_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e1scatraO2np", qexp_);
-      {
-        Epetra_Export exporter(e1scatraO2n_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e1scatraO2n_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e1scatraO2n", qexp_);
-      {
-        Epetra_Export exporter(e1scatraO2nm_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e1scatraO2nm_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e1scatraO2nm", qexp_);
-
-      {
-        Epetra_Export exporter(e2scatraO2np_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e2scatraO2np_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e2scatraO2np", qexp_);
-      {
-        Epetra_Export exporter(e2scatraO2n_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e2scatraO2n_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e2scatraO2n", qexp_);
-      {
-        Epetra_Export exporter(e2scatraO2nm_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e2scatraO2nm_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e2scatraO2nm", qexp_);
-      {
-        Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
-        int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("juncVolMix", jVDofRowMix_);
-    }
 
     // write the flow values
     Core::LinAlg::export_to(*qin_nm_, *qexp_);
@@ -2031,56 +1496,6 @@ void Airway::RedAirwayImplicitTimeInt::output(
     output_.write_vector("pnp", pnp_);
     output_.write_vector("p_nonlin", p_nonlin_);
 
-    if (solveScatra_)
-    {
-      output_.write_vector("scatraO2np", scatraO2np_);
-      output_.write_vector("scatraO2n", scatraO2n_);
-      output_.write_vector("scatraO2nm", scatraO2nm_);
-      output_.write_vector("dVO2", dVolumeO2_);
-      {
-        Epetra_Export exporter(e1scatraO2np_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e1scatraO2np_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e1scatraO2np", qexp_);
-      {
-        Epetra_Export exporter(e1scatraO2n_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e1scatraO2n_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e1scatraO2n", qexp_);
-      {
-        Epetra_Export exporter(e1scatraO2nm_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e1scatraO2nm_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e1scatraO2nm", qexp_);
-
-      {
-        Epetra_Export exporter(e2scatraO2np_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e2scatraO2np_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e2scatraO2np", qexp_);
-      {
-        Epetra_Export exporter(e2scatraO2n_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e2scatraO2n_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e2scatraO2n", qexp_);
-      {
-        Epetra_Export exporter(e2scatraO2nm_->Map(), qexp_->Map());
-        int err = qexp_->Export(*e2scatraO2nm_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("e2scatraO2nm", qexp_);
-      {
-        Epetra_Export exporter(junctionVolumeInMix_->Map(), jVDofRowMix_->Map());
-        int err = jVDofRowMix_->Export(*junctionVolumeInMix_, exporter, Zero);
-        if (err) FOUR_C_THROW("Export using exporter returned err=%d", err);
-      }
-      output_.write_vector("juncVolMix", jVDofRowMix_);
-    }
     // write the flow values
     Core::LinAlg::export_to(*qin_nm_, *qexp_);
     output_.write_vector("qin_nm", qexp_);
@@ -2218,33 +1633,6 @@ void Airway::RedAirwayImplicitTimeInt::read_restart(int step, bool coupledTo3D)
   Core::LinAlg::export_to(*qexp_, *p_extnp_);
   reader.read_vector(qexp_, "airway_acinus_dep");
   Core::LinAlg::export_to(*qexp_, *airway_acinus_dep_);
-
-
-  // read the previously written elements including the history data
-  // reader.read_mesh(step_);
-  if (solveScatra_)
-  {
-    reader.read_vector(scatraO2np_, "scatraO2np");
-    reader.read_vector(scatraO2n_, "scatraO2n");
-    reader.read_vector(scatraO2nm_, "scatraO2nm");
-
-    reader.read_vector(qexp_, "e1scatraO2np");
-    Core::LinAlg::export_to(*qexp_, *e1scatraO2np_);
-    reader.read_vector(qexp_, "e1scatraO2n");
-    Core::LinAlg::export_to(*qexp_, *e1scatraO2n_);
-    reader.read_vector(qexp_, "e1scatraO2nm");
-    Core::LinAlg::export_to(*qexp_, *e1scatraO2nm_);
-
-    reader.read_vector(qexp_, "e2scatraO2np");
-    Core::LinAlg::export_to(*qexp_, *e2scatraO2np_);
-    reader.read_vector(qexp_, "e2scatraO2n");
-    Core::LinAlg::export_to(*qexp_, *e2scatraO2n_);
-    reader.read_vector(qexp_, "e2scatraO2nm");
-    Core::LinAlg::export_to(*qexp_, *e2scatraO2nm_);
-
-    reader.read_vector(jVDofRowMix_, "juncVolMix");
-    Core::LinAlg::export_to(*jVDofRowMix_, *junctionVolumeInMix_);
-  }
 
 }  // RedAirwayImplicitTimeInt::read_restart
 

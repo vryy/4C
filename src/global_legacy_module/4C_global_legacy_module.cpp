@@ -257,8 +257,6 @@ namespace
       << Discret::ELEMENTS::RedAirwayType::instance().name() << " "
       << Discret::ELEMENTS::RedAcinusType::instance().name() << " "
       << Discret::ELEMENTS::RedInterAcinarDepType::instance().name() << " "
-      << Discret::ELEMENTS::RedAirBloodScatraType::instance().name() << " "
-      << Discret::ELEMENTS::RedAirBloodScatraLine3Type::instance().name() << " "
       << Discret::ELEMENTS::ConstraintElement2Type::instance().name() << " "
       << Discret::ELEMENTS::ConstraintElement3Type::instance().name() << " "
       << Discret::ELEMENTS::LubricationType::instance().name() << " "

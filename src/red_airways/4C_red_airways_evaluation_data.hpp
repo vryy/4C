@@ -63,25 +63,9 @@ namespace Discret::ReducedLung
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> generations;
 
-    bool solveScatra{};
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> junVolMix_Corrector;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatran;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatranp;
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatran;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatran;
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e1scatranp;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> e2scatranp;
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dscatranp;
-
     Teuchos::RCP<Core::LinAlg::Vector<double>> elemRadiusnp;
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> cfl;
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> po2;
 
     Teuchos::RCP<Core::LinAlg::Vector<double>> bcval;
     Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog;

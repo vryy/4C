@@ -517,11 +517,6 @@ void Airway::RedAirwayTissue::setup_red_airways()
   airwaystimeparams.set("tolerance", rawdyn.get<double>("TOLERANCE"));
   // Maximum number of iterations
   airwaystimeparams.set("maximum iteration steps", rawdyn.get<int>("MAXITERATIONS"));
-  // solve scatra flag
-  if (rawdyn.get<bool>("SOLVESCATRA"))
-    airwaystimeparams.set("SolveScatra", true);
-  else
-    airwaystimeparams.set("SolveScatra", false);
   // compute Interdependency
   if (rawdyn.get<bool>("COMPAWACINTER"))
     airwaystimeparams.set("CompAwAcInter", true);
