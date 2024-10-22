@@ -1,3 +1,10 @@
+# This file is part of 4C multiphysics licensed under the
+# GNU Lesser General Public License v3.0 or later.
+#
+# See the LICENSE.md file in the top-level for license information.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 function(_four_c_internal_link_with_debug_message target link_type deps)
   message(DEBUG "Linking: ${target} <- ${deps} (${link_type})")
   target_link_libraries(${target} ${link_type} ${deps})

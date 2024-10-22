@@ -1,3 +1,10 @@
+# This file is part of 4C multiphysics licensed under the
+# GNU Lesser General Public License v3.0 or later.
+#
+# See the LICENSE.md file in the top-level for license information.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 # This find module is provided by CMake
 
 # Disable deprecated CXX bindings in MPI. These often lead to compiler warnings.

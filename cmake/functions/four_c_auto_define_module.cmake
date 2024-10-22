@@ -1,3 +1,10 @@
+# This file is part of 4C multiphysics licensed under the
+# GNU Lesser General Public License v3.0 or later.
+#
+# See the LICENSE.md file in the top-level for license information.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 # Automatically create a library for the sources and headers in the current directory. The target
 # will be named based on the folder name. If this function is called revursively inside an already
 # defined module, the sources are appended to the already defined module. The module name is returned in the variable
