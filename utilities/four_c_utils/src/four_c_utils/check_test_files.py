@@ -11,14 +11,14 @@ from four_c_utils import common_utils as utils
 def check_inputtests(filenames, allerrors):
     errors = 0
 
-    # read TestingFrameworkListOfTests.cmake
-    with open("TestingFrameworkListOfTests.cmake", "r") as cmakefile:
+    # read tests/list_of_tests.cmake
+    with open("tests/list_of_tests.cmake", "r") as cmakefile:
         all_lines = "\n".join(cmakefile.readlines())
 
     # check if some input tests are missing
     missing_input_tests = []
     for input_test in filenames:
-        # check, whether this input file is in TestingFrameworkListOfTests.cmake
+        # check, whether this input file is in tests/list_of_tests.cmake
         expected_test_name = os.path.splitext(os.path.basename(input_test))[0]
         if re.search(r"\b" + re.escape(expected_test_name) + r"\b", all_lines) is None:
             missing_input_tests.append(input_test)
@@ -26,7 +26,7 @@ def check_inputtests(filenames, allerrors):
     if len(missing_input_tests) > 0:
         errors += 1
         allerrors.append(
-            "The following input files are missing in TestingFrameworkListOfTests.cmake:"
+            "The following input files are missing in tests/list_of_tests.cmake:"
         )
         allerrors.append("")
         allerrors.extend(missing_input_tests)

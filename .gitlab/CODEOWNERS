@@ -431,8 +431,7 @@ requirements.txt                               @baci/team_infrastructure
 *CMakeLists.txt                                @baci/baci_maintainer @baci/team_infrastructure
 
 # testing framework configuration files
-TestingFramework.cmake                         @baci/team_testing
-TestingFrameworkListOfTests.cmake              @baci/baci_developers
+four_c_testing_functions.cmake                 @baci/team_testing
 
 README.md                                      @baci/baci_developers
 CONTRIBUTING.md                                @baci/baci_maintainer
