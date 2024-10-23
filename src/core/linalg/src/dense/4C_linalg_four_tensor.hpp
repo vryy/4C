@@ -60,6 +60,27 @@ namespace Core::LinAlg
     }
 
     /*!
+     * @brief set every tensor value to 0
+     *
+     */
+    inline void clear()
+    {
+      for (int i = 0; i < dim; ++i)
+      {
+        for (int j = 0; j < dim; ++j)
+        {
+          for (int k = 0; k < dim; ++k)
+          {
+            for (int l = 0; l < dim; ++l)
+            {
+              four_tensor_[i][j][k][l] = 0.0;
+            }
+          }
+        }
+      }
+    }
+
+    /*!
      * @brief returns writeable element C_{i1,i2,i3,i4} from 4-tensor C
      *
      * @param[in] i1 index of first basis vector

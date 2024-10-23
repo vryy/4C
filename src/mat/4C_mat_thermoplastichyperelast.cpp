@@ -9,6 +9,7 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
@@ -1063,18 +1064,22 @@ void Mat::ThermoPlasticHyperElast::setup_cmat_elasto_plastic(
   // with I_d = I_s - 1/3 . I \otimes I
   // pull-back of I --> invRCG
   // Cbar += Cbar_trial = 2 . mubar . pullback_I_d
-  add_kronecker_tensor_product(Cbar_trialMaterial, 2.0 * mubar, invRCG, invRCG, 1.0);
-  add_elasticity_tensor_product(Cbar_trialMaterial, -2.0 / 3.0 * mubar, invRCG, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
+      Cbar_trialMaterial, 2.0 * mubar, invRCG, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
+      Cbar_trialMaterial, -2.0 / 3.0 * mubar, invRCG, invRCG, 1.0);
   // Cbar += - 2/3 qbar [N \otimes C^{-1} + C^{-1} \otimes N]
-  add_symmetric_elasticity_tensor_product(Cbar_trialMaterial, -2.0 / 3.0 * q_trial, N, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
+      Cbar_trialMaterial, -2.0 / 3.0 * q_trial, N, invRCG, 1.0);
 
   // ------------------------------------------------ volumetric part C_e
   // spatial c_e = (J . U')' . J . I \otimes I - 2 J U' I4
   // with U'(J) = bulk/2 . (J^2 -1)  / J
   // C_e = bulk . J^2 [C^{-1} \otimes C^{-1}] - bulk ( J^2 -1 ) [C^{-1} \otimes C^{-1}]
   // with - bulk ( J^2 -1 ) [C^{-1} \otimes C^{-1}] = - bulk ( J^2 -1 ) [C^{-1} boeppel C^{-1}]
-  add_elasticity_tensor_product(Cmat, bulk * J * J, invRCG, invRCG, 1.0);
-  add_kronecker_tensor_product(Cmat, -1.0 * bulk * (J * J - 1.0), invRCG, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(Cmat, bulk * J * J, invRCG, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
+      Cmat, -1.0 * bulk * (J * J - 1.0), invRCG, invRCG, 1.0);
   Cmat.update(1.0, Cbar_trialMaterial, 1.0);
 
   // plastic step update
@@ -1108,8 +1113,9 @@ void Mat::ThermoPlasticHyperElast::setup_cmat_elasto_plastic(
 
     // this is nonlinear mechanics
     Cmat.update((-1.0 * beta1), Cbar_trialMaterial, 1.0);
-    add_elasticity_tensor_product(Cmat, (-2.0 * mubar * beta3), N, N, 1.0);
-    add_elasticity_tensor_product(Cmat, (-2.0 * mubar * beta4), N, devNsquare, 1.0);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(Cmat, (-2.0 * mubar * beta3), N, N, 1.0);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(
+        Cmat, (-2.0 * mubar * beta4), N, devNsquare, 1.0);
   }  // Dgamma != 0
 
   // update material tangent
@@ -1259,8 +1265,10 @@ void Mat::ThermoPlasticHyperElast::setup_cmat_thermo(const double temperature,
   // cmat_T = 2 . dS_vol,dT/dd
   //        = (T - T_0) . m_0/2 . (J - 1/J) (C^{-1} \otimes C^{-1})
   //          - (T - T_0) . m_0 . (J + 1/J) ( Cinv boeppel Cinv )
-  add_elasticity_tensor_product(cmat_T, (deltaT * m_0 / 2.0 * (J - 1 / J)), invRCG, invRCG, 1.0);
-  add_kronecker_tensor_product(cmat_T, (-deltaT * m_0 * (J + 1 / J)), invRCG, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
+      cmat_T, (deltaT * m_0 / 2.0 * (J - 1 / J)), invRCG, invRCG, 1.0);
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
+      cmat_T, (-deltaT * m_0 * (J + 1 / J)), invRCG, invRCG, 1.0);
 
 #ifdef DEBUGMATERIAL
   std::cout << "SetupCmatThermo(): Jacobi determinant J = " << J << std::endl;

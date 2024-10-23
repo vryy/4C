@@ -10,8 +10,8 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 
 #include <vector>
 
@@ -457,14 +457,14 @@ void Mat::ViscoAnisotropic::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> CisoEla_nh(
       true);  // isochoric elastic C from NeoHooke
 
-  add_holzapfel_product((*cmat), Cinv, (-2 * J * p));  // -2 J p Cinv o Cinv
+  Core::LinAlg::Tensor::add_holzapfel_product((*cmat), Cinv, (-2 * J * p));  // -2 J p Cinv o Cinv
 
   const double fac = 2 * third * incJ * mue * I1;  // 2/3 J^{-2/3} Sbar:C
   // fac Psl = fac (Cinv o Cinv) - fac/3 (Cinv x Cinv)
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> Psl(
-      true);                              // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  add_holzapfel_product(Psl, Cinv, 1.0);  // first part Psl = Cinv o Cinv
+      true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
+  Core::LinAlg::Tensor::add_holzapfel_product(Psl, Cinv, 1.0);  // first part Psl = Cinv o Cinv
 
   for (int i = 0; i < 6; ++i)
   {

@@ -9,6 +9,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_linalg_utils_densematrix_exp_log.hpp"
@@ -511,18 +512,18 @@ void Mat::PlasticElastHyper::setup_hill_plasticity(
 
     // calculate plastic anisotropy tensor
     PlAniso_full_.clear();
-    add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
-    add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
-    add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
-    add_symmetric_elasticity_tensor_product(
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
+    Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
         PlAniso_full_, 0.5 * (alpha3 - alpha1 - alpha2), M0, M1, 1.);
-    add_symmetric_elasticity_tensor_product(
+    Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
         PlAniso_full_, 0.5 * (alpha1 - alpha2 - alpha3), M1, M2, 1.);
-    add_symmetric_elasticity_tensor_product(
+    Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
         PlAniso_full_, 0.5 * (alpha2 - alpha3 - alpha1), M0, M2, 1.);
-    add_symmetric_holzapfel_product(PlAniso_full_, M0, M1, alpha4);
-    add_symmetric_holzapfel_product(PlAniso_full_, M1, M2, alpha5);
-    add_symmetric_holzapfel_product(PlAniso_full_, M0, M2, alpha6);
+    Core::LinAlg::Tensor::add_symmetric_holzapfel_product(PlAniso_full_, M0, M1, alpha4);
+    Core::LinAlg::Tensor::add_symmetric_holzapfel_product(PlAniso_full_, M1, M2, alpha5);
+    Core::LinAlg::Tensor::add_symmetric_holzapfel_product(PlAniso_full_, M0, M2, alpha6);
 
     // we need this matrix to get rid of the zero eigenvalue to be able to invert
     // the anisotropy tensor. After the inversion we expand the tensor again to 6x6
@@ -668,11 +669,11 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
   icg(5) = invRCG(0, 2);
 
   pk2->update(-3. * cte() * deltaT * modinv(2) * ddPmodII(2), icg, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *cmat, -3. * cte() * deltaT * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *cmat, -3. * cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
-  add_kronecker_tensor_product(
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
       *cmat, +6. * cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
@@ -725,11 +726,11 @@ void Mat::PlasticElastHyper::evaluate_c_tvol(const Core::LinAlg::Matrix<3, 3>* d
   icg(5) = invRCG(0, 2);
 
   cTvol->update(-3. * cte() * modinv(2) * ddPmodII(2), icg, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *dCTvoldE, -3. * cte() * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *dCTvoldE, -3. * cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
-  add_kronecker_tensor_product(
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
       *dCTvoldE, +6. * cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
@@ -1813,16 +1814,19 @@ void Mat::PlasticElastHyper::evaluate_cauchy_plast(const Core::LinAlg::Matrix<3,
       (.5 * dPI(1) / prinv_(2) - ddPII(3)) / sqrt(prinv_(2)), be2v_, CFpiCei_, 1.);
   d_cauchy_dFpi.scale(2.);
 
-  add_right_non_symmetric_holzapfel_product(
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
       d_cauchy_dFpi, *defgrd, Fe_, (dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
       d_cauchy_dFpi, *defgrd, beFe_, -dPI(1) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(d_cauchy_dFpi, beF_, Fe_, -dPI(1) / sqrt(prinv_(2)));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dFpi, beF_, Fe_, -dPI(1) / sqrt(prinv_(2)));
 
-  add_right_non_symmetric_holzapfel_product(
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
       d_cauchy_dF, id2_, FCpi_, (dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(d_cauchy_dF, id2_, beFCpi_, -dPI(1) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(d_cauchy_dF, be_, FCpi_, -dPI(1) / sqrt(prinv_(2)));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dF, id2_, beFCpi_, -dPI(1) / sqrt(prinv_(2)));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dF, be_, FCpi_, -dPI(1) / sqrt(prinv_(2)));
   d_cauchy_dF.scale(2.);
   d_cauchy_dFpi.scale(2.);
 
@@ -2214,8 +2218,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_elast(
   cmatisoprinc.multiply_nt(delta(4), CpiCCpi_, ircg_, 1.);
   cmatisoprinc.multiply_nt(delta(4), ircg_, CpiCCpi_, 1.);
   cmatisoprinc.multiply_nt(delta(5), ircg_, ircg_, 1.);
-  add_holzapfel_product(cmatisoprinc, ircg_, delta(6));
-  add_holzapfel_product(cmatisoprinc, Cpi_, delta(7));
+  Core::LinAlg::Tensor::add_holzapfel_product(cmatisoprinc, ircg_, delta(6));
+  Core::LinAlg::Tensor::add_holzapfel_product(cmatisoprinc, Cpi_, delta(7));
 
   return;
 }
@@ -2229,8 +2233,10 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
     const Core::LinAlg::Matrix<8, 1>& delta)
 {
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, CpiC_, invpldefgrd_, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, CpiC_, invpldefgrd_, gamma(1));
   dPK2dFpinvIsoprinc.multiply_nt(delta(0), Cpi_, CFpi_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(1), Cpi_, CFpiCe_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(1), CpiCCpi_, CFpi_, 1.);
@@ -2240,7 +2246,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   dPK2dFpinvIsoprinc.multiply_nt(delta(4), CpiCCpi_, CFpiCei_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(4), ircg_, CFpiCe_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(5), ircg_, CFpiCei_, 1.);
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
 
   // Mandel stress
   Core::LinAlg::Matrix<6, 1> Mv;
@@ -2256,8 +2263,10 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   MandelStressIsoprinc(2, 0) += Mv(5);
 
   // derivative of Mandel stress w.r.t. GL
-  add_symmetric_holzapfel_product(dMdCisoprinc, invpldefgrd_, invpldefgrd_, .5 * gamma(0));
-  add_symmetric_holzapfel_product(dMdCisoprinc, invpldefgrd_, FpiCe_, gamma(1));
+  Core::LinAlg::Tensor::add_symmetric_holzapfel_product(
+      dMdCisoprinc, invpldefgrd_, invpldefgrd_, .5 * gamma(0));
+  Core::LinAlg::Tensor::add_symmetric_holzapfel_product(
+      dMdCisoprinc, invpldefgrd_, FpiCe_, gamma(1));
   dMdCisoprinc.multiply_nt(delta(0), Ce_, Cpi_, 1.);
   dMdCisoprinc.multiply_nt(delta(1), Ce_, CpiCCpi_, 1.);
   dMdCisoprinc.multiply_nt(delta(1), Ce2_, Cpi_, 1.);
@@ -2269,9 +2278,12 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   dMdCisoprinc.multiply_nt(delta(5), id2V_, ircg_, 1.);
 
   // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, FpiTC_, id2_, gamma(0));
-  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, FpiTC_, CeM_, gamma(1));
-  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, CeFpiTC_, id2_, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dMdFpinvIsoprinc, FpiTC_, id2_, gamma(0));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dMdFpinvIsoprinc, FpiTC_, CeM_, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dMdFpinvIsoprinc, CeFpiTC_, id2_, gamma(1));
   dMdFpinvIsoprinc.multiply_nt(delta(0), Ce_, CFpi_, 1.);
   dMdFpinvIsoprinc.multiply_nt(delta(1), Ce_, CFpiCe_, 1.);
   dMdFpinvIsoprinc.multiply_nt(delta(1), Ce2_, CFpi_, 1.);

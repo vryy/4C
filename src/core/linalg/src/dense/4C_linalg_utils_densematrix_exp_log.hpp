@@ -21,9 +21,7 @@ derivatives in namespace Core::LinAlg
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
-#include "4C_mat_service.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 

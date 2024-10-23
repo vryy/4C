@@ -8,6 +8,7 @@
 #include "4C_mat_elasthyper_service.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_linalg_vector.hpp"
@@ -208,7 +209,7 @@ void Mat::elast_hyper_add_isotropic_stress_cmat(Core::LinAlg::Matrix<6, 1>& S_st
   // contribution: Cinv \otimes Cinv
   cmat.multiply_nt(delta(5), iC_stress, iC_stress, 1.0);
   // contribution: Cinv \odot Cinv
-  add_holzapfel_product(cmat, iC_stress, delta(6));
+  Core::LinAlg::Tensor::add_holzapfel_product(cmat, iC_stress, delta(6));
   // contribution: Id4^#
   cmat.update(delta(7), id4sharp, 1.0);
 }

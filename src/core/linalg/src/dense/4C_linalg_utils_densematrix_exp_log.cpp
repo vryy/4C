@@ -10,11 +10,12 @@
 #include "4C_linalg_utils_densematrix_exp_log.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_derivatives.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_four_tensor.hpp"
-#include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
-#include "4C_mat_service.hpp"
+
 FOUR_C_NAMESPACE_OPEN
 
 using vmap = Core::LinAlg::Voigt::IndexMappings;
@@ -283,7 +284,8 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_exp_1st_deriv(
   // compose derivative of matrix exponential (non-symmetric Voigt-notation)
   for (int n = 1; n <= nmax; n++)
     for (int m = 1; m <= n; m++)
-      FourC::Mat::add_non_symmetric_product(1. / fac[n], Xn.at(m - 1), Xn.at(n - m), output);
+      Core::LinAlg::Tensor::add_non_symmetric_product(
+          1. / fac[n], Xn.at(m - 1), Xn.at(n - m), output);
 
   return output;
 }
@@ -346,10 +348,10 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
     for (int n = 1; n <= nmax; n++)
     {
       for (int m = 1; m <= n / 2; m++)
-        FourC::Mat::add_symmetric_holzapfel_product(
+        Core::LinAlg::Tensor::add_symmetric_holzapfel_product(
             output, Xn.at(m - 1), Xn.at(n - m), .5 / fac[n]);
       if (n % 2 == 1)
-        FourC::Mat::add_symmetric_holzapfel_product(
+        Core::LinAlg::Tensor::add_symmetric_holzapfel_product(
             output, Xn.at((n - 1) / 2), Xn.at((n - 1) / 2), .25 / fac[n]);
     }
   }
@@ -430,12 +432,12 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
       s6 = EW(c, c) * EW(c, c) * s3;
 
       // calculate derivative
-      FourC::Mat::add_derivative_of_squared_tensor(output, s1, input, 1.);
+      Core::LinAlg::Tensor::add_derivative_of_squared_tensor(output, s1, input, 1.);
       output.update(-s2, id4sharp, 1.);
-      FourC::Mat::add_elasticity_tensor_product(output, -1. * s3, input, input, 1.);
-      FourC::Mat::add_elasticity_tensor_product(output, s4, input, id2, 1.);
-      FourC::Mat::add_elasticity_tensor_product(output, s5, id2, input, 1.);
-      FourC::Mat::add_elasticity_tensor_product(output, -s6, id2, id2, 1.);
+      Core::LinAlg::Tensor::add_elasticity_tensor_product(output, -1. * s3, input, input, 1.);
+      Core::LinAlg::Tensor::add_elasticity_tensor_product(output, s4, input, id2, 1.);
+      Core::LinAlg::Tensor::add_elasticity_tensor_product(output, s5, id2, input, 1.);
+      Core::LinAlg::Tensor::add_elasticity_tensor_product(output, -s6, id2, id2, 1.);
     }
 
     else if (abs(EW(0, 0) - EW(1, 1)) > EWtolerance &&
@@ -465,25 +467,26 @@ Core::LinAlg::Matrix<6, 6> Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(
         double fac = exp(EW(a, a)) / ((EW(a, a) - EW(b, b)) * (EW(a, a) - EW(c, c)));
 
         // + d X^2 / d X
-        FourC::Mat::add_derivative_of_squared_tensor(output, fac, input, 1.);
+        Core::LinAlg::Tensor::add_derivative_of_squared_tensor(output, fac, input, 1.);
 
         // - (x_b + x_c) I_s
         output.update(-1. * (EW(b, b) + EW(c, c)) * fac, id4sharp, 1.);
 
         // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
-        FourC::Mat::add_elasticity_tensor_product(
+        Core::LinAlg::Tensor::add_elasticity_tensor_product(
             output, -1. * fac * ((EW(a, a) - EW(b, b)) + (EW(a, a) - EW(c, c))), Ea, Ea, 1.);
 
 
         // - (x_b - x_c) (E_b \dyad E_b)
-        FourC::Mat::add_elasticity_tensor_product(
+        Core::LinAlg::Tensor::add_elasticity_tensor_product(
             output, -1. * fac * (EW(b, b) - EW(c, c)), Eb, Eb, 1.);
 
         // + (x_b - x_c) (E_c \dyad E_c)
-        FourC::Mat::add_elasticity_tensor_product(output, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
+        Core::LinAlg::Tensor::add_elasticity_tensor_product(
+            output, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
 
         // dy / dx_a E_a \dyad E_a
-        FourC::Mat::add_elasticity_tensor_product(output, exp(EW(a, a)), Ea, Ea, 1.);
+        Core::LinAlg::Tensor::add_elasticity_tensor_product(output, exp(EW(a, a)), Ea, Ea, 1.);
       }  // end loop over all eigenvalues
     }
     else
@@ -502,9 +505,9 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     id_3x3(i, i) = 1.0;
   }
   Core::LinAlg::Matrix<9, 9> id4(true);
-  FourC::Mat::add_non_symmetric_product(1.0, id_3x3, id_3x3, id4);
+  Core::LinAlg::Tensor::add_non_symmetric_product(1.0, id_3x3, id_3x3, id4);
   Core::LinAlg::FourTensor<3> id4_FourTensor(true);
-  FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(id4_FourTensor, id4);
+  Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(id4_FourTensor, id4);
   Core::LinAlg::Matrix<3, 3> temp3x3(true);
   Core::LinAlg::Matrix<9, 9> temp9x9(true);
   Core::LinAlg::FourTensor<3> tempFourTensor(true);
@@ -558,26 +561,26 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
       A_minus_id_mmin1.multiply_nn(1.0, temp3x3, A_minus_id, 0.0);
 
       // get dA_minus_id_m_dA as a FourTensor
-      FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(
+      Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(
           dA_minus_id_mmin1_dA_FourTensor, dA_minus_id_m_dA);
 
       // update derivative dA_minus_id_m_dA
       temp9x9.clear();
-      FourC::Mat::add_non_symmetric_product(1.0, A_minus_id_mmin1, id_3x3, temp9x9);
-      FourC::Mat::clear_four_tensor(tempFourTensor);
-      FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-      FourC::Mat::multiply_four_tensor_four_tensor(
+      Core::LinAlg::Tensor::add_non_symmetric_product(1.0, A_minus_id_mmin1, id_3x3, temp9x9);
+      tempFourTensor.clear();
+      Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+      Core::LinAlg::Tensor::multiply_four_tensor_four_tensor(
           leftFourTensor, tempFourTensor, id4_FourTensor, true);
-      FourC::Mat::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, leftFourTensor);
+      Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, leftFourTensor);
       dA_minus_id_m_dA.update(1.0, temp9x9, 0.0);
 
       temp9x9.clear();
-      FourC::Mat::add_non_symmetric_product(1.0, id_3x3, A_minus_id_mmin1, temp9x9);
-      FourC::Mat::clear_four_tensor(tempFourTensor);
-      FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-      FourC::Mat::multiply_four_tensor_four_tensor(
+      Core::LinAlg::Tensor::add_non_symmetric_product(1.0, id_3x3, A_minus_id_mmin1, temp9x9);
+      tempFourTensor.clear();
+      Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+      Core::LinAlg::Tensor::multiply_four_tensor_four_tensor(
           rightFourTensor, tempFourTensor, dA_minus_id_mmin1_dA_FourTensor, true);
-      FourC::Mat::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, rightFourTensor);
+      Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, rightFourTensor);
       dA_minus_id_m_dA.update(1.0, temp9x9, 1.0);
       // increment m
       m += 1;
@@ -606,10 +609,10 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     // \f$ \frac{\partial  \left( \bm{I} + \bm{A} \right)^{-1}}{\partial \bm{A}}  \f$
     Core::LinAlg::Matrix<9, 9> dinv_id_plus_A_dA(true);
     temp9x9.clear();
-    FourC::Mat::add_non_symmetric_product(1.0, inv_id_plus_A, inv_id_plus_A, temp9x9);
+    Core::LinAlg::Tensor::add_non_symmetric_product(1.0, inv_id_plus_A, inv_id_plus_A, temp9x9);
     dinv_id_plus_A_dA.multiply_nn(-1.0, temp9x9, id4, 0.0);
     Core::LinAlg::FourTensor<3> dinv_id_plus_A_dA_FourTensor(true);
-    FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(
+    Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(
         dinv_id_plus_A_dA_FourTensor, dinv_id_plus_A_dA);
 
     // update matrix: \f$ \left[ \left( \bm{I} - \bm{A} \right) \left( \bm{I} + \bm{A}
@@ -620,24 +623,25 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
     // get derivative of the update matrix w.r.t. input matrix \f$ \bm{A} \f$
     Core::LinAlg::Matrix<9, 9> dupdateMat_dA(true);
     temp9x9.clear();
-    FourC::Mat::add_non_symmetric_product(1.0, id_minus_A, id_3x3, temp9x9);
-    FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-    FourC::Mat::multiply_four_tensor_four_tensor(
+    Core::LinAlg::Tensor::add_non_symmetric_product(1.0, id_minus_A, id_3x3, temp9x9);
+    Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+    Core::LinAlg::Tensor::multiply_four_tensor_four_tensor(
         leftFourTensor, tempFourTensor, dinv_id_plus_A_dA_FourTensor, true);
-    FourC::Mat::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, leftFourTensor);
+    Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, leftFourTensor);
     dupdateMat_dA.update(1.0, temp9x9, 0.0);
 
     temp9x9.clear();
-    FourC::Mat::add_non_symmetric_product(1.0, id_3x3, inv_id_plus_A, temp9x9);
-    FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-    FourC::Mat::multiply_four_tensor_four_tensor(
+    Core::LinAlg::Tensor::add_non_symmetric_product(1.0, id_3x3, inv_id_plus_A, temp9x9);
+    Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+    Core::LinAlg::Tensor::multiply_four_tensor_four_tensor(
         rightFourTensor, tempFourTensor, id4_FourTensor, true);
-    FourC::Mat::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, rightFourTensor);
+    Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, rightFourTensor);
     dupdateMat_dA.update(-1.0, temp9x9, 1.0);
 
 
     Core::LinAlg::FourTensor<3> dupdateMat_dA_FourTensor(true);
-    FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(dupdateMat_dA_FourTensor, dupdateMat_dA);
+    Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(
+        dupdateMat_dA_FourTensor, dupdateMat_dA);
 
     // declare first derivatives of the m-th and m-1-th update term
     Core::LinAlg::Matrix<9, 9> dupdateMat_dA_mmin1(true);
@@ -665,23 +669,23 @@ Core::LinAlg::Matrix<9, 9> Core::LinAlg::matrix_3x3_log_1st_deriv(
 
       // update derivatives of the previous and current values for the next iteration
       dupdateMat_dA_mmin1 = dupdateMat_dA_m;
-      FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(
+      Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(
           dupdateMat_dA_mmin1_FourTensor, dupdateMat_dA_mmin1);
 
       temp9x9.clear();
-      FourC::Mat::add_non_symmetric_product(1.0, updateMat_mmin1, id_3x3, temp9x9);
-      FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-      FourC::Mat::multiply_four_tensor_four_tensor(
+      Core::LinAlg::Tensor::add_non_symmetric_product(1.0, updateMat_mmin1, id_3x3, temp9x9);
+      Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+      Core::LinAlg::Tensor::multiply_four_tensor_four_tensor(
           leftFourTensor, tempFourTensor, dupdateMat_dA_FourTensor, true);
-      FourC::Mat::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, leftFourTensor);
+      Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, leftFourTensor);
       dupdateMat_dA_m.update(1.0, temp9x9, 0.0);
 
       temp9x9.clear();
-      FourC::Mat::add_non_symmetric_product(1.0, id_3x3, updateMat, temp9x9);
-      FourC::Mat::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
-      FourC::Mat::multiply_four_tensor_four_tensor(
+      Core::LinAlg::Tensor::add_non_symmetric_product(1.0, id_3x3, updateMat, temp9x9);
+      Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+      Core::LinAlg::Tensor::multiply_four_tensor_four_tensor(
           rightFourTensor, tempFourTensor, dupdateMat_dA_mmin1_FourTensor, true);
-      FourC::Mat::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, rightFourTensor);
+      Core::LinAlg::Voigt::setup_9x9_voigt_matrix_from_four_tensor(temp9x9, rightFourTensor);
       dupdateMat_dA_m.update(1.0, temp9x9, 1.0);
 
       // return if converged

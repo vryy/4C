@@ -9,8 +9,8 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_material_factory.hpp"
-#include "4C_mat_service.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 #include "4C_material_base.hpp"
 #include "4C_material_parameter_base.hpp"
@@ -123,7 +123,7 @@ void Mat::Elastic::IsoAnisoExpo::add_stress_aniso_modified(const Core::LinAlg::M
   Saniso.update(-incJ / 3. * traceCSfbar, icg, incJ);
 
   Core::LinAlg::Matrix<6, 6> Psl(true);  // Psl = Cinv o Cinv - 1/3 Cinv x Cinv
-  add_holzapfel_product(Psl, icg, 1.0);
+  Core::LinAlg::Tensor::add_holzapfel_product(Psl, icg, 1.0);
   Psl.multiply_nt(-1. / 3., icg, icg, 1.0);
 
   Core::LinAlg::Matrix<6, 1> Aiso(structural_tensor_);

@@ -10,6 +10,7 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -813,7 +814,7 @@ void Mat::ViscoElastHyper::evaluate_iso_visco_modified(
   // contribution: 2/3*Tr(J^(-2/3)modstress) (Cinv \odot Cinv - 1/3 Cinv \otimes Cinv)
   modcmat.clear();
   modcmat.multiply_nt(-1.0 / 3.0, icg, icg);
-  add_holzapfel_product(modcmat, icg, 1.0);
+  Core::LinAlg::Tensor::add_holzapfel_product(modcmat, icg, 1.0);
   Core::LinAlg::Matrix<1, 1> tracemat;
   tracemat.multiply_tn(2. / 3. * std::pow(modinv(2), -2. / 3.), modstress, rcg);
   cmatisomodisovisco.update(tracemat(0, 0), modcmat, 1.0);

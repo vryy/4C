@@ -11,11 +11,11 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_exp_log.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 #include "4C_matelast_summand.hpp"
 
 #include <Teuchos_SerialDenseSolver.hpp>
@@ -497,7 +497,7 @@ void Mat::PlasticElastHyperVCU::eval_dce_dlp(const Core::LinAlg::Matrix<3, 3> fp
 
   Core::LinAlg::Matrix<3, 3> tmp;
   tmp.multiply_tn(next_fpi, rcg);
-  add_right_non_symmetric_holzapfel_product(dcedfpi, tmp, id2, 1.0);
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(dcedfpi, tmp, id2, 1.0);
 
   // Derivative of inverse plastic deformation gradient
   dFpiDdeltaDp.clear();
@@ -731,8 +731,10 @@ void Mat::PlasticElastHyperVCU::evaluate_plast(Core::LinAlg::Matrix<6, 9>& dPK2d
     const Core::LinAlg::Matrix<9, 1>& CFpiCe, const Core::LinAlg::Matrix<6, 1>& CpiCCpi)
 {
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2, Fpi, gamma(0));
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, CpiC, Fpi, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, id2, Fpi, gamma(0));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, CpiC, Fpi, gamma(1));
   dPK2dFpinvIsoprinc.multiply_nt(delta(0), Cpi, CFpi, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(1), Cpi, CFpiCe, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(1), CpiCCpi, CFpi, 1.);
@@ -742,7 +744,8 @@ void Mat::PlasticElastHyperVCU::evaluate_plast(Core::LinAlg::Matrix<6, 9>& dPK2d
   dPK2dFpinvIsoprinc.multiply_nt(delta(4), CpiCCpi, CFpiCei, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(4), ircg, CFpiCe, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(5), ircg, CFpiCei, 1.);
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2, FpiCe, 0.5 * delta(7));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, id2, FpiCe, 0.5 * delta(7));
 }
 
 void Mat::PlasticElastHyperVCU::evaluate_kin_quant_plast(const int gp, const int eleGID,

@@ -9,6 +9,7 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_anisotropy_extension.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
@@ -349,7 +350,8 @@ void Mixture::MixtureConstituentElastHyperElastinMembrane::evaluate_stress_c_mat
   static Core::LinAlg::Matrix<6, 6> dAradgriXAradgr_symdC(false);
   dAradgriXAradgr_symdC.clear();
 
-  Mat::add_holzapfel_product(dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
+  Core::LinAlg::Tensor::add_holzapfel_product(
+      dAradgriXAradgr_symdC, iFinTAorthgrTiXTAorthgriFin_sym_stress, -2.0);
 
   cmat.multiply_nt(2.0 * mue * mue_frac_[gp] / detX, iFinTAorthgrTiXTAorthgriFin_sym_stress,
       iFinTAorthgrTiXTAorthgriFin_sym_stress, 0.0);

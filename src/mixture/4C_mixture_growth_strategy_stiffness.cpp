@@ -8,8 +8,8 @@
 #include "4C_mixture_growth_strategy_stiffness.hpp"
 
 #include "4C_linalg_fixedsizematrix_generators.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
-#include "4C_mat_service.hpp"
 #include "4C_material_parameter_base.hpp"
 #include "4C_mixture_growth_strategy.hpp"
 
@@ -74,7 +74,7 @@ void Mixture::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
   // contribution: Cinv \otimes Cinv
   cmat.multiply_nt(delta5, iC_stress, iC_stress, 0.0);
   // contribution: Cinv \odot Cinv
-  Mat::add_holzapfel_product(cmat, iC_stress, delta6);
+  Core::LinAlg::Tensor::add_holzapfel_product(cmat, iC_stress, delta6);
 
   cmat.multiply_nn(dgamma2DGrowthScalar, iC_stress, dCurrentReferenceGrowthScalarDC, 1.0);
 }

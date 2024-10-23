@@ -9,8 +9,8 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 
 #include <vector>
 
@@ -370,10 +370,10 @@ void Mat::ViscoNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
 
   // add volumetric elastic part 1
   // add scalar2 Cinv o Cinv (see Holzapfel p. 254)
-  add_holzapfel_product((*cmat), Cinv, scalar2);
+  Core::LinAlg::Tensor::add_holzapfel_product((*cmat), Cinv, scalar2);
 
   // add visco-elastic deviatoric part 1
-  add_holzapfel_product(*cmat, Cinv, scalarvisco * scalar3);
+  Core::LinAlg::Tensor::add_holzapfel_product(*cmat, Cinv, scalarvisco * scalar3);
 
   for (int i = 0; i < 6; ++i)
   {

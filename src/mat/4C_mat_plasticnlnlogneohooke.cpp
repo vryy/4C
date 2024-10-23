@@ -9,6 +9,7 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
@@ -600,7 +601,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
     // - sum_1^3 (2 * tau N_aaaa)
     tmp1.multiply_nt(
         material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
-    add_elasticity_tensor_product(*cmat, -2.0 * (dev_KH(a) + pressure), tmp1, tmp1, 1.0);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(
+        *cmat, -2.0 * (dev_KH(a) + pressure), tmp1, tmp1, 1.0);
 
     for (int b = 0; b < 3; b++)
     {
@@ -610,7 +612,8 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
           material_principal_directions.at(a), material_principal_directions.at(a));  // N_{aa}
       tmp2.multiply_nt(
           material_principal_directions.at(b), material_principal_directions.at(b));  // N_{bb}
-      add_elasticity_tensor_product(*cmat, D_ep_principal(a, b), tmp1, tmp2, 1.0);
+      Core::LinAlg::Tensor::add_elasticity_tensor_product(
+          *cmat, D_ep_principal(a, b), tmp1, tmp2, 1.0);
 
       if (a != b)
       {
@@ -628,8 +631,10 @@ void Mat::PlasticNlnLogNeoHooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defg
             material_principal_directions.at(a), material_principal_directions.at(b));  // N_{ab}
         tmp2.multiply_nt(
             material_principal_directions.at(b), material_principal_directions.at(a));  // N_{ba}
-        add_elasticity_tensor_product(*cmat, fac, tmp1, tmp1, 1.0);                     // N_{abab}
-        add_elasticity_tensor_product(*cmat, fac, tmp1, tmp2, 1.0);                     // N_{abba}
+        Core::LinAlg::Tensor::add_elasticity_tensor_product(
+            *cmat, fac, tmp1, tmp1, 1.0);  // N_{abab}
+        Core::LinAlg::Tensor::add_elasticity_tensor_product(
+            *cmat, fac, tmp1, tmp2, 1.0);  // N_{abba}
 
       }  // end if (a!=b)
     }    // end loop b

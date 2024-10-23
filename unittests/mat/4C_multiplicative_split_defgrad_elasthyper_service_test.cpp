@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_material_factory.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_matelast_isoneohooke.hpp"
