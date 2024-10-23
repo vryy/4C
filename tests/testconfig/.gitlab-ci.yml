@@ -71,7 +71,7 @@ before_script:
   # configure
   - |
     cd ${CI_PROJECT_DIR}
-    ./set_up_dev_env.sh
+    ./utilities/set_up_dev_env.sh
     cd ${CI_PROJECT_DIR}/../build
     cmake ${CI_PROJECT_DIR} --fresh --preset=${CMAKE_PRESET}
   - echo Building the following targets ${BUILD_TARGETS}
@@ -139,7 +139,7 @@ checkcode:
   image: $CI_REGISTRY_IMAGE/$FOUR_C_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
     - echo code check
-    - ./set_up_dev_env.sh
+    - ./utilities/set_up_dev_env.sh
     # Special check for code owner rules: this check runs differently in CI since we want to check that every rule
     # matches at least one file. This is not the feasible in the normal pre-commit check.
     - bash utilities/code_checks/check_code_owner_rules
@@ -476,7 +476,7 @@ verify_headers:
     # configure
     - |
       cd ${CI_PROJECT_DIR}
-      ./set_up_dev_env.sh
+      ./utilities/set_up_dev_env.sh
       cd ${CI_PROJECT_DIR}/../build
       # Configure verification of header sets.
       cmake ${CI_PROJECT_DIR} --fresh --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
@@ -501,7 +501,7 @@ readthedocs:
     - echo Create ReadTheDocs documentation
     # loading python virtual environment
     - cd ${CI_PROJECT_DIR}
-    - ./set_up_dev_env.sh
+    - ./utilities/set_up_dev_env.sh
     - *clean-build-folder-for-nightly-pipelines
     - mkdir -p ${CI_PROJECT_DIR}/../build && cd ${CI_PROJECT_DIR}/../build
 

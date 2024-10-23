@@ -140,7 +140,7 @@ For testing and active development, you need to create a python virtual environm
 execute:
 
 ```
-./set_up_dev_env.sh
+./utilities/set_up_dev_env.sh
 ```
 
 #### Create the Build Directory
