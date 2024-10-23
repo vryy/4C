@@ -1,3 +1,10 @@
+# This file is part of 4C multiphysics licensed under the
+# GNU Lesser General Public License v3.0 or later.
+#
+# See the LICENSE.md file in the top-level for license information.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+
 function(_get_target_property_or_empty _result_var _target _property)
   get_target_property(${_result_var} ${_target} ${_property})
   if(${_result_var})

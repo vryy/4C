@@ -52,6 +52,7 @@ repos:
     rev: v1.5.5
     hooks:
       - id: insert-license
+        name: Insert license header (//)
         types_or: [c++, c]
         exclude: 'mm$'
         args:
@@ -60,6 +61,16 @@ repos:
           - --comment-style
           - '//'
           - --detect-license-in-X-top-lines=1
+      - id: insert-license
+        name: Insert license header (#)
+        types_or: [python, cmake, dockerfile, shell]
+        args:
+          - --license-filepath
+          - utilities/license_header.txt
+          - --comment-style
+          - '#'
+          # Allow the first line to be a shebang separated by a newline.
+          - --detect-license-in-X-top-lines=3
 
   - repo: local
     hooks:
