@@ -46,6 +46,65 @@ namespace
     return sublist->sublist(name);
   }
 
+  void add_entry(const std::string& key, const std::string& value, Teuchos::ParameterList& list)
+  {
+    // safety check: Is there a duplicate of the same parameter?
+    if (list.isParameter(key))
+      FOUR_C_THROW("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
+
+    if (key.empty()) FOUR_C_THROW("Internal error: missing key.", key.c_str());
+    // safety check: Is the parameter without any specified value?
+    if (value.empty())
+      FOUR_C_THROW("Missing value for parameter %s. Fix your input file!", key.c_str());
+
+    {  // try to find an int
+      std::stringstream ssi;
+      int iv;
+
+      ssi << value;
+      ssi >> iv;
+
+      if (ssi.eof())
+      {
+        list.set(key, iv);
+        return;
+      }
+    }
+
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+    // somehow the following test whether we have a double or not
+    // creates always an internal floating point exception (FE_INVALID). An alternative
+    // implementation using boost::lexical_cast<double> does not solve this problem!
+    // Better temporarily disable this floating point exception in the following,
+    // so that we can go on.
+    feclearexcept(FE_INVALID);
+    /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+    fedisableexcept(FE_INVALID);
+#endif
+
+    {  // try to find a double
+      std::stringstream ssd;
+      double dv;
+
+      ssd << value;
+      ssd >> dv;
+
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+      feclearexcept(FE_INVALID);
+      /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+      feenableexcept(FE_INVALID | FE_DIVBYZERO);
+#endif
+
+      if (ssd.eof())
+      {
+        list.set(key, dv);
+        return;
+      }
+    }
+
+    // if it is not an int or a double it must be a string
+    list.set(key, value);
+  }
 
 }  // namespace
 
@@ -54,13 +113,13 @@ namespace Core::IO
   namespace Internal
   {
 
-    StreamLineIterator::StreamLineIterator(std::istream& stream)
-        : StreamLineIterator(stream, std::numeric_limits<int>::max())
+    StreamLineIterator::StreamLineIterator(std::shared_ptr<std::istream> stream)
+        : StreamLineIterator(std::move(stream), std::numeric_limits<int>::max())
     {
     }
 
-    StreamLineIterator::StreamLineIterator(std::istream& stream, int max_reads)
-        : stream_(&stream), max_reads_(max_reads)
+    StreamLineIterator::StreamLineIterator(std::shared_ptr<std::istream> stream, int max_reads)
+        : stream_(std::move(stream)), max_reads_(max_reads)
     {
       ++(*this);
     }
@@ -144,14 +203,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DatFileReader::DatFileReader(std::string filename)
-      : filename_(std::move(filename)), comm_(Teuchos::null), outflag_(0)
-  {
-  }
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
+  DatFileReader::DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag)
       : filename_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
   {
     read_dat();
@@ -170,17 +222,24 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool DatFileReader::read_section(std::string name, Teuchos::ParameterList& list)
+  bool DatFileReader::has_section(const std::string& section_name) const
   {
-    if (name.length() < 3 or name[0] != '-' or name[1] != '-')
-      FOUR_C_THROW("Illegal section name '%s'", name.c_str());
+    const auto range = line_range(section_name);
+    return range.begin() != range.end();
+  }
 
-    // The section name is desired from outside. Thus, we consider it as valid
-    record_section_used(name);
 
-    Teuchos::ParameterList& sublist = find_sublist(name.substr(2), list);
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  bool read_parameters_in_section(
+      DatFileReader& reader, const std::string& section_name, Teuchos::ParameterList& list)
+  {
+    if (section_name.length() < 3 or section_name[0] != '-' or section_name[1] != '-')
+      FOUR_C_THROW("Illegal section name '%s'", section_name.c_str());
 
-    for (const auto& line : lines_in_section(name))
+    Teuchos::ParameterList& sublist = find_sublist(section_name.substr(2), list);
+
+    for (const auto& line : reader.lines_in_section(section_name))
     {
       // If the line starts with dashes we found the beginning of the next section and terminate
       // the read process of the current section.
@@ -199,7 +258,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::read_design(const std::string& name,
+  void read_design(DatFileReader& reader, const std::string& name,
       std::vector<std::vector<int>>& dobj_fenode,
       const std::function<const Core::FE::Discretization&(const std::string& name)>&
           get_discretization)
@@ -209,7 +268,7 @@ namespace Core::IO
     std::string sectionname = name + "-NODE TOPOLOGY";
     std::string marker = std::string("--") + sectionname;
 
-    for (const auto& l : lines_in_section(marker))
+    for (const auto& l : reader.lines_in_section(marker))
     {
       int dobj;
       int nodeid;
@@ -278,67 +337,41 @@ namespace Core::IO
         const Core::FE::Discretization& actdis = get_discretization(disname);
 
         std::vector<double> box_specifications;
-        if (cached_box_specifications_.find(disname) != cached_box_specifications_.end())
-        {
-          box_specifications = cached_box_specifications_[disname];
-        }
-        else
         {
           for (int init = 0; init < 9; ++init) box_specifications.push_back(0.0);
-          if (comm_->MyPID() == 0)  // Reading is done by proc 0
+          if (reader.get_comm().MyPID() == 0)  // Reading is done by proc 0
           {
             // get original domain section from the *.dat-file
             std::string dommarker = "--" + disname + " DOMAIN";
             std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
-            auto di = excludepositions_.find(dommarker);
-            if (di != excludepositions_.end())
+
+            FOUR_C_THROW_UNLESS(reader.has_section(dommarker),
+                "Inputreader: Couldn't find domain section for discretization %s !",
+                disname.c_str());
+
+            for (const auto& line : reader.lines_in_section(dommarker))
             {
-              std::ifstream tmpfile(filename_.c_str());
-              tmpfile.seekg(di->second.first);
-              std::string line;
-              while (getline(tmpfile, line))
+              std::istringstream t{std::string{line}};
+              std::string key;
+              t >> key;
+
+              if (key == "LOWER_BOUND")
               {
-                // remove comments, trailing and leading whitespaces
-                // compact internal whitespaces
-                line = Core::Utils::strip_comment(line);
-
-                // line is now empty
-                if (line.size() == 0) continue;
-
-                if (line.find("--") == 0)
-                {
-                  break;
-                }
-                else
-                {
-                  std::istringstream t;
-                  t.str(line);
-                  std::string key;
-                  t >> key;
-
-                  if (key == "LOWER_BOUND")
-                  {
-                    t >> box_specifications[0] >> box_specifications[1] >> box_specifications[2];
-                  }
-                  else if (key == "UPPER_BOUND")
-                  {
-                    t >> box_specifications[3] >> box_specifications[4] >> box_specifications[5];
-                  }
-                  else if (key == "ROTATION")
-                  {
-                    t >> box_specifications[6] >> box_specifications[7] >> box_specifications[8];
-                  }
-                }
+                t >> box_specifications[0] >> box_specifications[1] >> box_specifications[2];
+              }
+              else if (key == "UPPER_BOUND")
+              {
+                t >> box_specifications[3] >> box_specifications[4] >> box_specifications[5];
+              }
+              else if (key == "ROTATION")
+              {
+                t >> box_specifications[6] >> box_specifications[7] >> box_specifications[8];
               }
             }
-            else
-              FOUR_C_THROW("Inputreader: Couldn't find domain section for discretization %s !",
-                  disname.c_str());
           }
           // All other processors get this info broadcasted
-          comm_->Broadcast(
+          reader.get_comm().Broadcast(
               box_specifications.data(), static_cast<int>(box_specifications.size()), 0);
-          cached_box_specifications_[disname] = box_specifications;
         }
 
         // determine the active discretizations bounding box
@@ -412,7 +445,7 @@ namespace Core::IO
               (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
             dnodes.insert(node->id());
         }
-        Core::LinAlg::gather_all(dnodes, *comm_);
+        Core::LinAlg::gather_all(dnodes, reader.get_comm());
         topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
       }
 
@@ -433,20 +466,17 @@ namespace Core::IO
         dobj_fenode[topo.first].assign(topo.second.begin(), topo.second.end());
       }
     }
-
-    // The section name is desired from outside. Thus, we consider it as valid
-    record_section_used(marker);
   }
 
 
   //----------------------------------------------------------------------
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
-  void DatFileReader::read_knots(
-      const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
+  void read_knots(DatFileReader& reader, const std::string& name,
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
-    const int myrank = comm_->MyPID();
+    const int myrank = reader.get_comm().MyPID();
 
     Teuchos::Time time("", true);
 
@@ -484,11 +514,10 @@ namespace Core::IO
 
     // another valid section name was found
     const std::string sectionname = "--" + field + " KNOTVECTORS";
-    record_section_used(sectionname);
 
     if (myrank == 0)
     {
-      if (!my_output_flag())
+      if (!reader.my_output_flag())
       {
         Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
         fflush(stdout);
@@ -510,7 +539,7 @@ namespace Core::IO
       // temporary string
       std::string tmp;
       // loop lines in file
-      for (const auto& line : lines_in_section(sectionname))
+      for (const auto& line : reader.lines_in_section(sectionname))
       {
         // count number of patches in knotvector section of
         // this discretisation
@@ -547,7 +576,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!my_output_flag())
+      if (!reader.my_output_flag())
       {
         printf("                        %8d patches", npatches);
         fflush(stdout);
@@ -602,7 +631,7 @@ namespace Core::IO
       std::vector<int> count_vals(nurbs_dim);
 
       // loop lines in file
-      for (const auto& line : lines_in_section(sectionname))
+      for (const auto& line : reader.lines_in_section(sectionname))
       {
         std::istringstream file{std::string{line}};
         file >> tmp;
@@ -749,7 +778,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!my_output_flag())
+      if (!reader.my_output_flag())
       {
         Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
@@ -759,69 +788,6 @@ namespace Core::IO
     }
   }
 
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void DatFileReader::add_entry(
-      const std::string& key, const std::string& value, Teuchos::ParameterList& list)
-  {
-    // safety check: Is there a duplicate of the same parameter?
-    if (list.isParameter(key))
-      FOUR_C_THROW("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
-
-    if (key.empty()) FOUR_C_THROW("Internal error: missing key.", key.c_str());
-    // safety check: Is the parameter without any specified value?
-    if (value.empty())
-      FOUR_C_THROW("Missing value for parameter %s. Fix your input file!", key.c_str());
-
-    {  // try to find an int
-      std::stringstream ssi;
-      int iv;
-
-      ssi << value;
-      ssi >> iv;
-
-      if (ssi.eof())
-      {
-        list.set(key, iv);
-        return;
-      }
-    }
-
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-    // somehow the following test whether we have a double or not
-    // creates always an internal floating point exception (FE_INVALID). An alternative
-    // implementation using boost::lexical_cast<double> does not solve this problem!
-    // Better temporarily disable this floating point exception in the following,
-    // so that we can go on.
-    feclearexcept(FE_INVALID);
-    /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
-    fedisableexcept(FE_INVALID);
-#endif
-
-    {  // try to find a double
-      std::stringstream ssd;
-      double dv;
-
-      ssd << value;
-      ssd >> dv;
-
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-      feclearexcept(FE_INVALID);
-      /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
-      feenableexcept(FE_INVALID | FE_DIVBYZERO);
-#endif
-
-      if (ssd.eof())
-      {
-        list.set(key, dv);
-        return;
-      }
-    }
-
-    // if it is not an int or a double it must be a string
-    list.set(key, value);
-  }
 
 
   /*----------------------------------------------------------------------*/
@@ -854,10 +820,8 @@ namespace Core::IO
     exclude.emplace_back("--CELLSCATRA DOMAIN");
     exclude.emplace_back("--PARTICLES");
 
-    Teuchos::RCP<Epetra_Comm> comm = comm_;
-
     int arraysize = 0;
-    if (comm->MyPID() == 0)
+    if (comm_.MyPID() == 0)
     {
       std::ifstream file(filename_.c_str());
       if (not file) FOUR_C_THROW("unable to open file: %s", filename_.c_str());
@@ -967,15 +931,15 @@ namespace Core::IO
     // Now lets do all the parallel setup. Afterwards all processors
     // have to be the same.
 
-    if (comm->NumProc() > 1)
+    if (comm_.NumProc() > 1)
     {
       int num_lines = lines_.size();
       /* Now that we use a variable number of bytes per line we have to
        * communicate the buffer size as well. */
-      comm->Broadcast(&arraysize, 1, 0);
-      comm->Broadcast(&num_lines, 1, 0);
+      comm_.Broadcast(&arraysize, 1, 0);
+      comm_.Broadcast(&num_lines, 1, 0);
 
-      if (comm->MyPID() > 0)
+      if (comm_.MyPID() > 0)
       {
         /*--------------------------------------allocate space for copy of file */
         inputfile_.resize(arraysize);
@@ -983,13 +947,13 @@ namespace Core::IO
       }
 
       // There are no char based functions available! Do it by hand!
-      // comm->Broadcast(inputfile_.data(),arraysize,0);
+      // comm_.Broadcast(inputfile_.data(),arraysize,0);
 
-      const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(*comm);
+      const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
 
       MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
 
-      if (comm->MyPID() > 0)
+      if (comm_.MyPID() > 0)
       {
         // Chunk the raw input file into lines: whenever encountering a null-terminator,
         // add the line that just ended to the vector of lines.
@@ -1011,7 +975,7 @@ namespace Core::IO
       // distribute excluded section positions
       for (auto& i : exclude)
       {
-        if (comm->MyPID() == 0)
+        if (comm_.MyPID() == 0)
         {
           auto ep = excludepositions_.find(i);
           if (ep == excludepositions_.end())
@@ -1020,7 +984,7 @@ namespace Core::IO
           }
         }
         std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[i];
-        // comm->Broadcast(&p.second,1,0);
+        // comm_.Broadcast(&p.second,1,0);
         MPI_Bcast(&p.second, 1, MPI_INT, 0, mpicomm.GetMpiComm());
       }
     }
@@ -1088,35 +1052,23 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool DatFileReader::print_unknown_sections()
+  bool DatFileReader::print_unknown_sections(std::ostream& out) const
   {
-    // This function shell be called only after all reading with DatFileReader
-    // is finished. Only then we have a proper protocol of (in-)valid section names
-
     const bool printout = std::any_of(
         knownsections_.begin(), knownsections_.end(), [](const auto& kv) { return !kv.second; });
 
     // now it's time to create noise on the screen
-    if (printout and (get_comm()->MyPID() == 0))
+    if (printout and (get_comm().MyPID() == 0))
     {
-      Core::IO::cout << "\nERROR!"
-                     << "\n--------"
-                     << "\nThe following input file sections remained unused (obsolete or typo?):"
-                     << Core::IO::endl;
+      out << "\nERROR!"
+          << "\n--------"
+          << "\nThe following input file sections remained unused (obsolete or typo?):\n";
       for (const auto& [section_name, known] : knownsections_)
       {
-        if (!known) Core::IO::cout << section_name << Core::IO::endl;
+        if (!known) out << section_name << '\n';
       }
-      Core::IO::cout << Core::IO::endl;
+      out << std::endl;
     }
-
-    // we wait till all procs are here. Otherwise a hang up might occur where
-    // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
-    // we also want to have the printing above being finished.
-    get_comm()->Barrier();
-    if (printout)
-      FOUR_C_THROW(
-          "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 
     return printout;
   }

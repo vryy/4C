@@ -22,29 +22,16 @@ namespace Core::IO
   class DatFileReader;
 }
 
-namespace Input
+namespace PARTICLEENGINE
 {
-  class ParticleReader
-  {
-   public:
-    //! construct a reader that reads a given section
-    ParticleReader(Core::IO::DatFileReader& reader, std::string sectionname);
+  /**
+   * Read particles from a dat file. The particles are read from the section
+   * with name @p section_name.
+   */
+  void read_particles(Core::IO::DatFileReader& reader, const std::string& section_name,
+      std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
 
-    //! do the actual reading of particles
-    void read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
-
-   private:
-    //! the main dat file reader
-    Core::IO::DatFileReader& reader_;
-
-    //! my comm
-    Teuchos::RCP<Epetra_Comm> comm_;
-
-    //! my section to read
-    std::string sectionname_;
-  };
-
-}  // namespace Input
+}  // namespace PARTICLEENGINE
 
 FOUR_C_NAMESPACE_CLOSE
 

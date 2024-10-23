@@ -16,35 +16,20 @@
 
 #include <Teuchos_Time.hpp>
 
-#include <mutex>
-#include <utility>
-
 FOUR_C_NAMESPACE_OPEN
 
-
-/*---------------------------------------------------------------------------*
- | constructor                                                sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-Input::ParticleReader::ParticleReader(Core::IO::DatFileReader& reader, std::string sectionname)
-    : reader_(reader), comm_(reader.get_comm()), sectionname_(std::move(sectionname))
+void PARTICLEENGINE::read_particles(Core::IO::DatFileReader& reader,
+    const std::string& section_name, std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
 {
-  // empty constructor
-}
-
-/*---------------------------------------------------------------------------*
- | do the actual reading of particles                         sfuchs 03/2018 |
- *---------------------------------------------------------------------------*/
-void Input::ParticleReader::read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
-{
-  const int myrank = comm_->MyPID();
+  const int myrank = reader.get_comm().MyPID();
   if (myrank > 0) return;
 
   Teuchos::Time time("", true);
 
   bool any_particles_read = false;
-  for (const auto& particle_line : reader_.lines_in_section(sectionname_))
+  for (const auto& particle_line : reader.lines_in_section(section_name))
   {
-    if (!any_particles_read && !reader_.my_output_flag())
+    if (!any_particles_read && !reader.my_output_flag())
       Core::IO::cout << "Read and create particles\n" << Core::IO::flush;
     any_particles_read = true;
 
@@ -114,14 +99,14 @@ void Input::ParticleReader::read(std::vector<PARTICLEENGINE::ParticleObjShrdPtr>
     }
 
     double t2 = time.totalElapsedTime(true);
-    if (!myrank && !reader_.my_output_flag())
+    if (!myrank && !reader.my_output_flag())
     {
       printf("reading %10.5e secs\n", t2 - t1);
       fflush(stdout);
     }
   }
 
-  if (any_particles_read && !reader_.my_output_flag())
+  if (any_particles_read && !reader.my_output_flag())
     printf("in............................................. %10.5e secs\n",
         time.totalElapsedTime(true));
 }

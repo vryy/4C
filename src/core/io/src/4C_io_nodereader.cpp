@@ -37,8 +37,7 @@ namespace
 void Core::IO::read_nodes(Core::IO::DatFileReader& reader, const std::string& node_section_name,
     std::vector<ElementReader>& element_readers, int& max_node_id)
 {
-  const auto& comm = reader.get_comm();
-  const int myrank = comm->MyPID();
+  const int myrank = reader.get_comm().MyPID();
   if (myrank > 0) return;
 
   std::string tmp;

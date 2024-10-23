@@ -22,7 +22,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
     Core::IO::DatFileReader& reader, std::string sectionname)
     : name_(dis->name()),
       reader_(reader),
-      comm_(reader.get_comm()),
+      comm_(dis->get_comm()),
       sectionname_(sectionname),
       dis_(dis)
 {
@@ -35,7 +35,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
     Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
     : name_(dis->name()),
       reader_(reader),
-      comm_(reader.get_comm()),
+      comm_(dis->get_comm()),
       sectionname_(sectionname),
       dis_(dis)
 {
@@ -50,7 +50,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
     const std::set<std::string>& elementtypes)
     : name_(dis->name()),
       reader_(reader),
-      comm_(reader.get_comm()),
+      comm_(dis->get_comm()),
       sectionname_(sectionname),
       dis_(dis)
 {
@@ -63,8 +63,8 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 /*----------------------------------------------------------------------*/
 void Core::IO::ElementReader::read_and_distribute()
 {
-  const int myrank = comm_->MyPID();
-  const int numproc = comm_->NumProc();
+  const int myrank = comm_.MyPID();
+  const int numproc = comm_.NumProc();
 
   // read global ids of elements of this discretization
   const auto& [numele, eids] = get_element_size_and_ids();
@@ -76,7 +76,7 @@ void Core::IO::ElementReader::read_and_distribute()
     {
       // If the element section is empty, we create an empty reader and return
       coleles_ = roweles_ = colnodes_ = rownodes_ =
-          Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, *comm_);
+          Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, comm_);
 
       return;
     }
@@ -91,7 +91,7 @@ void Core::IO::ElementReader::read_and_distribute()
     if (myrank == numproc - 1) mysize = numele - (numproc - 1) * bsize;
 
     // construct the map
-    roweles_ = Teuchos::make_rcp<Epetra_Map>(-1, mysize, &eids[myrank * bsize], 0, *comm_);
+    roweles_ = Teuchos::make_rcp<Epetra_Map>(-1, mysize, &eids[myrank * bsize], 0, comm_);
   }
 
   // define blocksizes for blocks of elements we read
@@ -124,7 +124,7 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
   int numele = 0;
 
   // all reading is done on proc 0
-  if (comm_->MyPID() == 0)
+  if (comm_.MyPID() == 0)
   {
     for (const auto& element_line : reader_.lines_in_section(sectionname_))
     {
@@ -141,10 +141,10 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
   }
 
   // Simply allreduce the element ids
-  comm_->Broadcast(&numele, 1, 0);
+  comm_.Broadcast(&numele, 1, 0);
 
   eids.resize(numele);
-  comm_->Broadcast(&eids[0], numele, 0);
+  comm_.Broadcast(&eids[0], numele, 0);
 
   return {numele, eids};
 }
@@ -160,7 +160,7 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
   // All ranks > 0 will receive the node ids of the elements from rank 0.
   // We know that we will read nblock blocks of elements, so call the
   // collective function an appropriate number of times.
-  if (comm_->MyPID() > 0)
+  if (comm_.MyPID() > 0)
   {
     for (int i = 0; i < nblock; ++i)
     {

@@ -23,6 +23,7 @@
 #include <iostream>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <variant>
@@ -57,7 +58,7 @@ namespace Core::IO
       /**
        * Read lines from the given @p stream.
        */
-      explicit StreamLineIterator(std::istream& stream);
+      explicit StreamLineIterator(std::shared_ptr<std::istream> stream);
 
       /**
        * Read lines rom the given @p stream but a maximum of @p max_reads times. After reading
@@ -65,7 +66,7 @@ namespace Core::IO
        *
        * @note @p max_reads may be zero. The iterator will not read any lines in that case.
        */
-      StreamLineIterator(std::istream& stream, int max_reads);
+      StreamLineIterator(std::shared_ptr<std::istream> stream, int max_reads);
 
       /**
        * Construct a past-the-end iterator.
@@ -82,7 +83,7 @@ namespace Core::IO
 
      private:
       //! Stream to read from.
-      std::istream* stream_{};
+      std::shared_ptr<std::istream> stream_{};
 
       //! Current line number.
       int line_number_{};
@@ -155,21 +156,14 @@ namespace Core::IO
   class DatFileReader
   {
    public:
-    /// Empty constructor, which avoids directly opening a file for reading
-    DatFileReader() = default;
-
-    //! constructs a dat file reader object and stores the file name handed in. The file specified
-    //! by filename is not directly read
-    explicit DatFileReader(std::string filename);
-
     /// construct a reader for a given file
-    DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag = 0);
+    DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag = 0);
 
     /// return my inputfile name
-    std::string my_inputfile_name() const;
+    [[nodiscard]] std::string my_inputfile_name() const;
 
     /// return my output flag
-    int my_output_flag() const;
+    [[nodiscard]] int my_output_flag() const;
 
     /**
      * Get a a range of lines inside a section that have actual content, i.e., they contain
@@ -190,49 +184,41 @@ namespace Core::IO
      */
     auto lines_in_section(const std::string& section_name);
 
-    /// return my communicator
-    Teuchos::RCP<Epetra_Comm> get_comm() const { return comm_; }
+    /**
+     * Returns whether a section with the given name exists in the input file and contains any
+     * content.
+     */
+    [[nodiscard]] bool has_section(const std::string& section_name) const;
 
-    /// convert a parameter section in extended format in a parameter list
-    bool read_section(std::string name, Teuchos::ParameterList& list);
+    /**
+     * Access MPI communicator associated with this object.
+     */
+    [[nodiscard]] const Epetra_Comm& get_comm() const { return comm_; }
 
-    /// Read a node-design topology section
-    ///
-    /// @param name Name of the topology to read
-    /// @param dobj_fenode Resulting collection of all nodes that belong to a design.
-    /// @param get_discretization Callback to return a discretization by name.
-    void read_design(const std::string& name, std::vector<std::vector<int>>& dobj_fenode,
-        const std::function<const Core::FE::Discretization&(const std::string& name)>&
-            get_discretization);
-
-    /*!
-      \brief read the knotvector section (for isogeometric analysis)
-
-      \param  name           (in ): Name/type of discretisation
-      \param  disknots       (out): node vector coordinates
-
-    */
-    void read_knots(const std::string& name, Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
-
-
-    /// print unknown section names found in the input file
-    bool print_unknown_sections();
+    /**
+     * Print a list of all sections that are contained in the input file but never
+     * accessed through this object.
+     *
+     * @return True if there were unknown sections, false otherwise.
+     */
+    bool print_unknown_sections(std::ostream& out) const;
 
    private:
-    /// parse the value and add the key,value pair to the list
-    void add_entry(const std::string& key, const std::string& value, Teuchos::ParameterList& list);
-
     /// actual read dat file, store and broadcast general sections
     void read_dat();
 
     //! Remember that a section was used.
     void record_section_used(const std::string& section_name);
 
+    //! Internal helper to get the range of lines in a section.
+    //! Does not record the section as used.
+    auto line_range(const std::string& section_name) const;
+
     /// input file name
     std::string filename_;
 
     /// my communicator
-    Teuchos::RCP<Epetra_Comm> comm_;
+    const Epetra_Comm& comm_;
 
     /// flag for output (default: output should be written)
     int outflag_{};
@@ -251,12 +237,6 @@ namespace Core::IO
 
     /// protocol of known and unknown section names
     std::map<std::string, bool> knownsections_;
-
-    // a cache of the box-domain specifications
-    std::map<std::string, std::vector<double>> cached_box_specifications_;
-
-    //! The currently read file stream
-    std::ifstream file_;
   };
 
   /**
@@ -273,29 +253,54 @@ namespace Core::IO
    */
   std::pair<std::string, std::string> read_key_value(const std::string& line);
 
+  /**
+   * Read a @p section_name from the input file and store the key-value pairs in the given @p list.
+   */
+  bool read_parameters_in_section(
+      DatFileReader& reader, const std::string& section_name, Teuchos::ParameterList& list);
+
+  /**
+   * Read a node-design topology section
+   *
+   * @param reader The dat file reader
+   * @param name Name of the topology to read
+   * @param dobj_fenode Resulting collection of all nodes that belong to a design.
+   * @param get_discretization Callback to return a discretization by name.
+   */
+  void read_design(DatFileReader& reader, const std::string& name,
+      std::vector<std::vector<int>>& dobj_fenode,
+      const std::function<const Core::FE::Discretization&(const std::string& name)>&
+          get_discretization);
+
+  /**
+   * \brief read the knotvector section (for isogeometric analysis)
+   *
+   * \param  reader         (in ): DatFileReader object
+   * \param  name           (in ): Name/type of discretisation
+   * \param  disknots       (out): node vector coordinates
+   *
+   */
+  void read_knots(DatFileReader& reader, const std::string& name,
+      Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
+
 
   /// -- template and inline functions --- //
 
-  inline auto DatFileReader::lines_in_section(const std::string& section_name)
+  inline auto DatFileReader::line_range(const std::string& section_name) const
   {
-    record_section_used(section_name);
-
     auto filter = [](std::string_view line)
     { return !Core::Utils::strip_comment(std::string(line)).empty(); };
 
     if (excludepositions_.count(section_name) > 0)
     {
-      const auto [start_pos, length] = excludepositions_[section_name];
+      const auto [start_pos, length] = excludepositions_.at(section_name);
 
-      if (file_.is_open()) file_.close();
-
-      // Open the file at the correct place.
-      file_.open(filename_);
-      file_.seekg(start_pos);
+      auto file = std::make_shared<std::ifstream>(filename_);
+      file->seekg(start_pos);
 
       return std_20::ranges::views::filter(
           std_20::ranges::views::Internal::IteratorRange(
-              Internal::DatFileLineIterator(Internal::StreamLineIterator(file_, length)),
+              Internal::DatFileLineIterator(Internal::StreamLineIterator(std::move(file), length)),
               Internal::DatFileLineIterator(Internal::StreamLineIterator())),
           filter);
     }
@@ -314,6 +319,13 @@ namespace Core::IO
             Internal::DatFileLineIterator(lines_.begin() + end_line)),
         filter);
   }
+
+  inline auto DatFileReader::lines_in_section(const std::string& section_name)
+  {
+    record_section_used(section_name);
+    return line_range(section_name);
+  }
+
 
 }  // namespace Core::IO
 

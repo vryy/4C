@@ -87,10 +87,10 @@ void Core::IO::MeshReader::read_and_partition()
   // last check if there are enough nodes
   {
     int local_max_node_id = max_node_id;
-    comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
+    comm_.MaxAll(&local_max_node_id, &max_node_id, 1);
 
-    if (max_node_id > 0 && max_node_id < comm_->NumProc())
-      FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes", comm_->NumProc(),
+    if (max_node_id > 0 && max_node_id < comm_.NumProc())
+      FOUR_C_THROW("Bad idea: Simulation with %d procs for problem with %d nodes", comm_.NumProc(),
           max_node_id);
   }
 }
@@ -119,7 +119,7 @@ void Core::IO::MeshReader::rebalance()
   {
     // global node ids --- this will be a fully redundant vector!
     int numnodes = static_cast<int>(element_readers_[i].get_unique_nodes().size());
-    comm_->Broadcast(&numnodes, 1, 0);
+    comm_.Broadcast(&numnodes, 1, 0);
 
     const auto discret = element_readers_[i].get_dis();
 
@@ -164,9 +164,9 @@ void Core::IO::MeshReader::rebalance()
           // in addition calculate geometric information based on the coordinates of the
           // discretization
           rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
-              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_);
+              graph_[i]->RowMap().MyGlobalElements(), 0, comm_);
           colmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
-              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_);
+              graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
 
           discret->redistribute(*rowmap, *colmap, false, false, false);
 
@@ -183,9 +183,9 @@ void Core::IO::MeshReader::rebalance()
           rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
           rowmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->RowMap().NumMyElements(),
-              graph_[i]->RowMap().MyGlobalElements(), 0, *comm_);
+              graph_[i]->RowMap().MyGlobalElements(), 0, comm_);
           colmap = Teuchos::make_rcp<Epetra_Map>(-1, graph_[i]->ColMap().NumMyElements(),
-              graph_[i]->ColMap().MyGlobalElements(), 0, *comm_);
+              graph_[i]->ColMap().MyGlobalElements(), 0, comm_);
 
           discret->redistribute(*rowmap, *colmap, true, true, false);
 
@@ -205,7 +205,7 @@ void Core::IO::MeshReader::rebalance()
     }
     else
     {
-      rowmap = colmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, *comm_);
+      rowmap = colmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, comm_);
     }
 
     discret->redistribute(*rowmap, *colmap, false, false, false);
@@ -222,7 +222,7 @@ void Core::IO::MeshReader::create_inline_mesh(int& max_node_id)
   {
     // communicate node offset to all procs
     int local_max_node_id = max_node_id;
-    comm_->MaxAll(&local_max_node_id, &max_node_id, 1);
+    comm_.MaxAll(&local_max_node_id, &max_node_id, 1);
 
     domain_reader.create_partitioned_mesh(max_node_id);
     domain_reader.complete();

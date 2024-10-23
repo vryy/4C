@@ -33,10 +33,8 @@ void ntainp_ccadiscret(
   int group = problem->get_communicators()->group_id();
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
 
-
-
   // and now the actual reading
-  Core::IO::DatFileReader reader(inputfile_name, lcomm);
+  Core::IO::DatFileReader reader(inputfile_name, *lcomm);
 
   Global::read_parameter(*problem, reader);
 
@@ -92,8 +90,15 @@ void ntainp_ccadiscret(
   if (lcomm->MyPID() == 0) problem->write_input_parameters();
 
   // before we destroy the reader we want to know about unused sections
-  reader.print_unknown_sections();
-}  // end of ntainp_ccadiscret()
+  const bool all_ok = !reader.print_unknown_sections(std::cout);
+
+  // we wait till all procs are here. Otherwise a hang up might occur where
+  // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
+  // we also want to have the printing above being finished.
+  lcomm->Barrier();
+  FOUR_C_THROW_UNLESS(all_ok,
+      "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
+}
 
 
 /*----------------------------------------------------------------------*

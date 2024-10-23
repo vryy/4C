@@ -24,11 +24,52 @@
 
 FOUR_C_NAMESPACE_OPEN
 
+namespace
+{
+  void broadcast_input_data_to_all_procs(
+      const Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
+  {
+    const int myrank = comm.MyPID();
+
+    std::vector<char> data;
+    if (myrank == 0)
+    {
+      Core::Communication::PackBuffer buffer;
+      add_to_pack(buffer, inputData.bottom_corner_point_);
+      add_to_pack(buffer, inputData.top_corner_point_);
+      add_to_pack(buffer, inputData.interval_);
+      add_to_pack(buffer, inputData.rotation_angle_);
+      add_to_pack(buffer, static_cast<int>(inputData.autopartition_));
+      add_to_pack(buffer, inputData.elementtype_);
+      add_to_pack(buffer, inputData.distype_);
+      add_to_pack(buffer, inputData.elearguments_);
+      std::swap(data, buffer());
+    }
+
+    ssize_t data_size = data.size();
+    comm.Broadcast(&data_size, 1, 0);
+    if (myrank != 0) data.resize(data_size, 0);
+    comm.Broadcast(data.data(), data.size(), 0);
+
+    Core::Communication::UnpackBuffer buffer(data);
+    if (myrank != 0)
+    {
+      extract_from_pack(buffer, inputData.bottom_corner_point_);
+      extract_from_pack(buffer, inputData.top_corner_point_);
+      extract_from_pack(buffer, inputData.interval_);
+      extract_from_pack(buffer, inputData.rotation_angle_);
+      int autopartitionInteger;
+      extract_from_pack(buffer, autopartitionInteger);
+      inputData.autopartition_ = autopartitionInteger;
+      extract_from_pack(buffer, inputData.elementtype_);
+      extract_from_pack(buffer, inputData.distype_);
+      extract_from_pack(buffer, inputData.elearguments_);
+    }
+  }
+}  // namespace
+
 namespace Core::IO
 {
-  /// forward declarations
-  void broadcast_input_data_to_all_procs(
-      Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData);
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
@@ -36,7 +77,7 @@ namespace Core::IO
       Core::IO::DatFileReader& reader, std::string sectionname)
       : name_(dis->name()),
         reader_(reader),
-        comm_(reader.get_comm()),
+        comm_(dis->get_comm()),
         sectionname_(sectionname),
         dis_(dis)
   {
@@ -46,7 +87,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   void DomainReader::create_partitioned_mesh(int nodeGIdOfFirstNewNode) const
   {
-    const int myrank = comm_->MyPID();
+    const int myrank = comm_.MyPID();
 
     Teuchos::Time time("", true);
 
@@ -76,7 +117,7 @@ namespace Core::IO
   {
     Core::IO::GridGenerator::RectangularCuboidInputs inputData;
     // all reading is done on proc 0
-    if (comm_->MyPID() == 0)
+    if (comm_.MyPID() == 0)
     {
       bool any_lines_read = false;
       // read domain info
@@ -128,62 +169,20 @@ namespace Core::IO
     }
 
     // broadcast if necessary
-    if (comm_->NumProc() > 1)
+    if (comm_.NumProc() > 1)
     {
-      IO::broadcast_input_data_to_all_procs(*comm_, inputData);
+      broadcast_input_data_to_all_procs(comm_, inputData);
     }
 
     return inputData;
   }
 
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  void broadcast_input_data_to_all_procs(
-      Epetra_Comm& comm, Core::IO::GridGenerator::RectangularCuboidInputs& inputData)
-  {
-    const int myrank = comm.MyPID();
-
-    std::vector<char> data;
-    if (myrank == 0)
-    {
-      Core::Communication::PackBuffer buffer;
-      add_to_pack(buffer, inputData.bottom_corner_point_);
-      add_to_pack(buffer, inputData.top_corner_point_);
-      add_to_pack(buffer, inputData.interval_);
-      add_to_pack(buffer, inputData.rotation_angle_);
-      add_to_pack(buffer, static_cast<int>(inputData.autopartition_));
-      add_to_pack(buffer, inputData.elementtype_);
-      add_to_pack(buffer, inputData.distype_);
-      add_to_pack(buffer, inputData.elearguments_);
-      std::swap(data, buffer());
-    }
-
-    ssize_t data_size = data.size();
-    comm.Broadcast(&data_size, 1, 0);
-    if (myrank != 0) data.resize(data_size, 0);
-    comm.Broadcast(data.data(), data.size(), 0);
-
-    Communication::UnpackBuffer buffer(data);
-    if (myrank != 0)
-    {
-      extract_from_pack(buffer, inputData.bottom_corner_point_);
-      extract_from_pack(buffer, inputData.top_corner_point_);
-      extract_from_pack(buffer, inputData.interval_);
-      extract_from_pack(buffer, inputData.rotation_angle_);
-      int autopartitionInteger;
-      extract_from_pack(buffer, autopartitionInteger);
-      inputData.autopartition_ = autopartitionInteger;
-      extract_from_pack(buffer, inputData.elementtype_);
-      extract_from_pack(buffer, inputData.distype_);
-      extract_from_pack(buffer, inputData.elearguments_);
-    }
-  }
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void DomainReader::complete() const
   {
-    const int myrank = comm_->MyPID();
+    const int myrank = comm_.MyPID();
 
     Teuchos::Time time("", true);
 

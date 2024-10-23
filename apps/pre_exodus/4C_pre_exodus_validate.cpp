@@ -28,7 +28,7 @@ void EXODUS::validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std
   Global::Problem* problem = Global::Problem::instance();
 
   // create a DatFileReader
-  Core::IO::DatFileReader reader(datfile, comm, 0);
+  Core::IO::DatFileReader reader(datfile, *comm, 0);
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;
@@ -64,7 +64,14 @@ void EXODUS::validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std
 
   // inform user about unused/obsolete section names being found
   // and force him/her to correct the input file accordingly
-  reader.print_unknown_sections();
+  const bool all_ok = !reader.print_unknown_sections(std::cout);
+
+  // we wait till all procs are here. Otherwise a hang up might occur where
+  // one proc ended with FOUR_C_THROW but other procs were not finished and waited...
+  // we also want to have the printing above being finished.
+  comm->Barrier();
+  FOUR_C_THROW_UNLESS(all_ok,
+      "Unknown sections detected. Correct this! Find hints on these unknown sections above.");
 
   // the input file seems to be valid
   std::cout << "...OK" << std::endl << std::endl;
