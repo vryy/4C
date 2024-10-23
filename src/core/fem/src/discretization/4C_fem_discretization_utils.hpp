@@ -438,7 +438,7 @@ namespace Core::FE
       /** \brief Create a Dbc map extractor, if desired
        */
       void build_dbc_map_extractor(const Core::FE::Discretization& discret,
-          const std::set<int>& dbcrowgids,
+          const Teuchos::RCP<const std::set<int>>& dbcrowgids,
           const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const;
 
     };  // class Dbc

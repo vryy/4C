@@ -96,7 +96,7 @@ void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
   // --------------------------------------------------------------------------
   // create DBC and free map and build their common extractor
   // --------------------------------------------------------------------------
-  build_dbc_map_extractor(discret, *dbcgids[set_row], dbcmapextractor);
+  build_dbc_map_extractor(discret, dbcgids[set_row], dbcmapextractor);
 
   return;
 }
@@ -574,19 +574,24 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::build_dbc_map_extractor(const Core::FE::Discretization& discret,
-    const std::set<int>& dbcrowgids,
+    const Teuchos::RCP<const std::set<int>>& dbcrowgids,
     const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {
   if (dbcmapextractor.is_null()) return;
+
+  FOUR_C_ASSERT(not dbcrowgids.is_null(),
+      "The variable `dbcrowgids` in `Core::FE::Utils::Dbc::build_dbc_map_extractor` is a null "
+      "pointer. This violates the implicit assumption that it must be non-null when "
+      "`dbcmapextractor` is non-null.");
 
   // build map of Dirichlet DOFs
   int nummyelements = 0;
   int* myglobalelements = nullptr;
   std::vector<int> dbcgidsv;
-  if (dbcrowgids.size() > 0)
+  if (dbcrowgids->size() > 0)
   {
-    dbcgidsv.reserve(dbcrowgids.size());
-    dbcgidsv.assign(dbcrowgids.begin(), dbcrowgids.end());
+    dbcgidsv.reserve(dbcrowgids->size());
+    dbcgidsv.assign(dbcrowgids->begin(), dbcrowgids->end());
     nummyelements = dbcgidsv.size();
     myglobalelements = dbcgidsv.data();
   }
