@@ -17,19 +17,19 @@ or for an application in association with physical products in particular.
 ## Required development tools
 
 - **CMake:** 4C supports CMake configuration through CMake presets. Therefore, the CMake version needs to be at least v3.25.
-- **Ninja:** We strongly enourage to work with `ninja` (instead of `make`) for faster compile times.
+- **Ninja:** We strongly encourage to work with `ninja` (instead of `make`) for faster compile times.
 
 ## External dependencies
 
 4C heavily relies on the [Trilinos project](https://trilinos.github.io).
 
-Some further third party libraries (TPLs) are mandatory, e.g.
+Some further third-party libraries (TPLs) are mandatory, e.g.
 
 - ParMETIS (recommended version: 4.0.3)
 - SuiteSparse (recommended version: 5.4.0)
 - SuperLUDist (recommended version: 7.2)
 - Qhull (recommended version: 2012.1)
-- CLN (recommened version: 1.3.4)
+- CLN (recommended version: 1.3.4)
 
 and some are optional, e.g.
 
@@ -100,7 +100,7 @@ You can use the option `-j <num_threads>` to specify the number of threads to be
 
 ### Prepare and Run Simulations
 
-After sucessfully building 4C, the executable `4C` is located in your build directory `<path/to/build/dir>/`.
+After successfully building 4C, the executable `4C` is located in your build directory `<path/to/build/dir>/`.
 It needs to be invoked together with an input (`.dat`) file via
 
 ```bash
@@ -132,7 +132,7 @@ our workflow, submitting pull requests, etc.
 
 ## Code of Conduct
 
-All people and activites in and around 4C are subject to our [Code of Conduct](https://github.com/4C-multiphysics/4C/blob/main/CODE_OF_CONDUCT.md).
+All people and activities in and around 4C are subject to our [Code of Conduct](https://github.com/4C-multiphysics/4C/blob/main/CODE_OF_CONDUCT.md).
 
 ## How to cite 4C
 
@@ -156,12 +156,12 @@ You could use the following BibTeX entry:
 
 _Note:_ You might need to adapt the BibTeX entry depending on the citation style.
 
-Remember: It is good scientific practice to include the date, when you've visisted that website, into the citation. It's
+Remember: It is good scientific practice to include the date, when you've visited that website, into the citation. It's
 up to you (and your advisor) to include the date, depending on the type of publication.
 
 Every publication presenting results obtained with the help of 4C
 or building on top of existing methods in 4C must cite appropriate
-4C references of the methods used. Consult the [4C homepage](https://4c-multiphyics.org) for a comprehensive list of papers on the methods, that are available in 4C.
+4C references of the methods used. Consult the [4C homepage](https://4c-multiphysics.org) for a comprehensive list of papers on the methods, that are available in 4C.
 
 If you would like to publish work based on recent yet unpublished work,
 ask for explicit permission from the original authors.
