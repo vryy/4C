@@ -24,15 +24,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   class ParamsInterface;
-}  // namespace Solid::ELEMENTS
+}  // namespace Solid::Elements
 
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class Shell7pEleCalc : public Shell7pEleCalcInterface, public Shell::Serializable
@@ -42,8 +42,8 @@ namespace Discret
 
       void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const Core::IO::InputParameterContainer& container,
-          const Solid::ELEMENTS::ShellLockingTypes& locking_types,
-          const Solid::ELEMENTS::ShellData& shell_data) override;
+          const Solid::Elements::ShellLockingTypes& locking_types,
+          const Solid::Elements::ShellData& shell_data) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
@@ -62,7 +62,7 @@ namespace Discret
 
       void recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
-          Solid::ELEMENTS::ParamsInterface& str_interface) override;
+          Solid::Elements::ParamsInterface& str_interface) override;
 
       void calculate_stresses_strains(Core::Elements::Element& ele,
           Mat::So3Material& solid_material, const ShellStressIO& stressIO,
@@ -95,13 +95,13 @@ namespace Discret
       Core::FE::IntegrationPoints2D intpoints_midsurface_;
 
       //! shell data (thickness, SDC, number of ANS parameter)
-      Solid::ELEMENTS::ShellData shell_data_ = {};
+      Solid::Elements::ShellData shell_data_ = {};
 
       //! shell thickness at gauss point in spatial frame
       std::vector<double> cur_thickness_;
 
     };  // class Shell7pEleCalc
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

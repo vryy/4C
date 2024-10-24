@@ -20,7 +20,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id
-MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::factory(int matid)
+Mixture::PAR::PrestressStrategy* Mixture::PAR::PrestressStrategy::factory(int matid)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == Teuchos::null)
@@ -45,16 +45,16 @@ MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::factory(int ma
     case Core::Materials::mix_prestress_strategy_cylinder:
     {
       return Mat::create_material_parameter_instance<
-          MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(curmat);
+          Mixture::PAR::IsotropicCylinderPrestressStrategy>(curmat);
     }
     case Core::Materials::mix_prestress_strategy_iterative:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::IterativePrestressStrategy>(
+      return Mat::create_material_parameter_instance<Mixture::PAR::IterativePrestressStrategy>(
           curmat);
     }
     case Core::Materials::mix_prestress_strategy_constant:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::ConstantPrestressStrategy>(
+      return Mat::create_material_parameter_instance<Mixture::PAR::ConstantPrestressStrategy>(
           curmat);
     }
     default:

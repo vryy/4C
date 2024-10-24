@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Internal artery implementation
     /*!
@@ -118,7 +118,7 @@ namespace Discret
           Artery* ele, Core::FE::Discretization& discretization, Core::Elements::LocationArray& la);
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

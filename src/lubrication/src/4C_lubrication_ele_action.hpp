@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LUBRICATION
+namespace Lubrication
 {
   /*--------------------------------------------------------------------------*/
   /*!
@@ -40,8 +40,8 @@ namespace LUBRICATION
     // new action
     bd_calc_weak_Dirichlet,  // weak_dirichlet,
     bd_calc_Neumann,         // n/a
-  };                         // enum LUBRICATION::BoundaryAction
-}  // namespace LUBRICATION
+  };                         // enum Lubrication::BoundaryAction
+}  // namespace Lubrication
 
 FOUR_C_NAMESPACE_CLOSE
 

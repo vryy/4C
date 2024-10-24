@@ -21,14 +21,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 // template classes
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar,
+template class Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>;
+template class Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar,
     Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+template class Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>;
+template class Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>;
+template class Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>;
+template class Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>;
+template class Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27,
     Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

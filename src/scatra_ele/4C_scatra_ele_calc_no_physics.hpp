@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /**
      * \brief ScaTra ImplType containing no physics.
@@ -53,7 +53,7 @@ namespace Discret
       //! protected constructor for singletons
       ScaTraEleCalcNoPhysics(int numdofpernode, int numscal, const std::string& disname);
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

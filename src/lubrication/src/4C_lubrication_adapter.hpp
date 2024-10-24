@@ -23,7 +23,7 @@ namespace Discret
   class ResultTest;
 }
 
-namespace LUBRICATION
+namespace Lubrication
 {
   class TimIntImpl;
 }
@@ -33,7 +33,7 @@ namespace Core::IO
   class DiscretizationWriter;
 }
 
-namespace LUBRICATION
+namespace Lubrication
 {
   /// general Lubrication field interface for multiphysics problems
   /*!
@@ -60,7 +60,7 @@ namespace LUBRICATION
     virtual ~LubricationBaseAlgorithm() = default;
 
     /// access to the Lubrication field solver
-    Teuchos::RCP<LUBRICATION::TimIntImpl> lubrication_field() { return lubrication_; }
+    Teuchos::RCP<Lubrication::TimIntImpl> lubrication_field() { return lubrication_; }
 
     /// create result test for Lubrication field
     Teuchos::RCP<Core::Utils::ResultTest> create_lubrication_field_test();
@@ -69,11 +69,11 @@ namespace LUBRICATION
 
    private:
     /// Lubrication field solver
-    Teuchos::RCP<LUBRICATION::TimIntImpl> lubrication_;
+    Teuchos::RCP<Lubrication::TimIntImpl> lubrication_;
 
   };  // class LubricationBaseAlgorithm
 
-}  // namespace LUBRICATION
+}  // namespace Lubrication
 
 
 FOUR_C_NAMESPACE_CLOSE

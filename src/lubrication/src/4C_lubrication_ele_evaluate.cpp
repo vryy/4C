@@ -18,41 +18,41 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Lubrication::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Lubrication::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // check for the action parameter
-  const auto action = Teuchos::getIntegralValue<LUBRICATION::Action>(params, "action");
+  const auto action = Teuchos::getIntegralValue<FourC::Lubrication::Action>(params, "action");
   switch (action)
   {
     // all physics-related stuff is included in the implementation class(es) that can
     // be used in principle inside any element (at the moment: only Lubrication element)
-    case LUBRICATION::calc_mat_and_rhs:
+    case FourC::Lubrication::calc_mat_and_rhs:
     {
-      return Discret::ELEMENTS::LubricationFactory::provide_impl(shape(), discretization.name())
+      return Discret::Elements::LubricationFactory::provide_impl(shape(), discretization.name())
           ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
-    case LUBRICATION::calc_lubrication_coupltang:
+    case FourC::Lubrication::calc_lubrication_coupltang:
     {
-      return Discret::ELEMENTS::LubricationFactory::provide_impl(shape(), discretization.name())
+      return Discret::Elements::LubricationFactory::provide_impl(shape(), discretization.name())
           ->evaluate_ehl_mon(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
-    case LUBRICATION::calc_error:
-    case LUBRICATION::calc_mean_pressures:
+    case FourC::Lubrication::calc_error:
+    case FourC::Lubrication::calc_mean_pressures:
     {
-      return Discret::ELEMENTS::LubricationFactory::provide_impl(shape(), discretization.name())
+      return Discret::Elements::LubricationFactory::provide_impl(shape(), discretization.name())
           ->evaluate_service(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
-    case LUBRICATION::set_time_parameter:
-    case LUBRICATION::set_general_lubrication_parameter:
+    case FourC::Lubrication::set_time_parameter:
+    case FourC::Lubrication::set_general_lubrication_parameter:
       // these actions have already been evaluated during element pre-evaluate
       break;
     default:
@@ -63,13 +63,13 @@ int Discret::ELEMENTS::Lubrication::evaluate(Teuchos::ParameterList& params,
   }  // switch(action)
 
   return 0;
-}  // Discret::ELEMENTS::Lubrication::Evaluate
+}  // Discret::Elements::Lubrication::Evaluate
 
 
 /*----------------------------------------------------------------------*
  |  dummy                                                   wirtz 10/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Lubrication::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Lubrication::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -83,27 +83,27 @@ int Discret::ELEMENTS::Lubrication::evaluate_neumann(Teuchos::ParameterList& par
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter             wirtz 10/15 |
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationType::pre_evaluate(Core::FE::Discretization& dis,
+void Discret::Elements::LubricationType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
 {
-  const auto action = Teuchos::getIntegralValue<LUBRICATION::Action>(p, "action");
+  const auto action = Teuchos::getIntegralValue<FourC::Lubrication::Action>(p, "action");
 
   switch (action)
   {
-    case LUBRICATION::set_general_lubrication_parameter:
+    case FourC::Lubrication::set_general_lubrication_parameter:
     {
-      Discret::ELEMENTS::LubricationEleParameter::instance(dis.name())->set_general_parameters(p);
+      Discret::Elements::LubricationEleParameter::instance(dis.name())->set_general_parameters(p);
 
       break;
     }
 
-    case LUBRICATION::set_time_parameter:
+    case FourC::Lubrication::set_time_parameter:
     {
-      Discret::ELEMENTS::LubricationEleParameter::instance(dis.name())->set_time_parameters(p);
+      Discret::Elements::LubricationEleParameter::instance(dis.name())->set_time_parameters(p);
 
       break;
     }

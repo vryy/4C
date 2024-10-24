@@ -33,7 +33,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidIntFace;
     class FluidEleParameter;
@@ -57,7 +57,7 @@ namespace Discret
       virtual ~FluidIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void assemble_internal_faces_using_neighbor_data(
-          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Discret::Elements::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
@@ -70,7 +70,7 @@ namespace Discret
 
       //! Evaluate internal faces
       virtual int evaluate_internal_faces(
-          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Discret::Elements::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
           Core::FE::Discretization& discretization,     ///< discretization
@@ -88,7 +88,7 @@ namespace Discret
 
 
       /// Internal implementation class for FluidIntFace elements (the first object is created in
-      /// Discret::ELEMENTS::FluidIntFace::Evaluate)
+      /// Discret::Elements::FluidIntFace::Evaluate)
       static FluidIntFaceImplInterface* impl(const Core::Elements::Element* ele);
     };
 
@@ -128,7 +128,7 @@ namespace Discret
 
       //! Assemble internal faces integrals using data from both parent elements
       void assemble_internal_faces_using_neighbor_data(
-          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Discret::Elements::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
@@ -141,7 +141,7 @@ namespace Discret
 
       //! Evaluate internal faces
       int evaluate_internal_faces(
-          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Discret::Elements::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
           Teuchos::ParameterList& params,               ///< parameter list
           Core::FE::Discretization& discretization,     ///< discretization
@@ -160,14 +160,14 @@ namespace Discret
 
      private:
       //! pointer to parameter list for time integration
-      Discret::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+      Discret::Elements::FluidEleParameterTimInt* fldparatimint_;
       //! pointer to parameter list for internal faces
-      Discret::ELEMENTS::FluidEleParameterIntFace* fldpara_intface_;
+      Discret::Elements::FluidEleParameterIntFace* fldpara_intface_;
 
 
     };  // end class FluidIntFaceImpl
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

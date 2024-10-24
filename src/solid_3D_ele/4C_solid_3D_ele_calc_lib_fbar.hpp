@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief A small container storing information needed to compute the linearization of an element
@@ -75,8 +75,8 @@ namespace Discret::ELEMENTS
           shape_function_derivs,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::num_nodes<celltype>>&
           shape_function_derivs_centroid,
-      const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping,
-      const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping_centroid)
+      const Discret::Elements::SpatialMaterialMapping<celltype>& spatial_material_mapping,
+      const Discret::Elements::SpatialMaterialMapping<celltype>& spatial_material_mapping_centroid)
   {
     // inverse deformation gradient at centroid
     Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> invdefgrd_centroid;
@@ -122,7 +122,7 @@ namespace Discret::ELEMENTS
       const Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>, 1>& Hop,
       const double f_bar_factor, const double integration_fac,
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>> cauchyGreen,
-      const Discret::ELEMENTS::Stress<celltype> stress_bar,
+      const Discret::Elements::Stress<celltype> stress_bar,
       Core::LinAlg::Matrix<Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>,
           Core::FE::dim<celltype> * Core::FE::num_nodes<celltype>>& stiffness_matrix)
   {
@@ -150,7 +150,7 @@ namespace Discret::ELEMENTS
       }
     }
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

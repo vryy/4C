@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   inline std::vector<char>& get_mutable_stress_data(
-      const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -34,7 +34,7 @@ namespace
   }
 
   inline std::vector<char>& get_mutable_strain_data(
-      const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -47,7 +47,7 @@ namespace
   }
 
   inline Inpar::Solid::StressType get_io_stress_type(
-      const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -60,7 +60,7 @@ namespace
   }
 
   inline Inpar::Solid::StrainType get_io_strain_type(
-      const Discret::ELEMENTS::Shell7p& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7p& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -73,7 +73,7 @@ namespace
   }
 }  // namespace
 
-int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Shell7p::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& dof_index_array,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -186,7 +186,7 @@ int Discret::ELEMENTS::Shell7p::evaluate(Teuchos::ParameterList& params,
 }
 
 // Integrate a Surface Neumann boundary condition
-int Discret::ELEMENTS::Shell7p::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Shell7p::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -202,7 +202,7 @@ int Discret::ELEMENTS::Shell7p::evaluate_neumann(Teuchos::ParameterList& params,
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::Shell::evaluate_neumann_by_element(
+  Discret::Elements::Shell::evaluate_neumann_by_element(
       *this, discretization, condition, dof_index_array, elevec1, elemat1, time);
   return 0;
 }

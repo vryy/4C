@@ -27,7 +27,7 @@ namespace Core::LinAlg
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Beam3Base;
   }
@@ -142,12 +142,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get ptr to first beam element
     */
-    inline const Discret::ELEMENTS::Beam3Base* beam_element1() const { return beam_element1_; };
+    inline const Discret::Elements::Beam3Base* beam_element1() const { return beam_element1_; };
 
     /*!
     \brief Get ptr to second beam element
     */
-    inline const Discret::ELEMENTS::Beam3Base* beam_element2() const { return beam_element2_; };
+    inline const Discret::Elements::Beam3Base* beam_element2() const { return beam_element2_; };
     //@}
 
    private:
@@ -610,10 +610,10 @@ namespace BEAMINTERACTION
     //! @name member variables
 
     //! first element of pair
-    Discret::ELEMENTS::Beam3Base const* beam_element1_;
+    Discret::Elements::Beam3Base const* beam_element1_;
 
     //! second element of pair
-    Discret::ELEMENTS::Beam3Base const* beam_element2_;
+    Discret::Elements::Beam3Base const* beam_element2_;
 
     //! line charge conditions
     std::vector<Core::Conditions::Condition*> linechargeconds_;

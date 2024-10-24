@@ -14,38 +14,38 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidPoroEleType Discret::ELEMENTS::FluidPoroEleType::instance_;
+Discret::Elements::FluidPoroEleType Discret::Elements::FluidPoroEleType::instance_;
 
-Discret::ELEMENTS::FluidPoroEleType& Discret::ELEMENTS::FluidPoroEleType::instance()
+Discret::Elements::FluidPoroEleType& Discret::Elements::FluidPoroEleType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidPoroEleType::create(
+Core::Communication::ParObject* Discret::Elements::FluidPoroEleType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::FluidPoro(-1, -1);
+  auto* object = new Discret::Elements::FluidPoro(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidPoroEleType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDPORO")
   {
-    return Teuchos::make_rcp<Discret::ELEMENTS::FluidPoro>(id, owner);
+    return Teuchos::make_rcp<Discret::Elements::FluidPoro>(id, owner);
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroEleType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidPoroEleType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::FluidPoro>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::FluidPoro>(id, owner);
 }
 
-void Discret::ELEMENTS::FluidPoroEleType::setup_element_definition(
+void Discret::Elements::FluidPoroEleType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_fluid;
@@ -77,14 +77,14 @@ void Discret::ELEMENTS::FluidPoroEleType::setup_element_definition(
   defs["NURBS9"] = defs_fluid["NURBS9"];
 }
 
-Discret::ELEMENTS::FluidPoro::FluidPoro(int id, int owner)
+Discret::Elements::FluidPoro::FluidPoro(int id, int owner)
     : Fluid(id, owner), kintype_(Inpar::Solid::KinemType::vague)
 {
   anisotropic_permeability_directions_.resize(3, std::vector<double>(1, 0.0));
   anisotropic_permeability_nodal_coeffs_.resize(3, std::vector<double>(1, 0.0));
 }
 
-Discret::ELEMENTS::FluidPoro::FluidPoro(const Discret::ELEMENTS::FluidPoro& old)
+Discret::Elements::FluidPoro::FluidPoro(const Discret::Elements::FluidPoro& old)
     : Fluid(old),
       kintype_(old.kintype_),
       anisotropic_permeability_directions_(old.anisotropic_permeability_directions_),
@@ -92,13 +92,13 @@ Discret::ELEMENTS::FluidPoro::FluidPoro(const Discret::ELEMENTS::FluidPoro& old)
 {
 }
 
-Core::Elements::Element* Discret::ELEMENTS::FluidPoro::clone() const
+Core::Elements::Element* Discret::Elements::FluidPoro::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::FluidPoro(*this);
+  auto* newelement = new Discret::Elements::FluidPoro(*this);
   return newelement;
 }
 
-void Discret::ELEMENTS::FluidPoro::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::FluidPoro::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -123,7 +123,7 @@ void Discret::ELEMENTS::FluidPoro::pack(Core::Communication::PackBuffer& data) c
   Fluid::pack(data);
 }
 
-void Discret::ELEMENTS::FluidPoro::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::FluidPoro::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -152,17 +152,17 @@ void Discret::ELEMENTS::FluidPoro::unpack(Core::Communication::UnpackBuffer& buf
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidPoro::lines()
 {
   return Core::Communication::get_element_lines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidPoro::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidPoro::surfaces()
 {
   return Core::Communication::get_element_surfaces<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-void Discret::ELEMENTS::FluidPoro::print(std::ostream& os) const
+void Discret::Elements::FluidPoro::print(std::ostream& os) const
 {
   os << "FluidPoro " << (Core::FE::cell_type_to_string(distype_)).c_str();
   Element::print(os);

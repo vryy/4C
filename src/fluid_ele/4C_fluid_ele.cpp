@@ -17,25 +17,25 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidType Discret::ELEMENTS::FluidType::instance_;
+Discret::Elements::FluidType Discret::Elements::FluidType::instance_;
 
-Discret::ELEMENTS::FluidType& Discret::ELEMENTS::FluidType::instance() { return instance_; }
+Discret::Elements::FluidType& Discret::Elements::FluidType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidType::create(
+Core::Communication::ParObject* Discret::Elements::FluidType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Fluid* object = new Discret::ELEMENTS::Fluid(-1, -1);
+  Discret::Elements::Fluid* object = new Discret::Elements::Fluid(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUID")
   {
-    return Teuchos::make_rcp<Discret::ELEMENTS::Fluid>(id, owner);
+    return Teuchos::make_rcp<Discret::Elements::Fluid>(id, owner);
   }
   else if (eletype == "FLUID2" || eletype == "FLUID3")
   {
@@ -45,14 +45,14 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::Fluid>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::Fluid>(id, owner);
 }
 
 
-void Discret::ELEMENTS::FluidType::nodal_block_information(
+void Discret::Elements::FluidType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->num_dof_per_node(*(dwele->nodes()[0]));
@@ -62,13 +62,13 @@ void Discret::ELEMENTS::FluidType::nodal_block_information(
 }
 
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::FluidType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::FluidType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
-void Discret::ELEMENTS::FluidType::setup_element_definition(
+void Discret::Elements::FluidType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["FLUID"];
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::FluidType::setup_element_definition(
  |  ctor (public)                                            gammi 02/08|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Fluid::Fluid(int id, int owner)
+Discret::Elements::Fluid::Fluid(int id, int owner)
     : Core::Elements::Element(id, owner), is_ale_(false)
 {
   distype_ = Core::FE::CellType::dis_none;
@@ -194,7 +194,7 @@ Discret::ELEMENTS::Fluid::Fluid(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       gammi 02/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Fluid::Fluid(const Discret::ELEMENTS::Fluid& old)
+Discret::Elements::Fluid::Fluid(const Discret::Elements::Fluid& old)
     : Core::Elements::Element(old), distype_(old.distype_), is_ale_(old.is_ale_)
 {
   tds_ = Teuchos::null;
@@ -207,9 +207,9 @@ Discret::ELEMENTS::Fluid::Fluid(const Discret::ELEMENTS::Fluid& old)
  |  Deep copy this instance of Fluid and return pointer to it (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Fluid::clone() const
+Core::Elements::Element* Discret::Elements::Fluid::clone() const
 {
-  Discret::ELEMENTS::Fluid* newelement = new Discret::ELEMENTS::Fluid(*this);
+  Discret::Elements::Fluid* newelement = new Discret::Elements::Fluid(*this);
   return newelement;
 }
 
@@ -217,7 +217,7 @@ Core::Elements::Element* Discret::ELEMENTS::Fluid::clone() const
  |  Pack data                                                  (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Fluid::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -252,7 +252,7 @@ void Discret::ELEMENTS::Fluid::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -289,7 +289,7 @@ void Discret::ELEMENTS::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |  print this element (public)                              gammi 02/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::print(std::ostream& os) const
+void Discret::Elements::Fluid::print(std::ostream& os) const
 {
   os << "Fluid ";
   Element::print(os);
@@ -301,7 +301,7 @@ void Discret::ELEMENTS::Fluid::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Fluid::lines()
 {
   return Core::Communication::get_element_lines<FluidBoundary, Fluid>(*this);
 }
@@ -310,7 +310,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Fluid::surfaces()
 {
   return Core::Communication::get_element_surfaces<FluidBoundary, Fluid>(*this);
 }
@@ -319,7 +319,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Fluid::sur
 /*----------------------------------------------------------------------*
  |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::create_face_element(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Fluid::create_face_element(
     Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
@@ -330,7 +330,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::create_face_elem
 )
 {
   // dynamic cast for slave parent element
-  Discret::ELEMENTS::Fluid* slave_pele = dynamic_cast<Discret::ELEMENTS::Fluid*>(parent_slave);
+  Discret::Elements::Fluid* slave_pele = dynamic_cast<Discret::Elements::Fluid*>(parent_slave);
 
 
   // insert both parent elements
@@ -352,7 +352,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Fluid::create_face_elem
 /*----------------------------------------------------------------------*
  |  activate time dependent subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Fluid::activate_tds(
+void Discret::Elements::Fluid::activate_tds(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
   if (tds_ == Teuchos::null) tds_ = Teuchos::make_rcp<FLD::TDSEleData>();

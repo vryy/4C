@@ -36,7 +36,7 @@ namespace Discret
 {
   class SoSh18Type;
 
-  namespace ELEMENTS
+  namespace Elements
   {
     class SoHex18Type : public Core::Elements::ElementType
     {
@@ -411,7 +411,7 @@ namespace Discret
       std::string get_element_type_string() const { return "SOLIDH18_DEPRECATED"; }
     };  // class So_hex18
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

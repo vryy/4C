@@ -29,12 +29,12 @@ namespace Cut
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // finally this parameter list should go and all interface relevant parameters should be
     // stored in the condition mangager or coupling objects
     class FluidEleParameterXFEM;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 namespace XFEM
@@ -668,7 +668,7 @@ namespace XFEM
         const double& kappa_m,  ///< Weight parameter (parameter +/master side)
         const double& kappa_s,  ///< Weight parameter (parameter -/slave  side)
         const double& inv_h_k,  ///< the inverse characteristic element length h_k
-        const Discret::ELEMENTS::FluidEleParameterXFEM*
+        const Discret::Elements::FluidEleParameterXFEM*
             params,                 ///< parameterlist which specifies interface configuration
         double& NIT_visc_stab_fac,  ///< viscous part of Nitsche's penalty term
         double&

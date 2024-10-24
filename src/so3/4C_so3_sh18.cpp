@@ -18,30 +18,30 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::SoSh18Type Discret::ELEMENTS::SoSh18Type::instance_;
+Discret::Elements::SoSh18Type Discret::Elements::SoSh18Type::instance_;
 
-Discret::ELEMENTS::SoSh18Type& Discret::ELEMENTS::SoSh18Type::instance() { return instance_; }
+Discret::Elements::SoSh18Type& Discret::Elements::SoSh18Type::instance() { return instance_; }
 namespace
 {
-  const std::string name = Discret::ELEMENTS::SoSh18Type::instance().name();
+  const std::string name = Discret::Elements::SoSh18Type::instance().name();
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh18Type::create(
+Core::Communication::ParObject* Discret::Elements::SoSh18Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoSh18(-1, -1);
+  auto* object = new Discret::Elements::SoSh18(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoSh18>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoSh18>(id, owner);
     return ele;
   }
 
@@ -49,15 +49,15 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoSh18>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoSh18>(id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoSh18Type::setup_element_definition(
+void Discret::Elements::SoSh18Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -84,13 +84,13 @@ void Discret::ELEMENTS::SoSh18Type::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           seitz 11/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh18::SoSh18(int id, int owner) : SoBase(id, owner), SoHex18(id, owner)
+Discret::Elements::SoSh18::SoSh18(int id, int owner) : SoBase(id, owner), SoHex18(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -100,7 +100,7 @@ Discret::ELEMENTS::SoSh18::SoSh18(int id, int owner) : SoBase(id, owner), SoHex1
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      seitz 11/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh18::SoSh18(const Discret::ELEMENTS::SoSh18& old)
+Discret::Elements::SoSh18::SoSh18(const Discret::Elements::SoSh18& old)
     : SoBase(old),
       SoHex18(old),
       dsg_shear_(old.dsg_shear_),
@@ -116,9 +116,9 @@ Discret::ELEMENTS::SoSh18::SoSh18(const Discret::ELEMENTS::SoSh18& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh18::clone() const
+Core::Elements::Element* Discret::Elements::SoSh18::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoSh18(*this);
+  auto* newelement = new Discret::Elements::SoSh18(*this);
   return newelement;
 }
 
@@ -126,7 +126,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoSh18::clone() const
  |  Pack data                                                  (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoSh18::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -157,7 +157,7 @@ void Discret::ELEMENTS::SoSh18::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoSh18::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::SoSh18::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  print this element (public)                             seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18::print(std::ostream& os) const
+void Discret::Elements::SoSh18::print(std::ostream& os) const
 {
   os << "So_sh18 ";
   Element::print(os);

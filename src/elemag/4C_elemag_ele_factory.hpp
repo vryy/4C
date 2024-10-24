@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ElemagEleInterface;
 
@@ -37,7 +37,7 @@ namespace Discret
       static ElemagEleInterface* define_problem_type(std::string problem);
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

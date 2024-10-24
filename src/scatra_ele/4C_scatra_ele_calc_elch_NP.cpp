@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>*
-Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::instance(
+Discret::Elements::ScaTraEleCalcElchNP<distype>*
+Discret::Elements::ScaTraEleCalcElchNP<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -38,9 +38,9 @@ Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::instance(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
+Discret::Elements::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(
+    : Discret::Elements::ScaTraEleCalcElch<distype>::ScaTraEleCalcElch(
           numdofpernode, numscal, disname),
       migrationstab_(true)
 {
@@ -57,7 +57,7 @@ Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
  | calculate contributions to matrix and rhs (inside loop over all scalars)   fang 02/15 |
  *---------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs,  //!< element rhs to calculate+
     const int k,                            //!< index of current scalar
@@ -271,7 +271,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs(
  | calculate contributions to matrix and rhs (outside loop over all scalars)   fang 02/15 |
  *----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_scalar_loop(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_scalar_loop(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs,  //!< element rhs to calculate
     const double fac,                       //!< domain-integration factor
@@ -343,7 +343,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_and_rhs_outside_s
  | calc_res: Residual of Nernst-Planck equation in strong form (private)         fang 06/14 |
  *------------------------------------------------------ ----------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_res(
+double Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_res(
     const int k,           //!< index of current scalar
     const double conint,   //!< concentration at GP
     const double hist,     //!< history value at GP
@@ -392,7 +392,7 @@ double Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_res(
  *------------------------------------------------------
  ------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -508,7 +508,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_conv_stab(
  |  CalcMat: Migration term (private)                         fang 05/14 |
  *-------------------------------------------------- --------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_migr(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_migr(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to calculate
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -550,7 +550,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_migr(
  |  CalcMat: Electroneutrality in PDE form (private)          fang 05/14 |
  *-----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -597,7 +597,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde(
  |  CalcMat: ENC in PDE form with NP equation for species m eliminated (private)  fang 05/14 |
  *-------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_elim(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_elim(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double timefacfac,  //!< domain-integration factor times time-integration factor
@@ -661,7 +661,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_encpde_el
  |  CalcMat: Poisson equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_poisson(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_poisson(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const double fac,                       //!< domain-integration factor
@@ -706,7 +706,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_poisson(
  |  CalcMat: Laplace equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_laplace(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_laplace(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const double fac                        //!< domain-integration factor
 )
@@ -734,7 +734,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_mat_pot_equ_laplace(
  |  CalcRhs: Additional contributions from conservative formulation (private)   fang 05/14 |
  *-----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_add_cons(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_add_cons(
     Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -755,7 +755,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_add_cons(
  *------------------------------------------------------
  ------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_stab(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_stab(
     Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double
@@ -786,7 +786,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_conv_stab(
  |  CalcRhs: Migration term (private)                                       fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_migr(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_migr(
     Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -809,7 +809,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_migr(
  |  CalcRhs: Electroneutrality condition in PDE form (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde(
     Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -840,7 +840,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde(
  |  CalcRhs: ENC in PDE form with NP equation for species m eliminated (private)  fang 05/14 |
  *-------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde_elim(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde_elim(
     Core::LinAlg::SerialDenseVector& erhs,  //!< element vector to be filled
     const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -880,7 +880,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_encpde_el
  |  CalcRhs: Poisson equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_poisson(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_poisson(
     Core::LinAlg::SerialDenseVector& erhs,        //!< element vector to be filled
     const int k,                                  //!< index of current scalar
     const double fac,                             //!< domain-integration factor
@@ -918,7 +918,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_poisson(
  |  CalcRhs: Laplace equation for electric potential (private)              fang 05/14 |
  *-------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_laplace(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_laplace(
     Core::LinAlg::SerialDenseVector& erhs,        //!< element vector to be filled
     const double fac,                             //!< domain-integration factor
     const Core::LinAlg::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
@@ -942,7 +942,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_rhs_pot_equ_laplace(
  |  Correct sysmat for fluxes across DC                        fang 05/14 |
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::correction_for_flux_across_dc(
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs)
 {
@@ -999,7 +999,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::correction_for_flux_across
  |  get the material constants  (private)                     ehrl 01/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_material_params(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::get_material_params(
     const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
@@ -1036,7 +1036,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::get_material_params(
  |  evaluate single material  (protected)                    ehrl 11/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::materials(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -1059,7 +1059,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::materials(
  | Calculate quantities used for stabilization (protected)       fang 06/14 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
     std::vector<double>& tau,  //!< stabilization parameters (one per transported scalar)
     std::vector<Core::LinAlg::Matrix<nen_, 1>>&
         tauderpot,  //!< derivatives of stabilization parameters w.r.t. electric potential
@@ -1157,7 +1157,7 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::prepare_stabilization(
  (protected)   fang 06/14 |
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_tau_der_pot_taylor_hughes_zarins(
+void Discret::Elements::ScaTraEleCalcElchNP<distype>::calc_tau_der_pot_taylor_hughes_zarins(
     Core::LinAlg::Matrix<nen_, 1>&
         tauderpot,        //!< derivatives of stabilization parameter w.r.t. electric potential
     double& tau,          //!< stabilization parameter
@@ -1213,25 +1213,25 @@ void Discret::ELEMENTS::ScaTraEleCalcElchNP<distype>::calc_tau_der_pot_taylor_hu
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleCalcElchNP<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleCalcElchNP<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -26,7 +26,7 @@ namespace Mat
   }  // namespace Elastic
 }  // namespace Mat
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituentElastHyperElastinMembrane;
 
@@ -70,7 +70,7 @@ namespace MIXTURE
   namespace PAR
   {
     class MixtureConstituentElastHyperElastinMembrane
-        : public MIXTURE::PAR::MixtureConstituentElastHyperBase
+        : public Mixture::PAR::MixtureConstituentElastHyperBase
     {
      public:
       /*!
@@ -83,7 +83,7 @@ namespace MIXTURE
           const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
+      std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -102,10 +102,10 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a Mixture::MixtureRule.
    */
   class MixtureConstituentElastHyperElastinMembrane
-      : public MIXTURE::MixtureConstituentElastHyperBase,
+      : public Mixture::MixtureConstituentElastHyperBase,
         public ElastinMembraneEvaluation
   {
    public:
@@ -115,7 +115,7 @@ namespace MIXTURE
      * \param params Material parameters
      */
     explicit MixtureConstituentElastHyperElastinMembrane(
-        MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id);
+        Mixture::PAR::MixtureConstituentElastHyperElastinMembrane* params, int id);
 
     /// Returns the material type enum
     [[nodiscard]] Core::Materials::MaterialType material_type() const override;
@@ -308,7 +308,7 @@ namespace MIXTURE
 
    private:
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane* params_;
+    Mixture::PAR::MixtureConstituentElastHyperElastinMembrane* params_;
 
     /// Current growth factor with respect to the reference configuration
     std::vector<double> current_reference_growth_;
@@ -323,7 +323,7 @@ namespace MIXTURE
     ElastinMembraneAnisotropyExtension anisotropy_extension_;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

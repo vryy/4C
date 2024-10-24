@@ -24,14 +24,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*
-Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidEleBoundaryCalcPoro<distype>*
+Discret::Elements::FluidEleBoundaryCalcPoro<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>>(
-            new Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>());
+        return std::unique_ptr<Discret::Elements::FluidEleBoundaryCalcPoro<distype>>(
+            new Discret::Elements::FluidEleBoundaryCalcPoro<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -39,16 +39,16 @@ Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::instance(Core::Utils::Sing
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
-    : Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
+Discret::Elements::FluidEleBoundaryCalcPoro<distype>::FluidEleBoundaryCalcPoro()
+    : Discret::Elements::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 {
   // pointer to class FluidImplParameterTimInt
-  Base::fldpara_ = Discret::ELEMENTS::FluidEleParameterPoro::instance();
+  Base::fldpara_ = Discret::Elements::FluidEleParameterPoro::instance();
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
-    Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
+    Discret::Elements::FluidBoundary* ele1, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -115,7 +115,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
     }
     default:
     {
-      Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
+      Discret::Elements::FluidBoundaryImpl<distype>::evaluate_action(
           ele1, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
@@ -124,8 +124,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::evaluate_action(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -182,8 +182,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -243,7 +243,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
   static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
   int currparenteleid = pele->id();
 
   // get submatrix to fill
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -1688,8 +1688,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::fpsi_coupling(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -1798,8 +1798,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -1817,11 +1817,11 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
   static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -2048,8 +2048,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_flow_rate(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1)
@@ -2060,7 +2060,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -2281,8 +2281,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1,
     std::vector<int>& lm)
 {
@@ -2292,7 +2292,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -2370,8 +2370,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_i_ds(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -2495,8 +2495,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -2527,11 +2527,11 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
   static const int nenparent = Core::FE::num_nodes<pdistype>;
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -2868,8 +2868,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::poro_boundary(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -2885,7 +2885,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -3058,8 +3058,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::pressure_coupling(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_gp(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::FluidBoundary* ele,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_gp(
+    Teuchos::ParameterList& params, Discret::Elements::FluidBoundary* ele,
     const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
     const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
     double& porosity, double& dphi_dp, double& dphi_dJ, bool save)
@@ -3075,8 +3075,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::compute_porosity_at_g
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_fluid, Core::LinAlg::SerialDenseVector& rhs)
 {
@@ -3190,8 +3190,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_and_rhs(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_fluid, Core::LinAlg::SerialDenseVector& rhs)
 {
@@ -3201,7 +3201,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -3269,7 +3269,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
   // --------------------------------------------------
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
   static const int nenparent = Core::FE::num_nodes<pdistype>;
@@ -3443,8 +3443,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_an
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_struct, Core::LinAlg::SerialDenseMatrix& k_lambda)
 {
@@ -3558,8 +3558,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_struct, Core::LinAlg::SerialDenseMatrix& k_lambda)
 {
@@ -3569,7 +3569,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -3663,7 +3663,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // --------------------------------------------------
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
   static const int nenparent = Core::FE::num_nodes<pdistype>;
@@ -4058,8 +4058,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_pres)
 {
@@ -4173,8 +4173,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_pres(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& k_pres)
 {
@@ -4184,7 +4184,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -4253,7 +4253,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // --------------------------------------------------
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
   static const int nenparent = Core::FE::num_nodes<pdistype>;
@@ -4420,8 +4420,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& k_disp)
 {
@@ -4535,8 +4535,8 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
 template <Core::FE::CellType distype>
 template <Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od_poro_disp(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix& k_disp)
 {
@@ -4552,7 +4552,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<Base::bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of
@@ -4621,7 +4621,7 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
   // --------------------------------------------------
 
   // get the parent element
-  Discret::ELEMENTS::Fluid* pele = ele->parent_element();
+  Discret::Elements::Fluid* pele = ele->parent_element();
 
   // number of parentnodes
   static const int nenparent = Core::FE::num_nodes<pdistype>;
@@ -4796,16 +4796,16 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::no_penetration_mat_od
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>*
-Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::instance(
+Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>*
+Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::instance(
     Core::Utils::SingletonAction action)
 {
-  static Core::Utils::SingletonOwner<Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>
+  static Core::Utils::SingletonOwner<Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>>
       singleton_owner(
           []()
           {
-            return std::unique_ptr<Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>>(
-                new Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>());
+            return std::unique_ptr<Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>>(
+                new Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>());
           });
 
   return singleton_owner.instance(action);
@@ -4813,8 +4813,8 @@ Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::instance(
 
 
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_porosity(
-    Discret::ELEMENTS::FluidBoundary* ele, const std::vector<double>& mydispnp,
+bool Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_porosity(
+    Discret::Elements::FluidBoundary* ele, const std::vector<double>& mydispnp,
     Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity)
 {
   for (int inode = 0; inode < Base::bdrynen_; inode++)
@@ -4824,8 +4824,8 @@ bool Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_nodal_poros
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at_gp(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::FluidBoundary* ele,
+void Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at_gp(
+    Teuchos::ParameterList& params, Discret::Elements::FluidBoundary* ele,
     const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
     const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
     double& porosity, double& dphi_dp, double& dphi_dJ, bool save)
@@ -4835,28 +4835,28 @@ void Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::compute_porosity_at
   dphi_dJ = 0.0;
 }
 
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::line3>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs2>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs3>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs4>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::line2>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::line3>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs2>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs3>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs4>;
+template class Discret::Elements::FluidEleBoundaryCalcPoro<Core::FE::CellType::nurbs9>;
 
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::line3>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs2>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs3>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs4>;
-template class Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::line2>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::line3>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs2>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs3>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs4>;
+template class Discret::Elements::FluidEleBoundaryCalcPoroP1<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

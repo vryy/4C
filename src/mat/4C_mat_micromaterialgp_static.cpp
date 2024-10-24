@@ -232,8 +232,8 @@ void Mat::MicroMaterialGP::eas_init()
   {
     Core::Elements::Element* actele = discret->l_row_element(lid);
 
-    if (actele->element_type() == Discret::ELEMENTS::SoHex8Type::instance() or
-        actele->element_type() == Discret::ELEMENTS::SoShw6Type::instance())
+    if (actele->element_type() == Discret::Elements::SoHex8Type::instance() or
+        actele->element_type() == Discret::Elements::SoShw6Type::instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;

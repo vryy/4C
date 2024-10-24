@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   namespace Internal
@@ -30,7 +30,7 @@ namespace Discret::ELEMENTS
         Core::FE::CellType::hex27, Core::FE::CellType::tet4, Core::FE::CellType::tet10>;
 
     using PoroPressureBasedEvaluators =
-        Core::FE::apply_celltype_sequence<Discret::ELEMENTS::SolidPoroPressureBasedEleCalc,
+        Core::FE::apply_celltype_sequence<Discret::Elements::SolidPoroPressureBasedEleCalc,
             ImplementedSolidPoroCellTypes>;
 
     using SolidPoroPressureBasedEvaluators = Core::FE::Join<PoroPressureBasedEvaluators>;
@@ -41,7 +41,7 @@ namespace Discret::ELEMENTS
 
 
     using PoroPressureVelocityBasedEvaluators =
-        Core::FE::apply_celltype_sequence<Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc,
+        Core::FE::apply_celltype_sequence<Discret::Elements::SolidPoroPressureVelocityBasedEleCalc,
             ImplementedSolidPoroPressureVelocityBasedCellTypes>;
 
 
@@ -72,7 +72,7 @@ namespace Discret::ELEMENTS
   SolidPoroPressureVelocityBasedCalcVariant
   create_solid_poro_pressure_velocity_based_calculation_interface();
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

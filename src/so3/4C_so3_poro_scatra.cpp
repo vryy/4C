@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::So3PoroScatra(int id, int owner)
+Discret::Elements::So3PoroScatra<So3Ele, distype>::So3PoroScatra(int id, int owner)
     : So3Poro<So3Ele, distype>(id, owner), impltype_(Inpar::ScaTra::impltype_undefined)
 {
   return;
@@ -27,8 +27,8 @@ Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::So3PoroScatra(int id, int own
  |  copy-ctor (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::So3PoroScatra(
-    const Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>& old)
+Discret::Elements::So3PoroScatra<So3Ele, distype>::So3PoroScatra(
+    const Discret::Elements::So3PoroScatra<So3Ele, distype>& old)
     : So3Poro<So3Ele, distype>(old), impltype_(old.impltype_)
 {
   return;
@@ -39,9 +39,9 @@ Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::So3PoroScatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::clone() const
+Core::Elements::Element* Discret::Elements::So3PoroScatra<So3Ele, distype>::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>(*this);
+  auto* newelement = new Discret::Elements::So3PoroScatra<So3Ele, distype>(*this);
   return newelement;
 }
 
@@ -49,7 +49,7 @@ Core::Elements::Element* Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::clon
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pack(
+void Discret::Elements::So3PoroScatra<So3Ele, distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pack(
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unpack(
+void Discret::Elements::So3PoroScatra<So3Ele, distype>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
@@ -93,7 +93,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unpack(
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::print(std::ostream& os) const
+void Discret::Elements::So3PoroScatra<So3Ele, distype>::print(std::ostream& os) const
 {
   os << "So3_Poro_Scatra ";
   os << Core::FE::cell_type_to_string(distype).c_str() << " ";
@@ -105,7 +105,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::print(std::ostream& os) 
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::read_element(const std::string& eletype,
+bool Discret::Elements::So3PoroScatra<So3Ele, distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -148,7 +148,7 @@ bool Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::read_element(const std::
  | get the unique ParObject Id (public)                    schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unique_par_object_id() const
+int Discret::Elements::So3PoroScatra<So3Ele, distype>::unique_par_object_id() const
 {
   int parobjectid(-1);
   switch (distype)
@@ -191,7 +191,7 @@ int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::unique_par_object_id() co
  | get the element type (public)                           schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::element_type() const
+Core::Elements::ElementType& Discret::Elements::So3PoroScatra<So3Ele, distype>::element_type() const
 {
   switch (distype)
   {

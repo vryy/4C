@@ -32,13 +32,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   template <Core::FE::CellType celltype, typename Enable = void>
   struct ElementNodes;
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
-namespace Discret::ELEMENTS::Internal
+namespace Discret::Elements::Internal
 {
   template <Core::FE::CellType celltype>
   inline static constexpr int num_nodes = Core::FE::num_nodes<celltype>;
@@ -51,9 +51,9 @@ namespace Discret::ELEMENTS::Internal
 
   template <Core::FE::CellType celltype>
   inline static constexpr int num_dof_per_ele = num_nodes<celltype>* num_dim<celltype>;
-}  // namespace Discret::ELEMENTS::Internal
+}  // namespace Discret::Elements::Internal
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   /*!
@@ -148,7 +148,7 @@ namespace Discret::ELEMENTS
   ElementNodes<celltype> evaluate_element_nodes(
       const Core::Elements::Element& ele, const std::vector<double>& disp)
   {
-    Discret::ELEMENTS::ElementNodes<celltype> element_nodes;
+    Discret::Elements::ElementNodes<celltype> element_nodes;
     for (int i = 0; i < Internal::num_nodes<celltype>; ++i)
     {
       for (int d = 0; d < Internal::num_dim<celltype>; ++d)
@@ -179,7 +179,7 @@ namespace Discret::ELEMENTS
     std::vector<double> mydisp(lm.size());
     Core::FE::extract_my_values(displacements, mydisp, lm);
 
-    Discret::ELEMENTS::ElementNodes<celltype> element_nodes =
+    Discret::Elements::ElementNodes<celltype> element_nodes =
         evaluate_element_nodes<celltype>(ele, mydisp);
 
     if constexpr (Core::FE::is_nurbs<celltype>)
@@ -592,7 +592,7 @@ namespace Discret::ELEMENTS
         evaluate_jacobian_mapping_centroid(nodal_coordinates);
 
     // deformation gradient and strains at centroid of element
-    const Discret::ELEMENTS::SpatialMaterialMapping<celltype> spatial_material_mapping_centroid =
+    const Discret::Elements::SpatialMaterialMapping<celltype> spatial_material_mapping_centroid =
         evaluate_spatial_material_mapping(jacobian_mapping_centroid, nodal_coordinates);
 
     return spatial_material_mapping_centroid.determinant_deformation_gradient_;
@@ -1081,7 +1081,7 @@ namespace Discret::ELEMENTS
    */
   template <Core::FE::CellType celltype>
   Core::LinAlg::Matrix<Internal::num_str<celltype>, Internal::num_str<celltype>>
-  evaluate_voigt_transformation_matrix(const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian)
+  evaluate_voigt_transformation_matrix(const Discret::Elements::JacobianMapping<celltype>& jacobian)
   {
     // build T^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
     // currently only works in 3D
@@ -1202,7 +1202,7 @@ namespace Discret::ELEMENTS
     return defgrd_enh;
   }
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

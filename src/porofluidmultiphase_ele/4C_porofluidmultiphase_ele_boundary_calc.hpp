@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class PoroFluidMultiPhaseEleParameter;
 
@@ -91,7 +91,7 @@ namespace Discret
       PoroFluidMultiPhaseEleBoundaryCalc(const int numdofpernode, const std::string& disname);
 
       //! pointer to parameter list
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* params_;
+      Discret::Elements::PoroFluidMultiPhaseEleParameter* params_;
 
       //! number of dof per node
       const int numdofpernode_;
@@ -115,7 +115,7 @@ namespace Discret
       //! metric tensor at integration point
       Core::LinAlg::Matrix<nsd_, nsd_> metrictensor_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

@@ -28,7 +28,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class SoSh18Type : public SoHex18Type
     {
@@ -279,7 +279,7 @@ namespace Discret
       std::string get_element_type_string() const { return "SOLIDSH18"; }
     };  // class So_sh18
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

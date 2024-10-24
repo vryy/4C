@@ -33,13 +33,13 @@ namespace Input
 }
 
 // Constructor of the material parameters
-MIXTURE::PAR::MixtureRule::MixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
+Mixture::PAR::MixtureRule::MixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
     : Parameter(matdata)
 {
 }
 
 // Mixture rule factory generates the mixturerule parameters for a specific material id
-MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::factory(int matid)
+Mixture::PAR::MixtureRule* Mixture::PAR::MixtureRule::factory(int matid)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == Teuchos::null)
@@ -62,19 +62,19 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::factory(int matid)
   {
     case Core::Materials::mix_rule_function:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::FunctionMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<Mixture::PAR::FunctionMixtureRule>(curmat);
     }
     case Core::Materials::mix_rule_map:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::MapMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<Mixture::PAR::MapMixtureRule>(curmat);
     }
     case Core::Materials::mix_rule_simple:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::SimpleMixtureRule>(curmat);
+      return Mat::create_material_parameter_instance<Mixture::PAR::SimpleMixtureRule>(curmat);
     }
     case Core::Materials::mix_rule_growthremodel:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::GrowthRemodelMixtureRule>(
+      return Mat::create_material_parameter_instance<Mixture::PAR::GrowthRemodelMixtureRule>(
           curmat);
     }
     default:
@@ -84,13 +84,13 @@ MIXTURE::PAR::MixtureRule* MIXTURE::PAR::MixtureRule::factory(int matid)
 }
 
 // Constructor with parameters
-MIXTURE::MixtureRule::MixtureRule(MIXTURE::PAR::MixtureRule* params)
+Mixture::MixtureRule::MixtureRule(Mixture::PAR::MixtureRule* params)
     : constituents_(nullptr), numgp_(0), has_read_element_(false), is_setup_(false)
 {
 }
 
 // Pack the mixture rule
-void MIXTURE::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& data) const
+void Mixture::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& data) const
 {
   // Add number of Gauss points
   add_to_pack(data, numgp_);
@@ -103,7 +103,7 @@ void MIXTURE::MixtureRule::pack_mixture_rule(Core::Communication::PackBuffer& da
 }
 
 // Unpack the mixture rule
-void MIXTURE::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
+void Mixture::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
   // Read initialized flag
   numgp_ = extract_int(buffer);
@@ -116,7 +116,7 @@ void MIXTURE::MixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer
 }
 
 // reads the element definition and set up all quantities
-void MIXTURE::MixtureRule::read_element(
+void Mixture::MixtureRule::read_element(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Init must only be called once
@@ -128,7 +128,7 @@ void MIXTURE::MixtureRule::read_element(
 }
 
 // Setup the mixture rule
-void MIXTURE::MixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
+void Mixture::MixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after read_element()
   if (!has_read_element_) FOUR_C_THROW("read_element() must be called before setup()!");

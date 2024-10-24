@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
+double Discret::Elements::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
     const std::vector<double>& parent_disp)
 {
   // call the implementation that is dependent on scalars with an empty scalar vector
@@ -35,7 +35,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
+double Discret::Elements::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
     const std::vector<double>& parent_disp, const std::vector<double>& parent_scalar)
 {
   switch (parent_element()->shape())
@@ -66,7 +66,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 
 
 template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
+double Discret::Elements::StructuralSurface::estimate_nitsche_trace_max_eigenvalue(
     const std::vector<double>& parent_disp, const std::vector<double>& parent_scalar)
 {
   const int dim = Core::FE::dim<dt_vol>;
@@ -110,7 +110,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 
 
 template <Core::FE::CellType dt_vol>
-void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
+void Discret::Elements::StructuralSurface::trace_estimate_vol_matrix(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
     const std::vector<double>& parent_scalar,
@@ -125,7 +125,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
   Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
   Core::LinAlg::Matrix<dim, Core::FE::num_nodes<dt_vol>> N_XYZ;
 
-  Core::FE::IntPointsAndWeights<dim> ip(Discret::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+  Core::FE::IntPointsAndWeights<dim> ip(Discret::Elements::DisTypeToOptGaussRule<dt_vol>::rule);
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)
   {
@@ -141,7 +141,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
       // Teuchos::RCP<> as the values of a Teuchos::ParameterList have to be printable
       auto scalar_values_at_xi = Teuchos::make_rcp<std::vector<double>>();
       *scalar_values_at_xi =
-          Discret::ELEMENTS::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
+          Discret::Elements::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
       params.set("scalars", scalar_values_at_xi);
     }
     Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix(
 
 
 template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
-void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
+void Discret::Elements::StructuralSurface::trace_estimate_surf_matrix(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
     const std::vector<double>& parent_scalar,
@@ -178,7 +178,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
   Core::LinAlg::Matrix<dim, Core::FE::num_nodes<dt_vol>> N_XYZ;
 
   Core::FE::IntPointsAndWeights<dim - 1> ip(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<dt_surf>::rule);
   Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
       // Teuchos::RCP<> as the values of a Teuchos::ParameterList have to be printable
       auto scalar_values_at_xi = Teuchos::make_rcp<std::vector<double>>();
       *scalar_values_at_xi =
-          Discret::ELEMENTS::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
+          Discret::Elements::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
       params.set("scalars", scalar_values_at_xi);
     }
     Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
@@ -263,7 +263,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix(
 
 
 template <Core::FE::CellType dt_vol>
-void Discret::ELEMENTS::StructuralSurface::strains(
+void Discret::Elements::StructuralSurface::strains(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
     const Core::LinAlg::Matrix<3, 1>& xi, double& jac, Core::LinAlg::Matrix<3, 3>& defgrd,
@@ -335,7 +335,7 @@ void Discret::ELEMENTS::StructuralSurface::strains(
 
 
 template <Core::FE::CellType dt_vol>
-void Discret::ELEMENTS::StructuralSurface::subspace_projector(
+void Discret::Elements::StructuralSurface::subspace_projector(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol>,
         Core::FE::num_nodes<dt_vol> * Core::FE::dim<dt_vol> -
@@ -420,7 +420,7 @@ void Discret::ELEMENTS::StructuralSurface::subspace_projector(
 /*----------------------------------------------------------------------*
  |                                                           seitz 11/16|
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
+double Discret::Elements::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
   switch (parent_element()->shape())
@@ -449,7 +449,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 }
 
 template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
-double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
+double Discret::Elements::StructuralSurface::estimate_nitsche_trace_max_eigenvalue_tsi(
     std::vector<double>& parent_disp)
 {
   const int dim = Core::FE::dim<dt_vol>;
@@ -491,7 +491,7 @@ double Discret::ELEMENTS::StructuralSurface::estimate_nitsche_trace_max_eigenval
 }
 
 template <Core::FE::CellType dt_vol>
-void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
+void Discret::Elements::StructuralSurface::trace_estimate_vol_matrix_tsi(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, Core::FE::num_nodes<dt_vol>>& vol)
@@ -507,7 +507,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
   Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol> * 3, 6> bc;
   Core::LinAlg::Matrix<dim, num_node> N_XYZ, iC_N_XYZ;
 
-  Core::FE::IntPointsAndWeights<dim> ip(Discret::ELEMENTS::DisTypeToOptGaussRule<dt_vol>::rule);
+  Core::FE::IntPointsAndWeights<dim> ip(Discret::Elements::DisTypeToOptGaussRule<dt_vol>::rule);
 
   if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
   Teuchos::RCP<Mat::FourierIso> mat_thr =
@@ -532,7 +532,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_vol_matrix_tsi(
 
 
 template <Core::FE::CellType dt_vol, Core::FE::CellType dt_surf>
-void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
+void Discret::Elements::StructuralSurface::trace_estimate_surf_matrix_tsi(
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xrefe,
     const Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, 3>& xcurr,
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, Core::FE::num_nodes<dt_vol>>& surf)
@@ -557,7 +557,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
   double detA;
 
   Core::FE::IntPointsAndWeights<dim - 1> ip(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<dt_surf>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<dt_surf>::rule);
   Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
   if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
@@ -602,7 +602,7 @@ void Discret::ELEMENTS::StructuralSurface::trace_estimate_surf_matrix_tsi(
 
 
 template <Core::FE::CellType dt_vol>
-void Discret::ELEMENTS::StructuralSurface::subspace_projector_scalar(
+void Discret::Elements::StructuralSurface::subspace_projector_scalar(
     Core::LinAlg::Matrix<Core::FE::num_nodes<dt_vol>, Core::FE::num_nodes<dt_vol> - 1>& proj)
 {
   const int num_node = Core::FE::num_nodes<dt_vol>;

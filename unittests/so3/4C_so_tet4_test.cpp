@@ -35,12 +35,12 @@ namespace
         testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, coords[lid], 0));
 
       // create 1 element
-      testele_ = Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(0, 0);
+      testele_ = Teuchos::make_rcp<Discret::Elements::SoTet4>(0, 0);
       testele_->set_node_ids(4, nodeids.data());
       testdis_->add_element(testele_);
       testdis_->fill_complete(false, false, false);
 
-      copytestele_ = Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(*testele_);
+      copytestele_ = Teuchos::make_rcp<Discret::Elements::SoTet4>(*testele_);
     }
 
     // Delete pointers.
@@ -58,9 +58,9 @@ namespace
     //! dummy discretization for holding element and node pointers
     Teuchos::RCP<Core::FE::Discretization> testdis_;
     //! the tet4 element to be tested
-    Teuchos::RCP<Discret::ELEMENTS::SoTet4> testele_;
+    Teuchos::RCP<Discret::Elements::SoTet4> testele_;
     //! a copy of the tet element to test the copy constructor
-    Teuchos::RCP<Discret::ELEMENTS::SoTet4> copytestele_;
+    Teuchos::RCP<Discret::Elements::SoTet4> copytestele_;
   };
 
   /**

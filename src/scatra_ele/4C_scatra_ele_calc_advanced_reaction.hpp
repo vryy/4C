@@ -22,7 +22,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ScaTraEleReaManagerAdvReac;
@@ -249,7 +249,7 @@ namespace Discret
     };
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class ScaTraEleCalcRefConcReac : public ScaTraEleCalcAdvReac<distype>
@@ -123,7 +123,7 @@ namespace Discret
     };  // end ScaTraEleCalcRefConcReac
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

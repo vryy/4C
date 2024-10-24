@@ -21,12 +21,12 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      |  QUAD 4 Element                                                      |
      *----------------------------------------------------------------------*/
-    class WallQuad4PoroP1Type : public Discret::ELEMENTS::WallQuad4PoroType
+    class WallQuad4PoroP1Type : public Discret::Elements::WallQuad4PoroType
     {
      public:
       std::string name() const override { return "WallQuad4PoroP1Type"; }
@@ -59,7 +59,7 @@ namespace Discret
     /*----------------------------------------------------------------------*
      |  QUAD 9 Element                                                      |
      *----------------------------------------------------------------------*/
-    class WallQuad9PoroP1Type : public Discret::ELEMENTS::WallQuad9PoroType
+    class WallQuad9PoroP1Type : public Discret::Elements::WallQuad9PoroType
     {
      public:
       std::string name() const override { return "WallQuad9PoroP1Type"; }
@@ -92,7 +92,7 @@ namespace Discret
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                                       |
      *----------------------------------------------------------------------*/
-    class WallTri3PoroP1Type : public Discret::ELEMENTS::WallTri3PoroType
+    class WallTri3PoroP1Type : public Discret::Elements::WallTri3PoroType
     {
      public:
       std::string name() const override { return "WallTri3PoroP1Type"; }
@@ -122,7 +122,7 @@ namespace Discret
       static WallTri3PoroP1Type instance_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

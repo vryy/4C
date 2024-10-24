@@ -476,7 +476,7 @@ headerName="4C_shell_kl_nurbs";
 
 name="4C_shell_kl_nurbs_evaluate_acegen_res";
 initializeAceGen[name];
-SMSModule["Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_residuum_auto_generated",
+SMSModule["Discret::Elements::KirchhoffLoveShellNurbs::evaluate_residuum_auto_generated",
 	"const double"[young$$$],
 	"const double"[poisson$$$],
 	"const double"[thickness$$$],
@@ -493,7 +493,7 @@ finishAceGen[name,headerName];
 
 name="4C_shell_kl_nurbs_evaluate_acegen_res_and_stiff";
 initializeAceGen[name];
-SMSModule["Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_residuum_and_jacobian_auto_generated",
+SMSModule["Discret::Elements::KirchhoffLoveShellNurbs::evaluate_residuum_and_jacobian_auto_generated",
 	"const double"[young$$$],
 	"const double"[poisson$$$],
 	"const double"[thickness$$$],
@@ -511,7 +511,7 @@ finishAceGen[name,headerName];
 
 name="4C_shell_kl_nurbs_evaluate_acegen_body_load";
 initializeAceGen[name];
-SMSModule["FourC::Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_body_load_auto_generated",
+SMSModule["FourC::Discret::Elements::KirchhoffLoveShellNurbs::evaluate_body_load_auto_generated",
 	"const Core::FE::IntegrationPoints1D&"[intpoints$$$],
 	"const std::vector<Core::LinAlg::SerialDenseVector>&"[knots$$$],
 	("const Core::LinAlg::Matrix<"<>ToString[nNodes]<>",1>&")[weights$$$],

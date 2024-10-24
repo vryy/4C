@@ -508,8 +508,8 @@ void Solid::TimeInt::BaseDataGlobalState::setup_rot_vec_map_extractor(
   {
     Core::Nodes::Node* nodeptr = discret_->l_row_node(i);
 
-    const Discret::ELEMENTS::Beam3Base* beameleptr =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(nodeptr->elements()[0]);
+    const Discret::Elements::Beam3Base* beameleptr =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(nodeptr->elements()[0]);
 
     std::vector<int> nodaladditdofs;
     std::vector<int> nodalrotvecdofs;

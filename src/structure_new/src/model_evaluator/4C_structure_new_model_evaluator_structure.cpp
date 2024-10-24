@@ -100,7 +100,7 @@ void Solid::ModelEvaluator::Structure::setup()
       int number_my_solid_elements = std::count_if(discretization->my_row_element_range().begin(),
           discretization->my_row_element_range().end(),
           [](const auto* row_element)
-          { return dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(row_element) == nullptr; });
+          { return dynamic_cast<const Discret::Elements::Beam3Base*>(row_element) == nullptr; });
       int number_my_beam_elements =
           discretization->num_my_row_elements() - number_my_solid_elements;
       int number_global_solid_elements = 0;
@@ -606,7 +606,7 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure()
       {
         // Skip beam elements which live in the same discretization but use a different output
         // mechanism
-        return !dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+        return !dynamic_cast<const Discret::Elements::Beam3Base*>(element);
       });
 
   if (global_in_output()
@@ -695,7 +695,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
   check_init_setup();
 
   // get the parameter container object
-  const Discret::ELEMENTS::StructureRuntimeOutputParams& structure_output_params =
+  const Discret::Elements::StructureRuntimeOutputParams& structure_output_params =
       *global_in_output().get_runtime_output_params()->get_structure_params();
 
   // reset time and time step of the writer object
@@ -896,7 +896,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     auto DoPostprocessingOnElement = [](const Core::Elements::Element& ele)
     {
       // If it is not a beam element, we post-process it.
-      return dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele) == nullptr;
+      return dynamic_cast<const Discret::Elements::Beam3Base*>(&ele) == nullptr;
     };
 
     auto EvaluateGaussPointData = [&](const std::vector<char>& raw_data)
@@ -994,7 +994,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
 
 void Solid::ModelEvaluator::Structure::output_runtime_structure_gauss_point_data()
 {
-  const Discret::ELEMENTS::StructureRuntimeOutputParams& structure_output_params =
+  const Discret::Elements::StructureRuntimeOutputParams& structure_output_params =
       *global_in_output().get_runtime_output_params()->get_structure_params();
   if (structure_output_params.gauss_point_data_output() !=
       Inpar::Solid::GaussPointDataOutputType::none)
@@ -1031,7 +1031,7 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_beams()
       visualization_params_, dis_np().Comm());
 
   // get the parameter container object
-  const Discret::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
+  const Discret::Elements::BeamRuntimeOutputParams& beam_output_params =
       *global_in_output().get_runtime_output_params()->get_beam_params();
 
   // export displacement state to column format
@@ -1093,7 +1093,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
   check_init_setup();
 
   // get the parameter container object
-  const Discret::ELEMENTS::BeamRuntimeOutputParams& beam_output_params =
+  const Discret::Elements::BeamRuntimeOutputParams& beam_output_params =
       *global_in_output().get_runtime_output_params()->get_beam_params();
 
   // set geometry
@@ -1186,7 +1186,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(Teuchos::ParameterList&
   if (p.numParams() > 1)
   {
     FOUR_C_THROW(
-        "Please use the Solid::ELEMENTS::Interface and its derived "
+        "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
@@ -1222,7 +1222,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
   if (p.numParams() > 1)
   {
     FOUR_C_THROW(
-        "Please use the Solid::ELEMENTS::Interface and its derived "
+        "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
@@ -1257,7 +1257,7 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& 
   if (p.numParams() > 1)
   {
     FOUR_C_THROW(
-        "Please use the Solid::ELEMENTS::Interface and its derived "
+        "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   }
   if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
@@ -1672,7 +1672,7 @@ bool Solid::ModelEvaluator::Structure::determine_element_volumes(
   Core::LinAlg::SerialDenseMatrix empty_dummy_mat;
   Core::LinAlg::SerialDenseVector empty_dummy_vec;
 
-  Solid::ELEMENTS::EvalErrorFlag ele_eval_error = Solid::ELEMENTS::ele_error_none;
+  Solid::Elements::EvalErrorFlag ele_eval_error = Solid::Elements::ele_error_none;
   for (unsigned elid = 0; elid < my_num_reles; ++elid)
   {
     Core::Elements::Element* rele = discret().l_row_element(elid);
@@ -1694,7 +1694,7 @@ bool Solid::ModelEvaluator::Structure::determine_element_volumes(
     {
       ele_eval_error = eval_data().get_ele_eval_error_flag();
       // reset for the next element
-      eval_data().set_ele_eval_error_flag(Solid::ELEMENTS::ele_error_none);
+      eval_data().set_ele_eval_error_flag(Solid::Elements::ele_error_none);
       ele_vol(2) = -1.0;
     }
 

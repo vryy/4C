@@ -18,7 +18,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
-MIXTURE::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
+Mixture::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata),
       damage_function_id_(matdata.parameters.get<int>("DAMAGE_FUNCT"))
@@ -26,30 +26,30 @@ MIXTURE::PAR::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDa
   // nothing to do here
 }
 
-// Create an instance of MIXTURE::MixtureConstituentElastHyper from the parameters
-std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituentElastHyperDamage::create_constituent(int id)
+// Create an instance of Mixture::MixtureConstituentElastHyper from the parameters
+std::unique_ptr<Mixture::MixtureConstituent>
+Mixture::PAR::MixtureConstituentElastHyperDamage::create_constituent(int id)
 {
-  return std::unique_ptr<MIXTURE::MixtureConstituentElastHyperDamage>(
-      new MIXTURE::MixtureConstituentElastHyperDamage(this, id));
+  return std::unique_ptr<Mixture::MixtureConstituentElastHyperDamage>(
+      new Mixture::MixtureConstituentElastHyperDamage(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
-MIXTURE::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
-    MIXTURE::PAR::MixtureConstituentElastHyperDamage* params, int id)
+Mixture::MixtureConstituentElastHyperDamage::MixtureConstituentElastHyperDamage(
+    Mixture::PAR::MixtureConstituentElastHyperDamage* params, int id)
     : MixtureConstituentElastHyperBase(params, id), params_(params)
 {
   // nothing to do here
 }
 
 // Returns the material type
-Core::Materials::MaterialType MIXTURE::MixtureConstituentElastHyperDamage::material_type() const
+Core::Materials::MaterialType Mixture::MixtureConstituentElastHyperDamage::material_type() const
 {
   return Core::Materials::mix_elasthyper_damage;
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituentElastHyperDamage::pack_constituent(
+void Mixture::MixtureConstituentElastHyperDamage::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
   MixtureConstituentElastHyperBase::pack_constituent(data);
@@ -58,7 +58,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::pack_constituent(
 }
 
 // Unpack the constituent
-void MIXTURE::MixtureConstituentElastHyperDamage::unpack_constituent(
+void Mixture::MixtureConstituentElastHyperDamage::unpack_constituent(
     Core::Communication::UnpackBuffer& buffer)
 {
   MixtureConstituentElastHyperBase::unpack_constituent(buffer);
@@ -67,7 +67,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::unpack_constituent(
 }
 
 // Reads the element from the input file
-void MIXTURE::MixtureConstituentElastHyperDamage::read_element(
+void Mixture::MixtureConstituentElastHyperDamage::read_element(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   MixtureConstituentElastHyperBase::read_element(numgp, container);
@@ -76,7 +76,7 @@ void MIXTURE::MixtureConstituentElastHyperDamage::read_element(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituentElastHyperDamage::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
+void Mixture::MixtureConstituentElastHyperDamage::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   const auto& reference_coordinates = params.get<Core::LinAlg::Matrix<3, 1>>("gp_coords_ref");
@@ -95,19 +95,19 @@ void MIXTURE::MixtureConstituentElastHyperDamage::update(Core::LinAlg::Matrix<3,
   MixtureConstituentElastHyperBase::update(defgrd, params, gp, eleGID);
 }
 
-double MIXTURE::MixtureConstituentElastHyperDamage::get_growth_scalar(int gp) const
+double Mixture::MixtureConstituentElastHyperDamage::get_growth_scalar(int gp) const
 {
   return current_reference_growth_[gp];
 }
 
-void MIXTURE::MixtureConstituentElastHyperDamage::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::MixtureConstituentElastHyperDamage::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
   FOUR_C_THROW("This constituent does not support Evaluation without an elastic part.");
 }
 
-void MIXTURE::MixtureConstituentElastHyperDamage::evaluate_elastic_part(
+void Mixture::MixtureConstituentElastHyperDamage::evaluate_elastic_part(
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<3, 3>& iFextin,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)

@@ -22,7 +22,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                          fbraeu 06/16 |
@@ -156,7 +156,7 @@ namespace Discret
       static MembraneQuad9Type instance_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

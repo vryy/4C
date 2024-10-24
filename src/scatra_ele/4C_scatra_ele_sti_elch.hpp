@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     template <Core::FE::CellType distype>
@@ -178,7 +178,7 @@ namespace Discret
       //! gradient of electric potential
       Core::LinAlg::Matrix<nsd, 1> gradpot_;
     };  // class ScaTraEleInternalVariableManagerSTIElch
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

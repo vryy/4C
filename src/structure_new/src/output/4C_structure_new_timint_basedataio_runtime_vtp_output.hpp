@@ -70,7 +70,7 @@ namespace Solid
           };*/
 
       /*    /// get the data container for parameters regarding beams
-          Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> get_beam_params() const
+          Teuchos::RCP<const Discret::Elements::BeamRuntimeOutputParams> get_beam_params() const
           {
             check_init_setup();
             return params_runtime_output_beams_;
@@ -122,7 +122,7 @@ namespace Solid
           bool output_displacement_state_;*/
 
       /*    /// data container for input parameters related to output of beams at runtime
-          Teuchos::RCP<Discret::ELEMENTS::BeamRuntimeOutputParams>
+          Teuchos::RCP<Discret::Elements::BeamRuntimeOutputParams>
          params_runtime_output_beams_;*/
 
       //@}

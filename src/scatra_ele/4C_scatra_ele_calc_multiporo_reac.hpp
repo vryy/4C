@@ -37,7 +37,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerMultiPoro;
@@ -1477,12 +1477,12 @@ namespace Discret
           const int numfluidphases, const int totalnummultiphasedofpernode)
       {
         // dummy parameter list
-        Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
-            Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(discretization.name());
+        Discret::Elements::PoroFluidMultiPhaseEleParameter* para =
+            Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(discretization.name());
 
         // create phase-manager
         phasemanager_ =
-            Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager(*para,
+            Discret::Elements::PoroFluidManager::PhaseManagerInterface::create_phase_manager(*para,
                 nsd, multiphase_mat()->material_type(),
                 POROFLUIDMULTIPHASE::Action::get_access_from_scatra, totalnummultiphasedofpernode,
                 numfluidphases);
@@ -1491,7 +1491,7 @@ namespace Discret
         phasemanager_->setup(ele, ndsscatra_porofluid_);
 
         // create variablemanager
-        variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd,
+        variablemanager_ = Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd,
             nen>::create_variable_manager(*para,
             POROFLUIDMULTIPHASE::Action::get_access_from_scatra, multiphase_mat(),
             totalnummultiphasedofpernode, numfluidphases);
@@ -1514,13 +1514,13 @@ namespace Discret
       }
 
       // get the phasemanager of the fluid
-      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface> fluid_phase_manager()
+      Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface> fluid_phase_manager()
       {
         return phasemanager_;
       }
 
       // get the variablemanager of the fluid
-      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>>
+      Teuchos::RCP<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
       fluid_var_manager()
       {
         return variablemanager_;
@@ -1576,10 +1576,10 @@ namespace Discret
       ScaTra::Action myaction_;
 
       //! phase manager of the fluid
-      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface> phasemanager_;
+      Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
       //! variable manager of the fluid
-      Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>>
+      Teuchos::RCP<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
           variablemanager_;
 
       //! dofset of fluid field on scatra dis
@@ -1587,7 +1587,7 @@ namespace Discret
       const int ndsscatra_porofluid_ = 2;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

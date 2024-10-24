@@ -244,7 +244,7 @@ double GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Line,
   else
   {
     double surface_size = get_surface_size(element_data_surface);
-    double line_tube_size_radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1()))
+    double line_tube_size_radius = (dynamic_cast<const Discret::Elements::Beam3Base*>(element1()))
                                        ->get_circular_cross_section_radius_for_interactions();
     return std::max(surface_size, 3.0 * line_tube_size_radius);
   }

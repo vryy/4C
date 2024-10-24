@@ -35,7 +35,7 @@ namespace Core
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class PoroFluidMultiPhaseEleParameter;
 
@@ -178,7 +178,7 @@ namespace Discret
 
         //! factory method
         static Teuchos::RCP<EvaluatorInterface<nsd, nen>> create_evaluator(
-            const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+            const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
             const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
             const PoroFluidManager::PhaseManagerInterface& phasemanager);
 
@@ -3309,7 +3309,7 @@ namespace Discret
 
     }  // namespace PoroFluidEvaluator
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

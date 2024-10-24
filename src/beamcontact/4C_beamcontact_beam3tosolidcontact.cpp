@@ -273,8 +273,8 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
 
   // Calculate radius of beam element via moment of inertia (only valid for beams with circular
   // cross section)
-  const Discret::ELEMENTS::Beam3Base* beamele1 =
-      static_cast<const Discret::ELEMENTS::Beam3Base*>(element1_);
+  const Discret::Elements::Beam3Base* beamele1 =
+      static_cast<const Discret::Elements::Beam3Base*>(element1_);
 
   if (beamele1 == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
@@ -564,7 +564,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::evalua
       gap_ += gap;
 
       // Get Jacobi factor of beam element
-      const double jacobi = (static_cast<Discret::ELEMENTS::Beam3eb*>(element1_))->jacobi();
+      const double jacobi = (static_cast<Discret::Elements::Beam3eb*>(element1_))->jacobi();
 
       // Evaluate penalty force law with penalty parameter pp and gap to get force fp and derivative
       // dfp = dfp / dgap
@@ -2189,10 +2189,10 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::get_be
   }
   else if (numnodalvalues == 2)
   {
-    if (element1_->element_type() != Discret::ELEMENTS::Beam3ebType::instance())
+    if (element1_->element_type() != Discret::Elements::Beam3ebType::instance())
       FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
-    double length = 2 * (static_cast<Discret::ELEMENTS::Beam3eb*>(element1_))->jacobi();
+    double length = 2 * (static_cast<Discret::Elements::Beam3eb*>(element1_))->jacobi();
 
     // Get values and derivatives of shape functions
     Core::FE::shape_function_hermite_1d(N_i, eta, length, distype);

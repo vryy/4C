@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-void Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_residuum_and_jacobian_auto_generated(
+void Discret::Elements::KirchhoffLoveShellNurbs::evaluate_residuum_and_jacobian_auto_generated(
     const double young, const double poisson, const double thickness,
     const Core::FE::IntegrationPoints1D& intpointsXi,
     const Core::FE::IntegrationPoints1D& intpointsEta,

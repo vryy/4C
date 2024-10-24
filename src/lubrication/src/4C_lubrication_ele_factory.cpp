@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                     (public) wirtz 10/15 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::LubricationEleInterface* Discret::ELEMENTS::LubricationFactory::provide_impl(
+Discret::Elements::LubricationEleInterface* Discret::Elements::LubricationFactory::provide_impl(
     Core::FE::CellType distype, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
@@ -110,10 +110,10 @@ Discret::ELEMENTS::LubricationEleInterface* Discret::ELEMENTS::LubricationFactor
  |                                                     (public) wirtz 10/15 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::LubricationEleInterface*
-Discret::ELEMENTS::LubricationFactory::define_problem_type(const std::string& disname)
+Discret::Elements::LubricationEleInterface*
+Discret::Elements::LubricationFactory::define_problem_type(const std::string& disname)
 {
-  return Discret::ELEMENTS::LubricationEleCalc<distype, probdim>::instance(disname);
+  return Discret::Elements::LubricationEleCalc<distype, probdim>::instance(disname);
 }
 
 FOUR_C_NAMESPACE_CLOSE

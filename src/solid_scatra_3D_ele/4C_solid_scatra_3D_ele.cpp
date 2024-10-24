@@ -38,14 +38,14 @@ namespace
   }
 }  // namespace
 
-Discret::ELEMENTS::SolidScatraType Discret::ELEMENTS::SolidScatraType::instance_;
+Discret::Elements::SolidScatraType Discret::Elements::SolidScatraType::instance_;
 
-Discret::ELEMENTS::SolidScatraType& Discret::ELEMENTS::SolidScatraType::instance()
+Discret::Elements::SolidScatraType& Discret::Elements::SolidScatraType::instance()
 {
   return instance_;
 }
 
-void Discret::ELEMENTS::SolidScatraType::setup_element_definition(
+void Discret::Elements::SolidScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SOLIDSCATRA"];
@@ -68,80 +68,80 @@ void Discret::ELEMENTS::SolidScatraType::setup_element_definition(
       get_default_line_definition_builder<Core::FE::CellType::nurbs27>().build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDSCATRA") return create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SolidScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::SolidScatra>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::SolidScatra>(id, owner);
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SolidScatraType::create(
+Core::Communication::ParObject* Discret::Elements::SolidScatraType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SolidScatra(-1, -1);
+  auto* object = new Discret::Elements::SolidScatra(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-void Discret::ELEMENTS::SolidScatraType::nodal_block_information(
+void Discret::Elements::SolidScatraType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   Solid::Utils::nodal_block_information_solid(dwele, numdf, dimns, nv, np);
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SolidScatraType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SolidScatraType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-Discret::ELEMENTS::SolidScatra::SolidScatra(int id, int owner) : Core::Elements::Element(id, owner)
+Discret::Elements::SolidScatra::SolidScatra(int id, int owner) : Core::Elements::Element(id, owner)
 {
 }
 
-Core::Elements::Element* Discret::ELEMENTS::SolidScatra::clone() const
+Core::Elements::Element* Discret::Elements::SolidScatra::clone() const
 {
-  return new Discret::ELEMENTS::SolidScatra(*this);
+  return new Discret::Elements::SolidScatra(*this);
 }
 
-int Discret::ELEMENTS::SolidScatra::num_line() const
+int Discret::Elements::SolidScatra::num_line() const
 {
   return Core::FE::get_number_of_element_lines(celltype_);
 }
 
-int Discret::ELEMENTS::SolidScatra::num_surface() const
+int Discret::Elements::SolidScatra::num_surface() const
 {
   return Core::FE::get_number_of_element_surfaces(celltype_);
 }
 
-int Discret::ELEMENTS::SolidScatra::num_volume() const
+int Discret::Elements::SolidScatra::num_volume() const
 {
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidScatra::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SolidScatra::lines()
 {
   return Core::Communication::get_element_lines<StructuralLine, SolidScatra>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SolidScatra::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SolidScatra::surfaces()
 {
   return Core::Communication::get_element_surfaces<StructuralSurface, SolidScatra>(*this);
 }
 
-void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::Elements::SolidScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
     interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
     solid_interface_ptr_ =
-        Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(interface_ptr_);
+        Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(interface_ptr_);
   }
   else
   {
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::SolidScatra::set_params_interface_ptr(const Teuchos::Par
   }
 }
 
-bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,
+bool Discret::Elements::SolidScatra::read_element(const std::string& eletype,
     const std::string& celltype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -158,12 +158,12 @@ bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,
   celltype_ = Core::FE::string_to_cell_type(celltype);
 
   // read number of material model
-  set_material(0, Mat::factory(Solid::Utils::read_element::read_element_material(container)));
+  set_material(0, Mat::factory(Solid::Utils::ReadElement::read_element_material(container)));
 
   // read scalar transport implementation type
   properties_.impltype = read_scatra_impl_type(container);
 
-  properties_.solid = Solid::Utils::read_element::read_solid_element_properties(container);
+  properties_.solid = Solid::Utils::ReadElement::read_solid_element_properties(container);
 
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
@@ -175,7 +175,7 @@ bool Discret::ELEMENTS::SolidScatra::read_element(const std::string& eletype,
   return true;
 }
 
-void Discret::ELEMENTS::SolidScatra::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SolidScatra::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -185,15 +185,15 @@ void Discret::ELEMENTS::SolidScatra::pack(Core::Communication::PackBuffer& data)
   Core::Elements::Element::pack(data);
 
   add_to_pack(data, (int)celltype_);
-  Discret::ELEMENTS::add_to_pack(data, properties_);
+  Discret::Elements::add_to_pack(data, properties_);
 
   data.add_to_pack(material_post_setup_);
 
   // optional data, e.g., EAS data
-  Discret::ELEMENTS::pack(solid_scatra_calc_variant_, data);
+  Discret::Elements::pack(solid_scatra_calc_variant_, data);
 }
 
-void Discret::ELEMENTS::SolidScatra::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SolidScatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   if (extract_int(buffer) != unique_par_object_id()) FOUR_C_THROW("wrong instance type data");
 
@@ -205,7 +205,7 @@ void Discret::ELEMENTS::SolidScatra::unpack(Core::Communication::UnpackBuffer& b
 
   celltype_ = static_cast<Core::FE::CellType>(extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(buffer, properties_);
+  Discret::Elements::extract_from_pack(buffer, properties_);
 
   extract_from_pack(buffer, material_post_setup_);
 
@@ -213,18 +213,18 @@ void Discret::ELEMENTS::SolidScatra::unpack(Core::Communication::UnpackBuffer& b
   solid_scatra_calc_variant_ =
       create_solid_scatra_calculation_interface(celltype_, properties_.solid);
 
-  Discret::ELEMENTS::unpack(solid_scatra_calc_variant_, buffer);
+  Discret::Elements::unpack(solid_scatra_calc_variant_, buffer);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
-void Discret::ELEMENTS::SolidScatra::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::SolidScatra::vis_names(std::map<std::string, int>& names)
 {
   Core::Elements::Element::vis_names(names);
   solid_material().vis_names(names);
 }
 
-bool Discret::ELEMENTS::SolidScatra::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::SolidScatra::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -232,7 +232,7 @@ bool Discret::ELEMENTS::SolidScatra::vis_data(const std::string& name, std::vect
   return solid_material().vis_data(name, data, id());
 }
 
-Mat::So3Material& Discret::ELEMENTS::SolidScatra::solid_material(int nummat) const
+Mat::So3Material& Discret::Elements::SolidScatra::solid_material(int nummat) const
 {
   return *Teuchos::rcp_dynamic_cast<Mat::So3Material>(
       Core::Elements::Element::material(nummat), true);

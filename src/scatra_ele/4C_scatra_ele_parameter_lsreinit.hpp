@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleParameterLsReinit : public ScaTraEleParameterBase
     {
@@ -96,7 +96,7 @@ namespace Discret
       // function for diffusivity
       Inpar::ScaTra::DiffFunc difffct_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

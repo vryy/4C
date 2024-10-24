@@ -14,18 +14,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   class StiffnessGrowthStrategy;
 
   namespace PAR
   {
-    class StiffnessGrowthStrategy : public MIXTURE::PAR::MixtureGrowthStrategy
+    class StiffnessGrowthStrategy : public Mixture::PAR::MixtureGrowthStrategy
     {
      public:
       explicit StiffnessGrowthStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
+      std::unique_ptr<Mixture::MixtureGrowthStrategy> create_growth_strategy() override;
 
       const double kappa_;
     };
@@ -44,18 +44,18 @@ namespace MIXTURE
    * The model is based on Braeu et al (2019),
    * https://link.springer.com/article/10.1007%2Fs10237-018-1084-x
    */
-  class StiffnessGrowthStrategy : public MIXTURE::MixtureGrowthStrategy
+  class StiffnessGrowthStrategy : public Mixture::MixtureGrowthStrategy
   {
    public:
-    explicit StiffnessGrowthStrategy(MIXTURE::PAR::StiffnessGrowthStrategy* params);
+    explicit StiffnessGrowthStrategy(Mixture::PAR::StiffnessGrowthStrategy* params);
 
     [[nodiscard]] bool has_inelastic_growth_deformation_gradient() const override { return false; };
 
     void evaluate_inverse_growth_deformation_gradient(Core::LinAlg::Matrix<3, 3>& iFgM,
-        const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
+        const Mixture::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
-    void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
+    void evaluate_growth_stress_cmat(const Mixture::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
         const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
         const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
@@ -66,7 +66,7 @@ namespace MIXTURE
     ///! growth parameters as defined in the input file
     const PAR::StiffnessGrowthStrategy* params_{};
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

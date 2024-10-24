@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituent;
   template <typename T>
@@ -28,19 +28,19 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituentRemodelFiberExpl : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentRemodelFiberExpl : public Mixture::PAR::MixtureConstituent
     {
      public:
       explicit MixtureConstituentRemodelFiberExpl(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
+      std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) override;
 
       const int fiber_id_;
       const int init_;
       const double gamma_;
 
       const int fiber_material_id_;
-      const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_;
+      const Mixture::PAR::RemodelFiberMaterial<double>* fiber_material_;
 
       const bool enable_growth_;
       const bool enable_basal_mass_production_;
@@ -57,11 +57,11 @@ namespace MIXTURE
   /*!
    * \brief Remodel fiber constituent with an explicit update rule
    */
-  class MixtureConstituentRemodelFiberExpl : public MIXTURE::MixtureConstituent
+  class MixtureConstituentRemodelFiberExpl : public Mixture::MixtureConstituent
   {
    public:
     explicit MixtureConstituentRemodelFiberExpl(
-        MIXTURE::PAR::MixtureConstituentRemodelFiberExpl* params, int id);
+        Mixture::PAR::MixtureConstituentRemodelFiberExpl* params, int id);
 
     [[nodiscard]] Core::Materials::MaterialType material_type() const override;
 
@@ -114,7 +114,7 @@ namespace MIXTURE
     void initialize();
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentRemodelFiberExpl* params_;
+    Mixture::PAR::MixtureConstituentRemodelFiberExpl* params_;
 
     /// An instance of the remodel fiber
     std::vector<RemodelFiber<2>> remodel_fiber_;
@@ -122,7 +122,7 @@ namespace MIXTURE
     /// Handler for anisotropic input
     Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

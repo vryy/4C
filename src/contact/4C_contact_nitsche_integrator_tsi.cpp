@@ -788,7 +788,7 @@ void CONTACT::IntegratorNitscheTsi::so_ele_cauchy(Mortar::Element& moEle, double
   Core::LinAlg::SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi, d2sntDdDT,
       dsntdT;
   Core::LinAlg::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
-  dynamic_cast<Discret::ELEMENTS::SoBase*>(moEle.parent_element())
+  dynamic_cast<Discret::Elements::SoBase*>(moEle.parent_element())
       ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, moEle.mo_data().parent_disp(), normal,
           direction, sigma_nt, &dsntdd, &d2sntdd2, &d2sntDdDn, &d2sntDdDt, &d2sntDdDpxi, &dsntdn,
           &dsntdt, &dsntdpxi, &moEle.mo_data().parent_temp(), &dsntdT, &d2sntDdDT, nullptr,
@@ -1089,7 +1089,7 @@ void CONTACT::IntegratorNitscheTsi::so_ele_cauchy_heatflux(Mortar::Element& moEl
   {
     case Core::FE::CellType::hex8:
     {
-      auto* parent_ele = dynamic_cast<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>*>(
+      auto* parent_ele = dynamic_cast<Discret::Elements::So3Plast<Core::FE::CellType::hex8>*>(
           moEle.parent_element());
       if (!parent_ele) FOUR_C_THROW("thermo-mechanical Nitsche contact only for So3Plast for now.");
 
@@ -1103,7 +1103,7 @@ void CONTACT::IntegratorNitscheTsi::so_ele_cauchy_heatflux(Mortar::Element& moEl
     }
     case Core::FE::CellType::hex27:
     {
-      auto* parent_ele = dynamic_cast<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>*>(
+      auto* parent_ele = dynamic_cast<Discret::Elements::So3Plast<Core::FE::CellType::hex27>*>(
           moEle.parent_element());
       if (!parent_ele) FOUR_C_THROW("thermo-mechanical Nitsche contact only for So3Plast for now.");
 
@@ -1117,7 +1117,7 @@ void CONTACT::IntegratorNitscheTsi::so_ele_cauchy_heatflux(Mortar::Element& moEl
     }
     case Core::FE::CellType::tet4:
     {
-      auto* parent_ele = dynamic_cast<Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>*>(
+      auto* parent_ele = dynamic_cast<Discret::Elements::So3Plast<Core::FE::CellType::tet4>*>(
           moEle.parent_element());
       if (!parent_ele) FOUR_C_THROW("thermo-mechanical Nitsche contact only for So3Plast for now.");
 

@@ -24,7 +24,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! Class for Evaluating boundary integrals for porous media problems
     /*!
@@ -48,7 +48,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     class FluidEleCalcPoro : public FluidEleCalc<distype>
     {
-      using Base = Discret::ELEMENTS::FluidEleCalc<distype, Discret::ELEMENTS::Fluid::none>;
+      using Base = Discret::Elements::FluidEleCalc<distype, Discret::Elements::Fluid::none>;
       using Base::numderiv2_;
 
      protected:
@@ -80,7 +80,7 @@ namespace Discret
         calculated
 
        */
-      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -104,7 +104,7 @@ namespace Discret
         \param intpoints        (i) Gaussian integration points
 
        */
-      virtual int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      virtual int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -130,7 +130,7 @@ namespace Discret
         \param intpoints        (i) Gaussian integration points
 
        */
-      virtual int evaluate_od(Discret::ELEMENTS::Fluid* ele,
+      virtual int evaluate_od(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -145,7 +145,7 @@ namespace Discret
       /*!
           Interface function for supporting methods of the element
        */
-      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -902,7 +902,7 @@ namespace Discret
       void pre_evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
-          Discret::ELEMENTS::Fluid* ele,            //!< fluid element
+          Discret::Elements::Fluid* ele,            //!< fluid element
           Core::FE::Discretization& discretization  //!< pointer to discretization for de-assembly
       );
 
@@ -910,7 +910,7 @@ namespace Discret
       double setup_material_derivatives();
 
       //! access structure material of corresponding solid (poro) element
-      void get_struct_material(Discret::ELEMENTS::Fluid* ele);
+      void get_struct_material(Discret::Elements::Fluid* ele);
 
       //! get material parameters of poro fluid element
       void get_material_paramters(Teuchos::RCP<const Core::Mat::Material> material);
@@ -950,7 +950,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_ * nsd_, nsd_>& F_X, int gp, bool computeLinOD);
 
       virtual int compute_volume(Teuchos::ParameterList& params,  //!< paramters
-          Discret::ELEMENTS::Fluid* ele,                          //!< current fluid element
+          Discret::Elements::Fluid* ele,                          //!< current fluid element
           Core::FE::Discretization& discretization,               //!< fluid discretization
           std::vector<int>& lm,                     //!< location vector for DOF management
           Core::LinAlg::SerialDenseVector& elevec1  //!< reference to element vector to be filled
@@ -977,11 +977,11 @@ namespace Discret
       /*!
           general function to compute the error (analytical solution) for particular problem type
        */
-      int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec) override;
 
-      int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints2) override;
@@ -1095,9 +1095,9 @@ namespace Discret
       std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
       //! pointer to parameter lists
-      Discret::ELEMENTS::FluidEleParameterPoro* porofldpara_;
+      Discret::Elements::FluidEleParameterPoro* porofldpara_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

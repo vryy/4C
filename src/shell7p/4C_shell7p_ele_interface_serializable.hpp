@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS::Shell
+namespace Discret::Elements::Shell
 {
   /*!
    * @brief An interface providing methods to serialize an object into a packbuffer and deserialize
@@ -42,7 +42,7 @@ namespace Discret::ELEMENTS::Shell
      */
     virtual void unpack(Core::Communication::UnpackBuffer& buffer) = 0;
   };
-}  // namespace Discret::ELEMENTS::Shell
+}  // namespace Discret::Elements::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

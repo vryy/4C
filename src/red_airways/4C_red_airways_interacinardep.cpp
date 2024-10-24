@@ -14,9 +14,9 @@ FOUR_C_NAMESPACE_OPEN
 
 using namespace Core::FE;
 
-Discret::ELEMENTS::RedInterAcinarDepType Discret::ELEMENTS::RedInterAcinarDepType::instance_;
+Discret::Elements::RedInterAcinarDepType Discret::Elements::RedInterAcinarDepType::instance_;
 
-Discret::ELEMENTS::RedInterAcinarDepType& Discret::ELEMENTS::RedInterAcinarDepType::instance()
+Discret::Elements::RedInterAcinarDepType& Discret::Elements::RedInterAcinarDepType::instance()
 {
   return instance_;
 }
@@ -24,10 +24,10 @@ Discret::ELEMENTS::RedInterAcinarDepType& Discret::ELEMENTS::RedInterAcinarDepTy
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::RedInterAcinarDepType::create(
+Core::Communication::ParObject* Discret::Elements::RedInterAcinarDepType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::RedInterAcinarDep* object = new Discret::ELEMENTS::RedInterAcinarDep(-1, -1);
+  Discret::Elements::RedInterAcinarDep* object = new Discret::Elements::RedInterAcinarDep(-1, -1);
   object->unpack(buffer);
   return object;
 }
@@ -36,13 +36,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::RedInterAcinarDepType::create
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedInterAcinarDepType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINAR_INTER_DEP")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::RedInterAcinarDep>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::RedInterAcinarDep>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -52,11 +52,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedInterAcinarDepType::
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedInterAcinarDepType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::RedInterAcinarDep>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::RedInterAcinarDep>(id, owner);
   return ele;
 }
 
@@ -64,7 +64,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedInterAcinarDepType::
 /*----------------------------------------------------------------------*
  |  setup_element_definition                                              |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDepType::setup_element_definition(
+void Discret::Elements::RedInterAcinarDepType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
@@ -78,7 +78,7 @@ void Discret::ELEMENTS::RedInterAcinarDepType::setup_element_definition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner)
+Discret::Elements::RedInterAcinarDep::RedInterAcinarDep(int id, int owner)
     : Core::Elements::Element(id, owner)
 {
 }
@@ -87,8 +87,8 @@ Discret::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(int id, int owner)
  |  copy-ctor (public)                                      ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(
-    const Discret::ELEMENTS::RedInterAcinarDep& old)
+Discret::Elements::RedInterAcinarDep::RedInterAcinarDep(
+    const Discret::Elements::RedInterAcinarDep& old)
     : Core::Elements::Element(old), elem_params_(old.elem_params_), generation_(old.generation_)
 {
 }
@@ -98,10 +98,10 @@ Discret::ELEMENTS::RedInterAcinarDep::RedInterAcinarDep(
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::RedInterAcinarDep::clone() const
+Core::Elements::Element* Discret::Elements::RedInterAcinarDep::clone() const
 {
-  Discret::ELEMENTS::RedInterAcinarDep* newelement =
-      new Discret::ELEMENTS::RedInterAcinarDep(*this);
+  Discret::Elements::RedInterAcinarDep* newelement =
+      new Discret::Elements::RedInterAcinarDep(*this);
   return newelement;
 }
 
@@ -109,7 +109,7 @@ Core::Elements::Element* Discret::ELEMENTS::RedInterAcinarDep::clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::RedInterAcinarDep::shape() const
+Core::FE::CellType Discret::Elements::RedInterAcinarDep::shape() const
 {
   switch (num_node())
   {
@@ -128,7 +128,7 @@ Core::FE::CellType Discret::ELEMENTS::RedInterAcinarDep::shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::RedInterAcinarDep::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -158,7 +158,7 @@ void Discret::ELEMENTS::RedInterAcinarDep::pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::RedInterAcinarDep::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -195,7 +195,7 @@ void Discret::ELEMENTS::RedInterAcinarDep::unpack(Core::Communication::UnpackBuf
 /*----------------------------------------------------------------------*
  |  Print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::print(std::ostream& os) const
+void Discret::Elements::RedInterAcinarDep::print(std::ostream& os) const
 {
   os << "RedInterAcinarDep ";
   Element::print(os);
@@ -207,12 +207,12 @@ void Discret::ELEMENTS::RedInterAcinarDep::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::vis_names(std::map<std::string, int>& names) { return; }
+void Discret::Elements::RedInterAcinarDep::vis_names(std::map<std::string, int>& names) { return; }
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedInterAcinarDep::vis_data(
+bool Discret::Elements::RedInterAcinarDep::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -225,7 +225,7 @@ bool Discret::ELEMENTS::RedInterAcinarDep::vis_data(
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 04/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::get_params(std::string name, double& var)
+void Discret::Elements::RedInterAcinarDep::get_params(std::string name, double& var)
 {
   std::map<std::string, double>::iterator it;
   it = elem_params_.find(name);
@@ -241,7 +241,7 @@ void Discret::ELEMENTS::RedInterAcinarDep::get_params(std::string name, double& 
 /*----------------------------------------------------------------------*
  |  Get element parameters (public)                        ismail 03/11 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedInterAcinarDep::get_params(std::string name, int& var)
+void Discret::Elements::RedInterAcinarDep::get_params(std::string name, int& var)
 {
   if (name == "Generation")
   {
@@ -258,7 +258,7 @@ void Discret::ELEMENTS::RedInterAcinarDep::get_params(std::string name, int& var
 /*----------------------------------------------------------------------*
  |  Get vector of lines (public)                           ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::RedInterAcinarDep::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::RedInterAcinarDep::lines()
 {
   FOUR_C_ASSERT(num_line() == 1, "RED_AIRWAY element must have one and only one line");
 

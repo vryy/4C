@@ -15,33 +15,33 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
+Mixture::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : MIXTURE::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata.parameters.get<double>("KAPPA"))
+    : Mixture::PAR::MixtureGrowthStrategy(matdata), kappa_(matdata.parameters.get<double>("KAPPA"))
 {
 }
 
-std::unique_ptr<MIXTURE::MixtureGrowthStrategy>
-MIXTURE::PAR::StiffnessGrowthStrategy::create_growth_strategy()
+std::unique_ptr<Mixture::MixtureGrowthStrategy>
+Mixture::PAR::StiffnessGrowthStrategy::create_growth_strategy()
 {
-  return std::make_unique<MIXTURE::StiffnessGrowthStrategy>(this);
+  return std::make_unique<Mixture::StiffnessGrowthStrategy>(this);
 }
 
-MIXTURE::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
-    MIXTURE::PAR::StiffnessGrowthStrategy* params)
+Mixture::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
+    Mixture::PAR::StiffnessGrowthStrategy* params)
     : params_(params)
 {
 }
 
-void MIXTURE::StiffnessGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
-    Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
+void Mixture::StiffnessGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
+    Core::LinAlg::Matrix<3, 3>& iFgM, const Mixture::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
   iFgM = Core::LinAlg::identity_matrix<3>();
 }
 
-void MIXTURE::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
-    const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
+void Mixture::StiffnessGrowthStrategy::evaluate_growth_stress_cmat(
+    const Mixture::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
     const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,

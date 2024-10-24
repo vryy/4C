@@ -65,8 +65,8 @@ void lubrication_dyn(int restart)
         "DYNAMIC to a valid number!");
 
   // create instance of Lubrication basis algorithm
-  Teuchos::RCP<LUBRICATION::LubricationBaseAlgorithm> lubricationonly =
-      Teuchos::make_rcp<LUBRICATION::LubricationBaseAlgorithm>();
+  Teuchos::RCP<Lubrication::LubricationBaseAlgorithm> lubricationonly =
+      Teuchos::make_rcp<Lubrication::LubricationBaseAlgorithm>();
 
   // setup Lubrication basis algorithm
   lubricationonly->setup(

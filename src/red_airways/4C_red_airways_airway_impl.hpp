@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Interface base class for airway_impl
     /*!
@@ -67,7 +67,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for airway element
-      static RedAirwayImplInterface* impl(Discret::ELEMENTS::RedAirway* airway);
+      static RedAirwayImplInterface* impl(Discret::Elements::RedAirway* airway);
     };
 
 
@@ -174,7 +174,7 @@ namespace Discret
      private:
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

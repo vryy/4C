@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace FLD
 {
   template <Core::FE::CellType distype, int numdofpernode,
-      Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+      Discret::Elements::Fluid::EnrichmentType enrtype>
   class RotationallySymmetricPeriodicBC;
 }
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleParameterStd;
     class ScaTraEleParameterTimInt;
@@ -210,7 +210,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>& test_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& test_master,
           int numscal,
-          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, Core::LinAlg::SerialDenseMatrix& k_ss,
           Core::LinAlg::SerialDenseMatrix& k_sm, Core::LinAlg::SerialDenseMatrix& k_ms,
           Core::LinAlg::SerialDenseMatrix& k_mm, Core::LinAlg::SerialDenseVector& r_s,
@@ -547,11 +547,11 @@ namespace Discret
       }
 
       //! pointer to parameter list for time integration
-      Discret::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
+      Discret::Elements::ScaTraEleParameterTimInt* scatraparamstimint_;
       //! pointer to parameter list
-      Discret::ELEMENTS::ScaTraEleParameterStd* scatraparams_;
+      Discret::Elements::ScaTraEleParameterStd* scatraparams_;
       //! pointer to scatra boundary parameter list
-      Discret::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
+      Discret::Elements::ScaTraEleParameterBoundary* scatraparamsboundary_;
 
       //! number of dof per node
       const int numdofpernode_;
@@ -594,10 +594,10 @@ namespace Discret
       Core::LinAlg::Matrix<nsd_ele_, nsd_ele_> metrictensor_;
       //! for the handling of rotationally symmetric periodic boundary conditions
       Teuchos::RCP<
-          FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, Discret::ELEMENTS::Fluid::none>>
+          FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, Discret::Elements::Fluid::none>>
           rotsymmpbc_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

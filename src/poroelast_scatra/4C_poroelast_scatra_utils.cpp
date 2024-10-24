@@ -36,30 +36,30 @@ FOUR_C_NAMESPACE_OPEN
 bool PoroElastScaTra::Utils::is_poro_scatra_element(const Core::Elements::Element* actele)
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
-  return actele->element_type() == Discret::ELEMENTS::SoHex8PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SolidPoroPressureBasedType::instance() or
+  return actele->element_type() == Discret::Elements::SoHex8PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::SolidPoroPressureBasedType::instance() or
          actele->element_type() ==
-             Discret::ELEMENTS::SolidPoroPressureVelocityBasedType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoTet4PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoTet10PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoHex27PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoNurbs27PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallTri3PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad4PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad9PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallNurbs4PoroScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallNurbs9PoroScatraType::instance() or
+             Discret::Elements::SolidPoroPressureVelocityBasedType::instance() or
+         actele->element_type() == Discret::Elements::SoTet4PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::SoTet10PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::SoHex27PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::SoNurbs27PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallTri3PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallQuad4PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallQuad9PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallNurbs4PoroScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallNurbs9PoroScatraType::instance() or
          is_poro_p1_scatra_element(actele);
 }
 
 bool PoroElastScaTra::Utils::is_poro_p1_scatra_element(const Core::Elements::Element* actele)
 {
   // checks if element is a porop1 scatra element (new elements need to be listed here)
-  return actele->element_type() == Discret::ELEMENTS::SoHex8PoroP1ScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoTet4PoroP1ScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad4PoroP1ScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallTri3PoroP1ScatraType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad9PoroP1ScatraType::instance();
+  return actele->element_type() == Discret::Elements::SoHex8PoroP1ScatraType::instance() or
+         actele->element_type() == Discret::Elements::SoTet4PoroP1ScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallQuad4PoroP1ScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallTri3PoroP1ScatraType::instance() or
+         actele->element_type() == Discret::Elements::WallQuad9PoroP1ScatraType::instance();
 }
 
 Teuchos::RCP<PoroElastScaTra::PoroScatraBase> PoroElastScaTra::Utils::create_poro_scatra_algorithm(

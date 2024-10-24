@@ -25,7 +25,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      * HEX8 element
@@ -177,7 +177,7 @@ namespace Discret
     };  // class So_nurbs27PlastType
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

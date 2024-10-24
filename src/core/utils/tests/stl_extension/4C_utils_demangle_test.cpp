@@ -11,12 +11,12 @@
 
 #include <Teuchos_RCPDecl.hpp>
 
-namespace DEMANGLE_TEST
+namespace DemangleTest
 {
   struct TestStruct
   {
   };
-}  // namespace DEMANGLE_TEST
+}  // namespace DemangleTest
 
 namespace
 {
@@ -25,13 +25,13 @@ namespace
 
   TEST(DemangleTest, Struct)
   {
-    EXPECT_EQ(Core::Utils::try_demangle(typeid(DEMANGLE_TEST::TestStruct).name()),
-        "DEMANGLE_TEST::TestStruct");
+    EXPECT_EQ(Core::Utils::try_demangle(typeid(DemangleTest::TestStruct).name()),
+        "DemangleTest::TestStruct");
   }
 
   TEST(DemangleTest, RCP)
   {
-    EXPECT_EQ(Core::Utils::try_demangle(typeid(Teuchos::RCP<DEMANGLE_TEST::TestStruct>).name()),
-        "Teuchos::RCP<DEMANGLE_TEST::TestStruct>");
+    EXPECT_EQ(Core::Utils::try_demangle(typeid(Teuchos::RCP<DemangleTest::TestStruct>).name()),
+        "Teuchos::RCP<DemangleTest::TestStruct>");
   }
 }  // namespace

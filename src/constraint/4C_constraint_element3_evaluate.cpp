@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::ConstraintElement3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -154,11 +154,11 @@ int Discret::ELEMENTS::ConstraintElement3::evaluate(Teuchos::ParameterList& para
   return 0;
 
 
-}  // end of Discret::ELEMENTS::ConstraintElement3::Evaluate
+}  // end of Discret::Elements::ConstraintElement3::Evaluate
 
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
-int Discret::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::ConstraintElement3::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -169,7 +169,7 @@ int Discret::ELEMENTS::ConstraintElement3::evaluate_neumann(Teuchos::ParameterLi
 
 /*----------------------------------------------------------------------*
  * compute 3d normal */
-void Discret::ELEMENTS::ConstraintElement3::compute_normal(
+void Discret::Elements::ConstraintElement3::compute_normal(
     const Core::LinAlg::Matrix<4, 3>& xc, Core::LinAlg::Matrix<3, 1>& elenorm)
 {
   elenorm(0, 0) = -(xc(0, 2) * xc(1, 1)) + xc(0, 1) * xc(1, 2) + xc(0, 2) * xc(2, 1) -
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::ConstraintElement3::compute_normal(
 
 /*----------------------------------------------------------------------*
  * normal distance between fourth point and plane */
-double Discret::ELEMENTS::ConstraintElement3::compute_normal_dist(
+double Discret::Elements::ConstraintElement3::compute_normal_dist(
     const Core::LinAlg::Matrix<4, 3>& xc, const Core::LinAlg::Matrix<3, 1>& normal)
 {
   return (-(normal(0, 0) * (xc(0, 0) - xc(3, 0))) + normal(1, 0) * (-xc(0, 1) + xc(3, 1)) -
@@ -193,7 +193,7 @@ double Discret::ELEMENTS::ConstraintElement3::compute_normal_dist(
 
 /*----------------------------------------------------------------------*
  * first derivatives */
-void Discret::ELEMENTS::ConstraintElement3::compute_first_deriv(
+void Discret::Elements::ConstraintElement3::compute_first_deriv(
     const Core::LinAlg::Matrix<4, 3>& xc, Core::LinAlg::SerialDenseVector& elevector,
     const Core::LinAlg::Matrix<3, 1>& normal)
 {
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::ConstraintElement3::compute_first_deriv(
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void Discret::ELEMENTS::ConstraintElement3::compute_second_deriv(
+void Discret::Elements::ConstraintElement3::compute_second_deriv(
     const Core::LinAlg::Matrix<4, 3>& xc, Core::LinAlg::SerialDenseMatrix& elematrix,
     const Core::LinAlg::Matrix<3, 1>& normal)
 {
@@ -2854,7 +2854,7 @@ void Discret::ELEMENTS::ConstraintElement3::compute_second_deriv(
   return;
 }
 
-double Discret::ELEMENTS::ConstraintElement3::compute_weighted_distance(
+double Discret::Elements::ConstraintElement3::compute_weighted_distance(
     const std::vector<double> disp, const std::vector<double> direct)
 {
   // norm of direct
@@ -2869,7 +2869,7 @@ double Discret::ELEMENTS::ConstraintElement3::compute_weighted_distance(
   return result;
 }
 
-double Discret::ELEMENTS::ConstraintElement3::compute_weighted_distance(
+double Discret::Elements::ConstraintElement3::compute_weighted_distance(
     const Core::LinAlg::Matrix<2, 3> disp, const std::vector<double> direct)
 {
   // norm of direct
@@ -2884,7 +2884,7 @@ double Discret::ELEMENTS::ConstraintElement3::compute_weighted_distance(
   return result;
 }
 
-void Discret::ELEMENTS::ConstraintElement3::compute_first_deriv_weighted_distance(
+void Discret::Elements::ConstraintElement3::compute_first_deriv_weighted_distance(
     Core::LinAlg::SerialDenseVector& elevector, const std::vector<double> direct)
 {
   // norm of direct

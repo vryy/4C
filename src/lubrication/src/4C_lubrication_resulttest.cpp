@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | ctor                                                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
-LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
+Lubrication::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
     : Core::Utils::ResultTest("LUBRICATION"),
       dis_(lubrication->discretization()),
       mysol_(lubrication->prenp()),
@@ -30,7 +30,7 @@ LUBRICATION::ResultTest::ResultTest(Teuchos::RCP<TimIntImpl> lubrication)
 /*----------------------------------------------------------------------*
  | test node                                                wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::test_node(
+void Lubrication::ResultTest::test_node(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // care for the case of multiple discretizations of the same field type
@@ -73,7 +73,7 @@ void LUBRICATION::ResultTest::test_node(
 /*----------------------------------------------------------------------*
  | get nodal result to be tested                            wirtz 11/15 |
  *----------------------------------------------------------------------*/
-double LUBRICATION::ResultTest::result_node(
+double Lubrication::ResultTest::result_node(
     const std::string quantity,  //! name of quantity to be tested
     Core::Nodes::Node* node      //! node carrying the result to be tested
 ) const
@@ -92,13 +92,13 @@ double LUBRICATION::ResultTest::result_node(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // LUBRICATION::ResultTest::ResultNode
+}  // Lubrication::ResultTest::ResultNode
 
 
 /*-------------------------------------------------------------------------------------*
  | test special quantity not associated with a particular element or node  wirtz 11/15 |
  *-------------------------------------------------------------------------------------*/
-void LUBRICATION::ResultTest::test_special(
+void Lubrication::ResultTest::test_special(
     const Core::IO::InputParameterContainer& container, int& nerr, int& test_count)
 {
   // make sure that quantity is tested only once
@@ -121,7 +121,7 @@ void LUBRICATION::ResultTest::test_special(
 /*----------------------------------------------------------------------*
  | get special result to be tested                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-double LUBRICATION::ResultTest::result_special(
+double Lubrication::ResultTest::result_special(
     const std::string quantity  //! name of quantity to be tested
 ) const
 {
@@ -134,6 +134,6 @@ double LUBRICATION::ResultTest::result_special(
     FOUR_C_THROW("Quantity '%s' not supported in result test!", quantity.c_str());
 
   return result;
-}  // LUBRICATION::ResultTest::result_special
+}  // Lubrication::ResultTest::result_special
 
 FOUR_C_NAMESPACE_CLOSE

@@ -14,7 +14,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_linearization(
+void Discret::Elements::So3PoroP1<So3Ele, distype>::compute_porosity_and_linearization(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const Core::LinAlg::Matrix<Base::numnod_, 1>& shapfct,
     const Core::LinAlg::Matrix<Base::numnod_, 1>* myporosity,
@@ -30,7 +30,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_lineari
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_linearization_od(
+void Discret::Elements::So3PoroP1<So3Ele, distype>::compute_porosity_and_linearization_od(
     Teuchos::ParameterList& params, const double& press, const double& J, const int& gp,
     const Core::LinAlg::Matrix<Base::numnod_, 1>& shapfct,
     const Core::LinAlg::Matrix<Base::numnod_, 1>* myporosity, double& porosity, double& dphi_dp)
@@ -44,7 +44,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::compute_porosity_and_lineari
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::So3PoroP1<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -188,7 +188,7 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::evaluate(Teuchos::ParameterLi
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
+void Discret::Elements::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   Base::pre_evaluate(params, discretization, la);
@@ -203,7 +203,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::pre_evaluate(Teuchos::Parame
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -382,14 +382,14 @@ int Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::my_evaluate(Teuchos::Paramete
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::init_element()
+void Discret::Elements::So3PoroP1<So3Ele, distype>::init_element()
 {
   // initialize base element
   Base::init_element();
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::nonlinear_stiffness_poroelast(
+void Discret::Elements::So3PoroP1<So3Ele, distype>::nonlinear_stiffness_poroelast(
     std::vector<int>& lm, Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& disp,
     Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& vel,
     Core::LinAlg::Matrix<Base::numnod_, 1>* porosity_dof,
@@ -494,7 +494,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::nonlinear_stiffness_poroelas
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
+void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,
@@ -694,7 +694,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1(
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::coupling_poroelast(std::vector<int>& lm,
+void Discret::Elements::So3PoroP1<So3Ele, distype>::coupling_poroelast(std::vector<int>& lm,
     Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& disp,
     Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& vel,
     Core::LinAlg::Matrix<Base::numnod_, 1>* porosity,
@@ -757,7 +757,7 @@ void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::coupling_poroelast(std::vect
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
+void Discret::Elements::So3PoroP1<So3Ele, distype>::gauss_point_loop_p1_od(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xrefe,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& xcurr,
     const Core::LinAlg::Matrix<Base::numdim_, Base::numnod_>& nodaldisp,

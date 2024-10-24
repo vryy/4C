@@ -26,13 +26,13 @@ namespace Mat
   }  // namespace Elastic
 }  // namespace Mat
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituentElastHyperDamage;
 
   namespace PAR
   {
-    class MixtureConstituentElastHyperDamage : public MIXTURE::PAR::MixtureConstituentElastHyperBase
+    class MixtureConstituentElastHyperDamage : public Mixture::PAR::MixtureConstituentElastHyperBase
     {
      public:
       /*!
@@ -44,7 +44,7 @@ namespace MIXTURE
       explicit MixtureConstituentElastHyperDamage(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
+      std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -57,9 +57,9 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a Mixture::MixtureRule.
    */
-  class MixtureConstituentElastHyperDamage : public MIXTURE::MixtureConstituentElastHyperBase
+  class MixtureConstituentElastHyperDamage : public Mixture::MixtureConstituentElastHyperBase
   {
    public:
     /*!
@@ -68,7 +68,7 @@ namespace MIXTURE
      * \param params Material parameters
      */
     explicit MixtureConstituentElastHyperDamage(
-        MIXTURE::PAR::MixtureConstituentElastHyperDamage* params, int id);
+        Mixture::PAR::MixtureConstituentElastHyperDamage* params, int id);
 
     /// Returns the material type enum
     Core::Materials::MaterialType material_type() const override;
@@ -154,13 +154,13 @@ namespace MIXTURE
 
    private:
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentElastHyperDamage* params_;
+    Mixture::PAR::MixtureConstituentElastHyperDamage* params_;
 
     /// Current growth factor with respect to the reference configuration
     std::vector<double> current_reference_growth_;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

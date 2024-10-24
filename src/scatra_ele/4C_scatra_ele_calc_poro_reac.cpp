@@ -21,12 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
+Discret::Elements::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
+    : Discret::Elements::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+      Discret::Elements::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
           numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
+      Discret::Elements::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname)
 {
   // safety check
@@ -39,8 +39,8 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>*
-Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::instance(
+Discret::Elements::ScaTraEleCalcPoroReac<distype>*
+Discret::Elements::ScaTraEleCalcPoroReac<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -59,7 +59,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::instance(
  |  evaluate single material  (protected)                    vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::get_material_params(
+void Discret::Elements::ScaTraEleCalcPoroReac<distype>::get_material_params(
     const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::get_material_params(
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::materials(
+void Discret::Elements::ScaTraEleCalcPoroReac<distype>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -107,7 +107,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::materials(
  |  Material ScaTra                                          thon 02/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::mat_scatra(
+void Discret::Elements::ScaTraEleCalcPoroReac<distype>::mat_scatra(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::mat_scatra(
  | extract element based or nodal values                     vuong 04/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleCalcPoroReac<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -139,25 +139,25 @@ void Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::extract_element_and_node
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::quad9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::nurbs9>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoroReac<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::nurbs9>;
+// template class Discret::Elements::ScaTraEleCalcPoroReac<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

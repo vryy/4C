@@ -11,17 +11,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::Ale3SurfaceType Discret::ELEMENTS::Ale3SurfaceType::instance_;
+Discret::Elements::Ale3SurfaceType Discret::Elements::Ale3SurfaceType::instance_;
 
-Discret::ELEMENTS::Ale3SurfaceType& Discret::ELEMENTS::Ale3SurfaceType::instance()
+Discret::Elements::Ale3SurfaceType& Discret::Elements::Ale3SurfaceType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int* nodeids,
-    Core::Nodes::Node** nodes, Discret::ELEMENTS::Ale3* parent, const int lsurface)
+Discret::Elements::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::Elements::Ale3* parent, const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
   set_node_ids(nnode, nodeids);
@@ -31,22 +31,22 @@ Discret::ELEMENTS::Ale3Surface::Ale3Surface(int id, int owner, int nnode, const 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3Surface::Ale3Surface(const Discret::ELEMENTS::Ale3Surface& old)
+Discret::Elements::Ale3Surface::Ale3Surface(const Discret::Elements::Ale3Surface& old)
     : Core::Elements::FaceElement(old)
 {
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Ale3Surface::clone() const
+Core::Elements::Element* Discret::Elements::Ale3Surface::clone() const
 {
-  Discret::ELEMENTS::Ale3Surface* newelement = new Discret::ELEMENTS::Ale3Surface(*this);
+  Discret::Elements::Ale3Surface* newelement = new Discret::Elements::Ale3Surface(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Ale3Surface::shape() const
+Core::FE::CellType Discret::Elements::Ale3Surface::shape() const
 {
   switch (num_node())
   {
@@ -68,21 +68,21 @@ Core::FE::CellType Discret::ELEMENTS::Ale3Surface::shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Ale3Surface::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Ale3Surface::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Ale3Surface element does not support communication");
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Surface::print(std::ostream& os) const
+void Discret::Elements::Ale3Surface::print(std::ostream& os) const
 {
   os << "Ale3Surface ";
   Element::print(os);

@@ -3416,13 +3416,13 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 
               // assemble contribution from macro-micro coupling into global residual vector
               (*residual_)[lid] -=
-                  Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(discret_->name())
+                  Discret::Elements::ScaTraEleParameterTimInt::instance(discret_->name())
                       ->time_fac_rhs() *
                   q_ * fac;
 
               // assemble contribution from macro-micro coupling into global system matrix
               sysmat_->assemble(
-                  Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(discret_->name())
+                  Discret::Elements::ScaTraEleParameterTimInt::instance(discret_->name())
                           ->time_fac() *
                       (*permeabilities)[0] * fac,
                   gid, gid);
@@ -3490,11 +3490,11 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 
               // evaluate overall integration factors
               const double timefacfac =
-                  Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(discret_->name())
+                  Discret::Elements::ScaTraEleParameterTimInt::instance(discret_->name())
                       ->time_fac() *
                   fac;
               const double timefacrhsfac =
-                  Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(discret_->name())
+                  Discret::Elements::ScaTraEleParameterTimInt::instance(discret_->name())
                       ->time_fac_rhs() *
                   fac;
               if (timefacfac < 0. or timefacrhsfac < 0.)
@@ -3533,7 +3533,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
               // define flux linearization terms
               double dj_dc_ed(0.0), dj_dc_el(0.0), dj_dpot_ed(0.0), dj_dpot_el(0.0);
               // calculate flux linearizations
-              Discret::ELEMENTS::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
+              Discret::Elements::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
                   epdderiv, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday,
                   conc_el, conc_ed, cmax, eta, dj_dc_ed, dj_dc_el, dj_dpot_ed, dj_dpot_el);
 

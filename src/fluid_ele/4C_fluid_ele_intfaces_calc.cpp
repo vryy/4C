@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidIntFaceImplInterface* Discret::ELEMENTS::FluidIntFaceImplInterface::impl(
+Discret::Elements::FluidIntFaceImplInterface* Discret::Elements::FluidIntFaceImplInterface::impl(
     const Core::Elements::Element* ele)
 {
   switch (ele->shape())
@@ -63,14 +63,14 @@ Discret::ELEMENTS::FluidIntFaceImplInterface* Discret::ELEMENTS::FluidIntFaceImp
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidIntFaceImpl<distype>*
-Discret::ELEMENTS::FluidIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidIntFaceImpl<distype>*
+Discret::Elements::FluidIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidIntFaceImpl<distype>>(
-            new Discret::ELEMENTS::FluidIntFaceImpl<distype>());
+        return std::unique_ptr<Discret::Elements::FluidIntFaceImpl<distype>>(
+            new Discret::Elements::FluidIntFaceImpl<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -80,12 +80,12 @@ Discret::ELEMENTS::FluidIntFaceImpl<distype>::instance(Core::Utils::SingletonAct
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
+Discret::Elements::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 {
   // pointer to class FluidImplParameterTimInt (access to the time-integration parameter)
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
+  fldparatimint_ = Discret::Elements::FluidEleParameterTimInt::instance();
   // pointer to class FluidEleParameterIntFace (access to the faces specific parameter)
-  fldpara_intface_ = Discret::ELEMENTS::FluidEleParameterIntFace::instance();
+  fldpara_intface_ = Discret::Elements::FluidEleParameterIntFace::instance();
 
   return;
 }
@@ -94,8 +94,8 @@ Discret::ELEMENTS::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+void Discret::Elements::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
+    Discret::Elements::FluidIntFace* intface,     ///< internal face element
     Teuchos::RCP<Core::Mat::Material>& material,  ///< material for face stabilization
     std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
@@ -340,8 +340,8 @@ void Discret::ELEMENTS::FluidIntFaceImpl<distype>::assemble_internal_faces_using
  |  Evaluate internal faces (public)                        schott 01/12|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
-    Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+int Discret::Elements::FluidIntFaceImpl<distype>::evaluate_internal_faces(
+    Discret::Elements::FluidIntFace* intface,     ///< internal face element
     Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
     Teuchos::ParameterList& params,               ///< parameter list
     Core::FE::Discretization& discretization,     ///< discretization
@@ -362,7 +362,7 @@ int Discret::ELEMENTS::FluidIntFaceImpl<distype>::evaluate_internal_faces(
   {
     case FLD::EOS_and_GhostPenalty_stabilization:
     {
-      return Discret::ELEMENTS::FluidIntFaceStab::impl(intface)->evaluate_edge_based_stabilization(
+      return Discret::Elements::FluidIntFaceStab::impl(intface)->evaluate_edge_based_stabilization(
           intface, material, *fldparatimint_, *fldpara_intface_, params, discretization, patchlm,
           lm_masterToPatch, lm_slaveToPatch, lm_faceToPatch, lm_masterNodeToPatch,
           lm_slaveNodeToPatch, elemat_blocks, elevec_blocks);

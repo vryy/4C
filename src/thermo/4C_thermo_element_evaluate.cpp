@@ -25,7 +25,7 @@ int Thermo::Element::evaluate(Teuchos::ParameterList& params,
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::TemperImplInterface::impl(this)->evaluate(
+  return Discret::Elements::TemperImplInterface::impl(this)->evaluate(
       this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }  // Evaluate
 
@@ -42,7 +42,7 @@ int Thermo::Element::evaluate_neumann(Teuchos::ParameterList& params,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
-  return Discret::ELEMENTS::TemperImplInterface::impl(this)->evaluate_neumann(
+  return Discret::Elements::TemperImplInterface::impl(this)->evaluate_neumann(
       this, params, discretization, lm, elevec1, elemat1);
 }
 

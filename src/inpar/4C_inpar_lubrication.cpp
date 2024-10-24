@@ -11,7 +11,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Inpar::LUBRICATION::set_valid_parameters(Teuchos::ParameterList& list)
+void Inpar::Lubrication::set_valid_parameters(Teuchos::ParameterList& list)
 {
   using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
@@ -25,27 +25,27 @@ void Inpar::LUBRICATION::set_valid_parameters(Teuchos::ParameterList& list)
   Core::Utils::int_parameter("RESULTSEVRY", 1, "Increment for writing solution", &lubricationdyn);
   Core::Utils::int_parameter("RESTARTEVRY", 1, "Increment for writing restart", &lubricationdyn);
 
-  setStringToIntegralParameter<Inpar::LUBRICATION::CalcError>("CALCERROR", "No",
+  setStringToIntegralParameter<Inpar::Lubrication::CalcError>("CALCERROR", "No",
       "compute error compared to analytical solution",
       tuple<std::string>("No", "error_by_function"),
-      tuple<Inpar::LUBRICATION::CalcError>(calcerror_no, calcerror_byfunction), &lubricationdyn);
+      tuple<Inpar::Lubrication::CalcError>(calcerror_no, calcerror_byfunction), &lubricationdyn);
 
   Core::Utils::int_parameter(
       "CALCERRORNO", -1, "function number for lubrication error computation", &lubricationdyn);
 
-  setStringToIntegralParameter<Inpar::LUBRICATION::VelocityField>("VELOCITYFIELD", "zero",
+  setStringToIntegralParameter<Inpar::Lubrication::VelocityField>("VELOCITYFIELD", "zero",
       "type of velocity field used for lubrication problems",
       tuple<std::string>("zero", "function", "EHL"),
-      tuple<Inpar::LUBRICATION::VelocityField>(velocity_zero, velocity_function, velocity_EHL),
+      tuple<Inpar::Lubrication::VelocityField>(velocity_zero, velocity_function, velocity_EHL),
       &lubricationdyn);
 
   Core::Utils::int_parameter(
       "VELFUNCNO", -1, "function number for lubrication velocity field", &lubricationdyn);
 
-  setStringToIntegralParameter<Inpar::LUBRICATION::HeightField>("HEIGHTFEILD", "zero",
+  setStringToIntegralParameter<Inpar::Lubrication::HeightField>("HEIGHTFEILD", "zero",
       "type of height field used for lubrication problems",
       tuple<std::string>("zero", "function", "EHL"),
-      tuple<Inpar::LUBRICATION::HeightField>(height_zero, height_function, height_EHL),
+      tuple<Inpar::Lubrication::HeightField>(height_zero, height_function, height_EHL),
       &lubricationdyn);
 
   Core::Utils::int_parameter(

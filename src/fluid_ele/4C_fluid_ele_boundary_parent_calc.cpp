@@ -30,8 +30,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidBoundaryParentInterface*
-Discret::ELEMENTS::FluidBoundaryParentInterface::impl(Core::Elements::FaceElement* ele)
+Discret::Elements::FluidBoundaryParentInterface*
+Discret::Elements::FluidBoundaryParentInterface::impl(Core::Elements::FaceElement* ele)
 {
   switch (ele->shape())
   {
@@ -92,14 +92,14 @@ Discret::ELEMENTS::FluidBoundaryParentInterface::impl(Core::Elements::FaceElemen
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidBoundaryParentInterface*
-Discret::ELEMENTS::FluidBoundaryParent<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidBoundaryParentInterface*
+Discret::Elements::FluidBoundaryParent<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidBoundaryParent<distype>>(
-            new Discret::ELEMENTS::FluidBoundaryParent<distype>());
+        return std::unique_ptr<Discret::Elements::FluidBoundaryParent<distype>>(
+            new Discret::Elements::FluidBoundaryParent<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -109,16 +109,16 @@ Discret::ELEMENTS::FluidBoundaryParent<distype>::instance(Core::Utils::Singleton
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
-    : Discret::ELEMENTS::FluidBoundaryParentInterface(),
+Discret::Elements::FluidBoundaryParent<distype>::FluidBoundaryParent()
+    : Discret::Elements::FluidBoundaryParentInterface(),
       drs_(0.0),
       fac_(0.0),
       visc_(0.0),
       densaf_(1.0)
 {
   // pointer to class FluidParentParameter (access to the general parameter)
-  fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
+  fldpara_ = Discret::Elements::FluidEleParameterStd::instance();
+  fldparatimint_ = Discret::Elements::FluidEleParameterTimInt::instance();
 
   return;
 }
@@ -128,8 +128,8 @@ Discret::ELEMENTS::FluidBoundaryParent<distype>::FluidBoundaryParent()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
@@ -207,8 +207,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
@@ -249,8 +249,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::navier_slip_bc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
@@ -291,8 +291,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
@@ -370,7 +370,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
+void Discret::Elements::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat1, Core::LinAlg::SerialDenseMatrix::Base& elemat2)
@@ -457,8 +457,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat, Core::LinAlg::SerialDenseVector::Base& elevec)
 {
@@ -500,8 +500,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
@@ -621,7 +621,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 
     // get Gaussian integration points
     const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
     //---------------------------------------------------------------------
     // get boundary element data
@@ -642,7 +642,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 
     // get Gaussian integration points
     const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
     // get location vector and ownerships for boundary element
     std::vector<int> blm;
@@ -1234,15 +1234,15 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
        // conditions for zero time-curve factor
 
   return;
-}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::FlowDepPressureBC
+}  // Discret::Elements::FluidBoundaryParent<distype>::FlowDepPressureBC
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
@@ -1281,7 +1281,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -1302,7 +1302,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
   std::vector<int> blm;
@@ -1565,15 +1565,15 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::slip_supp_bc(
   }  // end of integration loop
 
   return;
-}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::SlipSuppBC
+}  // Discret::Elements::FluidBoundaryParent<distype>::SlipSuppBC
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::navier_slip_bc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
@@ -1612,7 +1612,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -1633,7 +1633,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
   std::vector<int> blm;
@@ -1822,14 +1822,14 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::navier_slip_bc(
   }  // end of integration loop
 
   return;
-}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::NavierSlipBC
+}  // Discret::Elements::FluidBoundaryParent<distype>::NavierSlipBC
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
@@ -1954,7 +1954,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
   //---------------------------------------------------------------------
   // get boundary element data
@@ -1975,7 +1975,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
   // get location vector and ownerships for boundary element
   std::vector<int> blm;
@@ -3722,7 +3722,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::evaluate_weak_dbc(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
+void Discret::Elements::FluidBoundaryParent<distype>::estimate_nitsche_trace_max_eigenvalue(
     Core::Elements::FaceElement* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& blm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra1,
@@ -3756,7 +3756,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get location vector and ownerships for parent element
   std::vector<int> plm;
@@ -3783,7 +3783,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
   //---------------------------------------------------------------------
   // map Gaussian integration points to parent element for one-sided
@@ -3810,8 +3810,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
   //---------------------------------------------------------------------
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
-  Discret::ELEMENTS::Fluid* fele =
-      dynamic_cast<Discret::ELEMENTS::Fluid*>(surfele->parent_element());
+  Discret::Elements::Fluid* fele =
+      dynamic_cast<Discret::Elements::Fluid*>(surfele->parent_element());
   if (fele)
     if (fele->is_ale())
     {
@@ -4263,8 +4263,8 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
-    Discret::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
+    Discret::Elements::FluidBoundary* surfele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& plm,
     Core::LinAlg::SerialDenseMatrix::Base& elemat_epetra,
     Core::LinAlg::SerialDenseVector::Base& elevec_epetra)
@@ -4496,7 +4496,7 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
     //--------------------------------------------------
     // Gaussian integration points
     const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
     //--------------------------------------------------
     // vectors/scalars for Gausspoint values
@@ -4757,10 +4757,10 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
       //--------------------------------------------------
       // Gaussian integration points
       const Core::FE::IntPointsAndWeights<bnsd> intpoints(
-          Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+          Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
       const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-          Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+          Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
       // coordinates of current integration point in reference coordinates
       Core::LinAlg::Matrix<bnsd, 1> xsi(true);
@@ -5056,10 +5056,10 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
     //--------------------------------------------------
     // Gaussian integration points
     const Core::FE::IntPointsAndWeights<bnsd> intpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
     const Core::FE::IntPointsAndWeights<nsd> pintpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
     // coordinates of current integration point in reference coordinates
     Core::LinAlg::Matrix<bnsd, 1> xsi(true);
@@ -5740,14 +5740,14 @@ void Discret::ELEMENTS::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
   }
 
   return;
-}  // Discret::ELEMENTS::FluidBoundaryParent<distype>::MixHybDirichlet
+}  // Discret::Elements::FluidBoundaryParent<distype>::MixHybDirichlet
 
 
 /*----------------------------------------------------------------------*
  |  get density and viscosity                                  vg 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryParent<distype>::get_density_and_viscosity(
+void Discret::Elements::FluidBoundaryParent<distype>::get_density_and_viscosity(
     Teuchos::RCP<const Core::Mat::Material> material, const double pscaaf,
     const double thermpressaf, const double rateofstrain)
 {

@@ -28,7 +28,7 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace LUBRICATION
+namespace Lubrication
 {
   // forward declaration
   class TimIntImpl;
@@ -77,7 +77,7 @@ namespace LUBRICATION
     /// number of iterations in last newton iteration
     int mynumiter_;
   };
-}  // namespace LUBRICATION
+}  // namespace Lubrication
 
 
 FOUR_C_NAMESPACE_CLOSE

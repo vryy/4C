@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
   inline std::vector<char>& get_mutable_stress_data(
-      const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -39,7 +39,7 @@ namespace
   }
 
   inline std::vector<char>& get_mutable_strain_data(
-      const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -52,7 +52,7 @@ namespace
   }
 
   inline Inpar::Solid::StressType get_io_stress_type(
-      const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -65,7 +65,7 @@ namespace
   }
 
   inline Inpar::Solid::StrainType get_io_strain_type(
-      const Discret::ELEMENTS::Shell7pScatra& ele, const Teuchos::ParameterList& params)
+      const Discret::Elements::Shell7pScatra& ele, const Teuchos::ParameterList& params)
   {
     if (ele.is_params_interface())
     {
@@ -78,7 +78,7 @@ namespace
   }
 }  // namespace
 
-int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
       });
 
   // in some cases we need to write/change some data before evaluating
-  Discret::ELEMENTS::Shell::pre_evaluate_scatra_by_element(*this, params, discretization, la);
+  Discret::Elements::Shell::pre_evaluate_scatra_by_element(*this, params, discretization, la);
 
   // what should the element do
   switch (action)
@@ -194,7 +194,7 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate(Teuchos::ParameterList& params,
 }
 
 // Integrate a Surface Neumann boundary condition
-int Discret::ELEMENTS::Shell7pScatra::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Shell7pScatra::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& la, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -210,7 +210,7 @@ int Discret::ELEMENTS::Shell7pScatra::evaluate_neumann(Teuchos::ParameterList& p
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::Shell::evaluate_neumann_by_element(
+  Discret::Elements::Shell::evaluate_neumann_by_element(
       *this, discretization, condition, la, elevec1, elemat1, time);
   return 0;
 }

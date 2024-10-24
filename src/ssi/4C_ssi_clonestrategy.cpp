@@ -84,7 +84,7 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans != nullptr)
   {
     // set distype as well
@@ -140,7 +140,7 @@ void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
       impltype != Inpar::ScaTra::impltype_elch_diffcond and impltype != Inpar::ScaTra::impltype_std)
     FOUR_C_THROW("Scatra Impltype not supported for SSI with transport on manifolds");
 
-  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans == nullptr or oldele->element_type().name() != "StructuralSurfaceType")
     FOUR_C_THROW("element type not supported");
 

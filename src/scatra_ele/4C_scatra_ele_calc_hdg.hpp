@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! Scatra HDG element implementation
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
@@ -96,7 +96,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1);
 
       //! update interior variables
-      int update_interior_variables(Discret::ELEMENTS::ScaTraHDG* ele,
+      int update_interior_variables(Discret::Elements::ScaTraHDG* ele,
           Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec);
 
       //! set initial field
@@ -211,7 +211,7 @@ namespace Discret
       bool usescompletepoly_;
 
       //! pointer to general scalar transport parameter class
-      Discret::ELEMENTS::ScaTraEleParameterStd* scatrapara_;
+      Discret::Elements::ScaTraEleParameterStd* scatrapara_;
 
      private:
       //! local solver that inverts local problem on an element and can solve with various vectors
@@ -229,31 +229,31 @@ namespace Discret
         void compute_residual(Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec, Core::LinAlg::SerialDenseMatrix& elemat1,
             Core::LinAlg::SerialDenseVector& interiorPhin, Core::LinAlg::SerialDenseVector& tracen,
-            Core::LinAlg::SerialDenseVector& tracenp, const Discret::ELEMENTS::ScaTraHDG* hdgele);
+            Core::LinAlg::SerialDenseVector& tracenp, const Discret::Elements::ScaTraHDG* hdgele);
 
         //! compute Neumann boundary conditions
         void compute_neumann_bc(Core::Elements::Element* ele, Teuchos::ParameterList& params,
             int face, Core::LinAlg::SerialDenseVector& elevec, int indexstart);
 
         //! compute interior matrices
-        void compute_interior_matrices(Discret::ELEMENTS::ScaTraHDG* hdgele);
+        void compute_interior_matrices(Discret::Elements::ScaTraHDG* hdgele);
 
         //! compute interior matrices for Tet elements
-        void compute_interior_matrices_tet(Discret::ELEMENTS::ScaTraHDG* hdgele);
+        void compute_interior_matrices_tet(Discret::Elements::ScaTraHDG* hdgele);
 
         //! compute interior matrices
-        void compute_interior_matrices_all(Discret::ELEMENTS::ScaTraHDG* hdgele);
+        void compute_interior_matrices_all(Discret::Elements::ScaTraHDG* hdgele);
 
         //! calls local solver to compute matrices: internal and face
         void compute_matrices(Core::Elements::Element* ele);
 
         //! compute face matrices
         void compute_face_matrices(
-            const int face, int indexstart, Discret::ELEMENTS::ScaTraHDG* hdgele);
+            const int face, int indexstart, Discret::Elements::ScaTraHDG* hdgele);
 
         //! condense the local matrix (involving interior concentration gradients and
         //! concentrations) into the element matrix for the trace and similarly for the residuals
-        void condense_local_part(Discret::ELEMENTS::ScaTraHDG* hdgele);
+        void condense_local_part(Discret::Elements::ScaTraHDG* hdgele);
 
         //! Compute divergence of current source (ELEMAG)
         void compute_source(const Core::Elements::Element* ele,
@@ -261,20 +261,20 @@ namespace Discret
 
         //! add diffusive term to element matrix
         void add_diff_mat(
-            Core::LinAlg::SerialDenseMatrix& elemat, const Discret::ELEMENTS::ScaTraHDG* hdgele);
+            Core::LinAlg::SerialDenseMatrix& elemat, const Discret::Elements::ScaTraHDG* hdgele);
 
         //! add reaction term to element matrix
         void add_reac_mat(
-            Core::LinAlg::SerialDenseMatrix& elemat, const Discret::ELEMENTS::ScaTraHDG* hdgele);
+            Core::LinAlg::SerialDenseMatrix& elemat, const Discret::Elements::ScaTraHDG* hdgele);
 
         //! set material parameter
-        void set_material_parameter(Discret::ELEMENTS::ScaTraHDG* hdgele,
+        void set_material_parameter(Discret::Elements::ScaTraHDG* hdgele,
             Core::LinAlg::SerialDenseVector& ivecn, Core::LinAlg::SerialDenseVector& ivecnp,
             Core::LinAlg::SerialDenseMatrix& ivecnpderiv);
 
         //! prepare material parameter in first timestep
         void prepare_material_parameter(
-            Discret::ELEMENTS::ScaTraHDG* hdgele, Core::LinAlg::SerialDenseMatrix& difftensor);
+            Discret::Elements::ScaTraHDG* hdgele, Core::LinAlg::SerialDenseMatrix& difftensor);
 
 
         // convention: we sort the entries in the matrices the following way:
@@ -324,12 +324,12 @@ namespace Discret
         //      Core::LinAlg::SerialDenseMatrix  Xmat;
 
         //! pointer to general scalar transport parameter class
-        Discret::ELEMENTS::ScaTraEleParameterStd* scatrapara_;
+        Discret::Elements::ScaTraEleParameterStd* scatrapara_;
 
-        //      Teuchos::RCP<Discret::ELEMENTS::ScaTraEleParameterBase> scatrapara_; //! pointer to
+        //      Teuchos::RCP<Discret::Elements::ScaTraEleParameterBase> scatrapara_; //! pointer to
         //      parameter list
         //! pointer to time parameter list
-        Teuchos::RCP<Discret::ELEMENTS::ScaTraEleParameterTimInt> scatraparatimint_;
+        Teuchos::RCP<Discret::Elements::ScaTraEleParameterTimInt> scatraparatimint_;
 
         /*========================================================================*/
         //! @name diffusions and reaction coefficient
@@ -365,7 +365,7 @@ namespace Discret
       //! extracted values from trace solution vector at n-m
       Core::LinAlg::SerialDenseVector tracenm_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

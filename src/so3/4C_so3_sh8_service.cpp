@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  find shell-thickness direction via Jacobian                maf 07/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_findthickdir()
+Discret::Elements::SoSh8::ThicknessDirection Discret::Elements::SoSh8::sosh8_findthickdir()
 {
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
@@ -130,7 +130,7 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_fin
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::SoSh8::sosh8_calcaspectratio()
+double Discret::Elements::SoSh8::sosh8_calcaspectratio()
 {
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(false);  // material coord. of element
@@ -188,7 +188,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calcaspectratio()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enfthickdir(
+Discret::Elements::SoSh8::ThicknessDirection Discret::Elements::SoSh8::sosh8_enfthickdir(
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& thickdirglo)
 {
   // update element geometry
@@ -280,7 +280,7 @@ Discret::ELEMENTS::SoSh8::ThicknessDirection Discret::ELEMENTS::SoSh8::sosh8_enf
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
+void Discret::Elements::SoSh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8])
 {
   std::stringstream filename;
   filename << "solidelement" << this->id() << ".gmsh";
@@ -326,7 +326,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_gmshplotlabeledelement(const int LabelIds[N
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>
-Discret::ELEMENTS::SoSh8::sosh8_derivs_sdc()
+Discret::Elements::SoSh8::sosh8_derivs_sdc()
 {
   std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex

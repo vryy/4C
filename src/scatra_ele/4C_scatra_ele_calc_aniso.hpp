@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <int nsd>
     class ScaTraEleDiffManagerAniso;
@@ -149,7 +149,7 @@ namespace Discret
       std::vector<Core::LinAlg::Matrix<nsd, nsd>> difftensor_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

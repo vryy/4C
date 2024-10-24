@@ -168,7 +168,7 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
     auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
     {
       const Core::Elements::Element* element = node.elements()[0];
-      const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+      const auto* beamelement = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
       if (beamelement != nullptr && !beamelement->is_centerline_node(node))
         return *element->nodes()[0];
       else
@@ -180,17 +180,17 @@ void Adapter::StructureBaseAlgorithmNew::setup_tim_int()
                                          Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
         -> std::vector<std::array<double, 3>>
     {
-      if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+      if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
       {
         return Core::Binstrategy::DefaultRelevantPoints{
             .correct_node = correct_node,
         }(discret, ele, disnp);
       }
-      else if (ele.element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+      else if (ele.element_type() == Discret::Elements::RigidsphereType::instance())
       {
         double currpos[3] = {0.0, 0.0, 0.0};
         Core::Binstrategy::Utils::get_current_node_pos(discret, ele.nodes()[0], disnp, currpos);
-        const double radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere&>(ele).radius();
+        const double radius = dynamic_cast<const Discret::Elements::Rigidsphere&>(ele).radius();
         return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
             {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
       }
@@ -606,40 +606,40 @@ void Adapter::StructureBaseAlgorithmNew::detect_element_technologies(
   {
     Core::Elements::Element* actele = actdis_->l_row_element(i);
     // Detect plasticity -------------------------------------------------------
-    if (actele->element_type() == Discret::ELEMENTS::SoHex8PlastType::instance() or
-        actele->element_type() == Discret::ELEMENTS::SoHex27PlastType::instance() or
-        actele->element_type() == Discret::ELEMENTS::SoSh8PlastType::instance() or
-        actele->element_type() == Discret::ELEMENTS::SoHex18PlastType::instance() or
-        actele->element_type() == Discret::ELEMENTS::SoSh18PlastType::instance())
+    if (actele->element_type() == Discret::Elements::SoHex8PlastType::instance() or
+        actele->element_type() == Discret::Elements::SoHex27PlastType::instance() or
+        actele->element_type() == Discret::Elements::SoSh8PlastType::instance() or
+        actele->element_type() == Discret::Elements::SoHex18PlastType::instance() or
+        actele->element_type() == Discret::Elements::SoSh18PlastType::instance())
     {
       if (actele->material()->material_type() == Core::Materials::m_plelasthyper)
         isplasticity_local = true;
     }
 
     // Detect EAS --------------------------------------------------------------
-    Discret::ELEMENTS::SoBase* so_base_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(actele);
+    Discret::Elements::SoBase* so_base_ele = dynamic_cast<Discret::Elements::SoBase*>(actele);
     if (so_base_ele != nullptr)
     {
       if (so_base_ele->have_eas()) iseas_local = 1;
     }
 
-    Discret::ELEMENTS::Shell7p* shell7p = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele);
+    Discret::Elements::Shell7p* shell7p = dynamic_cast<Discret::Elements::Shell7p*>(actele);
     if (shell7p)
       if (shell7p->get_ele_tech().find(Inpar::Solid::EleTech::eas) != shell7p->get_ele_tech().end())
         iseas_local = 1;
 
-    Discret::ELEMENTS::Solid* solid = dynamic_cast<Discret::ELEMENTS::Solid*>(actele);
+    Discret::Elements::Solid* solid = dynamic_cast<Discret::Elements::Solid*>(actele);
     if (solid != nullptr)
       if (solid->have_eas()) iseas_local = 1;
 
     // Detect fbar
-    Discret::ELEMENTS::SoHex8fbar* so_hex8fbar_ele =
-        dynamic_cast<Discret::ELEMENTS::SoHex8fbar*>(actele);
+    Discret::Elements::SoHex8fbar* so_hex8fbar_ele =
+        dynamic_cast<Discret::Elements::SoHex8fbar*>(actele);
     if (so_hex8fbar_ele != nullptr) isfbar_local = 1;
 
     // Detect non-additive rotation-vector DOFs --------------------------------
-    if (actele->element_type() == Discret::ELEMENTS::Beam3rType::instance() or
-        actele->element_type() == Discret::ELEMENTS::Beam3kType::instance())
+    if (actele->element_type() == Discret::Elements::Beam3rType::instance() or
+        actele->element_type() == Discret::Elements::Beam3kType::instance())
     {
       isrotvec_local = true;
       break;

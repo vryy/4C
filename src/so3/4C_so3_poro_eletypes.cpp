@@ -15,29 +15,29 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8PoroType Discret::ELEMENTS::SoHex8PoroType::instance_;
+Discret::Elements::SoHex8PoroType Discret::Elements::SoHex8PoroType::instance_;
 
-Discret::ELEMENTS::SoHex8PoroType& Discret::ELEMENTS::SoHex8PoroType::instance()
+Discret::Elements::SoHex8PoroType& Discret::Elements::SoHex8PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex8PoroType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
-      new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
+      new Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+        Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
         id, owner);
     return ele;
@@ -45,17 +45,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroType::create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+      Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoHex8PoroType::setup_element_definition(
+void Discret::Elements::SoHex8PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex8;
@@ -75,14 +75,14 @@ void Discret::ELEMENTS::SoHex8PoroType::setup_element_definition(
                      .build();
 }
 
-int Discret::ELEMENTS::SoHex8PoroType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex8PoroType::initialize(Core::FE::Discretization& dis)
 {
   SoHex8Type::initialize(dis);
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
+        Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>*>(
         dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8_poro* failed");
     actele->init_element();
@@ -94,29 +94,29 @@ int Discret::ELEMENTS::SoHex8PoroType::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  TET 4 Element                                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet4PoroType Discret::ELEMENTS::SoTet4PoroType::instance_;
+Discret::Elements::SoTet4PoroType Discret::Elements::SoTet4PoroType::instance_;
 
-Discret::ELEMENTS::SoTet4PoroType& Discret::ELEMENTS::SoTet4PoroType::instance()
+Discret::Elements::SoTet4PoroType& Discret::Elements::SoTet4PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroType::create(
+Core::Communication::ParObject* Discret::Elements::SoTet4PoroType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
-      new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
+      new Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+        Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
         id, owner);
     return ele;
@@ -124,17 +124,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroType::create(
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+      Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoTet4PoroType::setup_element_definition(
+void Discret::Elements::SoTet4PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet4;
@@ -154,17 +154,17 @@ void Discret::ELEMENTS::SoTet4PoroType::setup_element_definition(
                      .build();
 }
 
-int Discret::ELEMENTS::SoTet4PoroType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoTet4PoroType::initialize(Core::FE::Discretization& dis)
 {
   SoTet4Type::initialize(dis);
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>*>(
+        Discret::Elements::So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>*>(
         dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4_poro* failed");
-    actele->So3Poro<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>::init_element();
+    actele->So3Poro<Discret::Elements::SoTet4, Core::FE::CellType::tet4>::init_element();
   }
   return 0;
 }
@@ -172,29 +172,29 @@ int Discret::ELEMENTS::SoTet4PoroType::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  HEX 27 Element                                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex27PoroType Discret::ELEMENTS::SoHex27PoroType::instance_;
+Discret::Elements::SoHex27PoroType Discret::Elements::SoHex27PoroType::instance_;
 
-Discret::ELEMENTS::SoHex27PoroType& Discret::ELEMENTS::SoHex27PoroType::instance()
+Discret::Elements::SoHex27PoroType& Discret::Elements::SoHex27PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex27PoroType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex27PoroType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
-      new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(-1, -1);
+      new Discret::Elements::So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>>(
+        Discret::Elements::So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>>(
 
         id, owner);
     return ele;
@@ -202,17 +202,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PoroType::create
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>>(
+      Discret::Elements::So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>>(
 
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoHex27PoroType::setup_element_definition(
+void Discret::Elements::SoHex27PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex27;
@@ -230,17 +230,17 @@ void Discret::ELEMENTS::SoHex27PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::SoHex27PoroType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex27PoroType::initialize(Core::FE::Discretization& dis)
 {
   SoHex27Type::initialize(dis);
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>*>(
+        Discret::Elements::So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>*>(
         dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex27_poro* failed");
-    actele->So3Poro<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>::init_element();
+    actele->So3Poro<Discret::Elements::SoHex27, Core::FE::CellType::hex27>::init_element();
   }
   return 0;
 }
@@ -248,29 +248,29 @@ int Discret::ELEMENTS::SoHex27PoroType::initialize(Core::FE::Discretization& dis
 /*----------------------------------------------------------------------*
  |  TET 10 Element                                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet10PoroType Discret::ELEMENTS::SoTet10PoroType::instance_;
+Discret::Elements::SoTet10PoroType Discret::Elements::SoTet10PoroType::instance_;
 
-Discret::ELEMENTS::SoTet10PoroType& Discret::ELEMENTS::SoTet10PoroType::instance()
+Discret::Elements::SoTet10PoroType& Discret::Elements::SoTet10PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet10PoroType::create(
+Core::Communication::ParObject* Discret::Elements::SoTet10PoroType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
   auto* object =
-      new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(-1, -1);
+      new Discret::Elements::So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>>(
+        Discret::Elements::So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>>(
 
         id, owner);
     return ele;
@@ -278,17 +278,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10PoroType::create
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>>(
+      Discret::Elements::So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>>(
 
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoTet10PoroType::setup_element_definition(
+void Discret::Elements::SoTet10PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet10;
@@ -306,17 +306,17 @@ void Discret::ELEMENTS::SoTet10PoroType::setup_element_definition(
                       .build();
 }
 
-int Discret::ELEMENTS::SoTet10PoroType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoTet10PoroType::initialize(Core::FE::Discretization& dis)
 {
   SoTet10Type::initialize(dis);
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
     auto* actele = dynamic_cast<
-        Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>*>(
+        Discret::Elements::So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>*>(
         dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10_poro* failed");
-    actele->So3Poro<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>::init_element();
+    actele->So3Poro<Discret::Elements::SoTet10, Core::FE::CellType::tet10>::init_element();
   }
   return 0;
 }
@@ -324,45 +324,45 @@ int Discret::ELEMENTS::SoTet10PoroType::initialize(Core::FE::Discretization& dis
 /*----------------------------------------------------------------------*
  |  NURBS 27 Element                                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoNurbs27PoroType Discret::ELEMENTS::SoNurbs27PoroType::instance_;
+Discret::Elements::SoNurbs27PoroType Discret::Elements::SoNurbs27PoroType::instance_;
 
-Discret::ELEMENTS::SoNurbs27PoroType& Discret::ELEMENTS::SoNurbs27PoroType::instance()
+Discret::Elements::SoNurbs27PoroType& Discret::Elements::SoNurbs27PoroType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27PoroType::create(
+Core::Communication::ParObject* Discret::Elements::SoNurbs27PoroType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27,
+  auto* object = new Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27,
       Core::FE::CellType::nurbs27>(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PoroType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27,
+        Teuchos::make_rcp<Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27,
             Core::FE::CellType::nurbs27>>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27PoroType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27PoroType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>>(
+      Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>>(
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoNurbs27PoroType::setup_element_definition(
+void Discret::Elements::SoNurbs27PoroType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_nurbs27;
@@ -379,17 +379,17 @@ void Discret::ELEMENTS::SoNurbs27PoroType::setup_element_definition(
                         .build();
 }
 
-int Discret::ELEMENTS::SoNurbs27PoroType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoNurbs27PoroType::initialize(Core::FE::Discretization& dis)
 {
   Nurbs::SoNurbs27Type::initialize(dis);
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27,
+    auto* actele = dynamic_cast<Discret::Elements::So3Poro<Discret::Elements::Nurbs::SoNurbs27,
         Core::FE::CellType::nurbs27>*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_nurbs27_poro* failed");
     actele
-        ->So3Poro<Discret::ELEMENTS::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>::init_element();
+        ->So3Poro<Discret::Elements::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>::init_element();
   }
   return 0;
 }

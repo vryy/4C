@@ -23,7 +23,7 @@ namespace Mat
   class CoordinateSystemProvider;
 }
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class IterativePrestressStrategy;
@@ -31,16 +31,16 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class IterativePrestressStrategy : public MIXTURE::PAR::PrestressStrategy
+    class IterativePrestressStrategy : public Mixture::PAR::PrestressStrategy
     {
-      friend class MIXTURE::IterativePrestressStrategy;
+      friend class Mixture::IterativePrestressStrategy;
 
      public:
       /// constructor
       explicit IterativePrestressStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() override;
+      std::unique_ptr<Mixture::PrestressStrategy> create_prestress_strategy() override;
 
 
       /// @name parameters of the prestress strategy
@@ -65,25 +65,25 @@ namespace MIXTURE
   {
    public:
     /// Constructor for the material given the material parameters
-    explicit IterativePrestressStrategy(MIXTURE::PAR::IterativePrestressStrategy* params);
+    explicit IterativePrestressStrategy(Mixture::PAR::IterativePrestressStrategy* params);
 
-    void setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+    void setup(Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     void evaluate_prestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
+        Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+        Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    private:
     /// Holder for internal parameters
     const PAR::IterativePrestressStrategy* params_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

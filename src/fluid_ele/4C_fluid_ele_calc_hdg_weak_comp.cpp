@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::FluidEleCalcHDGWeakComp()
+Discret::Elements::FluidEleCalcHDGWeakComp<distype>::FluidEleCalcHDGWeakComp()
     : usescompletepoly_(true)
 {
 }
@@ -32,12 +32,12 @@ Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::FluidEleCalcHDGWeakComp()
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::initialize_shapes(
-    const Discret::ELEMENTS::Fluid* ele)
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::initialize_shapes(
+    const Discret::Elements::Fluid* ele)
 {
   // Check if this is an HDG weakly compressible element
-  if (const Discret::ELEMENTS::FluidHDGWeakComp* hdgwkele =
-          dynamic_cast<const Discret::ELEMENTS::FluidHDGWeakComp*>(ele))
+  if (const Discret::Elements::FluidHDGWeakComp* hdgwkele =
+          dynamic_cast<const Discret::Elements::FluidHDGWeakComp*>(ele))
   {
     // use complete polynomial space
     usescompletepoly_ = hdgwkele->uses_complete_polynomial_space();
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::initialize_shapes(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -88,7 +88,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::ELEME
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
@@ -141,7 +141,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate(Discret::ELEME
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
     const Core::Elements::Element& ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm)
 {
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_global_vectors(
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
     const Core::Elements::Element& ele, Core::FE::Discretization& discretization)
 {
   // initialize ale vectors
@@ -183,8 +183,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
   // check presence of ale state
   if (discretization.has_state(2, "dispnp"))
   {
-    const Discret::ELEMENTS::FluidHDGWeakComp* hdgwkele =
-        dynamic_cast<const Discret::ELEMENTS::FluidHDGWeakComp*>(&ele);
+    const Discret::Elements::FluidHDGWeakComp* hdgwkele =
+        dynamic_cast<const Discret::Elements::FluidHDGWeakComp*>(&ele);
     if (hdgwkele->is_ale())
     {
       // get ale dofs
@@ -213,8 +213,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::read_ale_vectors(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -256,8 +256,8 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_service(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& interiorinc)
 {
@@ -326,8 +326,8 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::update_local_solution(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::compute_error(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec)
 {
@@ -437,8 +437,8 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::compute_error(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::project_field(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::project_field(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2)
@@ -652,8 +652,8 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::project_field(
 
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nodes(
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+int Discret::Elements::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to_nodes(
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // read ale vectors
@@ -839,7 +839,7 @@ int Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::interpolate_solution_to
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int funcnum,
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int funcnum,
     const Core::LinAlg::Matrix<nsd_, 1>& xyz, const double t, Core::LinAlg::Matrix<msd_, 1>& L,
     double& r, Core::LinAlg::Matrix<nsd_, 1>& w) const
 {
@@ -861,7 +861,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_all(const int
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momentum(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momentum(
     const int funcnum, const Core::LinAlg::Matrix<nsd_, 1>& xyz, const double t, double& r,
     Core::LinAlg::Matrix<nsd_, 1>& w) const
 {
@@ -878,14 +878,14 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::evaluate_density_momen
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>*
-Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidEleCalcHDGWeakComp<distype>*
+Discret::Elements::FluidEleCalcHDGWeakComp<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>>(
-            new Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>());
+        return std::unique_ptr<Discret::Elements::FluidEleCalcHDGWeakComp<distype>>(
+            new Discret::Elements::FluidEleCalcHDGWeakComp<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -894,8 +894,8 @@ Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::instance(Core::Utils::Singl
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
-    const Discret::ELEMENTS::Fluid* ele, const Core::FE::ShapeValues<distype>& shapeValues,
+Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
+    const Discret::Elements::Fluid* ele, const Core::FE::ShapeValues<distype>& shapeValues,
     Core::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly)
     : ndofs_(shapeValues.ndofs_),
       convective(true),
@@ -979,16 +979,16 @@ Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::LocalSolver(
     }
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldparatimint_ = Teuchos::rcpFromRef(*Discret::ELEMENTS::FluidEleParameterTimInt::instance());
+  fldparatimint_ = Teuchos::rcpFromRef(*Discret::Elements::FluidEleParameterTimInt::instance());
 
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Teuchos::rcpFromRef(*Discret::ELEMENTS::FluidEleParameterStd::instance());
+  fldpara_ = Teuchos::rcpFromRef(*Discret::Elements::FluidEleParameterStd::instance());
 }
 
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::initialize_all()
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::initialize_all()
 {
   // initialize unknowns
   Leg.putScalar(0.0);
@@ -1041,7 +1041,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::initializ
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_material_matrix(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_material_matrix(
     const Teuchos::RCP<Core::Mat::Material>& mat, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseMatrix& DL, Core::LinAlg::SerialDenseMatrix& Dw)
 {
@@ -1099,7 +1099,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_m
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_residual(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_residual(
     const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const std::vector<double>& alevel)
 {
@@ -1300,7 +1300,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_matrices(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_interior_matrices(
     const Teuchos::RCP<Core::Mat::Material>& mat)
 {
   // get material properties
@@ -1473,7 +1473,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_i
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_face_residual(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_face_residual(
     const int f, const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& traceval, const std::vector<double>& alevel)
 {
@@ -1662,7 +1662,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_f
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_face_matrices(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_face_matrices(
     const int f, const Teuchos::RCP<Core::Mat::Material>& mat)
 {
   // get material properties
@@ -1822,7 +1822,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_f
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_residual()
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_residual()
 {
   // fill vector
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1839,8 +1839,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_l
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_residual(
-    Discret::ELEMENTS::Fluid& ele)
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_residual(
+    Discret::Elements::Fluid& ele)
 {
   // loop in faces
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -1865,7 +1865,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_g
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_local_matrix()
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_local_matrix()
 {
   // fill matrix
   for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1908,8 +1908,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_l
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_global_matrix(
-    Discret::ELEMENTS::Fluid& ele)
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_local_global_matrix(
+    Discret::Elements::Fluid& ele)
 {
   // loop in faces
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -1959,8 +1959,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_l
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_local_matrix(
-    Discret::ELEMENTS::Fluid& ele)
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_local_matrix(
+    Discret::Elements::Fluid& ele)
 {
   // loop in faces
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -1996,8 +1996,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_g
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_global_matrix(
-    Discret::ELEMENTS::Fluid& ele)
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_global_global_matrix(
+    Discret::Elements::Fluid& ele)
 {
   // loop in faces
   for (unsigned int f = 0; f < nfaces_; ++f)
@@ -2034,7 +2034,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::compute_g
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::invert_local_local_matrix()
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::invert_local_local_matrix()
 {
   KlocallocalInv = Klocallocal;
   KlocallocalInvSolver.setMatrix(Teuchos::rcpFromRef(KlocallocalInv));
@@ -2045,7 +2045,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::invert_lo
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_local_residual(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_local_residual(
     Core::LinAlg::SerialDenseVector& eleVec)
 {
   // initialize element vector
@@ -2064,7 +2064,7 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_local_matrix(
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_local_matrix(
     Core::LinAlg::SerialDenseMatrix& eleMat)
 {
   // initialize element matrix
@@ -2083,8 +2083,8 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::condense_
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::print_matrices_and_residuals(
-    Discret::ELEMENTS::Fluid& ele, Core::LinAlg::SerialDenseVector& eleVec,
+void Discret::Elements::FluidEleCalcHDGWeakComp<distype>::LocalSolver::print_matrices_and_residuals(
+    Discret::Elements::Fluid& ele, Core::LinAlg::SerialDenseVector& eleVec,
     Core::LinAlg::SerialDenseMatrix& eleMat)
 {
   // element
@@ -2170,20 +2170,20 @@ void Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::print_mat
 
 
 // explicit instantiation of template classes
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::wedge15>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::nurbs9>;
-template class Discret::ELEMENTS::FluidEleCalcHDGWeakComp<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::hex8>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::hex20>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::hex27>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::tet4>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::tet10>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::wedge6>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::wedge15>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidEleCalcHDGWeakComp<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

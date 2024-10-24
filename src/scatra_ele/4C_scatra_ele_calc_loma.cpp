@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcLoma<distype>*
-Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::instance(
+Discret::Elements::ScaTraEleCalcLoma<distype>*
+Discret::Elements::ScaTraEleCalcLoma<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -45,9 +45,9 @@ Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::instance(
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
+Discret::Elements::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+    : Discret::Elements::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
       ephiam_(my::numscal_),
       densgradfac_(my::numscal_, 0.0),
       thermpressnp_(0.0),
@@ -70,7 +70,7 @@ Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::ScaTraEleCalcLoma(
  |  evaluate single loma material  (protected)                vg 12/13  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::materials(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -95,7 +95,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::materials(
  | material Sutherland                                         vg 12/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_sutherland(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::mat_sutherland(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -156,7 +156,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_sutherland(
  | material thermo St. Venant Kirchhoff                        vg 02/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchhoff(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::mat_thermo_st_venant_kirchho
  | compute rhs containing bodyforce                                 ehrl 11/13 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_rhs_int(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::get_rhs_int(
     double& rhsint,       //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
     const int k           //!< index of current scalar
@@ -255,7 +255,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_rhs_int(
  11/13 |
  *------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_mat_conv_add_cons(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::calc_mat_conv_add_cons(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const Core::LinAlg::Matrix<nsd_, 1>& convelint, const Core::LinAlg::Matrix<nsd_, 1>& gradphi,
     const double vdiv, const double densnp, const double visc)
@@ -284,7 +284,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_mat_conv_add_cons(
  | re-implementatio: adaption of convective term for rhs   ehrl 11/13 |
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(double& conv_phi,
+void Discret::Elements::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(double& conv_phi,
     const int k, const Core::LinAlg::Matrix<nsd_, 1>& sgvelint,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const double densnp, const double densn,
     const double phinp, const double phin, const double vdiv)
@@ -335,25 +335,25 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::recompute_conv_phi_for_rhs(d
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

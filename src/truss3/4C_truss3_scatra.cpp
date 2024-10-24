@@ -18,54 +18,54 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3ScatraType Discret::ELEMENTS::Truss3ScatraType::instance_;
+Discret::Elements::Truss3ScatraType Discret::Elements::Truss3ScatraType::instance_;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3ScatraType& Discret::ELEMENTS::Truss3ScatraType::instance()
+Discret::Elements::Truss3ScatraType& Discret::Elements::Truss3ScatraType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Truss3ScatraType::create(
+Core::Communication::ParObject* Discret::Elements::Truss3ScatraType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::Truss3Scatra(-1, -1);
+  auto* object = new Discret::Elements::Truss3Scatra(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3SCATRA")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::Truss3Scatra>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::Truss3Scatra>(id, owner);
     return ele;
   }
   // return base class
   else
-    return Discret::ELEMENTS::Truss3Type::create(eletype, eledistype, id, owner);
+    return Discret::Elements::Truss3Type::create(eletype, eledistype, id, owner);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Truss3Scatra>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Truss3Scatra>(id, owner);
   return ele;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3ScatraType::setup_element_definition(
+void Discret::Elements::Truss3ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["TRUSS3SCATRA"];
@@ -82,28 +82,28 @@ void Discret::ELEMENTS::Truss3ScatraType::setup_element_definition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3Scatra::Truss3Scatra(int id, int owner)
+Discret::Elements::Truss3Scatra::Truss3Scatra(int id, int owner)
     : Truss3(id, owner), impltype_(Inpar::ScaTra::impltype_undefined)
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3Scatra::Truss3Scatra(const Discret::ELEMENTS::Truss3Scatra& old)
+Discret::Elements::Truss3Scatra::Truss3Scatra(const Discret::Elements::Truss3Scatra& old)
     : Truss3(static_cast<Truss3>(old)), impltype_(old.impltype_)
 {
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Truss3Scatra::clone() const
+Core::Elements::Element* Discret::Elements::Truss3Scatra::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::Truss3Scatra(*this);
+  auto* newelement = new Discret::Elements::Truss3Scatra(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Truss3Scatra::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -117,7 +117,7 @@ void Discret::ELEMENTS::Truss3Scatra::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Truss3Scatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -134,7 +134,7 @@ void Discret::ELEMENTS::Truss3Scatra::unpack(Core::Communication::UnpackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Truss3Scatra::read_element(const std::string& eletype,
+bool Discret::Elements::Truss3Scatra::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -157,7 +157,7 @@ bool Discret::ELEMENTS::Truss3Scatra::read_element(const std::string& eletype,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
+void Discret::Elements::Truss3Scatra::calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat)
 {
@@ -237,7 +237,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_internal_force_stiff_tot_lag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
+void Discret::Elements::Truss3Scatra::calc_gp_stresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::Truss3Scatra::calc_gp_stresses(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Truss3Scatra::project_scalar_to_gauss_point(
+double Discret::Elements::Truss3Scatra::project_scalar_to_gauss_point(
     const double xi, const Core::LinAlg::Matrix<2, 1>& c) const
 {
   return (c(1) - c(0)) / 2.0 * xi + (c(1) + c(0)) / 2.0;
@@ -333,7 +333,7 @@ double Discret::ELEMENTS::Truss3Scatra::project_scalar_to_gauss_point(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(Core::Elements::LocationArray& la,
+void Discret::Elements::Truss3Scatra::extract_elemental_variables(Core::Elements::LocationArray& la,
     const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {
@@ -371,7 +371,7 @@ void Discret::ELEMENTS::Truss3Scatra::extract_elemental_variables(Core::Elements
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_scatra(
+void Discret::Elements::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_scatra(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
     Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx,
@@ -401,7 +401,7 @@ void Discret::ELEMENTS::Truss3Scatra::prep_calc_internal_force_stiff_tot_lag_sca
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3Scatra::energy(
+void Discret::Elements::Truss3Scatra::energy(
     const std::map<std::string, std::vector<double>>& ele_state, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& intenergy)
 {

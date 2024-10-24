@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
-Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
+Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>*
+Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -43,9 +43,9 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
  | protected constructor for singletons                      vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
+Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPhaseEleBoundaryCalc(
     const int numdofpernode, const std::string& disname)
-    : params_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(disname)),
+    : params_(Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(disname)),
       numdofpernode_(numdofpernode),
       xyze_(true),  // initialize to zero
       edispnp_(true),
@@ -65,7 +65,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::PoroFluidMultiPh
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
+int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization)
 {
@@ -80,7 +80,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::setup_calc(
  * Evaluate element                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
+int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
@@ -109,7 +109,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate(
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+void Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<
     distype>::extract_element_and_node_values(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
  * Action type: Evaluate                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
+int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, POROFLUIDMULTIPHASE::BoundaryAction action,
     Core::Elements::LocationArray& la, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
@@ -177,7 +177,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_act
  | evaluate Neumann boundary condition                        vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
+int Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neumann(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1)
@@ -249,7 +249,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::evaluate_neu
  | evaluate shape functions and int. factor at int. point     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_func_and_int_fac(
+double Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shape_func_and_int_fac(
     const Core::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad,                                       ///< id of current Gauss point
     Core::LinAlg::Matrix<1 + nsd_, 1>* normalvec  ///< normal vector at Gauss point(optional)
@@ -279,12 +279,12 @@ double Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::eval_shap
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::line3>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad4>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad8>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::quad9>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::tri3>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::tri6>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::line2>;
+template class Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<Core::FE::CellType::line3>;
 
 FOUR_C_NAMESPACE_CLOSE

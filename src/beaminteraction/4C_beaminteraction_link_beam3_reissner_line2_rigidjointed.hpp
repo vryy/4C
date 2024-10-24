@@ -24,7 +24,7 @@ namespace Core::LinAlg
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Beam3r;
   }
@@ -173,7 +173,7 @@ namespace BEAMINTERACTION
     //! @name member variables
 
     //! new connecting element
-    Teuchos::RCP<Discret::ELEMENTS::Beam3r> linkele_;
+    Teuchos::RCP<Discret::Elements::Beam3r> linkele_;
 
 
     //! the following variables are for output purposes only (no need to pack or unpack)

@@ -191,7 +191,7 @@ void BEAMINTERACTION::get_beam_triad_interpolation_scheme(const Core::FE::Discre
         ref_triad_interpolation_scheme)
 {
   // Check that the beam element is a SR beam.
-  auto beam_ele = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(ele);
+  auto beam_ele = dynamic_cast<const Discret::Elements::Beam3r*>(ele);
   if (beam_ele == nullptr)
     FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
 

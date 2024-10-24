@@ -21,7 +21,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      |  HEX 8 Element                                                       |
@@ -93,7 +93,7 @@ namespace Discret
       std::string get_element_type_string() const { return "SOLIDT4POROP1"; }
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

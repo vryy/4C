@@ -31,11 +31,11 @@ namespace Core::LinAlg
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Rigidsphere;
     class Beam3Base;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 namespace BEAMINTERACTION
@@ -148,22 +148,22 @@ namespace BEAMINTERACTION
     /*!
     \brief Get first element (beam)
     */
-    inline const Discret::ELEMENTS::Beam3Base* beam_element() { return beam_element_; };
+    inline const Discret::Elements::Beam3Base* beam_element() { return beam_element_; };
 
     /*!
     \brief Get second element (sphere)
     */
-    inline const Discret::ELEMENTS::Rigidsphere* sphere_element() { return sphere_element_; };
+    inline const Discret::Elements::Rigidsphere* sphere_element() { return sphere_element_; };
     //@}
 
    private:
     //! @name member variables
 
     //! first element of pair
-    Discret::ELEMENTS::Beam3Base const* beam_element_;
+    Discret::Elements::Beam3Base const* beam_element_;
 
     //! second element of pair
-    Discret::ELEMENTS::Rigidsphere const* sphere_element_;
+    Discret::Elements::Rigidsphere const* sphere_element_;
 
     //! line and point charge condition
     std::vector<Core::Conditions::Condition*> chargeconds_;

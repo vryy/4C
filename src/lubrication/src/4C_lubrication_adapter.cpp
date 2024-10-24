@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LUBRICATION::LubricationBaseAlgorithm::setup(
+void Lubrication::LubricationBaseAlgorithm::setup(
     const Teuchos::ParameterList& prbdyn,          ///< parameter list for global problem
     const Teuchos::ParameterList& lubricationdyn,  ///< parameter list for Lubrication subproblem
     const Teuchos::ParameterList& solverparams,    ///< parameter list for Lubrication solver
@@ -91,7 +91,7 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
   extraparams->set<bool>("isale", isale);
 
   // create instance of time integration class (call the constructor)
-  lubrication_ = Teuchos::make_rcp<LUBRICATION::TimIntStationary>(
+  lubrication_ = Teuchos::make_rcp<Lubrication::TimIntStationary>(
       actdis, solver, lubricationtimeparams, extraparams, output);
 
   lubrication_->init();
@@ -103,12 +103,12 @@ void LUBRICATION::LubricationBaseAlgorithm::setup(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Core::Utils::ResultTest>
-LUBRICATION::LubricationBaseAlgorithm::create_lubrication_field_test()
+Lubrication::LubricationBaseAlgorithm::create_lubrication_field_test()
 {
-  return Teuchos::make_rcp<LUBRICATION::ResultTest>(lubrication_);
+  return Teuchos::make_rcp<Lubrication::ResultTest>(lubrication_);
 }
 
-Teuchos::RCP<Core::IO::DiscretizationWriter> LUBRICATION::LubricationBaseAlgorithm::disc_writer()
+Teuchos::RCP<Core::IO::DiscretizationWriter> Lubrication::LubricationBaseAlgorithm::disc_writer()
 {
   return lubrication_->disc_writer();
 }

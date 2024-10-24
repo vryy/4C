@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::ConstraintElement2::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::ConstraintElement2::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -105,11 +105,11 @@ int Discret::ELEMENTS::ConstraintElement2::evaluate(Teuchos::ParameterList& para
   return 0;
 
 
-}  // end of Discret::ELEMENTS::ConstraintElement2::Evaluate
+}  // end of Discret::Elements::ConstraintElement2::Evaluate
 
 /*----------------------------------------------------------------------*
  * Evaluate Neumann (->FOUR_C_THROW) */
-int Discret::ELEMENTS::ConstraintElement2::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::ConstraintElement2::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -121,7 +121,7 @@ int Discret::ELEMENTS::ConstraintElement2::evaluate_neumann(Teuchos::ParameterLi
 
 /*----------------------------------------------------------------------*
  * compute 2d normal */
-void Discret::ELEMENTS::ConstraintElement2::compute_normal(
+void Discret::Elements::ConstraintElement2::compute_normal(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::Matrix<2, 1>& elenorm)
 {
   elenorm(0, 0) = xc(0, 1) - xc(1, 1);
@@ -132,7 +132,7 @@ void Discret::ELEMENTS::ConstraintElement2::compute_normal(
 
 /*----------------------------------------------------------------------*
  * normal distance between third point and line */
-double Discret::ELEMENTS::ConstraintElement2::compute_normal_dist(
+double Discret::Elements::ConstraintElement2::compute_normal_dist(
     const Core::LinAlg::Matrix<3, 2>& xc, const Core::LinAlg::Matrix<2, 1>& normal)
 {
   return (normal(0, 0) * (-xc(0, 0) + xc(2, 0)) - normal(1, 0) * (xc(0, 1) - xc(2, 1))) /
@@ -141,7 +141,7 @@ double Discret::ELEMENTS::ConstraintElement2::compute_normal_dist(
 
 /*----------------------------------------------------------------------*
  * compute angle at second point */
-double Discret::ELEMENTS::ConstraintElement2::compute_angle(const Core::LinAlg::Matrix<3, 2>& xc)
+double Discret::Elements::ConstraintElement2::compute_angle(const Core::LinAlg::Matrix<3, 2>& xc)
 {
   return (acos((xc(0, 1) * (xc(1, 0) - xc(2, 0)) + xc(1, 1) * xc(2, 0) - xc(1, 0) * xc(2, 1) +
                    xc(0, 0) * (-xc(1, 1) + xc(2, 1))) /
@@ -153,7 +153,7 @@ double Discret::ELEMENTS::ConstraintElement2::compute_angle(const Core::LinAlg::
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
+void Discret::Elements::ConstraintElement2::compute_first_deriv_dist(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseVector& elevector,
     const Core::LinAlg::Matrix<2, 1>& normal)
 {
@@ -186,7 +186,7 @@ void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_dist(
 
 /*----------------------------------------------------------------------*
  * first derivatives */
-void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_angle(
+void Discret::Elements::ConstraintElement2::compute_first_deriv_angle(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseVector& elevector)
 {
   Core::LinAlg::SerialDenseVector vec1(2);
@@ -258,7 +258,7 @@ void Discret::ELEMENTS::ConstraintElement2::compute_first_deriv_angle(
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_dist(
+void Discret::Elements::ConstraintElement2::compute_second_deriv_dist(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseMatrix& elematrix,
     const Core::LinAlg::Matrix<2, 1>& normal)
 {
@@ -470,7 +470,7 @@ void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_dist(
 
 /*----------------------------------------------------------------------*
  * second derivatives */
-void Discret::ELEMENTS::ConstraintElement2::compute_second_deriv_angle(
+void Discret::Elements::ConstraintElement2::compute_second_deriv_angle(
     const Core::LinAlg::Matrix<3, 2>& xc, Core::LinAlg::SerialDenseMatrix& elematrix)
 {
   Core::LinAlg::SerialDenseVector vec1(2);

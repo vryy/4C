@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
-LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization> actdis,
+Lubrication::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
@@ -35,7 +35,7 @@ LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<Core::FE::Discretiz
 /*----------------------------------------------------------------------*
  |  initialize time integration                             wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::init()
+void Lubrication::TimIntStationary::init()
 {
   // initialize base class
   TimIntImpl::init();
@@ -54,11 +54,11 @@ void LUBRICATION::TimIntStationary::init()
 /*----------------------------------------------------------------------*
  | set time parameter for element evaluation (usual call)   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::set_element_time_parameter() const
+void Lubrication::TimIntStationary::set_element_time_parameter() const
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::set_time_parameter);
+  eleparams.set<Lubrication::Action>("action", Lubrication::set_time_parameter);
   eleparams.set<bool>("using generalized-alpha time integration", false);
   eleparams.set<bool>("using stationary formulation", true);
   eleparams.set<double>("time-step length", dta_);
@@ -75,7 +75,7 @@ void LUBRICATION::TimIntStationary::set_element_time_parameter() const
 /*----------------------------------------------------------------------*
  | set time for evaluation of Neumann boundary conditions   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
+void Lubrication::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::ParameterList& params)
 {
   params.set("total time", time_);
 }
@@ -84,7 +84,7 @@ void LUBRICATION::TimIntStationary::set_time_for_neumann_evaluation(Teuchos::Par
 /*----------------------------------------------------------------------*
  | add actual Neumann loads                                 wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::add_neumann_to_residual()
+void Lubrication::TimIntStationary::add_neumann_to_residual()
 {
   residual_->Update(1.0, *neumann_loads_, 1.0);
 }
@@ -94,7 +94,7 @@ void LUBRICATION::TimIntStationary::add_neumann_to_residual()
  | add global state vectors specific for time-integration scheme            |
  |                                                              wirtz 11/15 |
  *--------------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::add_time_integration_specific_vectors(
+void Lubrication::TimIntStationary::add_time_integration_specific_vectors(
     bool forcedincrementalsolver)
 {
   discret_->set_state("prenp", prenp_);
@@ -104,7 +104,7 @@ void LUBRICATION::TimIntStationary::add_time_integration_specific_vectors(
 /*----------------------------------------------------------------------*
  | update of solution at end of time step                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::update(const int num)
+void Lubrication::TimIntStationary::update(const int num)
 {
   // for the stationary scheme there is nothing to do
 }
@@ -113,7 +113,7 @@ void LUBRICATION::TimIntStationary::update(const int num)
 /*----------------------------------------------------------------------*
  |                                                          wirtz 11/15 |
  -----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::read_restart(int step)
+void Lubrication::TimIntStationary::read_restart(int step)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::instance()->input_control_file(), step);
@@ -132,7 +132,7 @@ void LUBRICATION::TimIntStationary::read_restart(int step)
 /*----------------------------------------------------------------------*
  | incremental iteration update of state                    wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntStationary::update_iter_incrementally()
+void Lubrication::TimIntStationary::update_iter_incrementally()
 {
   //! new end-point temperatures
   //! T_{n+1}^{<k+1>} := T_{n+1}^{<k>} + IncT_{n+1}^{<k>}

@@ -74,7 +74,7 @@ namespace Internal
  |  evaluate the element (public)                          fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Membrane<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -514,7 +514,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate(Teuchos::ParameterList& param
  |  Integrate a Surface Neumann boundary condition (public) fbraeu 06/16 |
  *-----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Membrane<distype>::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
@@ -670,7 +670,7 @@ int Discret::ELEMENTS::Membrane<distype>::evaluate_neumann(Teuchos::ParameterLis
  |  evaluate the element (private)                         fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
+void Discret::Elements::Membrane<distype>::mem_nlnstiffmass(
     std::vector<int>& lm,                                 // location matrix
     std::vector<double>& disp,                            // current displacements
     Core::LinAlg::Matrix<numdof_, numdof_>* stiffmatrix,  // element stiffness matrix
@@ -1214,13 +1214,13 @@ void Discret::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(
         break;
     }
   }
-}  // Discret::ELEMENTS::Membrane::membrane_nlnstiffmass
+}  // Discret::Elements::Membrane::membrane_nlnstiffmass
 
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                fb 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::Membrane<distype>::vis_names(std::map<std::string, int>& names)
 {
   std::string result_thickness = "thickness";
 
@@ -1229,13 +1229,13 @@ void Discret::ELEMENTS::Membrane<distype>::vis_names(std::map<std::string, int>&
 
   solid_material()->vis_names(names);
 
-}  // Discret::ELEMENTS::Membrane::vis_names
+}  // Discret::Elements::Membrane::vis_names
 
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Membrane<distype>::vis_data(
+bool Discret::Elements::Membrane<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -1255,13 +1255,13 @@ bool Discret::ELEMENTS::Membrane<distype>::vis_data(
 
   return solid_material()->vis_data(name, data, intpoints_.nquad, this->id());
 
-}  // Discret::ELEMENTS::Membrane::vis_data
+}  // Discret::Elements::Membrane::vis_data
 
 /*----------------------------------------------------------------------*
  |  get reference and current configuration                fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<double>& disp,
+void Discret::Elements::Membrane<distype>::mem_configuration(const std::vector<double>& disp,
     Core::LinAlg::Matrix<numnod_, noddof_>& xrefe, Core::LinAlg::Matrix<numnod_, noddof_>& xcurr)
 {
   // get reference configuration and determine current configuration
@@ -1279,14 +1279,14 @@ void Discret::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<d
     xcurr(i, 1) = xrefe(i, 1) + disp[i * noddof_ + 1];
     xcurr(i, 2) = xrefe(i, 2) + disp[i * noddof_ + 2];
   }
-}  // Discret::ELEMENTS::Membrane::mem_configuration
+}  // Discret::Elements::Membrane::mem_configuration
 
 /*------------------------------------------------------------------------------------------------------*
  |  introduce an orthonormal base in the undeformed configuration at current Gauss point   fbraeu
  06/16 |
  *------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
+void Discret::Elements::Membrane<distype>::mem_orthonormalbase(
     const Core::LinAlg::Matrix<numnod_, noddof_>& xrefe,
     const Core::LinAlg::Matrix<numnod_, noddof_>& xcurr,
     const Core::LinAlg::Matrix<numdim_, numnod_>& derivs,
@@ -1396,13 +1396,13 @@ void Discret::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
   Q_localToGlobal(1, 2) = tn(1);
   Q_localToGlobal(2, 2) = tn(2);
 
-}  // Discret::ELEMENTS::Membrane::mem_orthonormalbase
+}  // Discret::Elements::Membrane::mem_orthonormalbase
 
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of 2nd PK stresses to Cauchy stresses at gp                           fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::mem_p_k2to_cauchy(
+void Discret::Elements::Membrane<distype>::mem_p_k2to_cauchy(
     const Core::LinAlg::Matrix<noddof_, noddof_>& pkstress_global,
     const Core::LinAlg::Matrix<noddof_, noddof_>& defgrd,
     Core::LinAlg::Matrix<noddof_, noddof_>& cauchy) const
@@ -1418,13 +1418,13 @@ void Discret::ELEMENTS::Membrane<distype>::mem_p_k2to_cauchy(
   temp.multiply((1.0 / detF), defgrd, pkstress_global, 0.0);
   cauchy.multiply_nt(1.0, temp, defgrd, 1.0);
 
-}  // Discret::ELEMENTS::Membrane::mem_p_k2to_cauchy
+}  // Discret::Elements::Membrane::mem_p_k2to_cauchy
 
 /*-------------------------------------------------------------------------------------------------*
  |  pushforward of Green-Lagrange to Euler-Almansi strains at gp                      fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::mem_g_lto_ea(
+void Discret::Elements::Membrane<distype>::mem_g_lto_ea(
     const Core::LinAlg::Matrix<noddof_, noddof_>& glstrain_global,
     const Core::LinAlg::Matrix<noddof_, noddof_>& defgrd,
     Core::LinAlg::Matrix<noddof_, noddof_>& euler_almansi) const
@@ -1443,13 +1443,13 @@ void Discret::ELEMENTS::Membrane<distype>::mem_g_lto_ea(
   temp.multiply(1.0, glstrain_global, invdefgrd, 0.0);
   euler_almansi.multiply_tn(1.0, invdefgrd, temp, 1.0);
 
-}  // Discret::ELEMENTS::Membrane::mem_g_lto_ea
+}  // Discret::Elements::Membrane::mem_g_lto_ea
 
 /*-------------------------------------------------------------------------------------------------*
  |  determine deformation gradient in global coordinates                              fbraeu 06/16 |
  *-------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
+void Discret::Elements::Membrane<distype>::mem_defgrd_global(
     const Core::LinAlg::Matrix<noddof_, 1>& dXds1, const Core::LinAlg::Matrix<noddof_, 1>& dXds2,
     const Core::LinAlg::Matrix<noddof_, 1>& dxds1, const Core::LinAlg::Matrix<noddof_, 1>& dxds2,
     const double& lambda3, Core::LinAlg::Matrix<noddof_, noddof_>& defgrd_glob) const
@@ -1477,14 +1477,14 @@ void Discret::ELEMENTS::Membrane<distype>::mem_defgrd_global(
   // scale third dimension by sqrt(rcg33), that equals the principle stretch lambda_3
   defgrd_glob.multiply_nt(lambda3, xcurr_cross, xrefe_cross, 1.0);
 
-}  // Discret::ELEMENTS::Membrane::mem_defgrd_global
+}  // Discret::Elements::Membrane::mem_defgrd_global
 
 /*-------------------------------------------------------------------------------------------------*
  |  determine extrapolation matrix                                                    sfuchs 02/18 |
  *-------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Thermo::DisTypeToNumGaussPoints<distype>::nquad>
-Discret::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
+Discret::Elements::Membrane<distype>::mem_extrapolmat() const
 {
   // extrapolation matrix
   // note: equal for all elements of the same discretization type
@@ -1521,13 +1521,13 @@ Discret::ELEMENTS::Membrane<distype>::mem_extrapolmat() const
 
   return extrapol;
 
-}  // Discret::ELEMENTS::Membrane::mem_extrapolmat
+}  // Discret::Elements::Membrane::mem_extrapolmat
 
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Membrane<distype>::update_element(
+void Discret::Elements::Membrane<distype>::update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   // Calculate current deformation gradient
@@ -1606,9 +1606,9 @@ void Discret::ELEMENTS::Membrane<distype>::update_element(
   solid_material()->update();
 }
 
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>;
+template class Discret::Elements::Membrane<Core::FE::CellType::tri3>;
+template class Discret::Elements::Membrane<Core::FE::CellType::tri6>;
+template class Discret::Elements::Membrane<Core::FE::CellType::quad4>;
+template class Discret::Elements::Membrane<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

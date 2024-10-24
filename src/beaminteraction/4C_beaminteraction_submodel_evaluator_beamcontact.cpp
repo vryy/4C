@@ -721,8 +721,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
   for (int rowele_i = 0; rowele_i < numroweles; ++rowele_i)
   {
     int const elegid = ele_type_map_extractor_ptr()->beam_map()->GID(rowele_i);
-    Discret::ELEMENTS::Beam3Base* currele =
-        dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr()->g_element(elegid));
+    Discret::Elements::Beam3Base* currele =
+        dynamic_cast<Discret::Elements::Beam3Base*>(discret_ptr()->g_element(elegid));
 
     curr_ia_distance = currele->get_circular_cross_section_radius_for_interactions();
 
@@ -761,8 +761,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::get_half_interaction_dista
     for (unsigned int rowele_i = 0; rowele_i < numrowsphereeles; ++rowele_i)
     {
       int const elegid = ele_type_map_extractor().sphere_map()->GID(rowele_i);
-      Discret::ELEMENTS::Rigidsphere* sphere =
-          dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret().g_element(elegid));
+      Discret::Elements::Rigidsphere* sphere =
+          dynamic_cast<Discret::Elements::Rigidsphere*>(discret().g_element(elegid));
 
       curr_ia_dist = sphere->radius() + globalmax_beam_ia_distance;
 
@@ -956,7 +956,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
     // note: as we are only looping over beam elements, only beam to beam contact needs id check
     // here
-    else if (dynamic_cast<Discret::ELEMENTS::Beam3Base*>(*eiter) != nullptr and
+    else if (dynamic_cast<Discret::Elements::Beam3Base*>(*eiter) != nullptr and
              not(currele->id() < (*eiter)->id()))
     {
       toerase = true;
@@ -997,7 +997,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::create_beam_contact_elemen
     ele_ptrs[0] = discret_ptr()->g_element(elegid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-    if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == nullptr)
+    if (dynamic_cast<Discret::Elements::Beam3Base const*>(ele_ptrs[0]) == nullptr)
       FOUR_C_THROW("first element of element pair must be a beam element");
 #endif
 

@@ -31,7 +31,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Ale2Line;
 
@@ -320,7 +320,7 @@ namespace Discret
        *  We can handle St.-Venant-Kirchhoff material and many materials
        *  from the elast hyper toolbox.
        *
-       *  \note this routine was copied from Discret::ELEMENTS::Wall1
+       *  \note this routine was copied from Discret::Elements::Wall1
        */
       void static_ke_nonlinear(const std::vector<int>& lm,  ///< node owning procs
           const std::vector<double>& disp,                  ///< nodal displacements
@@ -526,7 +526,7 @@ namespace Discret
       \param lline: the local line number of this line w.r.t. the parent element
       */
       Ale2Line(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Ale2* parent, const int lline);
+          Discret::Elements::Ale2* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -650,7 +650,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

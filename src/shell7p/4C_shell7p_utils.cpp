@@ -389,7 +389,7 @@ void Solid::Utils::Shell::nodal_block_information_shell(
 void Solid::Utils::Shell::Director::setup_director_for_element(
     const Core::Elements::Element& ele, Core::LinAlg::SerialDenseMatrix& nodal_directors)
 {
-  constexpr auto num_dim = Discret::ELEMENTS::Shell::Internal::num_dim;
+  constexpr auto num_dim = Discret::Elements::Shell::Internal::num_dim;
   const int num_node = ele.num_node();
   Core::LinAlg::SerialDenseMatrix xrefe(num_node, num_dim);
   for (int i = 0; i < num_node; ++i)
@@ -432,7 +432,7 @@ void Solid::Utils::Shell::Director::average_director(const Core::LinAlg::Matrix<
 {
   Core::LinAlg::Matrix<3, 1> davn(true);
   Core::LinAlg::Matrix<3, 1> averdir(true);
-  for (int dim = 0; dim < Discret::ELEMENTS::Shell::Internal::num_dim; ++dim)
+  for (int dim = 0; dim < Discret::Elements::Shell::Internal::num_dim; ++dim)
     averdir(dim) = dir_list(dim, 0);
 
   for (int i = 1; i < num_directors; ++i)
@@ -447,7 +447,7 @@ void Solid::Utils::Shell::Director::average_director(const Core::LinAlg::Matrix<
     // if the length is small, both directors point nearly in the same direction
     if (length <= 1.e-12)
     {
-      for (int dim = 0; dim < Discret::ELEMENTS::Shell::Internal::num_dim; ++dim)
+      for (int dim = 0; dim < Discret::Elements::Shell::Internal::num_dim; ++dim)
         davn(dim) = 0.5 * (averdir(dim) + dir_list(dim, i));
     }
     // if not average the nodal directors
@@ -484,7 +484,7 @@ void Solid::Utils::Shell::Director::average_director(const Core::LinAlg::Matrix<
                    alpha * SquareValue(averdir(0)) * dir_list(2, i) +
                    alpha * averdir(0) * averdir(2) * dir_list(0, i) + averdir(2);
     }
-    for (int dim = 0; dim < Discret::ELEMENTS::Shell::Internal::num_dim; ++dim)
+    for (int dim = 0; dim < Discret::Elements::Shell::Internal::num_dim; ++dim)
     {
       averdir(dim) = davn(dim);
       nodal_director(dim) = davn(dim);
@@ -512,7 +512,7 @@ void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
       Core::Elements::Element* tmpele = actnode->elements()[j];
       if (!tmpele) continue;
       if (tmpele->element_type() != eletype) continue;
-      if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(tmpele))
+      if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
@@ -523,7 +523,7 @@ void Solid::Utils::Shell::Director::export_director_map_from_row_to_col_map(
           }
         }
       }
-      else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(tmpele))
+      else if (auto* shell_ele = dynamic_cast<Discret::Elements::Shell7p*>(tmpele))
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
@@ -546,7 +546,7 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
     std::map<int, std::vector<double>>& director_map)
 {
   const int max_ele = 8;
-  static constexpr int num_dim = Discret::ELEMENTS::Shell::Internal::num_dim;
+  static constexpr int num_dim = Discret::Elements::Shell::Internal::num_dim;
   Core::LinAlg::Matrix<num_dim, max_ele> collaverdir(true);
 
   // loop through all row nodes and build director map
@@ -557,7 +557,7 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
     {
       Core::Elements::Element* tmpele = act_node->elements()[j];
       if (tmpele->element_type() != eletype) continue;
-      if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(tmpele))
+      if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(tmpele))
       {
         for (int k = 0; k < scatra_ele->num_node(); ++k)
         {
@@ -572,7 +572,7 @@ void Solid::Utils::Shell::Director::average_directors_at_nodes(
           }
         }
       }
-      else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(tmpele))
+      else if (auto* shell_ele = dynamic_cast<Discret::Elements::Shell7p*>(tmpele))
       {
         for (int k = 0; k < shell_ele->num_node(); ++k)
         {
@@ -615,23 +615,23 @@ void Solid::Utils::Shell::Director::setup_shell_element_directors(
   for (const auto& actele : dis.my_col_element_range())
   {
     if (actele->element_type() != eletype) return;
-    if (auto* scatra_ele = dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(actele))
+    if (auto* scatra_ele = dynamic_cast<Discret::Elements::Shell7pScatra*>(actele))
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
       const int num_node = scatra_ele->num_node();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
-          num_node, Discret::ELEMENTS::Shell::Internal::num_dim);
+          num_node, Discret::Elements::Shell::Internal::num_dim);
       setup_director_for_element(*scatra_ele, nodal_directors);
       scatra_ele->set_all_nodal_directors(nodal_directors);
     }
-    else if (auto* shell_ele = dynamic_cast<Discret::ELEMENTS::Shell7p*>(actele))
+    else if (auto* shell_ele = dynamic_cast<Discret::Elements::Shell7p*>(actele))
     {
       // create matrix nodal_directors for nodal basis vector in thickness direction in material
       // configuration
       const int num_node = shell_ele->num_node();
       Core::LinAlg::SerialDenseMatrix nodal_directors(
-          num_node, Discret::ELEMENTS::Shell::Internal::num_dim);
+          num_node, Discret::Elements::Shell::Internal::num_dim);
       setup_director_for_element(*shell_ele, nodal_directors);
       shell_ele->set_all_nodal_directors(nodal_directors);
     }
@@ -667,9 +667,9 @@ void Solid::Utils::Shell::lump_mass_matrix(Core::LinAlg::SerialDenseMatrix& mass
 }
 
 
-void Solid::Utils::Shell::read_element::read_and_set_locking_types(
-    const Core::FE::CellType& distype, const Core::IO::InputParameterContainer& container,
-    Solid::ELEMENTS::ShellLockingTypes& locking_types)
+void Solid::Utils::Shell::ReadElement::read_and_set_locking_types(const Core::FE::CellType& distype,
+    const Core::IO::InputParameterContainer& container,
+    Solid::Elements::ShellLockingTypes& locking_types)
 {
   std::string type;
   switch (distype)
@@ -710,14 +710,14 @@ void Solid::Utils::Shell::read_element::read_and_set_locking_types(
                         locking_types.transverse_shear_strain_lin;
 }
 
-int Solid::Utils::Shell::read_element::read_and_set_element_material(
+int Solid::Utils::Shell::ReadElement::read_and_set_element_material(
     const Core::IO::InputParameterContainer& container)
 {
   int material = container.get<int>("MAT");
   return material;
 }
 
-int Solid::Utils::Shell::read_element::read_and_set_num_ans(const Core::FE::CellType& distype)
+int Solid::Utils::Shell::ReadElement::read_and_set_num_ans(const Core::FE::CellType& distype)
 {
   switch (distype)
   {

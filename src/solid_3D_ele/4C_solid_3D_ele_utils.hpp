@@ -52,23 +52,23 @@ namespace Solid::Utils
    */
   Core::LinAlg::Matrix<6, 1> green_lagrange_to_log_strain(const Core::LinAlg::Matrix<6, 1>& gl);
 
-  namespace read_element
+  namespace ReadElement
   {
     int read_element_material(const Core::IO::InputParameterContainer& container);
 
     Inpar::Solid::KinemType read_element_kinematic_type(
         const Core::IO::InputParameterContainer& container);
 
-    Discret::ELEMENTS::ElementTechnology read_element_technology(
+    Discret::Elements::ElementTechnology read_element_technology(
         const Core::IO::InputParameterContainer& container);
 
-    Discret::ELEMENTS::PrestressTechnology read_prestress_technology(
+    Discret::Elements::PrestressTechnology read_prestress_technology(
         const Core::IO::InputParameterContainer& container);
 
-    Discret::ELEMENTS::SolidElementProperties read_solid_element_properties(
+    Discret::Elements::SolidElementProperties read_solid_element_properties(
         const Core::IO::InputParameterContainer& container);
 
-  }  // namespace read_element
+  }  // namespace ReadElement
 
 }  // namespace Solid::Utils
 

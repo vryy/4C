@@ -29,10 +29,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::ScaTraEleCalcHDGCardiacMonodomain(const int numdofpernode, const int numscal,
     const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ScaTraEleCalcHDG(
+    : Discret::Elements::ScaTraEleCalcHDG<distype, probdim>::ScaTraEleCalcHDG(
           numdofpernode, numscal, disname),
       values_mat_gp_all_(0),
       gp_mat_alpha_(0)
@@ -43,8 +43,8 @@ Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  | singleton access method                               hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance(
+Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*
+Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname, bool create)
 {
   static std::map<std::string, ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>*> instances;
@@ -78,7 +78,7 @@ Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance
  |  prepare material parameter                           hoermann 11/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_all(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_all(
     Core::Elements::Element* ele,                            //!< the element we are dealing with
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
@@ -86,8 +86,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
 {
   const Teuchos::RCP<Mat::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
-  Discret::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
+  Discret::Elements::ScaTraHDG* hdgele =
+      dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   if (actmat->diffusion_at_ele_center())
   {
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials(
     Core::Elements::Element* ele,                            //!< the element we are dealing with
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
  |  prepare material parameter                           hoermann 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_tet(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_tet(
     Core::Elements::Element* ele,                            //!< the element we are dealing with
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
@@ -172,8 +172,8 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
 {
   const Teuchos::RCP<Mat::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
-  Discret::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
+  Discret::Elements::ScaTraHDG* hdgele =
+      dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   if (actmat->diffusion_at_ele_center())
   {
@@ -234,7 +234,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
  |  evaluate single material  (protected)                hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::materials(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
@@ -253,7 +253,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
  |  Material ScaTra                                      hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat_myocard(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat_myocard(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
@@ -408,7 +408,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
  |  Material Time Update                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::time_update_material(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::time_update_material(
     const Core::Elements::Element* ele  //!< the element we are dealing with
 )
 {
@@ -457,7 +457,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::tim
  |  Get Material Internal State for Restart              hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::get_material_internal_state(const Core::Elements::Element*
                                               ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
@@ -499,7 +499,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  |  Set Material Internal State after Restart            hoermann 09/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::set_material_internal_state(const Core::Elements::Element*
                                               ele,  //!< the element we are dealing with
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization)
@@ -537,7 +537,7 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  |  Project Material Field                               hoermann 01/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field(
+int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::project_material_field(
     const Core::Elements::Element* ele  //!< the element we are dealing with
 )
 {
@@ -552,7 +552,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::proj
  |  Project Material Field                               hoermann 12/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::project_material_field_all(const Core::Elements::Element*
         ele  //!< the element we are dealing with
 )
@@ -560,8 +560,8 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
   const Teuchos::RCP<Mat::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
 
-  Discret::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
+  Discret::Elements::ScaTraHDG* hdgele =
+      dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   int deg = 0;
   if (hdgele->degree() == 1)
@@ -649,7 +649,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
  |  Project Material Field for Tet                       hoermann 01/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
+int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
     probdim>::project_material_field_tet(const Core::Elements::Element*
         ele  //!< the element we are dealing with
 )
@@ -657,8 +657,8 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
   const Teuchos::RCP<Mat::Myocard>& actmat =
       Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
 
-  Discret::ELEMENTS::ScaTraHDG* hdgele =
-      dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
+  Discret::Elements::ScaTraHDG* hdgele =
+      dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   // polynomial space to get the value of the shape function at the material gauss points
   Core::FE::PolynomialSpaceParams params(distype, hdgele->degree_old(), this->usescompletepoly_);
@@ -779,7 +779,7 @@ int Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype,
 
 template <Core::FE::CellType distype, int probdim>
 template <std::size_t dim>
-void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::setup_cardiac_fibers(
+void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::setup_cardiac_fibers(
     const Core::Nodes::NodalFiberHolder& fibers, std::vector<Core::LinAlg::Matrix<dim, 1>>& f)
 {
   if (fibers.fibers_size() > 0)
@@ -835,37 +835,37 @@ void Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::set
 // template classes
 // 1D elements
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line2,1>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line2,1>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line2,2>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line2,2>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line2,3>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line2,3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line3,1>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::line3,1>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tri3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad4, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad4, 3>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad4, 2>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad4, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad9, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::nurbs9, 2>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::quad9, 2>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::hex8, 3>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::hex8, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::hex27, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tet4, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tet10, 3>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::hex27, 3>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tet4, 3>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::tet10, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::pyramid5,
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::pyramid5,
     3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::nurbs27>;
+// Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  |  constructor (public)                                   sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::MembraneScatra<distype>::MembraneScatra(int id, int owner)
+Discret::Elements::MembraneScatra<distype>::MembraneScatra(int id, int owner)
     : Membrane<distype>(id, owner), impltype_(Inpar::ScaTra::impltype_undefined)
 {
   return;
@@ -26,8 +26,8 @@ Discret::ELEMENTS::MembraneScatra<distype>::MembraneScatra(int id, int owner)
  |  copy-constructor (public)                              sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::MembraneScatra<distype>::MembraneScatra(
-    const Discret::ELEMENTS::MembraneScatra<distype>& old)
+Discret::Elements::MembraneScatra<distype>::MembraneScatra(
+    const Discret::Elements::MembraneScatra<distype>& old)
     : Membrane<distype>(old), impltype_(old.impltype_)
 {
   return;
@@ -38,10 +38,10 @@ Discret::ELEMENTS::MembraneScatra<distype>::MembraneScatra(
  |  and return pointer to it (public)                                   |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::MembraneScatra<distype>::clone() const
+Core::Elements::Element* Discret::Elements::MembraneScatra<distype>::clone() const
 {
-  Discret::ELEMENTS::MembraneScatra<distype>* newelement =
-      new Discret::ELEMENTS::MembraneScatra<distype>(*this);
+  Discret::Elements::MembraneScatra<distype>* newelement =
+      new Discret::Elements::MembraneScatra<distype>(*this);
   return newelement;
 }
 
@@ -50,7 +50,7 @@ Core::Elements::Element* Discret::ELEMENTS::MembraneScatra<distype>::clone() con
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::MembraneScatra<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -72,7 +72,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pack(Core::Communication::PackB
  |                                                         sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::MembraneScatra<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -94,7 +94,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::unpack(Core::Communication::Unp
  |  print this element (public)                            sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::print(std::ostream& os) const
+void Discret::Elements::MembraneScatra<distype>::print(std::ostream& os) const
 {
   os << "MembraneScatra ";
   Membrane<distype>::print(os);
@@ -106,7 +106,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::print(std::ostream& os) const
  |  read this element (public)                             sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::MembraneScatra<distype>::read_element(const std::string& eletype,
+bool Discret::Elements::MembraneScatra<distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -141,7 +141,7 @@ bool Discret::ELEMENTS::MembraneScatra<distype>::read_element(const std::string&
  |  Get vector of ptrs to nodes (private)                  sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline Core::Nodes::Node** Discret::ELEMENTS::MembraneScatra<distype>::nodes()
+inline Core::Nodes::Node** Discret::Elements::MembraneScatra<distype>::nodes()
 {
   return Membrane<distype>::nodes();
 }
@@ -150,14 +150,14 @@ inline Core::Nodes::Node** Discret::ELEMENTS::MembraneScatra<distype>::nodes()
  |  Get shape type of element (private)                    sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::FE::CellType Discret::ELEMENTS::MembraneScatra<distype>::shape() const
+Core::FE::CellType Discret::Elements::MembraneScatra<distype>::shape() const
 {
   return Membrane<distype>::shape();
 }
 
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::tri3>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::tri6>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::quad4>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

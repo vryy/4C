@@ -32,7 +32,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleParameterXFEM;
 
@@ -268,7 +268,7 @@ namespace Discret
         static Teuchos::RCP<NitscheInterface<distype>> create_nitsche_coupling_x_fluid_wdbc(
             Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -279,7 +279,7 @@ namespace Discret
                 bele_xyz,  ///< global node coordinates of boundary element
             Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -294,7 +294,7 @@ namespace Discret
             Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
             Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -310,7 +310,7 @@ namespace Discret
             Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
             Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -510,7 +510,7 @@ namespace Discret
             ) = 0;
       };
     }  // end namespace XFLUID
-  }    // end namespace ELEMENTS
+  }    // end namespace Elements
 }  // end namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -50,7 +50,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Fluid;
 
@@ -76,7 +76,7 @@ namespace Discret
         This class does not provide a definition for this function; it
         must be defined in FluidEleCalc.
        */
-      virtual int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      virtual int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -85,7 +85,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) = 0;
 
       /// evaluate element at specified Gauss points
-      virtual int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      virtual int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -95,7 +95,7 @@ namespace Discret
           const Core::FE::GaussIntegration& intpoints, bool offdiag = false) = 0;
 
       /// Evaluate the XFEM cut element
-      virtual int evaluate_xfem(Discret::ELEMENTS::Fluid* ele,
+      virtual int evaluate_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -106,30 +106,30 @@ namespace Discret
           const std::vector<Core::FE::GaussIntegration>& intpoints,
           const Cut::plain_volumecell_set& cells, bool offdiag = false) = 0;
 
-      virtual int integrate_shape_function(Discret::ELEMENTS::Fluid* ele,
+      virtual int integrate_shape_function(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints) = 0;
 
-      virtual int integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
+      virtual int integrate_shape_function_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
           const Cut::plain_volumecell_set& cells) = 0;
 
       /// Evaluate supporting methods of the element
-      virtual int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int evaluate_service(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3) = 0;
 
-      virtual int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints2) = 0;
 
-      virtual int compute_error_interface(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      virtual int compute_error_interface(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -143,7 +143,7 @@ namespace Discret
           ) = 0;
 
       virtual void element_xfem_interface_hybrid_lm(
-          Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
+          Discret::Elements::Fluid* ele,                             ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -166,7 +166,7 @@ namespace Discret
           ) = 0;
 
       /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
-      virtual void element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      virtual void element_xfem_interface_nit(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -186,17 +186,17 @@ namespace Discret
           bool evaluated_cut  ///< the CUT was updated before this evaluation is called
           ) = 0;
 
-      virtual void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,
+      virtual void calculate_continuity_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& dis, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           const Core::FE::GaussIntegration& intpoints) = 0;
 
-      virtual void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,
+      virtual void calculate_continuity_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& dis, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

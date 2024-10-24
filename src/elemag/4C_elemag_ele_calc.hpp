@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Electromagnetic element implementation
 
@@ -38,7 +38,7 @@ namespace Discret
       /// Number of faces on element.
       static constexpr unsigned int nfaces_ = Core::FE::num_faces<distype>;
 
-      int integrate_shape_function(Discret::ELEMENTS::Elemag* ele,
+      int integrate_shape_function(Discret::Elements::Elemag* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1) override
       {
@@ -47,19 +47,19 @@ namespace Discret
       };
 
       /// Zero initialization of elements.
-      virtual void element_init(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params);
+      virtual void element_init(Discret::Elements::Elemag* ele, Teuchos::ParameterList& params);
 
       /// Interpolates an HDG solution to the element nodes for output.
-      virtual int interpolate_solution_to_nodes(Discret::ELEMENTS::Elemag* ele,
+      virtual int interpolate_solution_to_nodes(Discret::Elements::Elemag* ele,
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       /// Initialize the shape functions and solver to the given element (degree is runtime
       /// parameter).
-      void initialize_shapes(const Discret::ELEMENTS::Elemag* ele);
+      void initialize_shapes(const Discret::Elements::Elemag* ele);
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
-      int evaluate(Discret::ELEMENTS::Elemag* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -68,7 +68,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points.
-      virtual int evaluate(Discret::ELEMENTS::Elemag* ele, Core::FE::Discretization& discretization,
+      virtual int evaluate(Discret::Elements::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -100,14 +100,14 @@ namespace Discret
         static constexpr unsigned int nfaces_ = ElemagEleCalc<distype>::nfaces_;
 
         /// Init function for the struct members
-        LocalSolver(const Discret::ELEMENTS::Elemag* ele,
+        LocalSolver(const Discret::Elements::Elemag* ele,
             Core::FE::ShapeValues<distype>& shapeValues,
             Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>& shapeValuesFace,
             Inpar::EleMag::DynamicType& dyna);
 
         /// Compute the residual
         void compute_residual(Teuchos::ParameterList& params,
-            Core::LinAlg::SerialDenseVector& eleVec, Discret::ELEMENTS::Elemag& ele);
+            Core::LinAlg::SerialDenseVector& eleVec, Discret::Elements::Elemag& ele);
 
         /// Computes the source term in the element.
         void compute_source(Teuchos::ParameterList& params,
@@ -116,18 +116,18 @@ namespace Discret
 
         /// Add terms corresponding to the absorbing boundary condition.
         void compute_absorbing_bc(Core::FE::Discretization& discretization,
-            Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+            Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
             Teuchos::RCP<Core::Mat::Material>& mat, int face,
             Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Add terms corresponding to the absorbing boundary condition.
         void compute_boundary_integral(
-            Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params, int face);
+            Discret::Elements::Elemag* ele, Teuchos::ParameterList& params, int face);
 
         /// Calls local solver to compute matrices: internal and face
         void compute_matrices(Core::FE::Discretization& discretization,
-            const Teuchos::RCP<Core::Mat::Material>& mat, Discret::ELEMENTS::Elemag& ele, double dt,
+            const Teuchos::RCP<Core::Mat::Material>& mat, Discret::Elements::Elemag& ele, double dt,
             Inpar::EleMag::DynamicType dyna, const double tau);
 
         /// Set up interior matrices
@@ -143,23 +143,23 @@ namespace Discret
 
         /// Projection of function field.
         /// The function is used to project the field in the initialization phase.
-        int project_field(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_field(Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
         /// Compute the error with respect to an analytical field.
-        void compute_error(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        void compute_error(Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Projection of a given field on the interior variables for testing purposes.
-        int project_field_test(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_field_test(Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2);
 
         /// Projection of a given field on the trace for testing purposes.
-        int project_field_test_trace(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_field_test_trace(Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Projection of Dirichlet function field.
-        int project_dirich_field(Discret::ELEMENTS::Elemag* ele, Teuchos::ParameterList& params,
+        int project_dirich_field(Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
             Core::LinAlg::SerialDenseVector& elevec1);
 
         /// Function evaluation routine
@@ -214,7 +214,7 @@ namespace Discret
 
       /// Updates interior variables and calculates residual.
       void update_interior_variables_and_compute_residual(Teuchos::ParameterList& params,
-          Discret::ELEMENTS::Elemag& ele, Core::Mat::Material& mat,
+          Discret::Elements::Elemag& ele, Core::Mat::Material& mat,
           Core::LinAlg::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly);
 
       /// Reads from global vectors.
@@ -230,7 +230,7 @@ namespace Discret
           Core::Elements::Element* ele, Core::FE::Discretization& discretization);
 
       /// Calculate error maps with local postprocessing.
-      double estimate_error(Discret::ELEMENTS::Elemag& ele, Core::LinAlg::SerialDenseVector& p);
+      double estimate_error(Discret::Elements::Elemag& ele, Core::LinAlg::SerialDenseVector& p);
 
       /// Local data object for element.
       Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_;
@@ -255,7 +255,7 @@ namespace Discret
 
       bool usescompletepoly_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

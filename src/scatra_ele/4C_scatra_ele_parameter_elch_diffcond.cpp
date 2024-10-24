@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterElchDiffCond*
-Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::instance(
+Discret::Elements::ScaTraEleParameterElchDiffCond*
+Discret::Elements::ScaTraEleParameterElchDiffCond::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -40,7 +40,7 @@ Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(
+Discret::Elements::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCond(
     const std::string& disname  //!< name of discretization
     )
     : cursolvar_(false),
@@ -56,7 +56,7 @@ Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::ScaTraEleParameterElchDiffCon
 /*---------------------------------------------------------------------*
  | set parameters                                           fang 02/15 |
  *---------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterElchDiffCond::set_parameters(
+void Discret::Elements::ScaTraEleParameterElchDiffCond::set_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

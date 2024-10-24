@@ -24,7 +24,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 3 dimensional solid element with modifications for porous media (p1,
@@ -126,7 +126,7 @@ namespace Discret
       So3PoroP1Scatra& operator=(const So3PoroP1Scatra& old);
 
     };  // class So3_Poro_P1_Scatra
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

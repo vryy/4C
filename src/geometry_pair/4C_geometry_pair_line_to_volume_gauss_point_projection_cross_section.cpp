@@ -86,7 +86,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<Scal
   LineSegment<ScalarType> projection_point_segment;
 
   // Get the radius from the beam element.
-  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1()))
+  const double radius = (dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1()))
                             ->get_circular_cross_section_radius_for_interactions();
 
   // Loop over Gauss points and check if they project to this volume.

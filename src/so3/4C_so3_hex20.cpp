@@ -26,42 +26,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::SoHex20Type Discret::ELEMENTS::SoHex20Type::instance_;
+Discret::Elements::SoHex20Type Discret::Elements::SoHex20Type::instance_;
 
-Discret::ELEMENTS::SoHex20Type& Discret::ELEMENTS::SoHex20Type::instance() { return instance_; }
+Discret::Elements::SoHex20Type& Discret::Elements::SoHex20Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex20Type::create(
+Core::Communication::ParObject* Discret::Elements::SoHex20Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoHex20(-1, -1);
+  auto* object = new Discret::Elements::SoHex20(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex20Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoHex20>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoHex20>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex20Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoHex20>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoHex20>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::SoHex20Type::nodal_block_information(
+void Discret::Elements::SoHex20Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -69,13 +69,13 @@ void Discret::ELEMENTS::SoHex20Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex20Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SoHex20Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::SoHex20Type::setup_element_definition(
+void Discret::Elements::SoHex20Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -100,7 +100,7 @@ void Discret::ELEMENTS::SoHex20Type::setup_element_definition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
+Discret::Elements::SoHex20::SoHex20(int id, int owner)
     : SoBase(id, owner), pstype_(Inpar::Solid::PreStress::none), pstime_(0.0), time_(0.0)
 {
   invJ_.resize(NUMGPT_SOH20, Core::LinAlg::Matrix<NUMDIM_SOH20, NUMDIM_SOH20>(true));
@@ -113,11 +113,11 @@ Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
 
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
+    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
 
   return;
 }
@@ -126,7 +126,7 @@ Discret::ELEMENTS::SoHex20::SoHex20(int id, int owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex20::SoHex20(const Discret::ELEMENTS::SoHex20& old)
+Discret::Elements::SoHex20::SoHex20(const Discret::Elements::SoHex20& old)
     : SoBase(old), detJ_(old.detJ_), pstype_(old.pstype_), pstime_(old.pstime_), time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
@@ -138,7 +138,7 @@ Discret::ELEMENTS::SoHex20::SoHex20(const Discret::ELEMENTS::SoHex20& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(*(old.prestress_));
+    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
 
   return;
 }
@@ -146,21 +146,21 @@ Discret::ELEMENTS::SoHex20::SoHex20(const Discret::ELEMENTS::SoHex20& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex20::clone() const
+Core::Elements::Element* Discret::Elements::SoHex20::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoHex20(*this);
+  auto* newelement = new Discret::Elements::SoHex20(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoHex20::shape() const { return Core::FE::CellType::hex20; }
+Core::FE::CellType Discret::Elements::SoHex20::shape() const { return Core::FE::CellType::hex20; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex20::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoHex20::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -193,7 +193,7 @@ void Discret::ELEMENTS::SoHex20::pack(Core::Communication::PackBuffer& data) con
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex20::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoHex20::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -220,7 +220,7 @@ void Discret::ELEMENTS::SoHex20::unpack(Core::Communication::UnpackBuffer& buffe
     std::vector<char> tmpprestress(0);
     extract_from_pack(buffer, tmpprestress);
     if (prestress_ == Teuchos::null)
-      prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
+      prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH20, NUMGPT_SOH20);
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }
@@ -234,7 +234,7 @@ void Discret::ELEMENTS::SoHex20::unpack(Core::Communication::UnpackBuffer& buffe
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex20::print(std::ostream& os) const
+void Discret::Elements::SoHex20::print(std::ostream& os) const
 {
   os << "So_hex20 ";
   Element::print(os);
@@ -246,7 +246,7 @@ void Discret::ELEMENTS::SoHex20::print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex20::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex20::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -255,7 +255,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex20::s
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex20::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex20::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -264,7 +264,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex20::l
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex20::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::SoHex20::vis_names(std::map<std::string, int>& names)
 {
   solid_material()->vis_names(names);
   return;
@@ -273,7 +273,7 @@ void Discret::ELEMENTS::SoHex20::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                                  |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex20::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::SoHex20::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;

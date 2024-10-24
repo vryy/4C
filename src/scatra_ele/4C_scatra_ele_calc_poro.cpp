@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcPoro<distype>*
-Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::instance(
+Discret::Elements::ScaTraEleCalcPoro<distype>*
+Discret::Elements::ScaTraEleCalcPoro<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -45,9 +45,9 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::instance(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
+Discret::Elements::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+    : Discret::Elements::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
       xyze0_(true),
       eporosity_(true),
       isnodalporosity_(false)
@@ -62,7 +62,7 @@ Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
  | evaluate action                                          vuong 07/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Elements::Element* ele,
+int Discret::Elements::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const ScaTra::Action& action, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -105,7 +105,7 @@ int Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::evaluate_action(Core::Element
  | read element coordinates                                 vuong 10/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::read_element_coordinates(
     const Core::Elements::Element* ele)
 {
   // call base class
@@ -121,7 +121,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::read_element_coordinates(
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -136,7 +136,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
  | extract element based or nodal values                     ehrl 12/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_poro(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::extract_element_and_node_values_poro(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -198,7 +198,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::extract_element_and_node_val
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::get_material_params(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::get_material_params(
     const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
@@ -238,7 +238,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::get_material_params(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::mat_scatra(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::mat_scatra(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -281,7 +281,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::mat_scatra(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::set_diffusivity(
+inline void Discret::Elements::ScaTraEleCalcPoro<distype>::set_diffusivity(
     const Teuchos::RCP<const Mat::ScatraMat>& material, const int k, const double scale)
 {
   my::diffmanager_->set_isotropic_diff(material->diffusivity() * scale, k);
@@ -293,7 +293,7 @@ inline void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::set_diffusivity(
  |                                                           vuong 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::set_densities(
+inline void Discret::Elements::ScaTraEleCalcPoro<distype>::set_densities(
     double porosity, double& densn, double& densnp, double& densam)
 {
   // all densities are set to the porosity
@@ -308,7 +308,7 @@ inline void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::set_densities(
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::compute_porosity(
     const Core::Elements::Element* ele  //!< the element we are dealing with
 )
 {
@@ -378,7 +378,7 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_porosity(
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_pore_pressure()
+double Discret::Elements::ScaTraEleCalcPoro<distype>::compute_pore_pressure()
 {
   return my::eprenp_.dot(my::funct_);
 }
@@ -388,7 +388,7 @@ double Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::compute_pore_pressure()
 | (overwrites method in ScaTraEleCalc)                                 |
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(
+void Discret::Elements::ScaTraEleCalcPoro<distype>::calculate_scalars(
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& scalars, bool inverting,
     bool calc_grad_phi)
 {
@@ -444,25 +444,25 @@ void Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::calculate_scalars(
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::quad9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::nurbs9>;
-// template class Discret::ELEMENTS::ScaTraEleCalcPoro<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::nurbs9>;
+// template class Discret::Elements::ScaTraEleCalcPoro<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

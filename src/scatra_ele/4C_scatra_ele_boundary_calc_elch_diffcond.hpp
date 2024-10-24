@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleDiffManagerElchDiffCond;
@@ -27,9 +27,9 @@ namespace Discret
     class ScaTraEleBoundaryCalcElchDiffCond
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelch = Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
-      using myelectrode = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
+      using my = Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
 
      protected:
       using my::nen_;
@@ -85,7 +85,7 @@ namespace Discret
       //! diffusion manager
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> dmedc_;
     };  // class ScaTraEleBoundaryCalcElchDiffCond
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

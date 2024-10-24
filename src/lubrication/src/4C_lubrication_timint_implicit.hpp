@@ -61,7 +61,7 @@ namespace FLD
   class Vreman;
 }  // namespace FLD
 
-namespace LUBRICATION
+namespace Lubrication
 {
   /*!
    * \brief implicit time integration for lubrication problems
@@ -499,7 +499,7 @@ namespace LUBRICATION
 
 
   };  // class TimIntImpl
-}  // namespace LUBRICATION
+}  // namespace Lubrication
 
 
 FOUR_C_NAMESPACE_CLOSE

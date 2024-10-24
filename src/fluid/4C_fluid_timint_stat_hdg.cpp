@@ -47,7 +47,7 @@ void FLD::TimIntStationaryHDG::init()
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->num_my_row_elements() > 0
-                        ? dynamic_cast<Discret::ELEMENTS::FluidHDG*>(hdgdis->l_row_element(0))
+                        ? dynamic_cast<Discret::Elements::FluidHDG*>(hdgdis->l_row_element(0))
                               ->num_dof_per_element_auxiliary()
                         : 0;
 

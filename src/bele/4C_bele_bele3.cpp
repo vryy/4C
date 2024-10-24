@@ -20,22 +20,22 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::Bele3Type Discret::ELEMENTS::Bele3Type::instance_;
+Discret::Elements::Bele3Type Discret::Elements::Bele3Type::instance_;
 
 
-Discret::ELEMENTS::Bele3Type& Discret::ELEMENTS::Bele3Type::instance() { return instance_; }
+Discret::Elements::Bele3Type& Discret::Elements::Bele3Type::instance() { return instance_; }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::Bele3Type::create(
+Core::Communication::ParObject* Discret::Elements::Bele3Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Bele3* object = new Discret::ELEMENTS::Bele3(-1, -1);
+  Discret::Elements::Bele3* object = new Discret::Elements::Bele3(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   // Search for "BELE3". If found, search for "_"
@@ -50,8 +50,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
 
       int numdof = -1;
       is >> numdof;
-      Teuchos::RCP<Discret::ELEMENTS::Bele3> ele =
-          Teuchos::make_rcp<Discret::ELEMENTS::Bele3>(id, owner);
+      Teuchos::RCP<Discret::Elements::Bele3> ele =
+          Teuchos::make_rcp<Discret::Elements::Bele3>(id, owner);
       ele->set_num_dof_per_node(numdof);
       return ele;
     }
@@ -65,16 +65,16 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Bele3>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Bele3>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::Bele3Type::nodal_block_information(
+void Discret::Elements::Bele3Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -82,13 +82,13 @@ void Discret::ELEMENTS::Bele3Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Bele3Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Bele3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::Bele3Type::setup_element_definition(
+void Discret::Elements::Bele3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs3 = definitions["BELE3_3"];
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::Bele3Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3LineType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Bele3LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Bele3Line( id, owner ) );
@@ -157,7 +157,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Bele3LineType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Bele3::Bele3(int id, int owner)
+Discret::Elements::Bele3::Bele3(int id, int owner)
     : Core::Elements::Element(id, owner), numdofpernode_(-1)
 {
   return;
@@ -165,7 +165,7 @@ Discret::ELEMENTS::Bele3::Bele3(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Bele3::Bele3(const Discret::ELEMENTS::Bele3& old)
+Discret::Elements::Bele3::Bele3(const Discret::Elements::Bele3& old)
     : Core::Elements::Element(old), numdofpernode_(old.numdofpernode_)
 {
   return;
@@ -173,15 +173,15 @@ Discret::ELEMENTS::Bele3::Bele3(const Discret::ELEMENTS::Bele3& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Bele3::clone() const
+Core::Elements::Element* Discret::Elements::Bele3::clone() const
 {
-  Discret::ELEMENTS::Bele3* newelement = new Discret::ELEMENTS::Bele3(*this);
+  Discret::Elements::Bele3* newelement = new Discret::Elements::Bele3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Bele3::shape() const
+Core::FE::CellType Discret::Elements::Bele3::shape() const
 {
   switch (num_node())
   {
@@ -203,7 +203,7 @@ Core::FE::CellType Discret::ELEMENTS::Bele3::shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Bele3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::Bele3::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Bele3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -240,7 +240,7 @@ void Discret::ELEMENTS::Bele3::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3::print(std::ostream& os) const
+void Discret::Elements::Bele3::print(std::ostream& os) const
 {
   os << "Bele3_" << numdofpernode_ << " " << Core::FE::cell_type_to_string(shape());
   Element::print(os);
@@ -250,7 +250,7 @@ void Discret::ELEMENTS::Bele3::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Bele3::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Bele3::lines()
 {
   return Core::Communication::element_boundary_factory<Bele3Line, Bele3>(
       Core::Communication::buildLines, *this);
@@ -260,13 +260,13 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Bele3::lin
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Bele3::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Bele3::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
 
-Core::FE::GaussRule2D Discret::ELEMENTS::Bele3::get_optimal_gaussrule() const
+Core::FE::GaussRule2D Discret::Elements::Bele3::get_optimal_gaussrule() const
 {
   Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::undefined;
   switch (shape())
@@ -293,7 +293,7 @@ Core::FE::GaussRule2D Discret::ELEMENTS::Bele3::get_optimal_gaussrule() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Bele3::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Bele3::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // check if material is defined

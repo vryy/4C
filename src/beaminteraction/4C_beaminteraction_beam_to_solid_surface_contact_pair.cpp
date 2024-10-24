@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
   if (n_segments == 0) return;
 
   // Get beam cross-section diameter.
-  auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
+  auto beam_ptr = dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1());
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
@@ -184,7 +184,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
   if (n_segments == 0) return;
 
   // Get beam cross-section diameter.
-  auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
+  auto beam_ptr = dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1());
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 

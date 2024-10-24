@@ -323,12 +323,12 @@ Airway::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(
     {
       int GID = discret_->element_col_map()->GID(j);  // global element ID
       const Core::Elements::ElementType& ele_type = discret_->g_element(GID)->element_type();
-      if (ele_type == Discret::ELEMENTS::RedAirwayType::instance())
+      if (ele_type == Discret::Elements::RedAirwayType::instance())
       {
         // dynamic cast to airway element, since Elements base class does not have the functions
         // getParams and setParams
-        Discret::ELEMENTS::RedAirway* ele =
-            dynamic_cast<Discret::ELEMENTS::RedAirway*>(discret_->g_element(GID));
+        Discret::Elements::RedAirway* ele =
+            dynamic_cast<Discret::Elements::RedAirway*>(discret_->g_element(GID));
         const auto airway_params = ele->get_airway_params();
         // check if airway is collapsible
         const double airwayColl = airway_params.airway_coll;
@@ -442,11 +442,11 @@ void Airway::RedAirwayImplicitTimeInt::compute_vol0_for_pre_stress()
         // adjust acinus volume 0 in the elements parameters
         // additional check whether element is RedAcinusType
         const Core::Elements::ElementType& ele_type = discret_->g_element(GID)->element_type();
-        if (ele_type == Discret::ELEMENTS::RedAcinusType::instance())
+        if (ele_type == Discret::Elements::RedAcinusType::instance())
         {
           // dynamic cast to aciunus element, since Elements base class does not have the functions
           // getParams and setParams
-          auto* acini_ele = dynamic_cast<Discret::ELEMENTS::RedAcinus*>(discret_->g_element(GID));
+          auto* acini_ele = dynamic_cast<Discret::Elements::RedAcinus*>(discret_->g_element(GID));
           const auto acinus_params = acini_ele->get_acinus_params();
           // get original value for aciuns volume (entered in dat file)
           double val = acinus_params.volume_init;
@@ -487,8 +487,8 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
     int GID1 = search_discret.element_col_map()->GID(j);
 
     // check if element is airway element
-    Discret::ELEMENTS::RedAirway* ele_aw =
-        dynamic_cast<Discret::ELEMENTS::RedAirway*>(search_discret.g_element(GID1));
+    Discret::Elements::RedAirway* ele_aw =
+        dynamic_cast<Discret::Elements::RedAirway*>(search_discret.g_element(GID1));
 
     // check if element j is an airway
     if (ele_aw != nullptr)
@@ -518,8 +518,8 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
         // global acinus element ID
         int GID2 = search_discret.element_col_map()->GID(i);
 
-        Discret::ELEMENTS::RedAcinus* ele_ac =
-            dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret.g_element(GID2));
+        Discret::Elements::RedAcinus* ele_ac =
+            dynamic_cast<Discret::Elements::RedAcinus*>(search_discret.g_element(GID2));
 
         // Check if element is an acinus
         if (ele_ac != nullptr)
@@ -549,8 +549,8 @@ void Airway::RedAirwayImplicitTimeInt::compute_nearest_acinus(
       int GID3 = search_discret.element_col_map()->GID(min_index);
 
       // why cast
-      Discret::ELEMENTS::RedAcinus* ele_acinus =
-          dynamic_cast<Discret::ELEMENTS::RedAcinus*>(search_discret.g_element(GID3));
+      Discret::Elements::RedAcinus* ele_acinus =
+          dynamic_cast<Discret::Elements::RedAcinus*>(search_discret.g_element(GID3));
 
       // extend ele and node col map
       if (elecolset != nullptr and nodecolset != nullptr)

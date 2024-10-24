@@ -12,52 +12,52 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::ConstraintElement2Type Discret::ELEMENTS::ConstraintElement2Type::instance_;
+Discret::Elements::ConstraintElement2Type Discret::Elements::ConstraintElement2Type::instance_;
 
 
-Discret::ELEMENTS::ConstraintElement2Type& Discret::ELEMENTS::ConstraintElement2Type::instance()
+Discret::Elements::ConstraintElement2Type& Discret::Elements::ConstraintElement2Type::instance()
 {
   return instance_;
 }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::ConstraintElement2Type::create(
+Core::Communication::ParObject* Discret::Elements::ConstraintElement2Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::ConstraintElement2* object = new Discret::ELEMENTS::ConstraintElement2(-1, -1);
+  Discret::Elements::ConstraintElement2* object = new Discret::Elements::ConstraintElement2(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement2Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::ConstraintElement2Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "CONSTRELE2")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::ConstraintElement2>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::ConstraintElement2>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ConstraintElement2Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::ConstraintElement2Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::ConstraintElement2>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::ConstraintElement2>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::ConstraintElement2Type::nodal_block_information(
+void Discret::Elements::ConstraintElement2Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ConstraintElement2Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::ConstraintElement2Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -68,7 +68,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::ConstraintElement2Type::compu
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ConstraintElement2::ConstraintElement2(int id, int owner)
+Discret::Elements::ConstraintElement2::ConstraintElement2(int id, int owner)
     : Core::Elements::Element(id, owner)
 {
   return;
@@ -76,8 +76,8 @@ Discret::ELEMENTS::ConstraintElement2::ConstraintElement2(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ConstraintElement2::ConstraintElement2(
-    const Discret::ELEMENTS::ConstraintElement2& old)
+Discret::Elements::ConstraintElement2::ConstraintElement2(
+    const Discret::Elements::ConstraintElement2& old)
     : Core::Elements::Element(old)
 {
   return;
@@ -85,16 +85,16 @@ Discret::ELEMENTS::ConstraintElement2::ConstraintElement2(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::ConstraintElement2::clone() const
+Core::Elements::Element* Discret::Elements::ConstraintElement2::clone() const
 {
-  Discret::ELEMENTS::ConstraintElement2* newelement =
-      new Discret::ELEMENTS::ConstraintElement2(*this);
+  Discret::Elements::ConstraintElement2* newelement =
+      new Discret::Elements::ConstraintElement2(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ConstraintElement2::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::ConstraintElement2::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -110,7 +110,7 @@ void Discret::ELEMENTS::ConstraintElement2::pack(Core::Communication::PackBuffer
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ConstraintElement2::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::ConstraintElement2::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 

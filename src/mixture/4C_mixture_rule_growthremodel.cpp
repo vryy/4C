@@ -30,7 +30,7 @@ namespace Core::Communication
   class PackBuffer;
 }
 
-MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
+Mixture::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
       growth_strategy_matid_(matdata.parameters.get<int>("GROWTH_STRATEGY")),
@@ -39,14 +39,14 @@ MIXTURE::PAR::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
 {
 }
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::GrowthRemodelMixtureRule::create_rule()
+std::unique_ptr<Mixture::MixtureRule> Mixture::PAR::GrowthRemodelMixtureRule::create_rule()
 {
-  return std::unique_ptr<MIXTURE::GrowthRemodelMixtureRule>(
-      new MIXTURE::GrowthRemodelMixtureRule(this));
+  return std::unique_ptr<Mixture::GrowthRemodelMixtureRule>(
+      new Mixture::GrowthRemodelMixtureRule(this));
 }
 
-MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
-    MIXTURE::PAR::GrowthRemodelMixtureRule* params)
+Mixture::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
+    Mixture::PAR::GrowthRemodelMixtureRule* params)
     : MixtureRule(params), params_(params)
 {
   if (params->growth_strategy_matid_ <= 0)
@@ -55,11 +55,11 @@ MIXTURE::GrowthRemodelMixtureRule::GrowthRemodelMixtureRule(
         "You have not specified a growth strategy material id. Reference to the material with the "
         "growth strategy.");
   }
-  growth_strategy_ = MIXTURE::PAR::MixtureGrowthStrategy::factory(params->growth_strategy_matid_)
+  growth_strategy_ = Mixture::PAR::MixtureGrowthStrategy::factory(params->growth_strategy_matid_)
                          ->create_growth_strategy();
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::pack_mixture_rule(
+void Mixture::GrowthRemodelMixtureRule::pack_mixture_rule(
     Core::Communication::PackBuffer& data) const
 {
   MixtureRule::pack_mixture_rule(data);
@@ -67,7 +67,7 @@ void MIXTURE::GrowthRemodelMixtureRule::pack_mixture_rule(
   growth_strategy_->pack_mixture_growth_strategy(data);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::unpack_mixture_rule(
+void Mixture::GrowthRemodelMixtureRule::unpack_mixture_rule(
     Core::Communication::UnpackBuffer& buffer)
 {
   MixtureRule::unpack_mixture_rule(buffer);
@@ -75,17 +75,17 @@ void MIXTURE::GrowthRemodelMixtureRule::unpack_mixture_rule(
   growth_strategy_->unpack_mixture_growth_strategy(buffer);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
+void Mixture::GrowthRemodelMixtureRule::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
 {
   growth_strategy_->register_anisotropy_extensions(anisotropy);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
+void Mixture::GrowthRemodelMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   MixtureRule::setup(params, 0);
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::update(Core::LinAlg::Matrix<3, 3> const& F,
+void Mixture::GrowthRemodelMixtureRule::update(Core::LinAlg::Matrix<3, 3> const& F,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   // Update base mixture rule, which also updates the constituents.
@@ -113,7 +113,7 @@ void MIXTURE::GrowthRemodelMixtureRule::update(Core::LinAlg::Matrix<3, 3> const&
   }
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -189,7 +189,7 @@ void MIXTURE::GrowthRemodelMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3
   cmat.update(1.0, ccmat, 1.0);
 }
 
-double MIXTURE::GrowthRemodelMixtureRule::compute_current_reference_growth_scalar(int gp) const
+double Mixture::GrowthRemodelMixtureRule::compute_current_reference_growth_scalar(int gp) const
 {
   double current_reference_growth_scalar = 0.0;
   for (std::size_t i = 0; i < constituents().size(); ++i)
@@ -201,7 +201,7 @@ double MIXTURE::GrowthRemodelMixtureRule::compute_current_reference_growth_scala
   return current_reference_growth_scalar;
 }
 
-double MIXTURE::GrowthRemodelMixtureRule::get_constituent_initial_reference_mass_density(
+double Mixture::GrowthRemodelMixtureRule::get_constituent_initial_reference_mass_density(
     const MixtureConstituent& constituent) const
 {
   for (std::size_t i = 0; i < constituents().size(); ++i)
@@ -216,13 +216,13 @@ double MIXTURE::GrowthRemodelMixtureRule::get_constituent_initial_reference_mass
   return 0.0;
 }
 
-void MIXTURE::GrowthRemodelMixtureRule::register_output_data_names(
+void Mixture::GrowthRemodelMixtureRule::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   names_and_size[OUTPUT_CURRENT_REFERENCE_DENSITY] = 1;
 }
 
-bool MIXTURE::GrowthRemodelMixtureRule::evaluate_output_data(
+bool Mixture::GrowthRemodelMixtureRule::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == OUTPUT_CURRENT_REFERENCE_DENSITY)

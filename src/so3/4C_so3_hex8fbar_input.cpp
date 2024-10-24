@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex8fbar::read_element(const std::string& eletype,
+bool Discret::Elements::SoHex8fbar::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model

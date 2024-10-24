@@ -16,8 +16,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Wall1PoroScatra<distype>::Wall1PoroScatra(int id, int owner)
-    : Discret::ELEMENTS::Wall1Poro<distype>(id, owner), impltype_(Inpar::ScaTra::impltype_undefined)
+Discret::Elements::Wall1PoroScatra<distype>::Wall1PoroScatra(int id, int owner)
+    : Discret::Elements::Wall1Poro<distype>(id, owner), impltype_(Inpar::ScaTra::impltype_undefined)
 {
   return;
 }
@@ -26,9 +26,9 @@ Discret::ELEMENTS::Wall1PoroScatra<distype>::Wall1PoroScatra(int id, int owner)
  |  copy-ctor (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Wall1PoroScatra<distype>::Wall1PoroScatra(
-    const Discret::ELEMENTS::Wall1PoroScatra<distype>& old)
-    : Discret::ELEMENTS::Wall1Poro<distype>(old), impltype_(old.impltype_)
+Discret::Elements::Wall1PoroScatra<distype>::Wall1PoroScatra(
+    const Discret::Elements::Wall1PoroScatra<distype>& old)
+    : Discret::Elements::Wall1Poro<distype>(old), impltype_(old.impltype_)
 {
   return;
 }
@@ -38,10 +38,10 @@ Discret::ELEMENTS::Wall1PoroScatra<distype>::Wall1PoroScatra(
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Wall1PoroScatra<distype>::clone() const
+Core::Elements::Element* Discret::Elements::Wall1PoroScatra<distype>::clone() const
 {
-  Discret::ELEMENTS::Wall1PoroScatra<distype>* newelement =
-      new Discret::ELEMENTS::Wall1PoroScatra<distype>(*this);
+  Discret::Elements::Wall1PoroScatra<distype>* newelement =
+      new Discret::Elements::Wall1PoroScatra<distype>(*this);
   return newelement;
 }
 
@@ -49,7 +49,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1PoroScatra<distype>::clone() co
  |  Pack data (public)                                    schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroScatra<distype>::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Wall1PoroScatra<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -69,7 +69,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::pack(Core::Communication::Pack
  |  Unpack data (public)                                  schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroScatra<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Wall1PoroScatra<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::unpack(Core::Communication::Un
  |  print this element (public)                           schmidt 09/17 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1PoroScatra<distype>::print(std::ostream& os) const
+void Discret::Elements::Wall1PoroScatra<distype>::print(std::ostream& os) const
 {
   os << "Wall1_Poro_Scatra ";
   Core::Elements::Element::print(os);
@@ -103,7 +103,7 @@ void Discret::ELEMENTS::Wall1PoroScatra<distype>::print(std::ostream& os) const
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1PoroScatra<distype>::read_element(const std::string& eletype,
+bool Discret::Elements::Wall1PoroScatra<distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -146,10 +146,10 @@ bool Discret::ELEMENTS::Wall1PoroScatra<distype>::read_element(const std::string
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>;
-template class Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::Wall1PoroScatra<Core::FE::CellType::tri3>;
+template class Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad4>;
+template class Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad9>;
+template class Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs4>;
+template class Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

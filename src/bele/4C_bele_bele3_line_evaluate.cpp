@@ -23,13 +23,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Bele3Line::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Bele3Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
+  Discret::Elements::Bele3Line::ActionType act = Bele3Line::none;
   std::string action = params.get<std::string>("action", "none");
   if (action == "none")
     FOUR_C_THROW("No action supplied");
@@ -70,14 +70,14 @@ int Discret::ELEMENTS::Bele3Line::evaluate(Teuchos::ParameterList& params,
 
   return 0;
 
-}  // Discret::ELEMENTS::Bele3Line::Evaluate
+}  // Discret::Elements::Bele3Line::Evaluate
 
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Bele3Line::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -181,7 +181,7 @@ int Discret::ELEMENTS::Bele3Line::evaluate_neumann(Teuchos::ParameterList& param
   return 0;
 }
 
-Core::FE::GaussRule1D Discret::ELEMENTS::Bele3Line::get_optimal_gaussrule(
+Core::FE::GaussRule1D Discret::Elements::Bele3Line::get_optimal_gaussrule(
     const Core::FE::CellType& distype)
 {
   Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
@@ -201,7 +201,7 @@ Core::FE::GaussRule1D Discret::ELEMENTS::Bele3Line::get_optimal_gaussrule(
 }
 
 
-double Discret::ELEMENTS::Bele3Line::f2_substitution(const Core::LinAlg::SerialDenseMatrix xye,
+double Discret::Elements::Bele3Line::f2_substitution(const Core::LinAlg::SerialDenseMatrix xye,
     const Core::LinAlg::SerialDenseMatrix deriv, const int iel)
 {
   // compute derivative of parametrization
@@ -215,7 +215,7 @@ double Discret::ELEMENTS::Bele3Line::f2_substitution(const Core::LinAlg::SerialD
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterList& params,
+void Discret::Elements::Bele3Line::integrate_shape_function(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
@@ -293,6 +293,6 @@ void Discret::ELEMENTS::Bele3Line::integrate_shape_function(Teuchos::ParameterLi
   }  // end of loop over integrationen points
 
   return;
-}  // Discret::ELEMENTS::Bele3Line::integrate_shape_function
+}  // Discret::Elements::Bele3Line::integrate_shape_function
 
 FOUR_C_NAMESPACE_CLOSE

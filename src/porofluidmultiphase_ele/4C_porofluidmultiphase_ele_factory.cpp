@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-Discret::ELEMENTS::PoroFluidMultiPhaseFactory::provide_impl(
+Discret::Elements::PoroFluidMultiPhaseEleInterface*
+Discret::Elements::PoroFluidMultiPhaseFactory::provide_impl(
     Core::FE::CellType distype, const int numdofpernode, const std::string& disname)
 {
   // -------------------------------------- number of degrees of freedom
@@ -127,11 +127,11 @@ Discret::ELEMENTS::PoroFluidMultiPhaseFactory::provide_impl(
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-Discret::ELEMENTS::PoroFluidMultiPhaseFactory::define_problem_type(
+Discret::Elements::PoroFluidMultiPhaseEleInterface*
+Discret::Elements::PoroFluidMultiPhaseFactory::define_problem_type(
     const int numdofpernode, const std::string& disname)
 {
-  return Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::instance(numdofpernode, disname);
+  return Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::instance(numdofpernode, disname);
 }
 
 FOUR_C_NAMESPACE_CLOSE

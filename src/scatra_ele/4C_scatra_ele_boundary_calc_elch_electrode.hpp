@@ -21,7 +21,7 @@ namespace Mat
 }
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleBoundaryCalcElchElectrodeUtils;
   }
@@ -29,15 +29,15 @@ namespace Discret
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchElectrode : public ScaTraEleBoundaryCalcElch<distype, probdim>
     {
-      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelch = Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
-      using myelectrodeutils = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
+      using my = Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrodeutils = Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeUtils;
 
      protected:
       using my::nen_;
@@ -97,7 +97,7 @@ namespace Discret
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
           const Core::LinAlg::Matrix<nen_, 1>& test_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& test_master,
-          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, double detF, double frt, int num_dof_per_node,
           Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
           Core::LinAlg::SerialDenseMatrix& k_ms, Core::LinAlg::SerialDenseMatrix& k_mm,
@@ -145,7 +145,7 @@ namespace Discret
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
           const Core::LinAlg::Matrix<nen_, 1>& test_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& test_master,
-          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timederivfac, double timefacfac, double timefacrhsfac, int num_dof_per_node,
           Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_ms,
           Core::LinAlg::SerialDenseVector& r_s, Core::LinAlg::SerialDenseVector& r_m);
@@ -272,7 +272,7 @@ namespace Discret
       //! evaluate factor F/RT
       virtual double get_frt() const;
     };  // class ScaTraEleBoundaryCalcElchElectrode
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
     Teuchos::ParameterList& eleparams,                        ///< element parameter list
     Teuchos::RCP<Core::FE::Discretization> discret,           ///< discretization
-    Discret::ELEMENTS::FluidIntFace* faceele,                 ///< face element
+    Discret::Elements::FluidIntFace* faceele,                 ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
     Cut::CutWizard& wizard,                                   ///< cut wizard
@@ -93,8 +93,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 
 
   // get the parent fluid elements
-  Discret::ELEMENTS::Fluid* p_master = faceele->parent_master_element();
-  Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
+  Discret::Elements::Fluid* p_master = faceele->parent_master_element();
+  Discret::Elements::Fluid* p_slave = faceele->parent_slave_element();
 
   // get corresponding element handles if available
   Cut::ElementHandle* p_master_handle = wizard.get_element(p_master);
@@ -590,7 +590,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_ghost_penalty(
 void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
     Teuchos::ParameterList& eleparams,         ///< element parameter list
     const Inpar::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
-    Discret::ELEMENTS::FluidIntFace* intface,  ///< internal face element
+    Discret::Elements::FluidIntFace* intface,  ///< internal face element
     Teuchos::RCP<Core::Mat::Material>& material_m,  ///< material of the master side
     Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
     std::vector<int>& nds_master,                   ///< nodal dofset vector w.r.t. master element
@@ -613,7 +613,7 @@ void XFEM::XfemEdgeStab::assemble_edge_stab_ghost_penalty(
   eleparams.set<FLD::IntFaceAction>("action", FLD::EOS_and_GhostPenalty_stabilization);
 
   // call the egde-based assemble and evaluate routine
-  Discret::ELEMENTS::FluidIntFaceImplInterface::impl(intface)
+  Discret::Elements::FluidIntFaceImplInterface::impl(intface)
       ->assemble_internal_faces_using_neighbor_data(intface, material_m, nds_master, nds_slave,
           face_type, eleparams, xdiscret, systemmatrix, systemvector);
 
@@ -662,7 +662,7 @@ void XFEM::XfemEdgeStab::reset()
 void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
     Teuchos::ParameterList& eleparams,                       ///< element parameter list
     Teuchos::RCP<Core::FE::Discretization> discret,          ///< discretization
-    Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+    Discret::Elements::FluidIntFace* faceele,                ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
@@ -676,8 +676,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_std(
 
 
   // get the parent fluid elements
-  Discret::ELEMENTS::Fluid* p_master = faceele->parent_master_element();
-  Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
+  Discret::Elements::Fluid* p_master = faceele->parent_master_element();
+  Discret::Elements::Fluid* p_slave = faceele->parent_slave_element();
 
   size_t p_master_numnode = p_master->num_node();
   size_t p_slave_numnode = p_slave->num_node();
@@ -717,7 +717,7 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
     Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
     Core::FE::Discretization&
         boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-    Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+    Discret::Elements::FluidIntFace* faceele,                ///< face element
     Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
@@ -731,8 +731,8 @@ void XFEM::XfemEdgeStab::evaluate_edge_stab_boundary_gp(
 
 
   // get the parent fluid elements
-  Discret::ELEMENTS::Fluid* p_master = faceele->parent_master_element();
-  Discret::ELEMENTS::Fluid* p_slave = faceele->parent_slave_element();
+  Discret::Elements::Fluid* p_master = faceele->parent_master_element();
+  Discret::Elements::Fluid* p_slave = faceele->parent_slave_element();
 
   size_t p_master_numnode = p_master->num_node();
   size_t p_slave_numnode = p_slave->num_node();

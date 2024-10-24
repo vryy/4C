@@ -15,14 +15,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcImmersed<distype>*
-Discret::ELEMENTS::FluidEleCalcImmersed<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidEleCalcImmersed<distype>*
+Discret::Elements::FluidEleCalcImmersed<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcImmersed<distype>>(
-            new Discret::ELEMENTS::FluidEleCalcImmersed<distype>());
+        return std::unique_ptr<Discret::Elements::FluidEleCalcImmersed<distype>>(
+            new Discret::Elements::FluidEleCalcImmersed<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -31,17 +31,17 @@ Discret::ELEMENTS::FluidEleCalcImmersed<distype>::instance(Core::Utils::Singleto
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
-    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
+Discret::Elements::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
+    : Discret::Elements::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
 {
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
+  my::fldpara_ = Discret::Elements::FluidEleParameterStd::instance();
 }
 
 /*----------------------------------------------------------------------*
  * Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcImmersed<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -76,7 +76,7 @@ int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS
   const Core::FE::GaussIntegration intpoints_std(distype);
 
   // store current element
-  immersedele_ = dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
+  immersedele_ = dynamic_cast<Discret::Elements::FluidImmersedBase*>(ele);
 
   // use different integration rule for fluid elements that are cut by the structural boundary
   if (immersedele_->is_boundary_immersed())
@@ -92,7 +92,7 @@ int Discret::ELEMENTS::FluidEleCalcImmersed<distype>::evaluate(Discret::ELEMENTS
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocity(
+void Discret::Elements::FluidEleCalcImmersed<distype>::compute_subgrid_scale_velocity(
     const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
@@ -343,7 +343,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::compute_subgrid_scale_vel
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
+void Discret::Elements::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -412,7 +412,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::lin_gal_mom_res_u(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reaction_gal_part(
+void Discret::Elements::FluidEleCalcImmersed<distype>::inertia_convection_reaction_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, Core::LinAlg::Matrix<nsd_, 1>& resM_Du,
@@ -440,7 +440,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::inertia_convection_reacti
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
+void Discret::Elements::FluidEleCalcImmersed<distype>::continuity_gal_part(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
@@ -478,7 +478,7 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::continuity_gal_part(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::conservative_formulation(
+void Discret::Elements::FluidEleCalcImmersed<distype>::conservative_formulation(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
@@ -491,20 +491,20 @@ void Discret::ELEMENTS::FluidEleCalcImmersed<distype>::conservative_formulation(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // Ursula is responsible for this comment!
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::wedge15>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::nurbs9>;
-template class Discret::ELEMENTS::FluidEleCalcImmersed<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::hex8>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::hex20>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::hex27>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::tet4>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::tet10>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::wedge6>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::wedge15>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidEleCalcImmersed<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,7 +13,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SolidScatra::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -135,7 +135,7 @@ int Discret::ELEMENTS::SolidScatra::evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SolidScatra::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -151,18 +151,18 @@ int Discret::ELEMENTS::SolidScatra::evaluate_neumann(Teuchos::ParameterList& par
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::evaluate_neumann_by_element(
+  Discret::Elements::evaluate_neumann_by_element(
       *this, discretization, condition, lm, elevec1, time);
   return 0;
 }
 
-double Discret::ELEMENTS::SolidScatra::get_normal_cauchy_stress_at_xi(
+double Discret::Elements::SolidScatra::get_normal_cauchy_stress_at_xi(
     const std::vector<double>& disp, const std::optional<std::vector<double>>& scalars,
     const Core::LinAlg::Matrix<3, 1>& xi, const Core::LinAlg::Matrix<3, 1>& n,
     const Core::LinAlg::Matrix<3, 1>& dir,
-    Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
+    Discret::Elements::SolidScatraCauchyNDirLinearizations<3>& linearizations)
 {
-  return Discret::ELEMENTS::get_normal_cauchy_stress_at_xi(solid_scatra_calc_variant_, *this,
+  return Discret::Elements::get_normal_cauchy_stress_at_xi(solid_scatra_calc_variant_, *this,
       solid_material(), disp, scalars, xi, n, dir, linearizations);
 }
 

@@ -19,11 +19,11 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration ...
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ParamsInterface;
     enum EvalErrorFlag : int;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Solid
 namespace Mat
 {
@@ -31,7 +31,7 @@ namespace Mat
 }  // namespace Mat
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! A wrapper for structural elements
     class SoBase : public Core::Elements::Element
@@ -289,13 +289,13 @@ namespace Discret
        *
        *  \author vuong
        *  \date 11/16 */
-      Solid::ELEMENTS::ParamsInterface& str_params_interface();
+      Solid::Elements::ParamsInterface& str_params_interface();
 
       /** \brief error handling for structural elements
        *
        *  \author hiermeier \date 09/18 */
       void error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
-          Solid::ELEMENTS::EvalErrorFlag flag);
+          Solid::Elements::EvalErrorFlag flag);
 
      protected:
       /*!
@@ -330,7 +330,7 @@ namespace Discret
 
     };  // class So_base
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

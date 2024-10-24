@@ -287,8 +287,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     const double& timefacrhs_art, const double& timefacrhs_cont)
 {
   // dummy parameter list
-  Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* para =
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(disname);
+  Discret::Elements::PoroFluidMultiPhaseEleParameter* para =
+      Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(disname);
 
   double arterydens = 0.0;
 
@@ -459,7 +459,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   numvolfrac_ = multiphasemat->num_vol_frac();
 
   // create phase-manager
-  phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
+  phasemanager_ = Discret::Elements::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
       *para, numdim_, multiphasemat->material_type(),
       POROFLUIDMULTIPHASE::Action::get_access_from_artcoupling, multiphasemat->num_mat(),
       multiphasemat->num_fluid_phases());
@@ -468,7 +468,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   phasemanager_->setup(element2_, nds_porofluid_);
 
   // create variablemanager
-  variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<numdim_,
+  variablemanager_ = Discret::Elements::PoroFluidManager::VariableManagerInterface<numdim_,
       numnodescont_>::create_variable_manager(*para,
       POROFLUIDMULTIPHASE::Action::get_access_from_artcoupling, multiphasemat,
       multiphasemat->num_mat(), multiphasemat->num_fluid_phases());
@@ -1028,7 +1028,7 @@ double PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art,
 {
   // use one-point Gauss rule
   Core::FE::IntPointsAndWeights<numdim_> intpoints_stab(
-      Discret::ELEMENTS::DisTypeToStabGaussRule<distype_cont>::rule);
+      Discret::Elements::DisTypeToStabGaussRule<distype_cont>::rule);
 
   const double* gpcoord = intpoints_stab.ip().qxg[0];   // actual integration point (coords)
   const double gpweight = intpoints_stab.ip().qwgt[0];  // actual integration point (weight)

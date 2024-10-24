@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex27::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -51,7 +51,7 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
   Core::LinAlg::Matrix<NUMDOF_SOH27, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  Discret::ELEMENTS::SoHex27::ActionType act = SoHex27::none;
+  Discret::Elements::SoHex27::ActionType act = SoHex27::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -528,7 +528,7 @@ int Discret::ELEMENTS::SoHex27::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
   |  Integrate a Volume Neumann boundary condition (public)               |
   *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -637,13 +637,13 @@ int Discret::ELEMENTS::SoHex27::evaluate_neumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // Discret::ELEMENTS::So_hex27::evaluate_neumann
+}  // Discret::Elements::So_hex27::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::init_jacobian_mapping()
+void Discret::Elements::SoHex27::init_jacobian_mapping()
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
       soh27_derivs();
@@ -680,7 +680,7 @@ void Discret::ELEMENTS::SoHex27::init_jacobian_mapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                           popp 09/11 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                             // current displacements
     std::vector<double>& residual,                                         // current residual displ
     Core::LinAlg::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* stiffmatrix,  // element stiffness matrix
@@ -1010,13 +1010,13 @@ void Discret::ELEMENTS::SoHex27::soh27_linstiffmass(std::vector<int>& lm,  // lo
   /* =========================================================================*/
 
   return;
-}  // Discret::ELEMENTS::So_hex27::soh27_linstiffmass
+}  // Discret::Elements::So_hex27::soh27_linstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                             // current displacements
     std::vector<double>* vel,                                              // current velocities
     std::vector<double>* acc,                                              // current accelerations
@@ -1474,12 +1474,12 @@ void Discret::ELEMENTS::SoHex27::soh27_nlnstiffmass(std::vector<int>& lm,  // lo
   } /* ==================================================== end of Loop over GP */
 
   return;
-}  // Discret::ELEMENTS::So_hex27::soh27_nlnstiffmass
+}  // Discret::Elements::So_hex27::soh27_nlnstiffmass
 
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                                          |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::soh27_lumpmass(
+void Discret::Elements::SoHex27::soh27_lumpmass(
     Core::LinAlg::Matrix<NUMDOF_SOH27, NUMDOF_SOH27>* emass)
 {
   // lump mass matrix
@@ -1502,7 +1502,7 @@ void Discret::ELEMENTS::SoHex27::soh27_lumpmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-std::vector<Core::LinAlg::Matrix<NUMNOD_SOH27, 1>> Discret::ELEMENTS::SoHex27::soh27_shapefcts()
+std::vector<Core::LinAlg::Matrix<NUMNOD_SOH27, 1>> Discret::Elements::SoHex27::soh27_shapefcts()
 {
   std::vector<Core::LinAlg::Matrix<NUMNOD_SOH27, 1>> shapefcts(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
@@ -1525,7 +1525,7 @@ std::vector<Core::LinAlg::Matrix<NUMNOD_SOH27, 1>> Discret::ELEMENTS::SoHex27::s
  |  Evaluate Hex27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
 std::vector<Core::LinAlg::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>>
-Discret::ELEMENTS::SoHex27::soh27_derivs()
+Discret::Elements::SoHex27::soh27_derivs()
 {
   std::vector<Core::LinAlg::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
@@ -1546,7 +1546,7 @@ Discret::ELEMENTS::SoHex27::soh27_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Weights at all 27 Gauss Points                       |
  *----------------------------------------------------------------------*/
-std::vector<double> Discret::ELEMENTS::SoHex27::soh27_weights()
+std::vector<double> Discret::Elements::SoHex27::soh27_weights()
 {
   std::vector<double> weights(NUMGPT_SOH27);
   const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::hex_27point;
@@ -1561,7 +1561,7 @@ std::vector<double> Discret::ELEMENTS::SoHex27::soh27_weights()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex27                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::soh27_shapederiv(
+void Discret::Elements::SoHex27::soh27_shapederiv(
     Core::LinAlg::Matrix<NUMNOD_SOH27, NUMGPT_SOH27>** shapefct,  // pointer to pointer of shapefct
     Core::LinAlg::Matrix<NUMDOF_SOH27, NUMNOD_SOH27>** deriv,     // pointer to pointer of derivs
     Core::LinAlg::Matrix<NUMGPT_SOH27, 1>** weights)              // pointer to pointer of weights
@@ -1618,12 +1618,12 @@ void Discret::ELEMENTS::SoHex27::soh27_shapederiv(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex27Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex27*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoHex27*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex27* failed");
     actele->init_jacobian_mapping();
   }
@@ -1633,8 +1633,8 @@ int Discret::ELEMENTS::SoHex27Type::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::def_gradient(const std::vector<double>& disp,
-    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoHex27::def_gradient(const std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
       soh27_derivs();
@@ -1673,8 +1673,8 @@ void Discret::ELEMENTS::SoHex27::def_gradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected)          |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27::update_jacobian_mapping(
-    const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoHex27::update_jacobian_mapping(
+    const std::vector<double>& disp, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH27, NUMNOD_SOH27>> derivs =
       soh27_derivs();

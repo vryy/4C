@@ -467,8 +467,8 @@ void Immersed::ImmersedPartitionedFSIDirichletNeumann::build_immersed_dirich_map
   for (int i = 0; i < elecolmap->NumMyElements(); ++i)
   {
     // dynamic_cast necessary because virtual inheritance needs runtime information
-    Discret::ELEMENTS::FluidImmersedBase* immersedele =
-        dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(dis->g_element(elecolmap->GID(i)));
+    Discret::Elements::FluidImmersedBase* immersedele =
+        dynamic_cast<Discret::Elements::FluidImmersedBase*>(dis->g_element(elecolmap->GID(i)));
     if (immersedele->has_projected_dirichlet())
     {
       Core::Nodes::Node** nodes = immersedele->nodes();

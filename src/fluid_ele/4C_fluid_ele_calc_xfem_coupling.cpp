@@ -12,7 +12,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-using namespace Discret::ELEMENTS::XFLUID;
+using namespace Discret::Elements::XFLUID;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -174,7 +174,7 @@ template <Core::FE::CellType distype>
 Teuchos::RCP<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(
     Core::LinAlg::SerialDenseMatrix::Base& C_umum, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
-    const Discret::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
   typedef NitscheCoupling<distype, Core::FE::CellType::dis_none, 3> NitscheCouplType;
@@ -189,7 +189,7 @@ Teuchos::RCP<NitscheInterface<distype>>
 NitscheInterface<distype>::create_nitsche_coupling_x_fluid_wdbc(Core::Elements::Element* bele,
     Core::LinAlg::SerialDenseMatrix::Base& bele_xyz, Core::LinAlg::SerialDenseMatrix::Base& C_umum,
     Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
-    const Discret::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
 
@@ -287,7 +287,7 @@ NitscheInterface<distype>::create_nitsche_coupling_x_fluid_sided(Core::Elements:
     Core::LinAlg::SerialDenseMatrix::Base& C_usum, Core::LinAlg::SerialDenseMatrix::Base& C_umus,
     Core::LinAlg::SerialDenseMatrix::Base& C_usus, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
     Core::LinAlg::SerialDenseMatrix::Base& rhC_us,
-    const Discret::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
 
@@ -399,7 +399,7 @@ NitscheInterface<distype>::create_nitsche_coupling_two_sided(Core::Elements::Ele
     Core::LinAlg::SerialDenseMatrix::Base& C_usum, Core::LinAlg::SerialDenseMatrix::Base& C_umus,
     Core::LinAlg::SerialDenseMatrix::Base& C_usus, Core::LinAlg::SerialDenseMatrix::Base& rhC_um,
     Core::LinAlg::SerialDenseMatrix::Base& rhC_us,
-    const Discret::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    const Discret::Elements::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
 
@@ -663,34 +663,34 @@ HybridLMInterface<distype>::create_hybrid_lm_coupling_x_fluid_sided(
   return Teuchos::RCP(hlm);
 }
 
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge15>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::hex8>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::hex20>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::hex27>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::tet4>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::tet10>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge6>;
+template class Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::wedge15>;
 // template class
-// Discret::ELEMENTS::XFLUID::SlaveElementInterface<Core::FE::CellType::pyramid5>;
+// Discret::Elements::XFLUID::SlaveElementInterface<Core::FE::CellType::pyramid5>;
 
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::wedge15>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::hex8>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::hex20>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::hex27>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::tet4>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::tet10>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::wedge6>;
+template class Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::wedge15>;
 // template class
-// Discret::ELEMENTS::XFLUID::NitscheInterface<Core::FE::CellType::pyramid5>;
+// Discret::Elements::XFLUID::NitscheInterface<Core::FE::CellType::pyramid5>;
 
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::wedge15>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::hex8>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::hex20>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::hex27>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::tet4>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::tet10>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::wedge6>;
+template class Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::wedge15>;
 // template class
-// Discret::ELEMENTS::XFLUID::HybridLMInterface<Core::FE::CellType::pyramid5>;
+// Discret::Elements::XFLUID::HybridLMInterface<Core::FE::CellType::pyramid5>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Wall1::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Wall1::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // set discretization type
@@ -154,7 +154,7 @@ bool Discret::ELEMENTS::Wall1::read_element(const std::string& eletype, const st
 /*----------------------------------------------------------------------*
  |  Get gaussrule on dependance of gausspoints                     mgit |
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule2D Discret::ELEMENTS::Wall1::get_gaussrule(int* ngp)
+Core::FE::GaussRule2D Discret::Elements::Wall1::get_gaussrule(int* ngp)
 {
   Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::undefined;
 

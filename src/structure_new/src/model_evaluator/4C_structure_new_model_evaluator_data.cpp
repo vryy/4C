@@ -163,7 +163,7 @@ Solid::ModelEvaluator::Data::Data()
       isntmaps_filled_(false),
       ele_action_(Core::Elements::none),
       predict_type_(Inpar::Solid::pred_vague),
-      ele_eval_error_flag_(Solid::ELEMENTS::ele_error_none),
+      ele_eval_error_flag_(Solid::Elements::ele_error_none),
       is_tolerate_errors_(false),
       total_time_(-1.0),
       delta_time_(-1.0),
@@ -485,7 +485,7 @@ void Solid::ModelEvaluator::Data::reset_my_norms(const bool& isdefaultstep)
 bool Solid::ModelEvaluator::Data::is_ele_eval_error() const
 {
   check_init_setup();
-  return (ele_eval_error_flag_ != Solid::ELEMENTS::ele_error_none);
+  return (ele_eval_error_flag_ != Solid::Elements::ele_error_none);
 }
 
 /*----------------------------------------------------------------------------*

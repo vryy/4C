@@ -441,15 +441,15 @@ void Beam3ContactOctTree::initialize_octree_search()
 
         (*diameter_)[i] = -1.0;  // TODO get diameter from call of abstract Beam3Base::Radius();
 
-        if (eot == Discret::ELEMENTS::Beam3rType::instance() or
-            eot == Discret::ELEMENTS::Beam3ebType::instance())
+        if (eot == Discret::Elements::Beam3rType::instance() or
+            eot == Discret::Elements::Beam3ebType::instance())
         {
-          (*diameter_)[i] = 2.0 * (dynamic_cast<Discret::ELEMENTS::Beam3Base*>(element))
+          (*diameter_)[i] = 2.0 * (dynamic_cast<Discret::Elements::Beam3Base*>(element))
                                       ->get_circular_cross_section_radius_for_interactions();
         }
-        else if (eot == Discret::ELEMENTS::RigidsphereType::instance())
+        else if (eot == Discret::Elements::RigidsphereType::instance())
           (*diameter_)[i] =
-              2.0 * (dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(element))->radius();
+              2.0 * (dynamic_cast<Discret::Elements::Rigidsphere*>(element))->radius();
         // If we have a solid element, we don't need its diameter and can it set to zero:
         else if (!BEAMINTERACTION::Utils::is_beam_element(*element) and
                  !BEAMINTERACTION::Utils::is_rigid_sphere_element(*element))

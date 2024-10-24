@@ -16,8 +16,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-[[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>*
-MIXTURE::PAR::fiber_material_factory(int matid)
+[[nodiscard]] const Mixture::PAR::RemodelFiberMaterial<double>*
+Mixture::PAR::fiber_material_factory(int matid)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == Teuchos::null)
@@ -41,10 +41,10 @@ MIXTURE::PAR::fiber_material_factory(int matid)
   {
     case Core::Materials::mix_remodelfiber_material_exponential:
       return Mat::create_material_parameter_instance<
-          MIXTURE::PAR::RemodelFiberMaterialExponential<double>>(curmat);
+          Mixture::PAR::RemodelFiberMaterialExponential<double>>(curmat);
     case Core::Materials::mix_remodelfiber_material_exponential_active:
       return Mat::create_material_parameter_instance<
-          MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>>(curmat);
+          Mixture::PAR::RemodelFiberMaterialExponentialActive<double>>(curmat);
     default:
       FOUR_C_THROW(
           "The referenced material with id %d is not registered as a remodel fiber material!",

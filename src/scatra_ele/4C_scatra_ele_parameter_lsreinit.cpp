@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterLsReinit*
-Discret::ELEMENTS::ScaTraEleParameterLsReinit::instance(
+Discret::Elements::ScaTraEleParameterLsReinit*
+Discret::Elements::ScaTraEleParameterLsReinit::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -33,7 +33,7 @@ Discret::ELEMENTS::ScaTraEleParameterLsReinit::instance(
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
+Discret::Elements::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
     const std::string& disname  //!< name of discretization
     )
     : reinittype_(Inpar::ScaTra::reinitaction_none),
@@ -55,7 +55,7 @@ Discret::ELEMENTS::ScaTraEleParameterLsReinit::ScaTraEleParameterLsReinit(
 //----------------------------------------------------------------------*
 //  set parameters                                      rasthofer 12/13 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterLsReinit::set_parameters(
+void Discret::Elements::ScaTraEleParameterLsReinit::set_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

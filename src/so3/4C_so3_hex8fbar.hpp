@@ -21,7 +21,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
 
     class SoHex8fbarType : public Core::Elements::ElementType
@@ -209,10 +209,10 @@ namespace Discret
 
       // compute Jacobian mapping wrt to deformed configuration
       void update_jacobian_mapping(
-          const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress) override;
+          const std::vector<double>& disp, Discret::Elements::PreStress& prestress) override;
       // compute defgrd in all gp for given disp
       void def_gradient(const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix& gpdefgrd,
-          Discret::ELEMENTS::PreStress& prestress) override;
+          Discret::Elements::PreStress& prestress) override;
 
       //! Calculate nonlinear stiffness and mass matrix
       virtual void nlnstiffmass(std::vector<int>& lm,  ///< location matrix
@@ -250,7 +250,7 @@ namespace Discret
     //=======================================================================
     //=======================================================================
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

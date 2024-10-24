@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   /*!
@@ -38,10 +38,10 @@ namespace Discret::ELEMENTS
 
 
   void add_to_pack(Core::Communication::PackBuffer& data,
-      const Discret::ELEMENTS::SolidScatraElementProperties& properties);
+      const Discret::Elements::SolidScatraElementProperties& properties);
 
   void extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-      Discret::ELEMENTS::SolidScatraElementProperties& properties);
+      Discret::Elements::SolidScatraElementProperties& properties);
 
   namespace Internal
   {
@@ -81,8 +81,8 @@ namespace Discret::ELEMENTS
   using SolidScatraCalcVariant = CreateVariantType<Internal::SolidScatraEvaluators>;
 
   SolidScatraCalcVariant create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
-      const Discret::ELEMENTS::SolidElementProperties& element_properties);
-}  // namespace Discret::ELEMENTS
+      const Discret::Elements::SolidElementProperties& element_properties);
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -24,10 +24,10 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ParamsInterface;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Solid
 
 // forward declaration
@@ -43,7 +43,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     template <Core::FE::CellType distype2>
@@ -414,7 +414,7 @@ namespace Discret
        *
        *  \author vuong
        *  \date 11/16 */
-      Solid::ELEMENTS::ParamsInterface& str_params_interface();
+      Solid::Elements::ParamsInterface& str_params_interface();
 
      private:
       /** \brief interface ptr
@@ -595,7 +595,7 @@ namespace Discret
       \param lline: the local line number of this line w.r.t. the parent element
       */
       MembraneLine(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Membrane<distype2>* parent, const int lline);
+          Discret::Elements::Membrane<distype2>* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -700,13 +700,13 @@ namespace Discret
       /*!
        * \brief Return pointer to the parent element
        */
-      Discret::ELEMENTS::Membrane<distype2>* parent_element() const override
+      Discret::Elements::Membrane<distype2>* parent_element() const override
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Membrane<distype2>*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Membrane<distype2>*>(parent) != nullptr,
             "Parent element is no membrane element");
-        return static_cast<Discret::ELEMENTS::Membrane<distype2>*>(parent);
+        return static_cast<Discret::Elements::Membrane<distype2>*>(parent);
       }
 
       /*!
@@ -767,7 +767,7 @@ namespace Discret
 
     };  // class MembraneLine
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

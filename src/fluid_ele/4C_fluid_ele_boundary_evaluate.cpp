@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::FluidBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -43,7 +43,7 @@ int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
     case FLD::traction_velocity_component:
     case FLD::traction_Uv_integral_component:
     {
-      Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), "std")
+      Discret::Elements::FluidBoundaryFactory::provide_impl(shape(), "std")
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -54,45 +54,45 @@ int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
       // implemented there.
       // Todo: One could think about splitting this method in pure fluid and poro fluid part...
       // vuong 11/13
-      Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), "poro")
+      Discret::Elements::FluidBoundaryFactory::provide_impl(shape(), "poro")
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
     }
     case FLD::enforce_weak_dbc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->evaluate_weak_dbc(
+      Discret::Elements::FluidBoundaryParentInterface::impl(this)->evaluate_weak_dbc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::estimate_Nitsche_trace_maxeigenvalue_:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)
+      Discret::Elements::FluidBoundaryParentInterface::impl(this)
           ->estimate_nitsche_trace_max_eigenvalue(
               this, params, discretization, lm, elemat1, elemat2);
       break;
     }
     case FLD::mixed_hybrid_dbc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->mix_hyb_dirichlet(
+      Discret::Elements::FluidBoundaryParentInterface::impl(this)->mix_hyb_dirichlet(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::flow_dep_pressure_bc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->flow_dep_pressure_bc(
+      Discret::Elements::FluidBoundaryParentInterface::impl(this)->flow_dep_pressure_bc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::slip_supp_bc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->slip_supp_bc(
+      Discret::Elements::FluidBoundaryParentInterface::impl(this)->slip_supp_bc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
     case FLD::navier_slip_bc:
     {
-      Discret::ELEMENTS::FluidBoundaryParentInterface::impl(this)->navier_slip_bc(
+      Discret::Elements::FluidBoundaryParentInterface::impl(this)->navier_slip_bc(
           this, params, discretization, lm, elemat1, elevec1);
       break;
     }
@@ -109,19 +109,19 @@ int Discret::ELEMENTS::FluidBoundary::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::FluidBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
 {
-  return Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), "std")
+  return Discret::Elements::FluidBoundaryFactory::provide_impl(shape(), "std")
       ->evaluate_neumann(this, params, discretization, condition, lm, elevec1, elemat1);
 }
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::location_vector(const Core::FE::Discretization& dis,
+void Discret::Elements::FluidBoundary::location_vector(const Core::FE::Discretization& dis,
     Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

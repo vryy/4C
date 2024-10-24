@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::instance(
+Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>*
+Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -48,7 +48,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::instance(
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::ScaTraEleBoundaryCalcLoma(
+Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::ScaTraEleBoundaryCalcLoma(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructor of base class
       my::ScaTraEleBoundaryCalc(numdofpernode, numscal, disname)
@@ -61,7 +61,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::ScaTraEleBoundar
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::evaluate_action(
+int Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::evaluate_action(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -97,7 +97,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::evaluate_act
  | calculate loma therm pressure                              vg 03/09  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm_press(
+void Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_therm_press(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
  | calculate Neumann inflow boundary conditions              fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow(
+void Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow(
     const Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs)
@@ -197,14 +197,14 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inf
   my::neumann_inflow(ele, params, discretization, la, emat, erhs);
 
   return;
-}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow
+}  // Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::neumann_inflow
 
 
 /*----------------------------------------------------------------------*
  | calculate integral of normal diffusive flux and velocity     vg 09/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype,
+void Discret::Elements::ScaTraEleBoundaryCalcLoma<distype,
     probdim>::norm_diff_flux_and_vel_integral(const Core::Elements::Element* ele,
     Teuchos::ParameterList& params, const std::vector<double>& enormdiffflux,
     const std::vector<double>& enormvel)
@@ -235,20 +235,20 @@ void Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype,
   params.set<double>("normal velocity integral", normvelint);
 
   return;
-}  // Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype,
+}  // Discret::Elements::ScaTraEleBoundaryCalcLoma<distype,
    // probdim>::norm_diff_flux_and_vel_integral
 
 
 // template classes
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::quad9, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::tri6, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::line3, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::nurbs3, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::nurbs9, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::quad4, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::quad8, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::quad9, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::tri6, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::line3, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::nurbs3, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcLoma<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -50,7 +50,7 @@ namespace Mat
   }
 }  // namespace Mat
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class MixtureRule;
@@ -60,7 +60,7 @@ namespace MIXTURE
   {
     class MixtureRule : public Core::Mat::PAR::Parameter
     {
-      friend class MIXTURE::MixtureRule;
+      friend class Mixture::MixtureRule;
 
      public:
       /// constructor
@@ -74,7 +74,7 @@ namespace MIXTURE
       }
 
       /// create material instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::MixtureRule> create_rule() = 0;
+      virtual std::unique_ptr<Mixture::MixtureRule> create_rule() = 0;
 
       /*!
        * \brief Factory of the mixture rule parameters
@@ -85,7 +85,7 @@ namespace MIXTURE
        * @param matid Material id of the mixturerule
        * @return Parameters of the referenced mixture rule
        */
-      static MIXTURE::PAR::MixtureRule* factory(int matid);
+      static Mixture::PAR::MixtureRule* factory(int matid);
     };
   }  // namespace PAR
 
@@ -112,7 +112,7 @@ namespace MIXTURE
   {
    public:
     /// Constructor for the material given the material parameters
-    explicit MixtureRule(MIXTURE::PAR::MixtureRule* params);
+    explicit MixtureRule(Mixture::PAR::MixtureRule* params);
 
     virtual ~MixtureRule() = default;
 
@@ -136,7 +136,7 @@ namespace MIXTURE
      * @param constituents (in) List of constituents
      */
     void set_constituents(
-        std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents)
+        std::shared_ptr<std::vector<std::unique_ptr<Mixture::MixtureConstituent>>> constituents)
     {
       constituents_ = std::move(constituents);
     }
@@ -259,7 +259,7 @@ namespace MIXTURE
      * \brief Returns a reference to the constituents
      * @return
      */
-    [[nodiscard]] std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>& constituents() const
+    [[nodiscard]] std::vector<std::unique_ptr<Mixture::MixtureConstituent>>& constituents() const
     {
       return *constituents_;
     }
@@ -273,7 +273,7 @@ namespace MIXTURE
 
    private:
     ///! list of the references to the constituents
-    std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
+    std::shared_ptr<std::vector<std::unique_ptr<Mixture::MixtureConstituent>>> constituents_;
 
     ///! Number of Gauss points
     int numgp_;
@@ -284,7 +284,7 @@ namespace MIXTURE
     ///! Indicator, whether the constituent is already set up
     bool is_setup_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

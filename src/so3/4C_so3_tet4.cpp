@@ -30,28 +30,28 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::SoTet4Type Discret::ELEMENTS::SoTet4Type::instance_;
+Discret::Elements::SoTet4Type Discret::Elements::SoTet4Type::instance_;
 
-Discret::ELEMENTS::SoTet4Type& Discret::ELEMENTS::SoTet4Type::instance() { return instance_; }
+Discret::Elements::SoTet4Type& Discret::Elements::SoTet4Type::instance() { return instance_; }
 
 //------------------------------------------------------------------------
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet4Type::create(
+Core::Communication::ParObject* Discret::Elements::SoTet4Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoTet4(-1, -1);
+  auto* object = new Discret::Elements::SoTet4(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoTet4>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -59,17 +59,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4Type::create(
 
 
 //------------------------------------------------------------------------
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoTet4>(id, owner);
   return ele;
 }
 
 
 //------------------------------------------------------------------------
-void Discret::ELEMENTS::SoTet4Type::nodal_block_information(
+void Discret::Elements::SoTet4Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -78,14 +78,14 @@ void Discret::ELEMENTS::SoTet4Type::nodal_block_information(
 }
 
 //------------------------------------------------------------------------
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoTet4Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SoTet4Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
 //------------------------------------------------------------------------
-void Discret::ELEMENTS::SoTet4Type::setup_element_definition(
+void Discret::Elements::SoTet4Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -108,7 +108,7 @@ void Discret::ELEMENTS::SoTet4Type::setup_element_definition(
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet4::SoTet4(int id, int owner)
+Discret::Elements::SoTet4::SoTet4(int id, int owner)
     : SoBase(id, owner),
       // material_(0),
       V_(-1.0),
@@ -123,19 +123,19 @@ Discret::ELEMENTS::SoTet4::SoTet4(int id, int owner)
     pstype_ = Prestress::get_type();
     pstime_ = Prestress::get_prestress_time();
 
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
   if (Prestress::is_mulf(pstype_))
     prestress_ =
-        Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
+        Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
 }
 
 /*----------------------------------------------------------------------***
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet4::SoTet4(const Discret::ELEMENTS::SoTet4& old)
+Discret::Elements::SoTet4::SoTet4(const Discret::Elements::SoTet4& old)
     : SoBase(old),
       // material_(old.material_),
       V_(old.V_),
@@ -144,16 +144,16 @@ Discret::ELEMENTS::SoTet4::SoTet4(const Discret::ELEMENTS::SoTet4& old)
       time_(old.time_)
 {
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(*(old.prestress_));
+    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
 }
 
 /*----------------------------------------------------------------------***
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoTet4::clone() const
+Core::Elements::Element* Discret::Elements::SoTet4::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoTet4(*this);
+  auto* newelement = new Discret::Elements::SoTet4(*this);
   return newelement;
 }
 
@@ -161,13 +161,13 @@ Core::Elements::Element* Discret::ELEMENTS::SoTet4::clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoTet4::shape() const { return Core::FE::CellType::tet4; }
+Core::FE::CellType Discret::Elements::SoTet4::shape() const { return Core::FE::CellType::tet4; }
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoTet4::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -199,7 +199,7 @@ void Discret::ELEMENTS::SoTet4::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoTet4::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -225,7 +225,7 @@ void Discret::ELEMENTS::SoTet4::unpack(Core::Communication::UnpackBuffer& buffer
     extract_from_pack(buffer, tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ =
-          Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
+          Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOTET4, NUMGPT_SOTET4, true);
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
   }
@@ -238,7 +238,7 @@ void Discret::ELEMENTS::SoTet4::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------***
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4::print(std::ostream& os) const
+void Discret::Elements::SoTet4::print(std::ostream& os) const
 {
   os << "So_tet4 ";
   Element::print(os);
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::SoTet4::print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet4::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -287,7 +287,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4::su
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-std::vector<double> Discret::ELEMENTS::SoTet4::element_center_refe_coords()
+std::vector<double> Discret::Elements::SoTet4::element_center_refe_coords()
 {
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xrefe;  // material coord. of element
@@ -314,7 +314,7 @@ std::vector<double> Discret::ELEMENTS::SoTet4::element_center_refe_coords()
 /*----------------------------------------------------------------------***++
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoTet4::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -323,7 +323,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoTet4::li
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::SoTet4::vis_names(std::map<std::string, int>& names)
 {
   solid_material()->vis_names(names);
 
@@ -333,7 +333,7 @@ void Discret::ELEMENTS::SoTet4::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                          st 01/10|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoTet4::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::SoTet4::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -344,7 +344,7 @@ bool Discret::ELEMENTS::SoTet4::vis_data(const std::string& name, std::vector<do
 /*----------------------------------------------------------------------*
  |  Call post setup routine of the materials                            |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4::material_post_setup(Teuchos::ParameterList& params)
+void Discret::Elements::SoTet4::material_post_setup(Teuchos::ParameterList& params)
 {
   if (Core::Nodes::have_nodal_fibers<Core::FE::CellType::tet4>(nodes()))
   {

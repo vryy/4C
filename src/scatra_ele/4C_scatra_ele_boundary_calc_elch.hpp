@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleParameterElch;
@@ -27,7 +27,7 @@ namespace Discret
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElch : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim> my;
 
      protected:
       using my::nen_;
@@ -131,12 +131,12 @@ namespace Discret
       ) const = 0;
 
       //! parameter class for electrochemistry problems
-      const Discret::ELEMENTS::ScaTraEleParameterElch* elchparams_;
+      const Discret::Elements::ScaTraEleParameterElch* elchparams_;
 
       //! utility class supporting element evaluation
-      const Discret::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
+      const Discret::Elements::ScaTraEleUtilsElch<distype>* utils_;
     };  // class ScaTraEleBoundaryCalcElch
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

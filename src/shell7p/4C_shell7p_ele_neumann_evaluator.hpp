@@ -22,7 +22,7 @@ namespace Core::FE
 }  // namespace Core::FE
 
 
-namespace Discret::ELEMENTS::Shell
+namespace Discret::Elements::Shell
 {
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element.
@@ -71,7 +71,7 @@ namespace Discret::ELEMENTS::Shell
       Core::LinAlg::SerialDenseVector& element_force_vector,
       Core::LinAlg::SerialDenseMatrix* element_stiffness_matrix, double total_time);
 
-}  // namespace Discret::ELEMENTS::Shell
+}  // namespace Discret::Elements::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

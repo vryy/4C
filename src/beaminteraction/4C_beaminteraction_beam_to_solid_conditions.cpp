@@ -325,8 +325,8 @@ BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
            Inpar::BeamToSolid::BeamToSolidContactDiscretization::gauss_point_cross_section)
   {
     // Depending on the type of beam element we create the correct beam-to-solid pair here.
-    const auto sr_beam = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(ele_ptrs[0]);
-    const auto eb_beam = dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(ele_ptrs[0]);
+    const auto sr_beam = dynamic_cast<const Discret::Elements::Beam3r*>(ele_ptrs[0]);
+    const auto eb_beam = dynamic_cast<const Discret::Elements::Beam3eb*>(ele_ptrs[0]);
     if (sr_beam != nullptr)
       return create_beam_to_solid_volume_pair_shape_no_nurbs<
           BeamToSolidVolumeMeshtyingPair2D3DFull>(shape);
@@ -564,7 +564,7 @@ BEAMINTERACTION::BeamToSolidConditionSurface::create_contact_pair_internal(
 {
   using namespace GEOMETRYPAIR;
 
-  const auto* beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+  const auto* beam_element = dynamic_cast<const Discret::Elements::Beam3Base*>(ele_ptrs[0]);
   const bool beam_is_hermite = beam_element->hermite_centerline_interpolation();
 
   const auto& core_element = surface_ids_[ele_ptrs[1]->id()];

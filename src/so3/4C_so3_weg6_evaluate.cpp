@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoWeg6::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -49,7 +49,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
   Core::LinAlg::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  Discret::ELEMENTS::SoWeg6::ActionType act = SoWeg6::none;
+  Discret::Elements::SoWeg6::ActionType act = SoWeg6::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -548,7 +548,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -560,7 +560,7 @@ int Discret::ELEMENTS::SoWeg6::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::init_jacobian_mapping()
+void Discret::Elements::SoWeg6::init_jacobian_mapping()
 {
   /* pointer to (static) shape function array
    * for each node, evaluated at each gp*/
@@ -604,7 +604,7 @@ void Discret::ELEMENTS::SoWeg6::init_jacobian_mapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                           // current displacements
     std::vector<double>* vel,                                            // current velocities
     std::vector<double>* acc,                                            // current accelerations
@@ -1015,7 +1015,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_nlnstiffmass(std::vector<int>& lm,  // loca
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> Discret::ELEMENTS::SoWeg6::sow6_shapefcts()
+std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> Discret::Elements::SoWeg6::sow6_shapefcts()
 {
   std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1036,7 +1036,7 @@ std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> Discret::ELEMENTS::SoWeg6::sow
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> Discret::ELEMENTS::SoWeg6::sow6_derivs()
+std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> Discret::Elements::SoWeg6::sow6_derivs()
 {
   std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
@@ -1057,7 +1057,7 @@ std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> Discret::ELEMENTS::S
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
  *----------------------------------------------------------------------*/
-std::vector<double> Discret::ELEMENTS::SoWeg6::sow6_weights()
+std::vector<double> Discret::Elements::SoWeg6::sow6_weights()
 {
   std::vector<double> weights(NUMGPT_WEG6);
   const Core::FE::GaussRule3D gaussrule = Core::FE::GaussRule3D::wedge_6point;
@@ -1073,7 +1073,7 @@ std::vector<double> Discret::ELEMENTS::SoWeg6::sow6_weights()
 /*----------------------------------------------------------------------*
  |  shape functions and derivatives for So_hex8                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::sow6_shapederiv(
+void Discret::Elements::SoWeg6::sow6_shapederiv(
     Core::LinAlg::Matrix<NUMNOD_WEG6, NUMGPT_WEG6>** shapefct,  // pointer to pointer of shapefct
     Core::LinAlg::Matrix<NUMDOF_WEG6, NUMNOD_WEG6>** deriv,     // pointer to pointer of derivs
     Core::LinAlg::Matrix<NUMGPT_WEG6, 1>** weights)             // pointer to pointer of weights
@@ -1130,7 +1130,7 @@ void Discret::ELEMENTS::SoWeg6::sow6_shapederiv(
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                         bborn 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
+void Discret::Elements::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1152,12 +1152,12 @@ void Discret::ELEMENTS::SoWeg6::sow6_lumpmass(Core::LinAlg::Matrix<NUMDOF_WEG6, 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoWeg6Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoWeg6Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoWeg6*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoWeg6*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_weg6* failed");
     actele->init_jacobian_mapping();
   }
@@ -1167,8 +1167,8 @@ int Discret::ELEMENTS::SoWeg6Type::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
-    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoWeg6::def_gradient(const std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
@@ -1207,8 +1207,8 @@ void Discret::ELEMENTS::SoWeg6::def_gradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::update_jacobian_mapping(
-    const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoWeg6::update_jacobian_mapping(
+    const std::vector<double>& disp, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMNOD_WEG6, 1>> shapefcts = sow6_shapefcts();
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>> derivs = sow6_derivs();
@@ -1252,7 +1252,7 @@ void Discret::ELEMENTS::SoWeg6::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  remodeling of fiber directions (protected)               tinkl 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoWeg6::sow6_remodel(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                      // current displacements
     Teuchos::ParameterList& params,                // algorithmic parameters e.g. time
     const Teuchos::RCP<Core::Mat::Material>& mat)  // material

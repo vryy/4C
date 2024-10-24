@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
+Mixture::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata),
       isochoric_(matdata.parameters.get<bool>("ISOCHORIC")),
@@ -27,38 +27,38 @@ MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
 {
 }
 
-std::unique_ptr<MIXTURE::PrestressStrategy>
-MIXTURE::PAR::IterativePrestressStrategy::create_prestress_strategy()
+std::unique_ptr<Mixture::PrestressStrategy>
+Mixture::PAR::IterativePrestressStrategy::create_prestress_strategy()
 {
-  std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
-      new MIXTURE::IterativePrestressStrategy(this));
+  std::unique_ptr<Mixture::PrestressStrategy> prestressStrategy(
+      new Mixture::IterativePrestressStrategy(this));
   return prestressStrategy;
 }
 
-MIXTURE::IterativePrestressStrategy::IterativePrestressStrategy(
-    MIXTURE::PAR::IterativePrestressStrategy* params)
+Mixture::IterativePrestressStrategy::IterativePrestressStrategy(
+    Mixture::PAR::IterativePrestressStrategy* params)
     : PrestressStrategy(params), params_(params)
 {
 }
 
-void MIXTURE::IterativePrestressStrategy::setup(
-    MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
+void Mixture::IterativePrestressStrategy::setup(
+    Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
 {
   // nothing to do
 }
 
-void MIXTURE::IterativePrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
+void Mixture::IterativePrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
+    Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Start with zero prestretch
   G = Core::LinAlg::identity_matrix<3>();
 }
 
-void MIXTURE::IterativePrestressStrategy::update(
+void Mixture::IterativePrestressStrategy::update(
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+    Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // only update prestress if it is active

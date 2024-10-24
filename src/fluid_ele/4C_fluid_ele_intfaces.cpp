@@ -15,15 +15,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::FluidIntFaceType Discret::ELEMENTS::FluidIntFaceType::instance_;
+Discret::Elements::FluidIntFaceType Discret::Elements::FluidIntFaceType::instance_;
 
-Discret::ELEMENTS::FluidIntFaceType& Discret::ELEMENTS::FluidIntFaceType::instance()
+Discret::Elements::FluidIntFaceType& Discret::Elements::FluidIntFaceType::instance()
 {
   return instance_;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidIntFaceType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidIntFaceType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -34,13 +34,13 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidIntFaceType::creat
 /*----------------------------------------------------------------------*
  |  ctor (public)                                           schott 03/12|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidIntFace::FluidIntFace(int id,  ///< element id
+Discret::Elements::FluidIntFace::FluidIntFace(int id,  ///< element id
     int owner,                  ///< owner (= owner of parent element with smallest gid)
     int nnode,                  ///< number of nodes
     const int* nodeids,         ///< node ids
     Core::Nodes::Node** nodes,  ///< nodes of surface
-    Discret::ELEMENTS::Fluid* parent_master,  ///< master parent element
-    Discret::ELEMENTS::Fluid* parent_slave,   ///< slave parent element
+    Discret::Elements::Fluid* parent_master,  ///< master parent element
+    Discret::Elements::Fluid* parent_slave,   ///< slave parent element
     const int lsurface_master,  ///< local surface index with respect to master parent element
     const int lsurface_slave,   ///< local surface index with respect to slave parent element
     const std::vector<int>
@@ -61,7 +61,7 @@ Discret::ELEMENTS::FluidIntFace::FluidIntFace(int id,  ///< element id
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      schott 03/12|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidIntFace::FluidIntFace(const Discret::ELEMENTS::FluidIntFace& old)
+Discret::Elements::FluidIntFace::FluidIntFace(const Discret::Elements::FluidIntFace& old)
     : Core::Elements::FaceElement(old)
 {
   return;
@@ -71,9 +71,9 @@ Discret::ELEMENTS::FluidIntFace::FluidIntFace(const Discret::ELEMENTS::FluidIntF
  |  Deep copy this instance return pointer to it               (public) |
  |                                                          schott 03/12|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidIntFace::clone() const
+Core::Elements::Element* Discret::Elements::FluidIntFace::clone() const
 {
-  Discret::ELEMENTS::FluidIntFace* newelement = new Discret::ELEMENTS::FluidIntFace(*this);
+  Discret::Elements::FluidIntFace* newelement = new Discret::Elements::FluidIntFace(*this);
   return newelement;
 }
 
@@ -81,7 +81,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidIntFace::clone() const
  |                                                             (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::FluidIntFace::shape() const
+Core::FE::CellType Discret::Elements::FluidIntFace::shape() const
 {
   // could be called for master parent or slave parent element, doesn't matter
   return Core::FE::get_shape_of_boundary_element(num_node(), parent_master_element()->shape());
@@ -91,7 +91,7 @@ Core::FE::CellType Discret::ELEMENTS::FluidIntFace::shape() const
  |  Pack data                                                  (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::FluidIntFace::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::FluidIntFace::pack(Core::Communication::PackBuffer& data
  |  Unpack data                                                (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::FluidIntFace::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this FluidIntFace element does not support communication");
   return;
@@ -112,7 +112,7 @@ void Discret::ELEMENTS::FluidIntFace::unpack(Core::Communication::UnpackBuffer& 
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)              schott 06/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::patch_location_vector(
+void Discret::Elements::FluidIntFace::patch_location_vector(
     Core::FE::Discretization& discretization,  ///< discretization
     std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
     std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
@@ -321,7 +321,7 @@ void Discret::ELEMENTS::FluidIntFace::patch_location_vector(
 /*----------------------------------------------------------------------*
  |  create the patch location vector (public)              schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::patch_location_vector(
+void Discret::Elements::FluidIntFace::patch_location_vector(
     Core::FE::Discretization& discretization,  ///< discretization
     std::vector<int>& nds_master,              ///< nodal dofset w.r.t master parent element
     std::vector<int>& nds_slave,               ///< nodal dofset w.r.t slave parent element
@@ -564,7 +564,7 @@ void Discret::ELEMENTS::FluidIntFace::patch_location_vector(
 /*----------------------------------------------------------------------*
  |  print this element (public)                            schott 03/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidIntFace::print(std::ostream& os) const
+void Discret::Elements::FluidIntFace::print(std::ostream& os) const
 {
   os << "FluidIntFace ";
   Element::print(os);
@@ -574,7 +574,7 @@ void Discret::ELEMENTS::FluidIntFace::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFace::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidIntFace::lines()
 {
   FOUR_C_THROW("Lines of FluidIntFace not implemented");
 }
@@ -582,7 +582,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFa
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFace::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidIntFace::surfaces()
 {
   FOUR_C_THROW("Surfaces of FluidIntFace not implemented");
 }
@@ -590,16 +590,16 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidIntFa
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                          schott 03/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidIntFace::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::FluidIntFace::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  // REMARK: this line ensures that the static Discret::ELEMENTS::FluidIntFaceImplInterface::Impl is
+  // REMARK: this line ensures that the static Discret::Elements::FluidIntFaceImplInterface::Impl is
   // created
   //         this line avoids linker errors
-  Discret::ELEMENTS::FluidIntFaceImplInterface::impl(this);
+  Discret::Elements::FluidIntFaceImplInterface::impl(this);
 
   FOUR_C_THROW("not available");
 
@@ -610,7 +610,7 @@ int Discret::ELEMENTS::FluidIntFace::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a surface/line Neumann boundary condition    schott 03/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidIntFace::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::FluidIntFace::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)

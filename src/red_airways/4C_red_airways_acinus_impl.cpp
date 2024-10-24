@@ -28,8 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedAcinusImplInterface* Discret::ELEMENTS::RedAcinusImplInterface::impl(
-    Discret::ELEMENTS::RedAcinus* red_acinus)
+Discret::Elements::RedAcinusImplInterface* Discret::Elements::RedAcinusImplInterface::impl(
+    Discret::Elements::RedAcinus* red_acinus)
 {
   switch (red_acinus->shape())
   {
@@ -55,7 +55,7 @@ Discret::ELEMENTS::RedAcinusImplInterface* Discret::ELEMENTS::RedAcinusImplInter
   | constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
+Discret::Elements::AcinusImpl<distype>::AcinusImpl()
 {
 }
 
@@ -79,7 +79,7 @@ Discret::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
         \param dt               (i) timestep
         */
 template <Core::FE::CellType distype>
-void sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& epnp,
+void sysmat(Discret::Elements::RedAcinus* ele, Core::LinAlg::SerialDenseVector& epnp,
     Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
     const Core::Mat::Material& material, Discret::ReducedLung::ElemParams& params, double time,
@@ -115,7 +115,7 @@ void sysmat(Discret::ELEMENTS::RedAcinus* ele, Core::LinAlg::SerialDenseVector& 
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
+int Discret::Elements::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -215,7 +215,7 @@ int Discret::ELEMENTS::AcinusImpl<distype>::evaluate(RedAcinus* ele, Teuchos::Pa
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::ParameterList& params,
+void Discret::Elements::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -272,7 +272,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::initial(RedAcinus* ele, Teuchos::Pa
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele,
+void Discret::Elements::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -681,7 +681,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::evaluate_terminal_bc(RedAcinus* ele
  |  correponding acinus volume via dV = 0.5*(qnp+qn)*dt                 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
+void Discret::Elements::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 
@@ -785,7 +785,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::calc_flow_rates(RedAcinus* ele,
  |                                                                      |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
+void Discret::Elements::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 
@@ -812,7 +812,7 @@ void Discret::ELEMENTS::AcinusImpl<distype>::calc_elem_volume(RedAcinus* ele,
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
+void Discret::Elements::AcinusImpl<distype>::get_coupled_values(RedAcinus* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {

@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief A type trait to check whether the type T supports the
@@ -139,7 +139,7 @@ namespace Discret::ELEMENTS
   {
     std::visit(Internal::UnpackAction(buffer), variant);
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

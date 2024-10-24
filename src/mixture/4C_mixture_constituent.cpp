@@ -22,13 +22,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Constructor of the mixture constituent parameters
-MIXTURE::PAR::MixtureConstituent::MixtureConstituent(const Core::Mat::PAR::Parameter::Data& matdata)
+Mixture::PAR::MixtureConstituent::MixtureConstituent(const Core::Mat::PAR::Parameter::Data& matdata)
     : Core::Mat::PAR::Parameter(matdata)
 {
 }
 
 // Create an instance of the constituent from the parameters
-Teuchos::RCP<Core::Mat::Material> MIXTURE::PAR::MixtureConstituent::create_material()
+Teuchos::RCP<Core::Mat::Material> Mixture::PAR::MixtureConstituent::create_material()
 {
   FOUR_C_THROW(
       "Cannot create mixture constituent from this method. Use CreateConstituent() instead.");
@@ -36,7 +36,7 @@ Teuchos::RCP<Core::Mat::Material> MIXTURE::PAR::MixtureConstituent::create_mater
 
 // Create the parameters of the constituents from the material number and the reference mass
 // fraction
-MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::factory(int matnum)
+Mixture::PAR::MixtureConstituent* Mixture::PAR::MixtureConstituent::factory(int matnum)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == Teuchos::null)
@@ -59,31 +59,31 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::factory(int 
   {
     case Core::Materials::mix_elasthyper:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_elasthyper_damage:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_elasthyper_elastin_membrane:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_remodelfiber_expl:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_full_constrained_mixture_fiber:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_remodelfiber_impl:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     case Core::Materials::mix_solid_material:
     {
-      return dynamic_cast<MIXTURE::PAR::MixtureConstituent*>(curmat);
+      return dynamic_cast<Mixture::PAR::MixtureConstituent*>(curmat);
     }
     default:
       break;
@@ -92,13 +92,13 @@ MIXTURE::PAR::MixtureConstituent* MIXTURE::PAR::MixtureConstituent::factory(int 
       "The referenced material with id %d is not registered as a Mixture Constituent!", matnum);
 }
 
-MIXTURE::MixtureConstituent::MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id)
+Mixture::MixtureConstituent::MixtureConstituent(Mixture::PAR::MixtureConstituent* params, int id)
     : numgp_(0), has_read_element_(false), is_setup_(false), id_(id)
 {
 }
 
 //! Init is called once at the beginning to setup the number of GPs and the Parameter List
-void MIXTURE::MixtureConstituent::read_element(
+void Mixture::MixtureConstituent::read_element(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   // Init must only be called once
@@ -109,7 +109,7 @@ void MIXTURE::MixtureConstituent::read_element(
 }
 
 // Setup of the mixture constituents and all its subparts
-void MIXTURE::MixtureConstituent::setup(Teuchos::ParameterList& params, const int eleGID)
+void Mixture::MixtureConstituent::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   // Setup must be called after init()
   if (!has_read_element_) FOUR_C_THROW("read_element() must be called before setup()");
@@ -120,7 +120,7 @@ void MIXTURE::MixtureConstituent::setup(Teuchos::ParameterList& params, const in
 }
 
 // Pack everything for distribution to other processors
-void MIXTURE::MixtureConstituent::pack_constituent(Core::Communication::PackBuffer& data) const
+void Mixture::MixtureConstituent::pack_constituent(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, numgp_);
   add_to_pack(data, static_cast<int>(has_read_element_));
@@ -128,7 +128,7 @@ void MIXTURE::MixtureConstituent::pack_constituent(Core::Communication::PackBuff
 }
 
 // Unpack base constituent data, need to be called by every derived class
-void MIXTURE::MixtureConstituent::unpack_constituent(Core::Communication::UnpackBuffer& buffer)
+void Mixture::MixtureConstituent::unpack_constituent(Core::Communication::UnpackBuffer& buffer)
 {
   // make sure we have a pristine material
   has_read_element_ = false;
@@ -141,7 +141,7 @@ void MIXTURE::MixtureConstituent::unpack_constituent(Core::Communication::Unpack
   is_setup_ = (bool)extract_int(buffer);
 }
 
-void MIXTURE::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::MixtureConstituent::evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<3, 3>& F_in, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {

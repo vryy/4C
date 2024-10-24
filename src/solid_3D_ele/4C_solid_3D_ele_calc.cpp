@@ -48,12 +48,12 @@ namespace
       const Core::LinAlg::Matrix<Core::FE::dim<celltype>, Core::FE::dim<celltype>>&
           deformation_gradient,
       const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir, int eleGID,
-      const Discret::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
+      const Discret::Elements::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
           evaluator,
-      Discret::ELEMENTS::CauchyNDirLinearizations<3>& linearizations)
+      Discret::Elements::CauchyNDirLinearizations<3>& linearizations)
   {
-    Discret::ELEMENTS::CauchyNDirLinearizationDependencies<celltype> linearization_dependencies =
-        Discret::ELEMENTS::get_initialized_cauchy_n_dir_linearization_dependencies(
+    Discret::Elements::CauchyNDirLinearizationDependencies<celltype> linearization_dependencies =
+        Discret::Elements::get_initialized_cauchy_n_dir_linearization_dependencies(
             evaluator, linearizations);
 
     double cauchy_n_dir = 0;
@@ -65,7 +65,7 @@ namespace
         get_ptr(linearization_dependencies.d2_cauchyndir_dF_ddir), -1, eleGID, nullptr, nullptr,
         nullptr, nullptr);
 
-    Discret::ELEMENTS::evaluate_cauchy_n_dir_linearizations<celltype>(
+    Discret::Elements::evaluate_cauchy_n_dir_linearizations<celltype>(
         linearization_dependencies, linearizations);
 
     return cauchy_n_dir;
@@ -73,31 +73,31 @@ namespace
 }  // namespace
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc()
+Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::SolidEleCalc()
     : stiffness_matrix_integration_(
           create_gauss_integration<celltype>(get_gauss_rule_stiffness_matrix<celltype>())),
       mass_matrix_integration_(
           create_gauss_integration<celltype>(get_gauss_rule_mass_matrix<celltype>()))
 {
-  Discret::ELEMENTS::resize_gp_history(history_data_, stiffness_matrix_integration_.num_points());
+  Discret::Elements::resize_gp_history(history_data_, stiffness_matrix_integration_.num_points());
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::pack(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::pack(
     Core::Communication::PackBuffer& data) const
 {
-  Discret::ELEMENTS::pack<ElementFormulation>(data, history_data_);
+  Discret::Elements::pack<ElementFormulation>(data, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::unpack(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::unpack<ElementFormulation>(buffer, history_data_);
+  Discret::Elements::unpack<ElementFormulation>(buffer, history_data_);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype,
+void Discret::Elements::SolidEleCalc<celltype,
     ElementFormulation>::evaluate_nonlinear_force_stiffness_mass(const Core::Elements::Element& ele,
     Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params,
@@ -129,7 +129,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 
   double element_mass = 0.0;
   double element_volume = 0.0;
-  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 
               if (force.has_value())
               {
-                Discret::ELEMENTS::add_internal_force_vector<ElementFormulation, celltype>(
+                Discret::Elements::add_internal_force_vector<ElementFormulation, celltype>(
                     linearization, stress, integration_factor, preparation_data, history_data_, gp,
                     *force);
               }
@@ -179,7 +179,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
   {
     // integrate mass matrix
     FOUR_C_ASSERT(element_mass > 0, "It looks like the element mass is 0.0");
-    Discret::ELEMENTS::for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
+    Discret::Elements::for_each_gauss_point<celltype>(nodal_coordinates, mass_matrix_integration_,
         [&](const Core::LinAlg::Matrix<Core::FE::dim<celltype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
             const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp) {
@@ -190,14 +190,14 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::recover(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::recover(
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update(
   const PreparationData<ElementFormulation> preparation_data =
       prepare(ele, nodal_coordinates, history_data_);
 
-  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -229,7 +229,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update(
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-double Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_internal_energy(
+double Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_internal_energy(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -243,7 +243,7 @@ double Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_
       prepare(ele, nodal_coordinates, history_data_);
 
   double intenergy = 0;
-  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -266,7 +266,7 @@ double Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_stress(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::calculate_stress(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material, const StressIO& stressIO,
     const StrainIO& strainIO, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
@@ -284,7 +284,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_st
   const PreparationData<ElementFormulation> preparation_data =
       prepare(ele, nodal_coordinates, history_data_);
 
-  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -312,7 +312,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::calculate_st
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update_prestress(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::update_prestress(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
@@ -323,10 +323,10 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update_prest
   const PreparationData<ElementFormulation> preparation_data =
       prepare(ele, nodal_coordinates, history_data_);
 
-  Discret::ELEMENTS::update_prestress<ElementFormulation, celltype>(
+  Discret::Elements::update_prestress<ElementFormulation, celltype>(
       ele, nodal_coordinates, preparation_data, history_data_);
 
-  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -339,7 +339,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update_prest
                     deformation_gradient,
                 const Core::LinAlg::Matrix<num_str_, 1>& gl_strain, const auto& linearization)
             {
-              Discret::ELEMENTS::update_prestress<ElementFormulation, celltype>(ele,
+              Discret::Elements::update_prestress<ElementFormulation, celltype>(ele,
                   nodal_coordinates, xi, shape_functions, jacobian_mapping, deformation_gradient,
                   preparation_data, history_data_, gp);
             });
@@ -347,14 +347,14 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::update_prest
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::setup(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::setup(
     Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container)
 {
   solid_material.setup(stiffness_matrix_integration_.num_points(), container);
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::material_post_setup(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::material_post_setup(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
@@ -368,7 +368,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::material_pos
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype,
+void Discret::Elements::SolidEleCalc<celltype,
     ElementFormulation>::initialize_gauss_point_data_output(const Core::Elements::Element& ele,
     const Mat::So3Material& solid_material,
     FourC::Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -381,7 +381,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype,
+void Discret::Elements::SolidEleCalc<celltype,
     ElementFormulation>::evaluate_gauss_point_data_output(const Core::Elements::Element& ele,
     const Mat::So3Material& solid_material,
     FourC::Solid::ModelEvaluator::GaussPointDataOutputManager& gp_data_output_manager) const
@@ -394,7 +394,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype,
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::reset_to_last_converged(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::reset_to_last_converged(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   solid_material.reset_step();
@@ -402,7 +402,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::reset_to_las
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
 double
-Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::get_normal_cauchy_stress_at_xi(
+Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::get_normal_cauchy_stress_at_xi(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const std::vector<double>& disp, const Core::LinAlg::Matrix<3, 1>& xi,
     const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
@@ -445,7 +445,7 @@ Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::get_normal_cauchy
 }
 
 template <Core::FE::CellType celltype, typename ElementFormulation>
-void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::for_each_gauss_point(
+void Discret::Elements::SolidEleCalc<celltype, ElementFormulation>::for_each_gauss_point(
     const Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization, const std::vector<int>& lm,
     const std::function<void(Mat::So3Material&, double, int)>& integrator) const
@@ -453,7 +453,7 @@ void Discret::ELEMENTS::SolidEleCalc<celltype, ElementFormulation>::for_each_gau
   const ElementNodes<celltype> nodal_coordinates =
       evaluate_element_nodes<celltype>(ele, discretization, lm);
 
-  Discret::ELEMENTS::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
+  Discret::Elements::for_each_gauss_point(nodal_coordinates, stiffness_matrix_integration_,
       [&](const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<celltype>& shape_functions,
           const JacobianMapping<celltype>& jacobian_mapping, double integration_factor, int gp)
@@ -464,13 +464,13 @@ template <Core::FE::CellType... celltypes>
 struct VerifyPackable
 {
   static constexpr bool are_all_packable =
-      (Discret::ELEMENTS::IsPackable<Discret::ELEMENTS::SolidEleCalc<celltypes,
-              Discret::ELEMENTS::DisplacementBasedFormulation<celltypes>>*> &&
+      (Discret::Elements::IsPackable<Discret::Elements::SolidEleCalc<celltypes,
+              Discret::Elements::DisplacementBasedFormulation<celltypes>>*> &&
           ...);
 
   static constexpr bool are_all_unpackable =
-      (Discret::ELEMENTS::IsUnpackable<Discret::ELEMENTS::SolidEleCalc<celltypes,
-              Discret::ELEMENTS::DisplacementBasedFormulation<celltypes>>*> &&
+      (Discret::Elements::IsUnpackable<Discret::Elements::SolidEleCalc<celltypes,
+              Discret::Elements::DisplacementBasedFormulation<celltypes>>*> &&
           ...);
 
   void static_asserts() const
@@ -488,79 +488,79 @@ template struct VerifyPackable<Core::FE::CellType::hex8, Core::FE::CellType::hex
 
 // explicit instantiations of template classes
 // for displacement based formulation
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::hex8>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex18,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::hex18>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex20,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::hex20>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex27,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::hex27>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::nurbs27,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::nurbs27>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::tet4,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::tet4>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::tet10,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::tet10>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::pyramid5,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::pyramid5>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::wedge6,
-    Discret::ELEMENTS::DisplacementBasedFormulation<Core::FE::CellType::wedge6>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex18,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex18>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex20,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex20>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex27,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::hex27>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::nurbs27,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::nurbs27>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tet4,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tet4>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tet10,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::tet10>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::pyramid5,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::pyramid5>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
+    Discret::Elements::DisplacementBasedFormulation<Core::FE::CellType::wedge6>>;
 
 // for displacement based formulation with linear kinematics
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex18,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex18>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex20,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex20>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex27,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex27>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::nurbs27,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::nurbs27>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::tet4,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet4>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::tet10,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet10>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::pyramid5,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::pyramid5>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::wedge6,
-    Discret::ELEMENTS::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::wedge6>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex18,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex18>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex20,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex20>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex27,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::hex27>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::nurbs27,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::nurbs27>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tet4,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet4>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tet10,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::tet10>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::pyramid5,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::pyramid5>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
+    Discret::Elements::DisplacementBasedLinearKinematicsFormulation<Core::FE::CellType::wedge6>>;
 
 // Fbar element technology
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::FBarFormulation<Core::FE::CellType::hex8>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::pyramid5,
-    Discret::ELEMENTS::FBarFormulation<Core::FE::CellType::pyramid5>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::FBarFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::pyramid5,
+    Discret::Elements::FBarFormulation<Core::FE::CellType::pyramid5>>;
 
 // explicit instantiations for MULF
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::hex8>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex18,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::hex18>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex20,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::hex20>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex27,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::hex27>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::nurbs27,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::nurbs27>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::tet4,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::tet4>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::tet10,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::tet10>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::pyramid5,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::pyramid5>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::wedge6,
-    Discret::ELEMENTS::MulfFormulation<Core::FE::CellType::wedge6>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex18,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::hex18>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex20,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::hex20>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex27,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::hex27>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::nurbs27,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::nurbs27>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tet4,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::tet4>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::tet10,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::tet10>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::pyramid5,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::pyramid5>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::wedge6,
+    Discret::Elements::MulfFormulation<Core::FE::CellType::wedge6>>;
 
 // explicit instaniations for FBAR+MULF
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::MulfFBarFormulation<Core::FE::CellType::hex8>>;
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::pyramid5,
-    Discret::ELEMENTS::MulfFBarFormulation<Core::FE::CellType::pyramid5>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::MulfFBarFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::pyramid5,
+    Discret::Elements::MulfFBarFormulation<Core::FE::CellType::pyramid5>>;
 
 // explicit instantiations for shell_ans
-template class Discret::ELEMENTS::SolidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::ShellANSFormulation<Core::FE::CellType::hex8>>;
+template class Discret::Elements::SolidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::ShellANSFormulation<Core::FE::CellType::hex8>>;
 
 FOUR_C_NAMESPACE_CLOSE

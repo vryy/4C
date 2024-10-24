@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------*
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
  * ----------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::StructuralLine::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -162,7 +162,7 @@ int Discret::ELEMENTS::StructuralLine::evaluate_neumann(Teuchos::ParameterList& 
 /*----------------------------------------------------------------------*
  *  (private)                                                  gee 04/08|
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::line_integration(double& dL,
+void Discret::Elements::StructuralLine::line_integration(double& dL,
     const Core::LinAlg::SerialDenseMatrix& x, const Core::LinAlg::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
  discrete thermo residuals   fang 11/15 |
  *-------------------------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_and_rhs_source(
+void Discret::Elements::ScaTraEleSTIElch<distype>::calc_mat_and_rhs_source(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     Core::LinAlg::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -43,7 +43,7 @@ void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_and_rhs_source(
  scatra dofs   fang 11/15 |
  *-------------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_source_od(
+void Discret::Elements::ScaTraEleSTIElch<distype>::calc_mat_source_od(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -65,7 +65,7 @@ void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::calc_mat_source_od(
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleSTIElch<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele,              //!< current element
     Teuchos::ParameterList& params,            //!< parameter list
     Core::FE::Discretization& discretization,  //!< discretization
@@ -96,7 +96,7 @@ void Discret::ELEMENTS::ScaTraEleSTIElch<distype>::extract_element_and_node_valu
  | protected constructor for singletons                      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(
+Discret::Elements::ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(
     const int numdofpernode, const int numscal, const std::string& disname)
     : econcnp_(true), epotnp_(true)
 {
@@ -106,25 +106,25 @@ Discret::ELEMENTS::ScaTraEleSTIElch<distype>::ScaTraEleSTIElch(
 
 // template classes
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleSTIElch<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleSTIElch<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

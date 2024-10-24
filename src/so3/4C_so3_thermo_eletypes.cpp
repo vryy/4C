@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                          dano 08/12 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8ThermoType Discret::ELEMENTS::SoHex8ThermoType::instance_;
+Discret::Elements::SoHex8ThermoType Discret::Elements::SoHex8ThermoType::instance_;
 
 
 /*----------------------------------------------------------------------*
  | access an instance of thermo type                                    |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8ThermoType& Discret::ELEMENTS::SoHex8ThermoType::instance()
+Discret::Elements::SoHex8ThermoType& Discret::Elements::SoHex8ThermoType::instance()
 {
   return instance_;
 }
@@ -35,11 +35,11 @@ Discret::ELEMENTS::SoHex8ThermoType& Discret::ELEMENTS::SoHex8ThermoType::instan
  | create the new element type (public)                      dano 08/12 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex8ThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(-1, -1);
+  Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>* object =
+      new Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>(-1, -1);
   object->unpack(buffer);
   return object;
 }  // Create()
@@ -49,13 +49,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8ThermoType::create(
  | create the new element type (public)                      dano 08/12 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH8THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+        Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
         id, owner);
     return ele;
@@ -68,11 +68,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::creat
  | create the new element type (public)                      dano 08/12 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8ThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+      Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
       id, owner);
   return ele;
@@ -83,7 +83,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8ThermoType::creat
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                     dano 08/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8ThermoType::setup_element_definition(
+void Discret::Elements::SoHex8ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex8;
@@ -101,21 +101,21 @@ void Discret::ELEMENTS::SoHex8ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8ThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex8ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* actele =
+    Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>* actele =
         dynamic_cast<
-            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
+            Discret::Elements::So3Thermo<Discret::Elements::SoHex8, Core::FE::CellType::hex8>*>(
             dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8_thermo* failed");
     // initialise all quantities
     actele->SoHex8::init_jacobian_mapping();
     // as an alternative we can call: So_hex8Type::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::SoHex8,
+    actele->So3Thermo<Discret::Elements::SoHex8,
         Core::FE::CellType::hex8>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
@@ -133,9 +133,9 @@ int Discret::ELEMENTS::SoHex8ThermoType::initialize(Core::FE::Discretization& di
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                          dano 05/13 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8fbarThermoType Discret::ELEMENTS::SoHex8fbarThermoType::instance_;
+Discret::Elements::SoHex8fbarThermoType Discret::Elements::SoHex8fbarThermoType::instance_;
 
-Discret::ELEMENTS::SoHex8fbarThermoType& Discret::ELEMENTS::SoHex8fbarThermoType::instance()
+Discret::Elements::SoHex8fbarThermoType& Discret::Elements::SoHex8fbarThermoType::instance()
 {
   return instance_;
 }
@@ -144,11 +144,11 @@ Discret::ELEMENTS::SoHex8fbarThermoType& Discret::ELEMENTS::SoHex8fbarThermoType
  | create the new element type (public)                      dano 05/13 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex8fbarThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>* object =
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>(
+  Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar, Core::FE::CellType::hex8>* object =
+      new Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar, Core::FE::CellType::hex8>(
           -1, -1);
   object->unpack(buffer);
   return object;
@@ -159,13 +159,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarThermoType::create(
  | create the new element type (public)                      dano 05/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8fbarThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH8FBARTHERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>>(
+        Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar, Core::FE::CellType::hex8>>(
 
         id, owner);
     return ele;
@@ -178,11 +178,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::c
  | create the new element type (public)                      dano 05/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8fbarThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>>(
+      Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar, Core::FE::CellType::hex8>>(
 
       id, owner);
   return ele;
@@ -192,7 +192,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarThermoType::c
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                     dano 05/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbarThermoType::setup_element_definition(
+void Discret::Elements::SoHex8fbarThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   // original definition
@@ -215,22 +215,22 @@ void Discret::ELEMENTS::SoHex8fbarThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 05/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex8fbarThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>* actele =
+    Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar, Core::FE::CellType::hex8>* actele =
         dynamic_cast<
-            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex8fbar, Core::FE::CellType::hex8>*>(
+            Discret::Elements::So3Thermo<Discret::Elements::SoHex8fbar, Core::FE::CellType::hex8>*>(
             dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8fbar_thermo* failed");
 
     // initialise all quantities
     actele->SoHex8fbar::init_jacobian_mapping();
     // as an alternative we can call: So_hex8fbarType::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::SoHex8fbar,
+    actele->So3Thermo<Discret::Elements::SoHex8fbar,
         Core::FE::CellType::hex8>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
@@ -248,9 +248,9 @@ int Discret::ELEMENTS::SoHex8fbarThermoType::initialize(Core::FE::Discretization
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                          dano 08/12 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet4ThermoType Discret::ELEMENTS::SoTet4ThermoType::instance_;
+Discret::Elements::SoTet4ThermoType Discret::Elements::SoTet4ThermoType::instance_;
 
-Discret::ELEMENTS::SoTet4ThermoType& Discret::ELEMENTS::SoTet4ThermoType::instance()
+Discret::Elements::SoTet4ThermoType& Discret::Elements::SoTet4ThermoType::instance()
 {
   return instance_;
 }
@@ -259,11 +259,11 @@ Discret::ELEMENTS::SoTet4ThermoType& Discret::ELEMENTS::SoTet4ThermoType::instan
  | create the new element type (public)                      dano 08/12 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoTet4ThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(-1, -1);
+  Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>* object =
+      new Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>(-1, -1);
   object->unpack(buffer);
   return object;
 }  // Create()
@@ -273,13 +273,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet4ThermoType::create(
  | create the new element type (public)                      dano 08/12 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDT4THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+        Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
         id, owner);
     return ele;
@@ -292,11 +292,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::creat
  | create the new element type (public)                      dano 08/12 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4ThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+      Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
       id, owner);
   return ele;
@@ -306,7 +306,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4ThermoType::creat
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                          dano 08/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4ThermoType::setup_element_definition(
+void Discret::Elements::SoTet4ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet4;
@@ -324,21 +324,21 @@ void Discret::ELEMENTS::SoTet4ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 08/12 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet4ThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoTet4ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* actele =
+    Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>* actele =
         dynamic_cast<
-            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>*>(
+            Discret::Elements::So3Thermo<Discret::Elements::SoTet4, Core::FE::CellType::tet4>*>(
             dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet4_thermo* failed");
 
     actele->SoTet4::init_jacobian_mapping();
     // as an alternative we can call: So_tet4Type::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::SoTet4,
+    actele->So3Thermo<Discret::Elements::SoTet4,
         Core::FE::CellType::tet4>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
@@ -355,9 +355,9 @@ int Discret::ELEMENTS::SoTet4ThermoType::initialize(Core::FE::Discretization& di
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                         farah 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet10ThermoType Discret::ELEMENTS::SoTet10ThermoType::instance_;
+Discret::Elements::SoTet10ThermoType Discret::Elements::SoTet10ThermoType::instance_;
 
-Discret::ELEMENTS::SoTet10ThermoType& Discret::ELEMENTS::SoTet10ThermoType::instance()
+Discret::Elements::SoTet10ThermoType& Discret::Elements::SoTet10ThermoType::instance()
 {
   return instance_;
 }
@@ -366,11 +366,11 @@ Discret::ELEMENTS::SoTet10ThermoType& Discret::ELEMENTS::SoTet10ThermoType::inst
  | create the new element type (public)                     farah 05/14 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoTet10ThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>* object =
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>(
+  Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>* object =
+      new Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>(
           -1, -1);
   object->unpack(buffer);
   return object;
@@ -381,13 +381,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoTet10ThermoType::create(
  | create the new element type (public)                     farah 05/14 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDT10THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>>(
+        Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>>(
 
         id, owner);
     return ele;
@@ -400,11 +400,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::crea
  | create the new element type (public)                     farah 05/14 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet10ThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>>(
+      Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>>(
 
       id, owner);
   return ele;
@@ -414,7 +414,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet10ThermoType::crea
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                         farah 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10ThermoType::setup_element_definition(
+void Discret::Elements::SoTet10ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet10;
@@ -433,21 +433,21 @@ void Discret::ELEMENTS::SoTet10ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          farah 05/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10ThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoTet10ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>* actele =
+    Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>* actele =
         dynamic_cast<
-            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoTet10, Core::FE::CellType::tet10>*>(
+            Discret::Elements::So3Thermo<Discret::Elements::SoTet10, Core::FE::CellType::tet10>*>(
             dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10_thermo* failed");
 
     actele->SoTet10::init_jacobian_mapping();
     // as an alternative we can call: So_tet4Type::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::SoTet10,
+    actele->So3Thermo<Discret::Elements::SoTet10,
         Core::FE::CellType::tet10>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
@@ -464,9 +464,9 @@ int Discret::ELEMENTS::SoTet10ThermoType::initialize(Core::FE::Discretization& d
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                          dano 10/13 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex27ThermoType Discret::ELEMENTS::SoHex27ThermoType::instance_;
+Discret::Elements::SoHex27ThermoType Discret::Elements::SoHex27ThermoType::instance_;
 
-Discret::ELEMENTS::SoHex27ThermoType& Discret::ELEMENTS::SoHex27ThermoType::instance()
+Discret::Elements::SoHex27ThermoType& Discret::Elements::SoHex27ThermoType::instance()
 {
   return instance_;
 }
@@ -475,11 +475,11 @@ Discret::ELEMENTS::SoHex27ThermoType& Discret::ELEMENTS::SoHex27ThermoType::inst
  | create the new element type (public)                      dano 10/13 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex27ThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>* object =
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>(
+  Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>* object =
+      new Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>(
           -1, -1);
   object->unpack(buffer);
   return object;
@@ -490,13 +490,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex27ThermoType::create(
  | create the new element type (public)                      dano 10/13 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH27THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>>(
+        Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>>(
 
         id, owner);
     return ele;
@@ -509,11 +509,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::crea
  | create the new element type (public)                      dano 10/13 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex27ThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>>(
+      Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>>(
 
       id, owner);
   return ele;
@@ -523,7 +523,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex27ThermoType::crea
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                     dano 10/13 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex27ThermoType::setup_element_definition(
+void Discret::Elements::SoHex27ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex27;
@@ -542,21 +542,21 @@ void Discret::ELEMENTS::SoHex27ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                           dano 10/13 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex27ThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex27ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>* actele =
+    Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>* actele =
         dynamic_cast<
-            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex27, Core::FE::CellType::hex27>*>(
+            Discret::Elements::So3Thermo<Discret::Elements::SoHex27, Core::FE::CellType::hex27>*>(
             dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex27_thermo* failed");
 
     actele->SoHex27::init_jacobian_mapping();
     // as an alternative we can call: So_hex27Type::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::SoHex27,
+    actele->So3Thermo<Discret::Elements::SoHex27,
         Core::FE::CellType::hex27>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
@@ -573,9 +573,9 @@ int Discret::ELEMENTS::SoHex27ThermoType::initialize(Core::FE::Discretization& d
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                         farah 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex20ThermoType Discret::ELEMENTS::SoHex20ThermoType::instance_;
+Discret::Elements::SoHex20ThermoType Discret::Elements::SoHex20ThermoType::instance_;
 
-Discret::ELEMENTS::SoHex20ThermoType& Discret::ELEMENTS::SoHex20ThermoType::instance()
+Discret::Elements::SoHex20ThermoType& Discret::Elements::SoHex20ThermoType::instance()
 {
   return instance_;
 }
@@ -584,11 +584,11 @@ Discret::ELEMENTS::SoHex20ThermoType& Discret::ELEMENTS::SoHex20ThermoType::inst
  | create the new element type (public)                     farah 05/14 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex20ThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex20ThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>* object =
-      new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>(
+  Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>* object =
+      new Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>(
           -1, -1);
   object->unpack(buffer);
   return object;
@@ -599,13 +599,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoHex20ThermoType::create(
  | create the new element type (public)                     farah 05/14 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex20ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SOLIDH20THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>>(
+        Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>>(
 
         id, owner);
     return ele;
@@ -618,11 +618,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::crea
  | create the new element type (public)                     farah 05/14 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex20ThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>>(
+      Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>>(
 
       id, owner);
   return ele;
@@ -632,7 +632,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex20ThermoType::crea
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                    farah 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex20ThermoType::setup_element_definition(
+void Discret::Elements::SoHex20ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex20;
@@ -651,21 +651,21 @@ void Discret::ELEMENTS::SoHex20ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          farah 05/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex20ThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex20ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>* actele =
+    Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>* actele =
         dynamic_cast<
-            Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::SoHex20, Core::FE::CellType::hex20>*>(
+            Discret::Elements::So3Thermo<Discret::Elements::SoHex20, Core::FE::CellType::hex20>*>(
             dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
     actele->SoHex20::init_jacobian_mapping();
     // as an alternative we can call: So_hex27Type::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::SoHex20,
+    actele->So3Thermo<Discret::Elements::SoHex20,
         Core::FE::CellType::hex20>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 
@@ -683,9 +683,9 @@ int Discret::ELEMENTS::SoHex20ThermoType::initialize(Core::FE::Discretization& d
 /*----------------------------------------------------------------------*
  | build an instance of thermo type                         seitz 12/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoNurbs27ThermoType Discret::ELEMENTS::SoNurbs27ThermoType::instance_;
+Discret::Elements::SoNurbs27ThermoType Discret::Elements::SoNurbs27ThermoType::instance_;
 
-Discret::ELEMENTS::SoNurbs27ThermoType& Discret::ELEMENTS::SoNurbs27ThermoType::instance()
+Discret::Elements::SoNurbs27ThermoType& Discret::Elements::SoNurbs27ThermoType::instance()
 {
   return instance_;
 }
@@ -694,11 +694,11 @@ Discret::ELEMENTS::SoNurbs27ThermoType& Discret::ELEMENTS::SoNurbs27ThermoType::
  | create the new element type (public)                     seitz 12/15 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27ThermoType::create(
+Core::Communication::ParObject* Discret::Elements::SoNurbs27ThermoType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>*
-      object = new Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+  Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>*
+      object = new Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27,
           Core::FE::CellType::nurbs27>(-1, -1);
   object->unpack(buffer);
   return object;
@@ -709,13 +709,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoNurbs27ThermoType::create(
  | create the new element type (public)                     seitz 12/15 |
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27ThermoType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SONURBS27THERMO")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+        Teuchos::make_rcp<Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27,
             Core::FE::CellType::nurbs27>>(id, owner);
     return ele;
   }
@@ -727,11 +727,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27ThermoType::cr
  | create the new element type (public)                     seitz 12/15 |
  | virtual method of ElementType                                        |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27ThermoType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoNurbs27ThermoType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+      Teuchos::make_rcp<Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27,
           Core::FE::CellType::nurbs27>>(id, owner);
   return ele;
 }  // Create ()
@@ -740,7 +740,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoNurbs27ThermoType::cr
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                    seitz 12/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoNurbs27ThermoType::setup_element_definition(
+void Discret::Elements::SoNurbs27ThermoType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_nurbs27;
@@ -759,20 +759,20 @@ void Discret::ELEMENTS::SoNurbs27ThermoType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | initialise the element (public)                          seitz 12/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoNurbs27ThermoType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoNurbs27ThermoType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
-    Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>*
-        actele = dynamic_cast<Discret::ELEMENTS::So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+    Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27, Core::FE::CellType::nurbs27>*
+        actele = dynamic_cast<Discret::Elements::So3Thermo<Discret::Elements::Nurbs::SoNurbs27,
             Core::FE::CellType::nurbs27>*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex20_thermo* failed");
 
     actele->SoNurbs27::init_jacobian_mapping(dis);
     // as an alternative we can call: So_hex27Type::initialize(dis);
-    actele->So3Thermo<Discret::ELEMENTS::Nurbs::SoNurbs27,
+    actele->So3Thermo<Discret::Elements::Nurbs::SoNurbs27,
         Core::FE::CellType::nurbs27>::init_jacobian_mapping_special_for_nurbs(dis);
   }
 

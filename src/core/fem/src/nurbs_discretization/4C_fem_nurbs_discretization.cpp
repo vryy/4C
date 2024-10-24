@@ -570,7 +570,7 @@ void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_boundary(
 
   // gaussian points
   const Core::FE::IntPointsAndWeights<dim> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {
@@ -711,7 +711,7 @@ void Core::FE::Utils::DbcNurbs::fill_matrix_and_rhs_for_ls_dirichlet_domain(
 
   // gaussian points
   const Core::FE::IntPointsAndWeights<dim> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   for (int iquad = 0; iquad < intpoints.ip().nquad; ++iquad)
   {

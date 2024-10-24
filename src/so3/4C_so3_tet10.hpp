@@ -41,7 +41,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class PreStress;
@@ -363,10 +363,10 @@ namespace Discret
       double pstime_;
       double time_;
       /// Prestressing object
-      Teuchos::RCP<Discret::ELEMENTS::PreStress> prestress_;
+      Teuchos::RCP<Discret::Elements::PreStress> prestress_;
       /// compute Jacobian mapping wrt to deformed configuration
       void update_jacobian_mapping(
-          const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress);
+          const std::vector<double>& disp, Discret::Elements::PreStress& prestress);
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
       //! (gebauer 07/19)
@@ -376,7 +376,7 @@ namespace Discret
 
       /// compute defgrd in all gp for given disp
       void def_gradient(const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix& gpdefgrd,
-          Discret::ELEMENTS::PreStress& prestress);
+          Discret::Elements::PreStress& prestress);
 
 
       // internal calculation methods
@@ -455,7 +455,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

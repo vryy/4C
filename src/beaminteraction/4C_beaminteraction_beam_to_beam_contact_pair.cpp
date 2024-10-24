@@ -113,11 +113,11 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::setup()
 
   // TODO maybe we can even cast the class variables element1_ and element2_ to Beam3Base here in
   // Constructor?! Calculate initial length of beam elements
-  const Discret::ELEMENTS::Beam3Base* ele1ptr =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
+  const Discret::Elements::Beam3Base* ele1ptr =
+      dynamic_cast<const Discret::Elements::Beam3Base*>(element1());
   double l1 = ele1ptr->ref_length();
-  const Discret::ELEMENTS::Beam3Base* ele2ptr =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element2());
+  const Discret::Elements::Beam3Base* ele2ptr =
+      dynamic_cast<const Discret::Elements::Beam3Base*>(element2());
   double l2 = ele2ptr->ref_length();
 
   if (element1()->element_type() != element2()->element_type())
@@ -2415,12 +2415,12 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::closest_p
           //          pdiscret_.lColElement(pdiscret_.ElementColMap()->LID(element2_->Id()));
           //
           //          const Core::Elements::ElementType & eot = element1->ElementType();
-          //          if (eot == Discret::ELEMENTS::Beam3ebType::instance())
+          //          if (eot == Discret::Elements::Beam3ebType::instance())
           //          {
-          //            const Discret::ELEMENTS::Beam3eb* beam3ebelement1 = dynamic_cast<const
-          //            Discret::ELEMENTS::Beam3eb*>(element1); double kappamax1 =
-          //            beam3ebelement1->GetKappaMax(); const Discret::ELEMENTS::Beam3eb*
-          //            beam3ebelement2 = dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element2);
+          //            const Discret::Elements::Beam3eb* beam3ebelement1 = dynamic_cast<const
+          //            Discret::Elements::Beam3eb*>(element1); double kappamax1 =
+          //            beam3ebelement1->GetKappaMax(); const Discret::Elements::Beam3eb*
+          //            beam3ebelement2 = dynamic_cast<const Discret::Elements::Beam3eb*>(element2);
           //            double kappamax2 = beam3ebelement2->GetKappaMax();
           //
           //            std::cout << "kappamax1: " << kappamax1 << std::endl;
@@ -4368,8 +4368,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
   else if (numnodalvalues == 2)
   {
     // TODO maybe cast class variables to Beam3Base upon construction ?!
-    double length1 = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1()))->ref_length();
-    double length2 = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element2()))->ref_length();
+    double length1 = (dynamic_cast<const Discret::Elements::Beam3Base*>(element1()))->ref_length();
+    double length2 = (dynamic_cast<const Discret::Elements::Beam3Base*>(element2()))->ref_length();
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
@@ -4438,7 +4438,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_shape
   }
   else if (numnodalvalues == 2)
   {
-    double length = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele))->ref_length();
+    double length = (dynamic_cast<const Discret::Elements::Beam3Base*>(ele))->ref_length();
 
     /* TODO hard set distype to line2 in case of numnodalvalues_=2 because
      *  only 3rd order Hermite interpolation is used (always 2 nodes) */
@@ -4955,17 +4955,17 @@ double BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_jac
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element
-  if (eot1 == Discret::ELEMENTS::Beam3ebType::instance())
+  if (eot1 == Discret::Elements::Beam3ebType::instance())
   {
-    jacobi = (static_cast<const Discret::ELEMENTS::Beam3eb*>(element1))->get_jacobi();
+    jacobi = (static_cast<const Discret::Elements::Beam3eb*>(element1))->get_jacobi();
   }
-  else if (eot1 == Discret::ELEMENTS::Beam3rType::instance())
+  else if (eot1 == Discret::Elements::Beam3rType::instance())
   {
-    jacobi = (static_cast<const Discret::ELEMENTS::Beam3r*>(element1))->get_jacobi();
+    jacobi = (static_cast<const Discret::Elements::Beam3r*>(element1))->get_jacobi();
   }
-  else if (eot1 == Discret::ELEMENTS::Beam3kType::instance())
+  else if (eot1 == Discret::Elements::Beam3kType::instance())
   {
-    jacobi = (static_cast<const Discret::ELEMENTS::Beam3k*>(element1))->get_jacobi();
+    jacobi = (static_cast<const Discret::Elements::Beam3k*>(element1))->get_jacobi();
   }
   else
   {

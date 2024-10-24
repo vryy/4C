@@ -2328,7 +2328,7 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
       [&]() -> std::function<void(const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>&, double&,
                 Core::LinAlg::SerialDenseMatrix&, Core::LinAlg::SerialDenseMatrix&)>
       {
-        if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(coupl_ele);
+        if (auto* solid_ele = dynamic_cast<Discret::Elements::SoBase*>(coupl_ele);
             solid_ele != nullptr)
         {
           return [&, solid_ele](const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& dir,
@@ -2340,14 +2340,14 @@ void XFEM::MeshCouplingFSI::evaluate_structural_cauchy_stress(Core::Elements::El
                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
           };
         }
-        else if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::Solid*>(coupl_ele);
+        else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(coupl_ele);
                  solid_ele != nullptr)
         {
           return [&, solid_ele](const Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& dir,
                      double& cauchy_n_dir, Core::LinAlg::SerialDenseMatrix& d_cauchy_d_d,
                      Core::LinAlg::SerialDenseMatrix& d2_cauchy_d_d2)
           {
-            Discret::ELEMENTS::CauchyNDirLinearizations<3> linearizations{};
+            Discret::Elements::CauchyNDirLinearizations<3> linearizations{};
             linearizations.d_cauchyndir_dd = &d_cauchy_d_d;
             linearizations.d2_cauchyndir_dd2 = &d2_cauchy_d_d2;
 
@@ -2415,7 +2415,7 @@ void XFEM::MeshCouplingFSI::get_stress_tangent_slave(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::estimate_nitsche_trace_max_eigenvalue(Core::Elements::Element* ele)
 {
-  auto* solidfaceele = dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(ele);
+  auto* solidfaceele = dynamic_cast<Discret::Elements::StructuralSurface*>(ele);
   FOUR_C_ASSERT(solidfaceele != nullptr, "Cast to StructuralSurface failed!");
 
   solidfaceele->set_parent_master_element(
@@ -2625,7 +2625,7 @@ void XFEM::MeshCouplingFluidFluid::estimate_nitsche_trace_max_eigenvalue(
 
   faceele->location_vector(*coupl_dis_, la, false);
 
-  Discret::ELEMENTS::FluidBoundaryParentInterface::impl(faceele)
+  Discret::Elements::FluidBoundaryParentInterface::impl(faceele)
       ->estimate_nitsche_trace_max_eigenvalue(
           faceele, params, *coupl_dis_, la[0].lm_, dummyelemat, dummyelevec);
 

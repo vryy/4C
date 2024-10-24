@@ -21,7 +21,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      |  HEX 8 Element                                         schmidt 09/17 |
@@ -159,7 +159,7 @@ namespace Discret
       std::string get_element_type_string() const { return "SONURBS27POROSCATRA"; }
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

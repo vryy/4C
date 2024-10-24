@@ -139,8 +139,8 @@ void loma_dyn(int restart)
         // set implementation type of cloned scatra elements to loma
         for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
         {
-          Discret::ELEMENTS::Transport* element =
-              dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i));
+          Discret::Elements::Transport* element =
+              dynamic_cast<Discret::Elements::Transport*>(scatradis->l_col_element(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else

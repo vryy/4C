@@ -46,7 +46,7 @@ namespace Mat
   class CoordinateSystemProvider;
 }
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class PrestressStrategy;
@@ -57,7 +57,7 @@ namespace MIXTURE
   {
     class PrestressStrategy : public Core::Mat::PAR::Parameter
     {
-      friend class MIXTURE::PrestressStrategy;
+      friend class Mixture::PrestressStrategy;
 
      public:
       /// constructor
@@ -75,7 +75,7 @@ namespace MIXTURE
       }
 
       /// create prestress strategy instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() = 0;
+      virtual std::unique_ptr<Mixture::PrestressStrategy> create_prestress_strategy() = 0;
 
       /*!
        * \brief Factory of the prestress strategy parameters
@@ -86,7 +86,7 @@ namespace MIXTURE
        * @param matid Material id of the prestress strategy
        * @return Parameters of the referenced prestress strategy
        */
-      static MIXTURE::PAR::PrestressStrategy* factory(int matid);
+      static Mixture::PAR::PrestressStrategy* factory(int matid);
 
       /// @name parameters of the prestress strategy
       /// @{
@@ -102,7 +102,7 @@ namespace MIXTURE
   {
    public:
     /// Constructor for the material given the material parameters
-    explicit PrestressStrategy(MIXTURE::PAR::PrestressStrategy* params){};
+    explicit PrestressStrategy(Mixture::PAR::PrestressStrategy* params){};
 
     virtual ~PrestressStrategy() = default;
 
@@ -137,7 +137,7 @@ namespace MIXTURE
      * @param numgp (in) : number of Gauss points
      * @param eleGID (in) : global element id
      */
-    virtual void setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params,
+    virtual void setup(Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params,
         int numgp, int eleGID){};
 
     /*!
@@ -151,7 +151,7 @@ namespace MIXTURE
      */
     virtual void evaluate_prestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
+        Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) = 0;
 
     /*!
@@ -166,10 +166,10 @@ namespace MIXTURE
      * \param eleGID (in) : Global element id
      */
     virtual void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+        Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

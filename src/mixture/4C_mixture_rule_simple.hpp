@@ -27,23 +27,23 @@ namespace Mat
   }
 }  // namespace Mat
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class SimpleMixtureRule;
 
   namespace PAR
   {
-    class SimpleMixtureRule : public MIXTURE::PAR::MixtureRule
+    class SimpleMixtureRule : public Mixture::PAR::MixtureRule
     {
-      friend class MIXTURE::SimpleMixtureRule;
+      friend class Mixture::SimpleMixtureRule;
 
      public:
       /// constructor
       explicit SimpleMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
+      std::unique_ptr<Mixture::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -59,11 +59,11 @@ namespace MIXTURE
    * \brief This mixture rule controls the evaluation of growth and remodel simulations with
    * homogenized constrained mixture models
    */
-  class SimpleMixtureRule : public MIXTURE::MixtureRule
+  class SimpleMixtureRule : public Mixture::MixtureRule
   {
    public:
     /// Constructor for mixture rule given the input parameters
-    explicit SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* params);
+    explicit SimpleMixtureRule(Mixture::PAR::SimpleMixtureRule* params);
 
     void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
@@ -78,7 +78,7 @@ namespace MIXTURE
     ///! Rule parameters as defined in the input file
     PAR::SimpleMixtureRule* params_{};
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

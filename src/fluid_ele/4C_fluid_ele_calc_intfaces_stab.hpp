@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //-----------------------------------------------------------------
     //-----------------------------------------------------------------
@@ -55,11 +55,11 @@ namespace Discret
 
       */
       virtual int evaluate_edge_based_stabilization(
-          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Discret::Elements::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          Discret::ELEMENTS::FluidEleParameterTimInt&
+          Discret::Elements::FluidEleParameterTimInt&
               fldparatimint,  ///< time-integration parameter
-          Discret::ELEMENTS::FluidEleParameterIntFace&
+          Discret::Elements::FluidEleParameterIntFace&
               fldintfacepara,                        ///< general parameter for internal face
           Teuchos::ParameterList& params,            ///< parameter list
           Core::FE::Discretization& discretization,  ///< discretization
@@ -85,7 +85,7 @@ namespace Discret
         \param surfele (in):   fluid internal surface element
 
       */
-      static FluidIntFaceStab* impl(Discret::ELEMENTS::FluidIntFace* surfele);
+      static FluidIntFaceStab* impl(Discret::Elements::FluidIntFace* surfele);
     };
 
 
@@ -155,11 +155,11 @@ namespace Discret
 
       */
       int evaluate_edge_based_stabilization(
-          Discret::ELEMENTS::FluidIntFace* intface,     ///< internal face element
+          Discret::Elements::FluidIntFace* intface,     ///< internal face element
           Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-          Discret::ELEMENTS::FluidEleParameterTimInt&
+          Discret::Elements::FluidEleParameterTimInt&
               fldparatimint,  ///< time-integration parameter
-          Discret::ELEMENTS::FluidEleParameterIntFace&
+          Discret::Elements::FluidEleParameterIntFace&
               fldintfacepara,                        ///< general parameter for internal face
           Teuchos::ParameterList& params,            ///< parameter list
           Core::FE::Discretization& discretization,  ///< discretization
@@ -254,7 +254,7 @@ namespace Discret
 
       //! set the convective velocity
       void set_convective_velint(
-          Discret::ELEMENTS::FluidEleParameterIntFace& fldintfacepara, const bool isale);
+          Discret::Elements::FluidEleParameterIntFace& fldintfacepara, const bool isale);
 
       //! Provide pressure and viscous u (EOS) ghost penalty stabilization for full! 2nd order
       //! derivatives
@@ -294,7 +294,7 @@ namespace Discret
       //! compute h_k w.r.t master and slave element
       void compute_patch_hk(Fluid* master,           ///< master fluid element
           Fluid* slave,                              ///< slave fluid element
-          Discret::ELEMENTS::FluidIntFace* intface,  ///< intface element
+          Discret::Elements::FluidIntFace* intface,  ///< intface element
           const Inpar::FLUID::EosElementLength&
               eos_element_length  ///< which definition of element length?
       );
@@ -302,19 +302,19 @@ namespace Discret
       //! compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element
       double compute_patch_hk_surf_with_max_diameter(Fluid* master,  ///< master fluid element
           Fluid* slave,                                              ///< slave fluid element
-          Discret::ELEMENTS::FluidIntFace* intface                   ///< intface element
+          Discret::Elements::FluidIntFace* intface                   ///< intface element
       );
 
       //! compute h_e based on the diameter of the intfaace surface(3D) and the length of the
       //! intface line(2D)
-      double compute_surf_diameter(Discret::ELEMENTS::FluidIntFace* intface  ///< intface element
+      double compute_surf_diameter(Discret::Elements::FluidIntFace* intface  ///< intface element
       );
 
       //! compute h_k based on distance of quadrilateral element to opposite surface/edge - just for
       //! quadrilateral/hexahedral elements
       double compute_patch_hk_dist_to_opp_surf(Fluid* master,  ///< master fluid element
           Fluid* slave,                                        ///< slave fluid element
-          Discret::ELEMENTS::FluidIntFace* intface             ///< intface element
+          Discret::Elements::FluidIntFace* intface             ///< intface element
       );
 
       //! compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element,
@@ -322,7 +322,7 @@ namespace Discret
       //! elements)
       double compute_patch_hk_diameter_to_opp_surf(Fluid* master,  ///< master fluid element
           Fluid* slave,                                            ///< slave fluid element
-          Discret::ELEMENTS::FluidIntFace* intface                 ///< intface element
+          Discret::Elements::FluidIntFace* intface                 ///< intface element
       );
 
       //! compute h_k based on the maximal diameter of the master and slave element
@@ -1169,7 +1169,7 @@ namespace Discret
                             ///< elements?
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

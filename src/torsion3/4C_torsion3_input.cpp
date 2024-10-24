@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Torsion3::read_element(const std::string& eletype,
+bool Discret::Elements::Torsion3::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read type of material model

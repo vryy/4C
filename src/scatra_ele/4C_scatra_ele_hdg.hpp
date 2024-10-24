@@ -30,7 +30,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraHDGType : public TransportType
     {
@@ -703,7 +703,7 @@ namespace Discret
       face's coordinate system
       */
       ScaTraHDGIntFace(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::ScaTraHDG* parent_master, Discret::ELEMENTS::ScaTraHDG* parent_slave,
+          Discret::Elements::ScaTraHDG* parent_master, Discret::Elements::ScaTraHDG* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
 
@@ -915,26 +915,26 @@ namespace Discret
       /*!
       \brief return the master parent ScaTraHDG element
       */
-      Discret::ELEMENTS::ScaTraHDG* parent_master_element() const
+      Discret::Elements::ScaTraHDG* parent_master_element() const
       {
         Core::Elements::Element* parent =
             this->Core::Elements::FaceElement::parent_master_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::ScaTraHDG*>(parent) != nullptr,
             "Master element is no ScaTraHDG element");
-        return static_cast<Discret::ELEMENTS::ScaTraHDG*>(parent);
+        return static_cast<Discret::Elements::ScaTraHDG*>(parent);
       }
 
       /*!
       \brief return the slave parent ScaTraHDG element
       */
-      Discret::ELEMENTS::ScaTraHDG* parent_slave_element() const
+      Discret::Elements::ScaTraHDG* parent_slave_element() const
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::ScaTraHDG*>(parent) != nullptr,
             "Slave element is no ScaTraHDG element");
-        return static_cast<Discret::ELEMENTS::ScaTraHDG*>(parent);
+        return static_cast<Discret::Elements::ScaTraHDG*>(parent);
       }
 
       //@}
@@ -953,7 +953,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

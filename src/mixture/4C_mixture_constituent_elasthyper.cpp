@@ -17,36 +17,36 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
-MIXTURE::PAR::MixtureConstituentElastHyper::MixtureConstituentElastHyper(
+Mixture::PAR::MixtureConstituentElastHyper::MixtureConstituentElastHyper(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituentElastHyperBase(matdata)
 {
   // do nothing
 }
 
-// Create an instance of MIXTURE::MixtureConstituentElastHyper from the parameters
-std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituentElastHyper::create_constituent(int id)
+// Create an instance of Mixture::MixtureConstituentElastHyper from the parameters
+std::unique_ptr<Mixture::MixtureConstituent>
+Mixture::PAR::MixtureConstituentElastHyper::create_constituent(int id)
 {
-  return std::unique_ptr<MIXTURE::MixtureConstituentElastHyper>(
-      new MIXTURE::MixtureConstituentElastHyper(this, id));
+  return std::unique_ptr<Mixture::MixtureConstituentElastHyper>(
+      new Mixture::MixtureConstituentElastHyper(this, id));
 }
 
 // Constructor of the constituent holding the material parameters
-MIXTURE::MixtureConstituentElastHyper::MixtureConstituentElastHyper(
-    MIXTURE::PAR::MixtureConstituentElastHyper* params, int id)
+Mixture::MixtureConstituentElastHyper::MixtureConstituentElastHyper(
+    Mixture::PAR::MixtureConstituentElastHyper* params, int id)
     : MixtureConstituentElastHyperBase(params, id)
 {
 }
 
 // Returns the material type
-Core::Materials::MaterialType MIXTURE::MixtureConstituentElastHyper::material_type() const
+Core::Materials::MaterialType Mixture::MixtureConstituentElastHyper::material_type() const
 {
   return Core::Materials::mix_elasthyper;
 }
 
 // Evaluates the stress of the constituent
-void MIXTURE::MixtureConstituentElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::MixtureConstituentElastHyper::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)
@@ -65,7 +65,7 @@ void MIXTURE::MixtureConstituentElastHyper::evaluate(const Core::LinAlg::Matrix<
 }
 
 // Compute the stress resultant with incorporating an elastic and inelastic part of the deformation
-void MIXTURE::MixtureConstituentElastHyper::evaluate_elastic_part(
+void Mixture::MixtureConstituentElastHyper::evaluate_elastic_part(
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<3, 3>& iFextin,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)

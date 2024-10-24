@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
  |  pre-evaluate the element (public)                      sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
+void Discret::Elements::MembraneScatra<distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   if (la.size() > 1)
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::MembraneScatra<distype>::pre_evaluate(Teuchos::Parameter
  |  evaluate the element (public)                          sfuchs 05/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::MembraneScatra<distype>::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::MembraneScatra<distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -118,9 +118,9 @@ int Discret::ELEMENTS::MembraneScatra<distype>::evaluate(Teuchos::ParameterList&
   return 0;
 }
 
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::tri3>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::tri6>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::quad4>;
+template class Discret::Elements::MembraneScatra<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

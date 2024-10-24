@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class PoroFluidMultiPhaseEleInterface;
@@ -41,7 +41,7 @@ namespace Discret
       static PoroFluidMultiPhaseEleInterface* define_problem_type(
           const int numdofpernode, const std::string& disname);
     };  // class PoroFluidMultiPhaseBoundaryFactory
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 

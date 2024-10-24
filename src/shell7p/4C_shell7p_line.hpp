@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   class Shell7pLineType : public Core::Elements::ElementType
   {
@@ -114,13 +114,13 @@ namespace Discret::ELEMENTS
     [[nodiscard]] int num_dof_per_element() const override { return 0; }
 
 
-    [[nodiscard]] Discret::ELEMENTS::Shell7p* parent_element() const override
+    [[nodiscard]] Discret::Elements::Shell7p* parent_element() const override
     {
       Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_element();
       // make sure the static cast below is really valid
-      FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Shell7p*>(parent) != nullptr,
+      FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Shell7p*>(parent) != nullptr,
           "Parent element is no shell element");
-      return static_cast<Discret::ELEMENTS::Shell7p*>(parent);
+      return static_cast<Discret::Elements::Shell7p*>(parent);
     }
 
     void print(std::ostream& os) const override;
@@ -166,7 +166,7 @@ namespace Discret::ELEMENTS
     static constexpr int node_dof_ = 6;
   };  // class Shell7pLine
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

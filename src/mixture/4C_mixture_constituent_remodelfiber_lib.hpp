@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE::PAR
+namespace Mixture::PAR
 {
   template <typename T>
   class RemodelFiberMaterial;
@@ -27,9 +27,9 @@ namespace MIXTURE::PAR
    * @brief Create a remodel fiber material from the material id given in the input file
    *
    * @param matid material id given in the input file
-   * @return const MIXTURE::PAR::RemodelFiberMaterial<double>*
+   * @return const Mixture::PAR::RemodelFiberMaterial<double>*
    */
-  [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_factory(int matid);
+  [[nodiscard]] const Mixture::PAR::RemodelFiberMaterial<double>* fiber_material_factory(int matid);
 
   struct ExponentialFiberParameters
   {
@@ -37,9 +37,9 @@ namespace MIXTURE::PAR
     double k2_;
     bool supports_compression_;
   };
-}  // namespace MIXTURE::PAR
+}  // namespace Mixture::PAR
 
-namespace MIXTURE
+namespace Mixture
 {
   template <typename T>
   [[nodiscard]] inline T get_exponential_fiber_strain_energy(
@@ -90,7 +90,7 @@ namespace MIXTURE
   [[nodiscard]] inline T get_exponential_fiber_cauchy_stress(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
-    const T dPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4<T>(params, I4);
+    const T dPsi = Mixture::get_d_exponential_fiber_strain_energy_d_i4<T>(params, I4);
 
     return 2.0 * dPsi * I4;
   }
@@ -99,8 +99,8 @@ namespace MIXTURE
   [[nodiscard]] inline T get_d_exponential_fiber_cauchy_stress_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
-    const T dPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4<T>(params, I4);
-    const T ddPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4_d_i4<T>(params, I4);
+    const T dPsi = Mixture::get_d_exponential_fiber_strain_energy_d_i4<T>(params, I4);
+    const T ddPsi = Mixture::get_d_exponential_fiber_strain_energy_d_i4_d_i4<T>(params, I4);
 
     return 2.0 * (dPsi + I4 * ddPsi);
   }
@@ -109,12 +109,12 @@ namespace MIXTURE
   [[nodiscard]] inline T get_d_exponential_fiber_cauchy_stress_d_i4_d_i4(
       const PAR::ExponentialFiberParameters& params, const T I4)
   {
-    const T ddPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4_d_i4<T>(params, I4);
-    const T dddPsi = MIXTURE::get_d_exponential_fiber_strain_energy_d_i4_d_i4_d_i4<T>(params, I4);
+    const T ddPsi = Mixture::get_d_exponential_fiber_strain_energy_d_i4_d_i4<T>(params, I4);
+    const T dddPsi = Mixture::get_d_exponential_fiber_strain_energy_d_i4_d_i4_d_i4<T>(params, I4);
 
     return 2.0 * (2 * ddPsi + I4 * dddPsi);
   }
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

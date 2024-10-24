@@ -304,8 +304,8 @@ namespace EHL
     enum Inpar::EHL::ConvNorm normtyperhs_;       //!< convergence check for residual forces
     enum Inpar::Solid::ConvNorm normtypedisi_;    //!< convergence check for residual displacements
     enum Inpar::Solid::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
-    enum Inpar::LUBRICATION::ConvNorm normtypeprei_;  //!< convergence check for residual pressures
-    enum Inpar::LUBRICATION::ConvNorm
+    enum Inpar::Lubrication::ConvNorm normtypeprei_;  //!< convergence check for residual pressures
+    enum Inpar::Lubrication::ConvNorm
         normtypelubricationrhs_;  //!< convergence check for residual lubrication forces
 
     enum Inpar::EHL::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces

@@ -15,30 +15,30 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8PoroP1ScatraType Discret::ELEMENTS::SoHex8PoroP1ScatraType::instance_;
+Discret::Elements::SoHex8PoroP1ScatraType Discret::Elements::SoHex8PoroP1ScatraType::instance_;
 
-Discret::ELEMENTS::SoHex8PoroP1ScatraType& Discret::ELEMENTS::SoHex8PoroP1ScatraType::instance()
+Discret::Elements::SoHex8PoroP1ScatraType& Discret::Elements::SoHex8PoroP1ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8PoroP1ScatraType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex8PoroP1ScatraType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>* object =
-      new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>(
+  Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoHex8, Core::FE::CellType::hex8>* object =
+      new Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoHex8, Core::FE::CellType::hex8>(
           -1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PoroP1ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+        Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
         id, owner);
     return ele;
@@ -46,17 +46,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1ScatraType:
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8PoroP1ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8PoroP1ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>>(
+      Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoHex8, Core::FE::CellType::hex8>>(
 
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoHex8PoroP1ScatraType::setup_element_definition(
+void Discret::Elements::SoHex8PoroP1ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_hex8poro;
@@ -72,30 +72,30 @@ void Discret::ELEMENTS::SoHex8PoroP1ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  TET 4 Element                                         schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoTet4PoroP1ScatraType Discret::ELEMENTS::SoTet4PoroP1ScatraType::instance_;
+Discret::Elements::SoTet4PoroP1ScatraType Discret::Elements::SoTet4PoroP1ScatraType::instance_;
 
-Discret::ELEMENTS::SoTet4PoroP1ScatraType& Discret::ELEMENTS::SoTet4PoroP1ScatraType::instance()
+Discret::Elements::SoTet4PoroP1ScatraType& Discret::Elements::SoTet4PoroP1ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoTet4PoroP1ScatraType::create(
+Core::Communication::ParObject* Discret::Elements::SoTet4PoroP1ScatraType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>* object =
-      new Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>(
+  Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoTet4, Core::FE::CellType::tet4>* object =
+      new Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoTet4, Core::FE::CellType::tet4>(
           -1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PoroP1ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-        Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+        Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
         id, owner);
     return ele;
@@ -103,17 +103,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1ScatraType:
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoTet4PoroP1ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoTet4PoroP1ScatraType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele = Teuchos::make_rcp<
-      Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>>(
+      Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoTet4, Core::FE::CellType::tet4>>(
 
       id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoTet4PoroP1ScatraType::setup_element_definition(
+void Discret::Elements::SoTet4PoroP1ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_tet4;

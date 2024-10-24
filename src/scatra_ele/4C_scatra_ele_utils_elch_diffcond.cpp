@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>*
-Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::instance(
+Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>*
+Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -40,7 +40,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::instance(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
+Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCond(
     const int numdofpernode, const int numscal, const std::string& disname)
     : myelectrode::ScaTraEleUtilsElchElectrode(numdofpernode, numscal, disname)
 {
@@ -49,7 +49,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCo
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_mat(
+void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_mat(
     Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, const Inpar::ElCh::EquPot equpot, const double ffrt,
     Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,
@@ -79,7 +79,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_mat(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_phase(
+void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_phase(
     Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, const Inpar::ElCh::EquPot& equpot, const double& ffrt,
     Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,
@@ -150,7 +150,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_phase(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::mat_newman(
+void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_newman(
     Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
     const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager)
 {
@@ -203,29 +203,29 @@ void Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>::mat_newman(
 
 // template classes
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::nurbs3>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::quad4>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::nurbs3>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::hex8>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::hex8>;
 // template class
-// Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tet10>;
+// Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::tet10>;
 // template class
-// Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::pyramid5>;
+// Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::pyramid5>;
 // template class
-// Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::nurbs27>;
+// Discret::Elements::ScaTraEleUtilsElchDiffCond<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

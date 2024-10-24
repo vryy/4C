@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     template <Core::FE::CellType distype, int probdim>
@@ -35,7 +35,7 @@ namespace Discret
       //! protected constructor for singletons
       ScaTraEleCalcStd(const int numdofpernode, const int numscal, const std::string& disname);
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

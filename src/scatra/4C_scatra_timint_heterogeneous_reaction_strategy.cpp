@@ -114,8 +114,8 @@ void ScaTra::HeterogeneousReactionStrategy::setup_meshtying()
     // set implementation type of cloned scatra elements
     for (int i = 0; i < discret_->num_my_col_elements(); ++i)
     {
-      Discret::ELEMENTS::Transport* element =
-          dynamic_cast<Discret::ELEMENTS::Transport*>(discret_->l_col_element(i));
+      Discret::Elements::Transport* element =
+          dynamic_cast<Discret::Elements::Transport*>(discret_->l_col_element(i));
       if (element == nullptr) FOUR_C_THROW("Invalid element type!");
 
       if (element->material()->material_type() == Core::Materials::m_matlist_reactions)

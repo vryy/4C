@@ -15,8 +15,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-std::unique_ptr<Discret::ELEMENTS::Shell7pEleCalcInterface>
-Discret::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
+std::unique_ptr<Discret::Elements::Shell7pEleCalcInterface>
+Discret::Elements::Shell7pFactory::provide_shell7p_calculation_interface(
     const Core::Elements::Element& ele, const std::set<Inpar::Solid::EleTech>& eletech)
 {
   switch (ele.shape())
@@ -47,8 +47,8 @@ Discret::ELEMENTS::Shell7pFactory::provide_shell7p_calculation_interface(
 }
 
 template <Core::FE::CellType distype>
-std::unique_ptr<Discret::ELEMENTS::Shell7pEleCalcInterface>
-Discret::ELEMENTS::Shell7pFactory::define_calculation_interface_type(
+std::unique_ptr<Discret::Elements::Shell7pEleCalcInterface>
+Discret::Elements::Shell7pFactory::define_calculation_interface_type(
     const std::set<Inpar::Solid::EleTech>& eletech)
 {
   // here we go into the different cases for element technology
@@ -56,7 +56,7 @@ Discret::ELEMENTS::Shell7pFactory::define_calculation_interface_type(
   {
     // no element technology
     case 0:
-      return std::make_unique<Discret::ELEMENTS::Shell7pEleCalc<distype>>();
+      return std::make_unique<Discret::Elements::Shell7pEleCalc<distype>>();
     // simple: just one element technology
     case 1:
       switch (*eletech.begin())
@@ -68,7 +68,7 @@ Discret::ELEMENTS::Shell7pFactory::define_calculation_interface_type(
           {
             FOUR_C_THROW("EAS is only implemented for quad4 and quad9 elements.");
           }
-          return std::make_unique<Discret::ELEMENTS::Shell7pEleCalcEas<distype>>();
+          return std::make_unique<Discret::Elements::Shell7pEleCalcEas<distype>>();
         }
         default:
           FOUR_C_THROW("unknown element technology");

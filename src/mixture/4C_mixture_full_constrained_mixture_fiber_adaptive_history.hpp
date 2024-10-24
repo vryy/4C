@@ -27,7 +27,7 @@ namespace Core::Communication
   class PackBuffer;
   class UnpackBuffer;
 }  // namespace Core::Communication
-namespace MIXTURE
+namespace Mixture
 {
   namespace Internal
   {
@@ -248,7 +248,7 @@ namespace MIXTURE
 
   namespace Internal
   {
-    void adapt_timestep_adaptivity_info(MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info,
+    void adapt_timestep_adaptivity_info(Mixture::TimestepAdaptivityInfo& timestep_adaptivity_info,
         unsigned int level, unsigned int num_coarsened_intervals);
     void mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
         const unsigned int num_items_to_delete, const unsigned int begin_index);
@@ -361,7 +361,7 @@ namespace MIXTURE
    */
   template <typename Number>
   bool is_model_equation_simpson_rule_integration_below_tolerance(
-      const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number>& growth_evolution,
+      const Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number>& growth_evolution,
       const double time, const double begin_time, const double end_time, const Number tolerance)
   {
     const double dt = (end_time - begin_time) / 2;
@@ -379,7 +379,7 @@ namespace MIXTURE
            (Core::FADUtils::norm<Number>(numerical_integration) <= tolerance &&
                Core::FADUtils::norm<Number>(exact_integration) <= tolerance);
   }
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

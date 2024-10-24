@@ -26,7 +26,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidBoundary;
 
@@ -45,20 +45,20 @@ namespace Discret
       /// Empty destructor
       virtual ~FluidBoundaryInterface() = default;
 
-      virtual void evaluate_action(Discret::ELEMENTS::FluidBoundary* ele1,
+      virtual void evaluate_action(Discret::Elements::FluidBoundary* ele1,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3) = 0;
 
-      virtual int evaluate_neumann(Discret::ELEMENTS::FluidBoundary* ele,
+      virtual int evaluate_neumann(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) = 0;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

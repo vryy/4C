@@ -30,7 +30,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ElemagIntFace;
 
@@ -462,7 +462,7 @@ namespace Discret
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       ElemagBoundary(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Elemag* parent, const int lsurface);
+          Discret::Elements::Elemag* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -744,7 +744,7 @@ namespace Discret
       face's coordinate system
       */
       ElemagIntFace(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Elemag* parent_master, Discret::ELEMENTS::Elemag* parent_slave,
+          Discret::Elements::Elemag* parent_master, Discret::Elements::Elemag* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
 
@@ -953,26 +953,26 @@ namespace Discret
       /*!
       \brief return the master parent Elemag element
       */
-      Discret::ELEMENTS::Elemag* parent_master_element() const
+      Discret::Elements::Elemag* parent_master_element() const
       {
         Core::Elements::Element* parent =
             this->Core::Elements::FaceElement::parent_master_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Elemag*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Elemag*>(parent) != nullptr,
             "Master element is no Elemag element");
-        return static_cast<Discret::ELEMENTS::Elemag*>(parent);
+        return static_cast<Discret::Elements::Elemag*>(parent);
       }
 
       /*!
       \brief return the slave parent Elemag element
       */
-      Discret::ELEMENTS::Elemag* parent_slave_element() const
+      Discret::Elements::Elemag* parent_slave_element() const
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Elemag*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Elemag*>(parent) != nullptr,
             "Slave element is no Elemag element");
-        return static_cast<Discret::ELEMENTS::Elemag*>(parent);
+        return static_cast<Discret::Elements::Elemag*>(parent);
       }
 
       //@}
@@ -988,7 +988,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

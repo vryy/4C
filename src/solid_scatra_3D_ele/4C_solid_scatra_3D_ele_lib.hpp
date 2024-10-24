@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief Read the scatra implementation type from the a container of data to create the element
@@ -25,7 +25,7 @@ namespace Discret::ELEMENTS
    * @return Inpar::ScaTra::ImplType
    */
   Inpar::ScaTra::ImplType read_scatra_impl_type(const Core::IO::InputParameterContainer& container);
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Weakly compressible fluid HDG element implementation
     /*!
@@ -46,7 +46,7 @@ namespace Discret
       static constexpr unsigned int nfaces_ = Core::FE::num_faces<distype>;
 
 
-      int integrate_shape_function(Discret::ELEMENTS::Fluid* ele,
+      int integrate_shape_function(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints) override
@@ -55,7 +55,7 @@ namespace Discret
         return 1;
       }
 
-      int integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
+      int integrate_shape_function_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
@@ -70,7 +70,7 @@ namespace Discret
       /*!
         Interface function for supporting methods of the element
        */
-      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -92,11 +92,11 @@ namespace Discret
       /*!
           general function to compute the error (analytical solution) for particular problem type
        */
-      virtual int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec);
 
-      int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec,
           const Core::FE::GaussIntegration&) override
@@ -105,33 +105,33 @@ namespace Discret
       }
 
       /// Update local solution
-      virtual int update_local_solution(Discret::ELEMENTS::Fluid* ele,
+      virtual int update_local_solution(Discret::Elements::Fluid* ele,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& interiorinc);
 
       /// projection of function field
-      virtual int project_field(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int project_field(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
 
       /*! \brief Interpolates an HDG solution to the element nodes for output
        */
-      virtual int interpolate_solution_to_nodes(Discret::ELEMENTS::Fluid* ele,
+      virtual int interpolate_solution_to_nodes(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, Core::LinAlg::SerialDenseVector& elevec1);
 
       /*!
       \brief Initialize the shape functions and solver to the given element (degree is runtime
       parameter)
        */
-      void initialize_shapes(const Discret::ELEMENTS::Fluid* ele);
+      void initialize_shapes(const Discret::Elements::Fluid* ele);
 
       /// Evaluate the element
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -140,7 +140,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points
-      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -149,7 +149,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           const Core::FE::GaussIntegration& intpoints, bool offdiag = false) override;
 
-      int compute_error_interface(Discret::ELEMENTS::Fluid* ele,     ///< fluid element
+      int compute_error_interface(Discret::Elements::Fluid* ele,     ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -167,7 +167,7 @@ namespace Discret
       }
 
       /// Evaluate the XFEM cut element
-      int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_xfem(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -182,7 +182,7 @@ namespace Discret
       }
 
 
-      void element_xfem_interface_hybrid_lm(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      void element_xfem_interface_hybrid_lm(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -208,7 +208,7 @@ namespace Discret
         return;
       }
 
-      void element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      void element_xfem_interface_nit(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                 ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
@@ -232,7 +232,7 @@ namespace Discret
         return;
       }
 
-      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& dis,
+      void calculate_continuity_xfem(Discret::Elements::Fluid* ele, Core::FE::Discretization& dis,
           const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
           const Core::FE::GaussIntegration& intpoints) override
       {
@@ -240,7 +240,7 @@ namespace Discret
         return;
       }
 
-      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& dis,
+      void calculate_continuity_xfem(Discret::Elements::Fluid* ele, Core::FE::Discretization& dis,
           const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra) override
       {
         FOUR_C_THROW("Not implemented!");
@@ -266,7 +266,7 @@ namespace Discret
         static constexpr unsigned int nfaces_ = FluidEleCalcHDGWeakComp<distype>::nfaces_;
 
         /// local solver
-        LocalSolver(const Discret::ELEMENTS::Fluid* ele,
+        LocalSolver(const Discret::Elements::Fluid* ele,
             const Core::FE::ShapeValues<distype>& shapeValues,
             Core::FE::ShapeValuesFace<distype>& shapeValuesFace, bool completepoly);
 
@@ -298,19 +298,19 @@ namespace Discret
         void compute_local_residual();
 
         /// compute global residual
-        void compute_global_residual(Discret::ELEMENTS::Fluid& ele);
+        void compute_global_residual(Discret::Elements::Fluid& ele);
 
         /// compute local-local matrix
         void compute_local_local_matrix();
 
         /// compute local-global matrix
-        void compute_local_global_matrix(Discret::ELEMENTS::Fluid& ele);
+        void compute_local_global_matrix(Discret::Elements::Fluid& ele);
 
         /// compute global-local matrix
-        void compute_global_local_matrix(Discret::ELEMENTS::Fluid& ele);
+        void compute_global_local_matrix(Discret::Elements::Fluid& ele);
 
         /// compute global-global matrix
-        void compute_global_global_matrix(Discret::ELEMENTS::Fluid& ele);
+        void compute_global_global_matrix(Discret::Elements::Fluid& ele);
 
         /// invert local-local matrix
         void invert_local_local_matrix();
@@ -322,7 +322,7 @@ namespace Discret
         void condense_local_matrix(Core::LinAlg::SerialDenseMatrix& eleMat);
 
         // print matrices and residuals
-        void print_matrices_and_residuals(Discret::ELEMENTS::Fluid& ele,
+        void print_matrices_and_residuals(Discret::Elements::Fluid& ele,
             Core::LinAlg::SerialDenseVector& eleVec, Core::LinAlg::SerialDenseMatrix& eleMat);
 
         // number of degrees of freedom
@@ -421,8 +421,8 @@ namespace Discret
 
         std::vector<int> pivots;  /// pivots for factorization of matrices
 
-        Teuchos::RCP<Discret::ELEMENTS::FluidEleParameter> fldpara_;  //! pointer to parameter list
-        Teuchos::RCP<Discret::ELEMENTS::FluidEleParameterTimInt>
+        Teuchos::RCP<Discret::Elements::FluidEleParameter> fldpara_;  //! pointer to parameter list
+        Teuchos::RCP<Discret::Elements::FluidEleParameterTimInt>
             fldparatimint_;  //! pointer to time parameter list
       };
 
@@ -457,7 +457,7 @@ namespace Discret
 
       bool usescompletepoly_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -61,7 +61,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationTri3)
   {
     // Set up the pair.
-    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
+    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0);
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(beam.get(), nullptr, evaluation_data_);
     set_is_unit_test(pair, true);
@@ -95,7 +95,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationTri6)
   {
     // Set up the pair.
-    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
+    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0);
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(beam.get(), nullptr, evaluation_data_);
     set_is_unit_test(pair, true);
@@ -129,7 +129,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationQuad4)
   {
     // Set up the pair.
-    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
+    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0);
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(beam.get(), nullptr, evaluation_data_);
     set_is_unit_test(pair, true);
@@ -163,7 +163,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationQuad8)
   {
     // Set up the pair.
-    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
+    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0);
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(beam.get(), nullptr, evaluation_data_);
     set_is_unit_test(pair, true);
@@ -197,7 +197,7 @@ namespace
   TEST_F(GeometryPairLineToSurfaceTest, TestPointToSurfaceProjectionNormalInterpolationQuad9)
   {
     // Set up the pair.
-    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(0, 0);
+    Teuchos::RCP<Core::Elements::Element> beam = Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0);
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(beam.get(), nullptr, evaluation_data_);
     set_is_unit_test(pair, true);

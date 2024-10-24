@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface*
-Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::impl(const Core::Elements::Element* ele)
+Discret::Elements::ScaTraHDGIntFaceImplInterface*
+Discret::Elements::ScaTraHDGIntFaceImplInterface::impl(const Core::Elements::Element* ele)
 {
   switch (ele->shape())
   {
@@ -59,14 +59,14 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImplInterface::impl(const Core::Elements::Ele
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>*
-Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::ScaTraHDGIntFaceImpl<distype>*
+Discret::Elements::ScaTraHDGIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>>(
-            new Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>());
+        return std::unique_ptr<Discret::Elements::ScaTraHDGIntFaceImpl<distype>>(
+            new Discret::Elements::ScaTraHDGIntFaceImpl<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -75,7 +75,7 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::instance(Core::Utils::Singleto
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
+Discret::Elements::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 {
   return;
 }
@@ -84,8 +84,8 @@ Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::ScaTraHDGIntFaceImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    Discret::ELEMENTS::ScaTraHDGIntFace* intface,            ///< internal face element
+void Discret::Elements::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
+    Discret::Elements::ScaTraHDGIntFace* intface,            ///< internal face element
     std::vector<int>& nds_master,                            ///< nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                             ///< nodal dofset w.r.t. slave element
     Teuchos::ParameterList& params,                          ///< parameter list
@@ -102,8 +102,8 @@ void Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::assemble_internal_faces_u
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraHDGIntFaceImpl<distype>::evaluate_internal_faces(
-    Discret::ELEMENTS::ScaTraHDGIntFace* intface,  ///< internal face element
+int Discret::Elements::ScaTraHDGIntFaceImpl<distype>::evaluate_internal_faces(
+    Discret::Elements::ScaTraHDGIntFace* intface,  ///< internal face element
     Teuchos::ParameterList& params,                ///< parameter list
     Core::FE::Discretization& discretization,      ///< discretization
     std::vector<int>& patchlm,                     ///< patch local map

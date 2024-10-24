@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     template <int nsd, int nen>
@@ -375,7 +375,7 @@ namespace Discret
       using vmelch = ScaTraEleInternalVariableManagerElch<nsd, nen>;
 
       ScaTraEleInternalVariableManagerElchNP(
-          int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
+          int numscal, const Discret::Elements::ScaTraEleParameterElch* elchpara)
           : ScaTraEleInternalVariableManagerElch<nsd, nen>(numscal, elchpara),
             // constant internal variables
             // empty
@@ -445,7 +445,7 @@ namespace Discret
 
     };  // class ScaTraEleInternalVariableManagerElchNP
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

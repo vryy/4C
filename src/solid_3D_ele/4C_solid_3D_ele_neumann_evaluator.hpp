@@ -21,7 +21,7 @@ namespace Core::FE
   class Discretization;
 }  // namespace Core::FE
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element.
@@ -93,7 +93,7 @@ namespace Discret::ELEMENTS
       const std::vector<int>& dof_index_array,
       Core::LinAlg::SerialDenseVector& element_force_vector, double total_time);
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

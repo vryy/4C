@@ -635,13 +635,13 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
         if (dim == 3)
         {
           structreduelements_[i][tmpele->id()] =
-              Teuchos::make_rcp<Discret::ELEMENTS::StructuralSurface>(tmpele->id(), tmpele->owner(),
+              Teuchos::make_rcp<Discret::Elements::StructuralSurface>(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0);
         }
         else if (dim == 2)
         {
           structreduelements_[i][tmpele->id()] =
-              Teuchos::make_rcp<Discret::ELEMENTS::StructuralLine>(tmpele->id(), tmpele->owner(),
+              Teuchos::make_rcp<Discret::Elements::StructuralLine>(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0);
         }
       }
@@ -655,13 +655,13 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
         if (dim == 3)
         {
           ifluidslidstructeles_[i][tmpele->id()] =
-              Teuchos::make_rcp<Discret::ELEMENTS::StructuralSurface>(tmpele->id(), tmpele->owner(),
+              Teuchos::make_rcp<Discret::Elements::StructuralSurface>(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0);
         }
         else if (dim == 2)
         {
           ifluidslidstructeles_[i][tmpele->id()] =
-              Teuchos::make_rcp<Discret::ELEMENTS::StructuralLine>(tmpele->id(), tmpele->owner(),
+              Teuchos::make_rcp<Discret::Elements::StructuralLine>(tmpele->id(), tmpele->owner(),
                   tmpele->num_node(), tmpele->node_ids(), tmpele->nodes(), &(*tmpele), 0);
         }
       }

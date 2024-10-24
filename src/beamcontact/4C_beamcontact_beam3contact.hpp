@@ -1026,8 +1026,8 @@ namespace CONTACT
      *  \date 06/16 */
     inline double get_jacobi_at_xi(Core::Elements::Element* element1, const double& xi)
     {
-      const Discret::ELEMENTS::Beam3Base* ele =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1);
+      const Discret::Elements::Beam3Base* ele =
+          dynamic_cast<const Discret::Elements::Beam3Base*>(element1);
 
       if (ele == nullptr) FOUR_C_THROW("Dynamic cast to Beam3Base failed");
 

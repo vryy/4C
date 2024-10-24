@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleDiffManagerElchScl;
@@ -302,8 +302,8 @@ namespace Discret
       using vm = ScaTraEleInternalVariableManager<nsd, nen>;
 
       ScaTraEleInternalVariableManagerElchScl(int numscal,
-          const Discret::ELEMENTS::ScaTraEleParameterElch* elchparams,
-          const Discret::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams)
+          const Discret::Elements::ScaTraEleParameterElch* elchparams,
+          const Discret::Elements::ScaTraEleParameterElchDiffCond* diffcondparams)
           : ScaTraEleInternalVariableManagerElchDiffCond<nsd, nen>(
                 numscal, elchparams, diffcondparams),
             curint_(true)
@@ -318,7 +318,7 @@ namespace Discret
       //! current density at Gauss point
       Core::LinAlg::Matrix<nsd, 1> curint_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

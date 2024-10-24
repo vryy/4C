@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                        gebauer 06/19 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::evaluate_action(
+int Discret::Elements::ScaTraEleCalcNoPhysics<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,

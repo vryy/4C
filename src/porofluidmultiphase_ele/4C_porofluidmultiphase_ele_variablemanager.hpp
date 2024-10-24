@@ -33,7 +33,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class PoroFluidMultiPhaseEleParameter;
 
@@ -108,7 +108,7 @@ namespace Discret
 
         //! factory method
         static Teuchos::RCP<VariableManagerInterface<nsd, nen>> create_variable_manager(
-            const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+            const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
             const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<Core::Mat::Material> mat,
             const int numdofpernode, const int numfluidphases);
 
@@ -761,7 +761,7 @@ namespace Discret
 
     }  // namespace PoroFluidManager
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

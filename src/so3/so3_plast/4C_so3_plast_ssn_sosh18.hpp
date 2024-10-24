@@ -26,7 +26,7 @@ namespace Discret
   // forward declarations
   class So_sh18Plast;
 
-  namespace ELEMENTS
+  namespace Elements
   {
     class SoSh18PlastType : public SoSh18Type
     {
@@ -165,7 +165,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override
       {
-        return Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::evaluate(params,
+        return Discret::Elements::So3Plast<Core::FE::CellType::hex18>::evaluate(params,
             discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra,
             elevec3_epetra);
       }
@@ -213,7 +213,7 @@ namespace Discret
       }
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 
 

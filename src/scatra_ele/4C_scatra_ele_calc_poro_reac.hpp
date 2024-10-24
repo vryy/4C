@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class ScaTraEleCalcPoroReac : virtual public ScaTraEleCalcPoro<distype>,
@@ -77,7 +77,7 @@ namespace Discret
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la) override;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

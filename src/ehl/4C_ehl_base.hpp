@@ -82,7 +82,7 @@ namespace EHL
     Teuchos::RCP<Adapter::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
-    Teuchos::RCP<LUBRICATION::LubricationBaseAlgorithm> lubrication_;
+    Teuchos::RCP<Lubrication::LubricationBaseAlgorithm> lubrication_;
 
     //! Type of coupling strategy between the two fields of the EHL problems
     const Inpar::EHL::FieldCoupling fieldcoupling_;

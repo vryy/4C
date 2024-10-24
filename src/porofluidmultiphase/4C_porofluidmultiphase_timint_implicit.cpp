@@ -831,8 +831,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::apply_additional_dbc_for_vol_frac_press()
   for (int i = 0; i < elecolmap->NumMyElements(); ++i)
   {
     // dynamic_cast necessary because virtual inheritance needs runtime information
-    Discret::ELEMENTS::PoroFluidMultiPhase* myele =
-        dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(
+    Discret::Elements::PoroFluidMultiPhase* myele =
+        dynamic_cast<Discret::Elements::PoroFluidMultiPhase*>(
             discret_->g_element(elecolmap->GID(i)));
 
     const Core::Mat::Material& material = *(myele->material());

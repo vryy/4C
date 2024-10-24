@@ -36,7 +36,7 @@ void Solid::TimeInt::ParamsRuntimeOutput::init(
   if (output_structure_)
   {
     params_runtime_output_structure_ =
-        Teuchos::make_rcp<Discret::ELEMENTS::StructureRuntimeOutputParams>();
+        Teuchos::make_rcp<Discret::Elements::StructureRuntimeOutputParams>();
 
     params_runtime_output_structure_->init(IO_vtk_structure_paramslist.sublist("STRUCTURE"));
     params_runtime_output_structure_->setup();
@@ -49,7 +49,7 @@ void Solid::TimeInt::ParamsRuntimeOutput::init(
   // create and initialize parameter container object for beam specific runtime output
   if (output_beams_)
   {
-    params_runtime_output_beams_ = Teuchos::make_rcp<Discret::ELEMENTS::BeamRuntimeOutputParams>();
+    params_runtime_output_beams_ = Teuchos::make_rcp<Discret::Elements::BeamRuntimeOutputParams>();
 
     params_runtime_output_beams_->init(IO_vtk_structure_paramslist.sublist("BEAMS"));
     params_runtime_output_beams_->setup();

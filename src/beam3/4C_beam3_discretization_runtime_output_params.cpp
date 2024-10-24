@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Discret::ELEMENTS::BeamRuntimeOutputParams::BeamRuntimeOutputParams()
+Discret::Elements::BeamRuntimeOutputParams::BeamRuntimeOutputParams()
     : isinit_(false),
       issetup_(false),
       output_displacement_state_(false),
@@ -39,7 +39,7 @@ Discret::ELEMENTS::BeamRuntimeOutputParams::BeamRuntimeOutputParams()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::BeamRuntimeOutputParams::init(
+void Discret::Elements::BeamRuntimeOutputParams::init(
     const Teuchos::ParameterList& IO_vtk_structure_beams_paramslist)
 {
   // We have to call setup() after init()
@@ -97,7 +97,7 @@ void Discret::ELEMENTS::BeamRuntimeOutputParams::init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::BeamRuntimeOutputParams::setup()
+void Discret::Elements::BeamRuntimeOutputParams::setup()
 {
   if (not is_init()) FOUR_C_THROW("init() has not been called, yet!");
 
@@ -108,7 +108,7 @@ void Discret::ELEMENTS::BeamRuntimeOutputParams::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::BeamRuntimeOutputParams::check_init_setup() const
+void Discret::Elements::BeamRuntimeOutputParams::check_init_setup() const
 {
   if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }

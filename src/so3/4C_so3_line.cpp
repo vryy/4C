@@ -13,14 +13,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::StructuralLineType Discret::ELEMENTS::StructuralLineType::instance_;
+Discret::Elements::StructuralLineType Discret::Elements::StructuralLineType::instance_;
 
-Discret::ELEMENTS::StructuralLineType& Discret::ELEMENTS::StructuralLineType::instance()
+Discret::Elements::StructuralLineType& Discret::Elements::StructuralLineType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralLineType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::StructuralLineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralLine( id, owner ) );
@@ -31,7 +31,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralLineType::cre
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
+Discret::Elements::StructuralLine::StructuralLine(int id, int owner, int nnode, const int* nodeids,
     Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
@@ -56,7 +56,7 @@ Discret::ELEMENTS::StructuralLine::StructuralLine(int id, int owner, int nnode, 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::StructuralLine::StructuralLine(const Discret::ELEMENTS::StructuralLine& old)
+Discret::Elements::StructuralLine::StructuralLine(const Discret::Elements::StructuralLine& old)
     : Core::Elements::FaceElement(old), gaussrule_(old.gaussrule_)
 {
   return;
@@ -65,16 +65,16 @@ Discret::ELEMENTS::StructuralLine::StructuralLine(const Discret::ELEMENTS::Struc
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it               gee 04/08|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::StructuralLine::clone() const
+Core::Elements::Element* Discret::Elements::StructuralLine::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::StructuralLine(*this);
+  auto* newelement = new Discret::Elements::StructuralLine(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::StructuralLine::shape() const
+Core::FE::CellType Discret::Elements::StructuralLine::shape() const
 {
   switch (num_node())
   {
@@ -90,7 +90,7 @@ Core::FE::CellType Discret::ELEMENTS::StructuralLine::shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::StructuralLine::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::StructuralLine::pack(Core::Communication::PackBuffer& da
 /*----------------------------------------------------------------------*
  |  Unpack data                                                gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::StructuralLine::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("StructuralLine element does not support communication");
   return;
@@ -109,7 +109,7 @@ void Discret::ELEMENTS::StructuralLine::unpack(Core::Communication::UnpackBuffer
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralLine::print(std::ostream& os) const
+void Discret::Elements::StructuralLine::print(std::ostream& os) const
 {
   os << "StructuralLine ";
   Element::print(os);

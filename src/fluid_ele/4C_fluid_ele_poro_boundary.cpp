@@ -9,39 +9,39 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidPoroBoundaryType Discret::ELEMENTS::FluidPoroBoundaryType::instance_;
+Discret::Elements::FluidPoroBoundaryType Discret::Elements::FluidPoroBoundaryType::instance_;
 
-Discret::ELEMENTS::FluidPoroBoundaryType& Discret::ELEMENTS::FluidPoroBoundaryType::instance()
+Discret::Elements::FluidPoroBoundaryType& Discret::Elements::FluidPoroBoundaryType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidPoroBoundaryType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidPoroBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
 }
 
-Discret::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(int id, int owner, int nnode,
-    const int* nodeids, Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent,
+Discret::Elements::FluidPoroBoundary::FluidPoroBoundary(int id, int owner, int nnode,
+    const int* nodeids, Core::Nodes::Node** nodes, Discret::Elements::Fluid* parent,
     const int lsurface)
     : FluidBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
 }
 
-Discret::ELEMENTS::FluidPoroBoundary::FluidPoroBoundary(
-    const Discret::ELEMENTS::FluidPoroBoundary& old)
+Discret::Elements::FluidPoroBoundary::FluidPoroBoundary(
+    const Discret::Elements::FluidPoroBoundary& old)
     : FluidBoundary(old)
 {
 }
 
-Core::Elements::Element* Discret::ELEMENTS::FluidPoroBoundary::clone() const
+Core::Elements::Element* Discret::Elements::FluidPoroBoundary::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::FluidPoroBoundary(*this);
+  auto* newelement = new Discret::Elements::FluidPoroBoundary(*this);
   return newelement;
 }
 
-void Discret::ELEMENTS::FluidPoroBoundary::print(std::ostream& os) const
+void Discret::Elements::FluidPoroBoundary::print(std::ostream& os) const
 {
   os << "FluidPoroBoundary ";
   Element::print(os);

@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Torsion3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -256,7 +256,7 @@ int Discret::ELEMENTS::Torsion3::evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int Discret::ELEMENTS::Torsion3::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Torsion3::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -270,7 +270,7 @@ int Discret::ELEMENTS::Torsion3::evaluate_neumann(Teuchos::ParameterList& params
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params,
+void Discret::Elements::Torsion3::t3_energy(Teuchos::ParameterList& params,
     std::vector<double>& disp, Core::LinAlg::SerialDenseVector* intenergy)
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
@@ -335,7 +335,7 @@ void Discret::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | evaluate nonlinear stiffness matrix and internal forces                    cyron 03/10|
  *--------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
+void Discret::Elements::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force)
 {
@@ -589,7 +589,7 @@ void Discret::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
  10/09|
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode, int ndim>  // number of nodes, number of dimensions
-inline void Discret::ELEMENTS::Torsion3::node_shift(
+inline void Discret::Elements::Torsion3::node_shift(
     Teuchos::ParameterList& params,  //!< parameter list
     std::vector<double>& disp)       //!< element disp vector
 {
@@ -597,6 +597,6 @@ inline void Discret::ELEMENTS::Torsion3::node_shift(
       "Torsion3::node_shift is deprecated; if needed adapt parameter handling according to "
       "parameter interface pointer first!");
 
-}  // Discret::ELEMENTS::Torsion3::node_shift
+}  // Discret::Elements::Torsion3::node_shift
 
 FOUR_C_NAMESPACE_CLOSE

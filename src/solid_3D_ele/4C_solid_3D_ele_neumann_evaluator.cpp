@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Discret::ELEMENTS::evaluate_neumann_by_element(Core::Elements::Element& element,
+void Discret::Elements::evaluate_neumann_by_element(Core::Elements::Element& element,
     const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
@@ -69,7 +69,7 @@ void Discret::ELEMENTS::evaluate_neumann_by_element(Core::Elements::Element& ele
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
+void Discret::Elements::evaluate_neumann(Core::Elements::Element& element,
     const Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     const std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& element_force_vector,
     double total_time)
@@ -77,7 +77,7 @@ void Discret::ELEMENTS::evaluate_neumann(Core::Elements::Element& element,
   constexpr auto numdim = Core::FE::dim<celltype>;
   constexpr auto numnod = Core::FE::num_nodes<celltype>;
   Core::FE::GaussIntegration gauss_integration = create_gauss_integration<celltype>(
-      Discret::ELEMENTS::get_gauss_rule_stiffness_matrix<celltype>());
+      Discret::Elements::get_gauss_rule_stiffness_matrix<celltype>());
 
   // get values and switches from the condition
   const auto& onoff = condition.parameters().get<std::vector<int>>("ONOFF");

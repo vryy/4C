@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
+Mixture::PAR::SimpleMixtureRule::SimpleMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata.parameters.get<double>("DENS")),
       mass_fractions_(matdata.parameters.get<std::vector<double>>("MASSFRAC"))
@@ -33,17 +33,17 @@ MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Core::Mat::PAR::Paramet
     FOUR_C_THROW("Mass fractions don't sum up to 1, which is unphysical.");
 }
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::SimpleMixtureRule::create_rule()
+std::unique_ptr<Mixture::MixtureRule> Mixture::PAR::SimpleMixtureRule::create_rule()
 {
-  return std::unique_ptr<MIXTURE::SimpleMixtureRule>(new MIXTURE::SimpleMixtureRule(this));
+  return std::unique_ptr<Mixture::SimpleMixtureRule>(new Mixture::SimpleMixtureRule(this));
 }
 
-MIXTURE::SimpleMixtureRule::SimpleMixtureRule(MIXTURE::PAR::SimpleMixtureRule* params)
+Mixture::SimpleMixtureRule::SimpleMixtureRule(Mixture::PAR::SimpleMixtureRule* params)
     : MixtureRule(params), params_(params)
 {
 }
 
-void MIXTURE::SimpleMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::SimpleMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)

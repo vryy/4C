@@ -31,31 +31,31 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::SoHex8Type Discret::ELEMENTS::SoHex8Type::instance_;
+Discret::Elements::SoHex8Type Discret::Elements::SoHex8Type::instance_;
 
-Discret::ELEMENTS::SoHex8Type& Discret::ELEMENTS::SoHex8Type::instance() { return instance_; }
+Discret::Elements::SoHex8Type& Discret::Elements::SoHex8Type::instance() { return instance_; }
 
 namespace
 {
-  const std::string name = Discret::ELEMENTS::SoHex8Type::instance().name();
+  const std::string name = Discret::Elements::SoHex8Type::instance().name();
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8Type::create(
+Core::Communication::ParObject* Discret::Elements::SoHex8Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoHex8(-1, -1);
+  auto* object = new Discret::Elements::SoHex8(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoHex8>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoHex8>(id, owner);
     return ele;
   }
 
@@ -63,16 +63,16 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoHex8>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoHex8>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::SoHex8Type::nodal_block_information(
+void Discret::Elements::SoHex8Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -80,13 +80,13 @@ void Discret::ELEMENTS::SoHex8Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SoHex8Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::SoHex8Type::setup_element_definition(
+void Discret::Elements::SoHex8Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -108,7 +108,7 @@ void Discret::ELEMENTS::SoHex8Type::setup_element_definition(
 }
 
 // initialization of static gauss point rule for the so_hex8 element
-const Core::FE::IntPointsAndWeights<NUMDIM_SOH8> Discret::ELEMENTS::SoHex8::gp_rule_(
+const Core::FE::IntPointsAndWeights<NUMDIM_SOH8> Discret::Elements::SoHex8::gp_rule_(
     Core::FE::IntPointsAndWeights<NUMDIM_SOH8>(
         static_cast<enum Core::FE::GaussRule3D>(GpRuleSoH8::rule)));
 
@@ -116,7 +116,7 @@ const Core::FE::IntPointsAndWeights<NUMDIM_SOH8> Discret::ELEMENTS::SoHex8::gp_r
  |  ctor (public)                                              maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
+Discret::Elements::SoHex8::SoHex8(int id, int owner)
     : SoBase(id, owner),
       easdata_(EASData()),
       analyticalmaterialtangent_(true),
@@ -142,7 +142,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
       analyticalmaterialtangent_ = false;
   }
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8);
+    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8);
 
 
   return;
@@ -152,7 +152,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(int id, int owner)
  |  copy-ctor (public)                                         maf 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
+Discret::Elements::SoHex8::SoHex8(const Discret::Elements::SoHex8& old)
     : SoBase(old),
       eastype_(old.eastype_),
       neas_(old.neas_),
@@ -173,7 +173,7 @@ Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
   }
 
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(*(old.prestress_));
+    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(*(old.prestress_));
 
   return;
 }
@@ -182,9 +182,9 @@ Discret::ELEMENTS::SoHex8::SoHex8(const Discret::ELEMENTS::SoHex8& old)
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex8::clone() const
+Core::Elements::Element* Discret::Elements::SoHex8::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoHex8(*this);
+  auto* newelement = new Discret::Elements::SoHex8(*this);
   return newelement;
 }
 
@@ -192,13 +192,13 @@ Core::Elements::Element* Discret::ELEMENTS::SoHex8::clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::SoHex8::shape() const { return Core::FE::CellType::hex8; }
+Core::FE::CellType Discret::Elements::SoHex8::shape() const { return Core::FE::CellType::hex8; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoHex8::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -242,7 +242,7 @@ void Discret::ELEMENTS::SoHex8::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -273,9 +273,9 @@ void Discret::ELEMENTS::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
     {
       int numgpt = NUMGPT_SOH8;
       // see whether I am actually a So_hex8fbar element
-      auto* me = dynamic_cast<Discret::ELEMENTS::SoHex8fbar*>(this);
+      auto* me = dynamic_cast<Discret::Elements::SoHex8fbar*>(this);
       if (me) numgpt += 1;  // one more history entry for centroid data in hex8fbar
-      prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOH8, numgpt);
+      prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH8, numgpt);
     }
     Core::Communication::UnpackBuffer tmpprestress_buffer(tmpprestress);
     prestress_->unpack(tmpprestress_buffer);
@@ -296,7 +296,7 @@ void Discret::ELEMENTS::SoHex8::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  print this element (public)                                maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::print(std::ostream& os) const
+void Discret::Elements::SoHex8::print(std::ostream& os) const
 {
   os << "So_hex8 ";
   Element::print(os);
@@ -341,7 +341,7 @@ void Discret::ELEMENTS::SoHex8::print(std::ostream& os) const
 |  get vector of surfaces (public)                             maf 04/07|
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex8::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -350,7 +350,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::su
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex8::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -359,7 +359,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex8::li
 /*----------------------------------------------------------------------*
  |  get location of element center                              jb 08/11|
  *----------------------------------------------------------------------*/
-std::vector<double> Discret::ELEMENTS::SoHex8::element_center_refe_coords()
+std::vector<double> Discret::Elements::SoHex8::element_center_refe_coords()
 {
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;  // material coord. of element
@@ -385,7 +385,7 @@ std::vector<double> Discret::ELEMENTS::SoHex8::element_center_refe_coords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 01/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::SoHex8::vis_names(std::map<std::string, int>& names)
 {
   solid_material()->vis_names(names);
 
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::SoHex8::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 01/08|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex8::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::SoHex8::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -404,7 +404,7 @@ bool Discret::ELEMENTS::SoHex8::vis_data(const std::string& name, std::vector<do
 }
 
 // Compute nodal fibers and call post setup routine of the materials
-void Discret::ELEMENTS::SoHex8::material_post_setup(Teuchos::ParameterList& params)
+void Discret::Elements::SoHex8::material_post_setup(Teuchos::ParameterList& params)
 {
   if (Core::Nodes::have_nodal_fibers<Core::FE::CellType::hex8>(nodes()))
   {

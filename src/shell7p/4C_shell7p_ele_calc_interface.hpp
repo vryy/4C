@@ -38,7 +38,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class Shell7p;
@@ -70,8 +70,8 @@ namespace Discret
        */
       virtual void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const Core::IO::InputParameterContainer& container,
-          const Solid::ELEMENTS::ShellLockingTypes& locking_types,
-          const Solid::ELEMENTS::ShellData& shell_data) = 0;
+          const Solid::Elements::ShellLockingTypes& locking_types,
+          const Solid::Elements::ShellData& shell_data) = 0;
 
       /*!
        * @brief A setup routine for the materials after the whole input is read before evaluation.
@@ -116,7 +116,7 @@ namespace Discret
        */
       virtual void recover(Core::Elements::Element& ele,
           const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
-          Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& str_interface) = 0;
+          Teuchos::ParameterList& params, Solid::Elements::ParamsInterface& str_interface) = 0;
 
       /*!
        * @brief Evaluates the stresses and strains
@@ -186,7 +186,7 @@ namespace Discret
        */
       virtual void vis_data(const std::string& name, std::vector<double>& data) = 0;
     };  // class Shell7pEleInterface
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 
 }  // namespace Discret
 

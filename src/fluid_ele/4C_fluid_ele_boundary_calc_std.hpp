@@ -22,14 +22,14 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidBoundary;
 
     template <Core::FE::CellType distype>
     class FluidEleBoundaryCalcStd : public FluidBoundaryImpl<distype>
     {
-      typedef Discret::ELEMENTS::FluidBoundaryImpl<distype> my;
+      typedef Discret::Elements::FluidBoundaryImpl<distype> my;
 
      public:
       /// Singleton access method
@@ -42,7 +42,7 @@ namespace Discret
 
     };  // class FluidEleBoundaryCalcStd
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

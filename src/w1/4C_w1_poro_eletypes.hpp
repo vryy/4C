@@ -21,12 +21,12 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      |  QUAD 4 Element                                       |
      *----------------------------------------------------------------------*/
-    class WallQuad4PoroType : public Discret::ELEMENTS::Wall1Type
+    class WallQuad4PoroType : public Discret::Elements::Wall1Type
     {
      public:
       std::string name() const override { return "WallQuad4PoroType"; }
@@ -53,7 +53,7 @@ namespace Discret
     /*----------------------------------------------------------------------*
      |  QUAD 9 Element                                       |
      *----------------------------------------------------------------------*/
-    class WallQuad9PoroType : public Discret::ELEMENTS::Wall1Type
+    class WallQuad9PoroType : public Discret::Elements::Wall1Type
     {
      public:
       std::string name() const override { return "WallQuad9PoroType"; }
@@ -80,7 +80,7 @@ namespace Discret
     /*----------------------------------------------------------------------*
      |  NURBS 4 Element                                       |
      *----------------------------------------------------------------------*/
-    class WallNurbs4PoroType : public Discret::ELEMENTS::Wall1Type
+    class WallNurbs4PoroType : public Discret::Elements::Wall1Type
     {
      public:
       std::string name() const override { return "WallNurbs4PoroType"; }
@@ -107,7 +107,7 @@ namespace Discret
     /*----------------------------------------------------------------------*
      |  NURBS 9 Element                                       |
      *----------------------------------------------------------------------*/
-    class WallNurbs9PoroType : public Discret::ELEMENTS::Wall1Type
+    class WallNurbs9PoroType : public Discret::Elements::Wall1Type
     {
      public:
       std::string name() const override { return "WallNurbs9PoroType"; }
@@ -134,7 +134,7 @@ namespace Discret
     /*----------------------------------------------------------------------*
      |  TRI 3 Element                                       |
      *----------------------------------------------------------------------*/
-    class WallTri3PoroType : public Discret::ELEMENTS::Wall1Type
+    class WallTri3PoroType : public Discret::Elements::Wall1Type
     {
      public:
       std::string name() const override { return "WallTri3PoroType"; }
@@ -158,7 +158,7 @@ namespace Discret
       static WallTri3PoroType instance_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

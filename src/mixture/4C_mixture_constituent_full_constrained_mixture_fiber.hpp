@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituent;
   template <typename T>
@@ -30,19 +30,19 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituentFullConstrainedMixtureFiber : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentFullConstrainedMixtureFiber : public Mixture::PAR::MixtureConstituent
     {
      public:
       explicit MixtureConstituentFullConstrainedMixtureFiber(
           const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
+      std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) override;
 
       const int fiber_id_;
       const int init_;
 
       const int fiber_material_id_;
-      const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_;
+      const Mixture::PAR::RemodelFiberMaterial<double>* fiber_material_;
 
       const bool enable_growth_;
       const bool enable_basal_mass_production_;
@@ -60,11 +60,11 @@ namespace MIXTURE
   /*!
    * \brief Full constrained mixture fiber constituent
    */
-  class MixtureConstituentFullConstrainedMixtureFiber : public MIXTURE::MixtureConstituent
+  class MixtureConstituentFullConstrainedMixtureFiber : public Mixture::MixtureConstituent
   {
    public:
     MixtureConstituentFullConstrainedMixtureFiber(
-        MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params, int id);
+        Mixture::PAR::MixtureConstituentFullConstrainedMixtureFiber* params, int id);
 
     [[nodiscard]] Core::Materials::MaterialType material_type() const override;
 
@@ -112,7 +112,7 @@ namespace MIXTURE
     void initialize();
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber* params_;
+    Mixture::PAR::MixtureConstituentFullConstrainedMixtureFiber* params_;
 
     /// An instance of the full constrained mixture fiber for each Gauss point
     std::vector<FullConstrainedMixtureFiber<double>> full_constrained_mixture_fiber_;
@@ -123,7 +123,7 @@ namespace MIXTURE
     /// Handler for anisotropic input
     Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

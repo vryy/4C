@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& dis,
+void Discret::Elements::TransportType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
@@ -123,7 +123,7 @@ void Discret::ELEMENTS::TransportType::pre_evaluate(Core::FE::Discretization& di
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Transport::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -136,7 +136,7 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Transport::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -308,7 +308,7 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
   }  // switch(action)
 
   return 0;
-}  // Discret::ELEMENTS::Transport::Evaluate
+}  // Discret::Elements::Transport::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -318,7 +318,7 @@ int Discret::ELEMENTS::Transport::evaluate(Teuchos::ParameterList& params,
  |  integration of the volume Neumann (body forces) loads takes place   |
  |  in the element. We need it there for the stabilization terms!       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Transport::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)

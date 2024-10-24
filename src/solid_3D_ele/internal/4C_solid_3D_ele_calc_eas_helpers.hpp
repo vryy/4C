@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   template <Core::FE::CellType celltype>
   inline static constexpr int num_nodes = Core::FE::num_nodes<celltype>;
@@ -39,7 +39,7 @@ namespace Discret::ELEMENTS
     // Jacobi determinant evaluated at the element centroid
     double detJ0_;
   };
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,23 +19,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class MapMixtureRule;
 
   namespace PAR
   {
-    class MapMixtureRule : public MIXTURE::PAR::MixtureRule
+    class MapMixtureRule : public Mixture::PAR::MixtureRule
     {
-      friend class MIXTURE::MapMixtureRule;
+      friend class Mixture::MapMixtureRule;
 
      public:
       /// constructor
       explicit MapMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
+      std::unique_ptr<Mixture::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -52,11 +52,11 @@ namespace MIXTURE
    * fractions of the individual constitutents by elementwise defined discrete values, that are
    * passed via an external '*.pattern' file.
    */
-  class MapMixtureRule : public MIXTURE::MixtureRule
+  class MapMixtureRule : public Mixture::MixtureRule
   {
    public:
     /// Constructor for mixture rule given the input parameters
-    explicit MapMixtureRule(MIXTURE::PAR::MapMixtureRule* params);
+    explicit MapMixtureRule(Mixture::PAR::MapMixtureRule* params);
 
     void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
@@ -75,7 +75,7 @@ namespace MIXTURE
     ///! Rule parameters as defined in the input file
     PAR::MapMixtureRule* params_{};
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

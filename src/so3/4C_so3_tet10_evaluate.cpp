@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoTet10::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -54,7 +54,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
   Core::LinAlg::Matrix<NUMDOF_SOTET10, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  Discret::ELEMENTS::SoTet10::ActionType act = SoTet10::none;
+  Discret::Elements::SoTet10::ActionType act = SoTet10::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -254,7 +254,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
       if (Global::Problem::instance()->io_params().get<bool>("OUTPUT_ROT") == true)
       {
         Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMDIM_SOTET10> R;
-        Discret::ELEMENTS::Utils::calc_r<Core::FE::CellType::tet10>(this, mydisp, R);
+        Discret::Elements::Utils::calc_r<Core::FE::CellType::tet10>(this, mydisp, R);
 
         Teuchos::RCP<std::vector<char>> rotdata =
             params.get<Teuchos::RCP<std::vector<char>>>("rotation", Teuchos::null);
@@ -627,7 +627,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
                       NUMGPT_SOTET10));
               Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::tet10>(
                   *this, gp_data, *global_data, false, gauss_integration);
-              Discret::ELEMENTS::assemble_nodal_element_count(global_nodal_element_count, *this);
+              Discret::Elements::assemble_nodal_element_count(global_nodal_element_count, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
@@ -637,7 +637,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()
                       .at(quantity_name);
-              Discret::ELEMENTS::assemble_gauss_point_values(global_data, gp_data, *this);
+              Discret::Elements::assemble_gauss_point_values(global_data, gp_data, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::none:
@@ -663,7 +663,7 @@ int Discret::ELEMENTS::SoTet10::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -768,13 +768,13 @@ int Discret::ELEMENTS::SoTet10::evaluate_neumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // Discret::ELEMENTS::So_tet10::evaluate_neumann
+}  // Discret::Elements::So_tet10::evaluate_neumann
 
 
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)                       |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::init_jacobian_mapping()
+void Discret::Elements::SoTet10::init_jacobian_mapping()
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs4gp =
       so_tet10_4gp_derivs();
@@ -822,7 +822,7 @@ void Discret::ELEMENTS::SoTet10::init_jacobian_mapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,      // current displacements
     std::vector<double>* vel,       // current velocities
     std::vector<double>* acc,       // current accelerations
@@ -1302,14 +1302,14 @@ void Discret::ELEMENTS::SoTet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  //
   }  // end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return;
-}  // Discret::ELEMENTS::So_tet10::SOTET10_nlnstiffmass
+}  // Discret::Elements::So_tet10::SOTET10_nlnstiffmass
 
 
 
 /*----------------------------------------------------------------------*
  |  lump mass matrix                                                    |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::so_tet10_lumpmass(
+void Discret::Elements::SoTet10::so_tet10_lumpmass(
     Core::LinAlg::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10>* emass)
 {
   // lump mass matrix
@@ -1333,7 +1333,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_lumpmass(
  |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
  *----------------------------------------------------------------------*/
 std::vector<Core::LinAlg::Matrix<NUMNOD_SOTET10, 1>>
-Discret::ELEMENTS::SoTet10::so_tet10_4gp_shapefcts()
+Discret::Elements::SoTet10::so_tet10_4gp_shapefcts()
 {
   static std::vector<Core::LinAlg::Matrix<NUMNOD_SOTET10, 1>> shapefcts(NUMGPT_SOTET10);
   static bool shapefcts_done = false;
@@ -1358,7 +1358,7 @@ Discret::ELEMENTS::SoTet10::so_tet10_4gp_shapefcts()
  |  Evaluate Tet10 Shape fct derivs at 4 Gauss Points                   |
  *----------------------------------------------------------------------*/
 const std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>&
-Discret::ELEMENTS::SoTet10::so_tet10_4gp_derivs()
+Discret::Elements::SoTet10::so_tet10_4gp_derivs()
 {
   static std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs(NUMGPT_SOTET10);
   static bool derivs_done = false;
@@ -1374,7 +1374,7 @@ Discret::ELEMENTS::SoTet10::so_tet10_4gp_derivs()
 }
 
 template <Core::FE::GaussRule3D intrule>
-void Discret::ELEMENTS::SoTet10::so_tet10_derivs(
+void Discret::Elements::SoTet10::so_tet10_derivs(
     Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>& derivs, const int gp) const
 {
   const Core::FE::IntegrationPoints3D intpoints(intrule);
@@ -1389,7 +1389,7 @@ void Discret::ELEMENTS::SoTet10::so_tet10_derivs(
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Weights at 4 Gauss Points                            |
  *----------------------------------------------------------------------*/
-const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_4gp_weights()
+const std::vector<double>& Discret::Elements::SoTet10::so_tet10_4gp_weights()
 {
   static std::vector<double> weights(NUMGPT_SOTET10);
   static bool weights_done = false;
@@ -1408,7 +1408,7 @@ const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_4gp_weights()
  |  Evaluate Tet10 Shape fcts at 10 Gauss Points                        |
  *----------------------------------------------------------------------*/
 const std::vector<Core::LinAlg::Matrix<NUMNOD_SOTET10, 1>>&
-Discret::ELEMENTS::SoTet10::so_tet10_11gp_shapefcts()
+Discret::Elements::SoTet10::so_tet10_11gp_shapefcts()
 {
   static std::vector<Core::LinAlg::Matrix<NUMNOD_SOTET10, 1>> shapefcts(NUMGPT_MASS_SOTET10);
   static bool shapefcts_done = false;
@@ -1433,7 +1433,7 @@ Discret::ELEMENTS::SoTet10::so_tet10_11gp_shapefcts()
  |  Evaluate Tet10 Shape fct derivs at 10 Gauss Points                  |
  *----------------------------------------------------------------------*/
 const std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>>&
-Discret::ELEMENTS::SoTet10::so_tet10_11gp_derivs()
+Discret::Elements::SoTet10::so_tet10_11gp_derivs()
 {
   static std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs(
       NUMGPT_MASS_SOTET10);
@@ -1452,7 +1452,7 @@ Discret::ELEMENTS::SoTet10::so_tet10_11gp_derivs()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Weights at 10 Gauss Points                           |
  *----------------------------------------------------------------------*/
-const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_11gp_weights()
+const std::vector<double>& Discret::Elements::SoTet10::so_tet10_11gp_weights()
 {
   static std::vector<double> weights(NUMGPT_MASS_SOTET10);
   static bool weights_done = false;
@@ -1470,12 +1470,12 @@ const std::vector<double>& Discret::ELEMENTS::SoTet10::so_tet10_11gp_weights()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoTet10Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoTet10Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoTet10*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoTet10*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_tet10* failed");
     actele->init_jacobian_mapping();
   }
@@ -1485,8 +1485,8 @@ int Discret::ELEMENTS::SoTet10Type::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::def_gradient(const std::vector<double>& disp,
-    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoTet10::def_gradient(const std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
       so_tet10_4gp_derivs();
@@ -1521,8 +1521,8 @@ void Discret::ELEMENTS::SoTet10::def_gradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected)          |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
-    const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoTet10::update_jacobian_mapping(
+    const std::vector<double>& disp, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
       so_tet10_4gp_derivs();
@@ -1561,7 +1561,7 @@ void Discret::ELEMENTS::SoTet10::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  Update material                                                     |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet10::update_element(
+void Discret::Elements::SoTet10::update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   if (solid_material()->uses_extended_update())

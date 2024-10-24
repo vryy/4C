@@ -713,7 +713,7 @@ void SSTI::SSTIScatraStructureCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans != nullptr)
   {
     // set distype as well!

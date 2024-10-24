@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::provide_impl(
+Discret::Elements::FluidEleInterface* Discret::Elements::FluidFactory::provide_impl(
     Core::FE::CellType distype, std::string problem)
 {
   switch (distype)
@@ -102,33 +102,33 @@ Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::provide_i
  |                                                 (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::define_problem_type(
+Discret::Elements::FluidEleInterface* Discret::Elements::FluidFactory::define_problem_type(
     std::string problem)
 {
   if (problem == "std")
-    return Discret::ELEMENTS::FluidEleCalcStd<distype>::instance();
+    return Discret::Elements::FluidEleCalcStd<distype>::instance();
   else if (problem == "loma")
-    return Discret::ELEMENTS::FluidEleCalcLoma<distype>::instance();
+    return Discret::Elements::FluidEleCalcLoma<distype>::instance();
   else if (problem == "std_immersed")
-    return Discret::ELEMENTS::FluidEleCalcImmersed<distype>::instance();
+    return Discret::Elements::FluidEleCalcImmersed<distype>::instance();
   else if (problem == "poro")
-    return Discret::ELEMENTS::FluidEleCalcPoro<distype>::instance();
+    return Discret::Elements::FluidEleCalcPoro<distype>::instance();
   else if (problem == "poro_p1")
-    return Discret::ELEMENTS::FluidEleCalcPoroP1<distype>::instance();
+    return Discret::Elements::FluidEleCalcPoroP1<distype>::instance();
   else if (problem == "hdg")
-    return Discret::ELEMENTS::FluidEleCalcHDG<distype>::instance();
+    return Discret::Elements::FluidEleCalcHDG<distype>::instance();
   else if (problem == "hdgweakcomp")
-    return Discret::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::instance();
+    return Discret::Elements::FluidEleCalcHDGWeakComp<distype>::instance();
   else if (problem == "xw")
   {
     // for now we only build the hex8 and tet4 elements for xwall
     // later we might consider other kinds of elements
     if (distype == Core::FE::CellType::hex8)
-      return Discret::ELEMENTS::FluidEleCalcXWall<Core::FE::CellType::hex8,
-          Discret::ELEMENTS::Fluid::xwall>::instance();
+      return Discret::Elements::FluidEleCalcXWall<Core::FE::CellType::hex8,
+          Discret::Elements::Fluid::xwall>::instance();
     else if (distype == Core::FE::CellType::tet4)
-      return Discret::ELEMENTS::FluidEleCalcXWall<Core::FE::CellType::tet4,
-          Discret::ELEMENTS::Fluid::xwall>::instance();
+      return Discret::Elements::FluidEleCalcXWall<Core::FE::CellType::tet4,
+          Discret::Elements::Fluid::xwall>::instance();
     else
       FOUR_C_THROW("only hex8 and tet4 elements compiled for xwall");
   }
@@ -142,7 +142,7 @@ Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::define_pr
  |  special implementation of ProvideImpl for XFEM problems                 |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::provide_impl_xfem(
+Discret::Elements::FluidEleInterface* Discret::Elements::FluidFactory::provide_impl_xfem(
     Core::FE::CellType distype, std::string problem)
 {
   if (problem != "xfem") FOUR_C_THROW("Call ProvideImplXFEM just for xfem problems!");
@@ -195,11 +195,11 @@ Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::provide_i
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleInterface* Discret::ELEMENTS::FluidFactory::define_problem_type_xfem(
+Discret::Elements::FluidEleInterface* Discret::Elements::FluidFactory::define_problem_type_xfem(
     std::string problem)
 {
   if (problem == "xfem")
-    return Discret::ELEMENTS::FluidEleCalcXFEM<distype>::instance();
+    return Discret::Elements::FluidEleCalcXFEM<distype>::instance();
   else
     FOUR_C_THROW("Defined problem type does not exist!!");
 

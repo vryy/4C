@@ -37,7 +37,7 @@ namespace Mat
   }
 }  // namespace Mat
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class GrowthRemodelMixtureRule;
@@ -46,9 +46,9 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class GrowthRemodelMixtureRule : public MIXTURE::PAR::MixtureRule
+    class GrowthRemodelMixtureRule : public Mixture::PAR::MixtureRule
     {
-      friend class MIXTURE::GrowthRemodelMixtureRule;
+      friend class Mixture::GrowthRemodelMixtureRule;
 
      public:
       static constexpr int GROWTH_TYPE_ISOTROPIC = 0;
@@ -58,7 +58,7 @@ namespace MIXTURE
       explicit GrowthRemodelMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
+      std::unique_ptr<Mixture::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -80,14 +80,14 @@ namespace MIXTURE
    * \brief This mixture rule controls the evaluation of growth and remodel simulations with
    * homogenized constrained mixture models
    */
-  class GrowthRemodelMixtureRule : public MIXTURE::MixtureRule
+  class GrowthRemodelMixtureRule : public Mixture::MixtureRule
   {
    private:
     static constexpr auto OUTPUT_CURRENT_REFERENCE_DENSITY = "current_reference_density";
 
    public:
     /// Constructor for mixture rule given the input parameters
-    explicit GrowthRemodelMixtureRule(MIXTURE::PAR::GrowthRemodelMixtureRule* params);
+    explicit GrowthRemodelMixtureRule(Mixture::PAR::GrowthRemodelMixtureRule* params);
 
     void pack_mixture_rule(Core::Communication::PackBuffer& data) const override;
 
@@ -111,7 +111,7 @@ namespace MIXTURE
      * \return double
      */
     [[nodiscard]] double get_constituent_initial_reference_mass_density(
-        const MIXTURE::MixtureConstituent& constituent) const;
+        const Mixture::MixtureConstituent& constituent) const;
 
     void register_output_data_names(
         std::unordered_map<std::string, int>& names_and_size) const override;
@@ -125,9 +125,9 @@ namespace MIXTURE
     ///! Rule parameters as defined in the input file
     PAR::GrowthRemodelMixtureRule* params_{};
 
-    std::unique_ptr<MIXTURE::MixtureGrowthStrategy> growth_strategy_;
+    std::unique_ptr<Mixture::MixtureGrowthStrategy> growth_strategy_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

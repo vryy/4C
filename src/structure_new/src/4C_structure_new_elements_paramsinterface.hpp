@@ -38,7 +38,7 @@ namespace Solid
   {
     class GaussPointDataOutputManager;
   }
-  namespace ELEMENTS
+  namespace Elements
   {
     class BeamParamsInterface;
 
@@ -134,7 +134,7 @@ namespace Solid
       //! @{
 
       //! get the evaluation error flag
-      virtual Solid::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const = 0;
+      virtual Solid::Elements::EvalErrorFlag get_ele_eval_error_flag() const = 0;
 
       //! @}
 
@@ -208,7 +208,7 @@ namespace Solid
       virtual double get_alpham() const = 0;
       //! @}
     };  // class BeamParamsInterface
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 
 }  // namespace Solid
 

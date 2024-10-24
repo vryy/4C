@@ -24,7 +24,7 @@ namespace XFEM
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleParameterXFEM;
 
@@ -80,7 +80,7 @@ namespace Discret
 
      private:
       /// pointer to the cast object, fluid parameter list for XFEM
-      Discret::ELEMENTS::FluidEleParameterXFEM* fldparaxfem_;
+      Discret::Elements::FluidEleParameterXFEM* fldparaxfem_;
 
 
       /// number of stress-dof
@@ -116,7 +116,7 @@ namespace Discret
           Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// evaluate the XFEM cut element
-      int evaluate_xfem(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_xfem(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -127,23 +127,23 @@ namespace Discret
           const Cut::plain_volumecell_set& cells, bool offdiag = false) override;
 
       /// evaluate the shape functions in the XFEM
-      int integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
+      int integrate_shape_function_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           const std::vector<Core::FE::GaussIntegration>& intpoints,
           const Cut::plain_volumecell_set& cells) override;
 
       /// error computation
-      int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& ele_dom_norms) override;
 
-      int compute_error(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& ele_dom_norms,
           const Core::FE::GaussIntegration& intpoints) override;
 
-      int compute_error_interface(Discret::ELEMENTS::Fluid* ele,     ///< fluid element
+      int compute_error_interface(Discret::Elements::Fluid* ele,     ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -158,7 +158,7 @@ namespace Discret
 
       /// add terms from mixed/hybrid Lagrange multiplier coupling approach to element matrix and
       /// rhs
-      void element_xfem_interface_hybrid_lm(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      void element_xfem_interface_hybrid_lm(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                             ///< background discretization
           const std::vector<int>& lm,                                ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -181,7 +181,7 @@ namespace Discret
           ) override;
 
       /// add Nitsche (NIT) interface condition to element matrix and rhs
-      void element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      void element_xfem_interface_nit(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                              ///< background discretization
           const std::vector<int>& lm,                                 ///< element local map
           const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
@@ -202,7 +202,7 @@ namespace Discret
           ) override;
 
       ///
-      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      void calculate_continuity_xfem(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                             ///< discretization
           const std::vector<int>& lm,                                ///< local map
           Core::LinAlg::SerialDenseVector& elevec1_epetra,           ///< element vector
@@ -210,7 +210,7 @@ namespace Discret
           ) override;
 
       ///
-      void calculate_continuity_xfem(Discret::ELEMENTS::Fluid* ele,  ///< fluid element
+      void calculate_continuity_xfem(Discret::Elements::Fluid* ele,  ///< fluid element
           Core::FE::Discretization& dis,                             ///< discretization
           const std::vector<int>& lm,                                ///< local map
           Core::LinAlg::SerialDenseVector& elevec1_epetra            ///< element vector
@@ -240,7 +240,7 @@ namespace Discret
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
           const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
           const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-          Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
+          Discret::Elements::XFLUID::SlaveElementInterface<distype>&
               si,                                       ///< side implementation for cutter element
           Core::LinAlg::Matrix<3, 1>& rst,              ///< local coordinates of GP for bg element
           double& kappa_m,                              ///< fluid sided weighting
@@ -262,7 +262,7 @@ namespace Discret
               itractionn_jump,  ///< prescribed interface jump vector for traction
           const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
           const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-          Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
+          Discret::Elements::XFLUID::SlaveElementInterface<distype>&
               si,                          ///< side implementation for cutter element
           const double& presn_m,           ///< coupling master pressure
           Core::LinAlg::Matrix<3, 1>& rst  ///< local coordinates of GP for bg element
@@ -379,7 +379,7 @@ namespace Discret
 
       //! evaluate matrices from surface-based terms for Cauchy & viscous stress-based mixed/hybrid
       //! LM coupling at current Gauss-point \author kruse \date 06/14
-      void hybrid_lm_evaluate_surf_based(Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>& si,
+      void hybrid_lm_evaluate_surf_based(Discret::Elements::XFLUID::HybridLMInterface<distype>& si,
           const Core::LinAlg::Matrix<nen_, nen_>& bK_ss,
           Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_,
               numdofpernode_>& K_su,
@@ -458,7 +458,7 @@ namespace Discret
     };
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Interface base class for acinus_impl
     /*!
@@ -66,7 +66,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for acinus element
-      static RedAcinusImplInterface* impl(Discret::ELEMENTS::RedAcinus* acinus);
+      static RedAcinusImplInterface* impl(Discret::Elements::RedAcinus* acinus);
     };
 
 
@@ -151,7 +151,7 @@ namespace Discret
 
      private:
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

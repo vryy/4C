@@ -161,8 +161,8 @@ void FS3I::PartFPS3I::init()
     // set implementation type of cloned scatra elements to advanced reactions
     for (int i = 0; i < fluidscatradis->num_my_col_elements(); ++i)
     {
-      Discret::ELEMENTS::Transport* element =
-          dynamic_cast<Discret::ELEMENTS::Transport*>(fluidscatradis->l_col_element(i));
+      Discret::Elements::Transport* element =
+          dynamic_cast<Discret::Elements::Transport*>(fluidscatradis->l_col_element(i));
       if (element == nullptr)
         FOUR_C_THROW("Invalid element type!");
       else

@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
+Mixture::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata),
       inner_radius_(matdata.parameters.get<double>("INNER_RADIUS")),
@@ -31,29 +31,29 @@ MIXTURE::PAR::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStra
 {
 }
 
-std::unique_ptr<MIXTURE::PrestressStrategy>
-MIXTURE::PAR::IsotropicCylinderPrestressStrategy::create_prestress_strategy()
+std::unique_ptr<Mixture::PrestressStrategy>
+Mixture::PAR::IsotropicCylinderPrestressStrategy::create_prestress_strategy()
 {
-  std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
-      new MIXTURE::IsotropicCylinderPrestressStrategy(this));
+  std::unique_ptr<Mixture::PrestressStrategy> prestressStrategy(
+      new Mixture::IsotropicCylinderPrestressStrategy(this));
   return prestressStrategy;
 }
 
-MIXTURE::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
-    MIXTURE::PAR::IsotropicCylinderPrestressStrategy* params)
+Mixture::IsotropicCylinderPrestressStrategy::IsotropicCylinderPrestressStrategy(
+    Mixture::PAR::IsotropicCylinderPrestressStrategy* params)
     : PrestressStrategy(params), params_(params)
 {
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::setup(
-    MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
+void Mixture::IsotropicCylinderPrestressStrategy::setup(
+    Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
 {
   // nothing to do
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
+void Mixture::IsotropicCylinderPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
-    MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
+    Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // We evaluate the stress in the reference configuration with a prestretch. Hence, the
@@ -64,7 +64,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
   // Currently, this prestressing technique implements only a certain material (IsoNeoHooke with
   // Sussman-Bathe penalty)
 
-  auto& elhyper = dynamic_cast<MIXTURE::MixtureConstituentElastHyperBase&>(constituent);
+  auto& elhyper = dynamic_cast<Mixture::MixtureConstituentElastHyperBase&>(constituent);
 
   if (elhyper.summands().size() != 2)
   {
@@ -95,7 +95,7 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
 
   // This prestress strategy is only valid for G&R simulations
   const auto& growth_remodel_rule =
-      dynamic_cast<const MIXTURE::GrowthRemodelMixtureRule&>(mixtureRule);
+      dynamic_cast<const Mixture::GrowthRemodelMixtureRule&>(mixtureRule);
 
 
   Teuchos::RCP<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
@@ -174,9 +174,9 @@ void MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_prestress(const Mixtu
       params_->circumferential_prestretch_, cylinderCosy->get_cir(), cylinderCosy->get_cir(), 1.0);
 }
 
-double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRule& mixtureRule,
+double Mixture::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRule& mixtureRule,
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
-    MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
+    Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
     Teuchos::ParameterList& params, int gp, int eleGID) const
 {
   Teuchos::RCP<const Mat::CylinderCoordinateSystemProvider> cylinderCosy =
@@ -207,7 +207,7 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRul
 
   // This prestress strategy is only valid for G&R simulations
   const auto& growth_remodel_rule =
-      dynamic_cast<const MIXTURE::GrowthRemodelMixtureRule&>(mixtureRule);
+      dynamic_cast<const Mixture::GrowthRemodelMixtureRule&>(mixtureRule);
   double initial_constituent_reference_density =
       growth_remodel_rule.get_constituent_initial_reference_mass_density(constituent);
 
@@ -225,9 +225,9 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::evaluate_mue_frac(MixtureRul
   return (target_stress - (total_stress - membrane_stress)) / membrane_stress;
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::update(
+void Mixture::IsotropicCylinderPrestressStrategy::update(
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+    Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
 }

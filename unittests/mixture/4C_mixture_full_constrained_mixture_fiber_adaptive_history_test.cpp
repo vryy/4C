@@ -24,7 +24,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, EmplaceBack)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
 
     level.emplace_back(3, 5);
     EXPECT_EQ(level.get_number_of_levels(), 1);
@@ -44,7 +44,7 @@ namespace
 #ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
 
     level.emplace_back(1, 5);
 
@@ -53,36 +53,36 @@ namespace
 
   TEST(TimestepAdaptivityTest, SplitLevel)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 6);
     level.emplace_back(2, 12);
     level.emplace_back(1, 8);
 
     level.split_level(3, 2);
-    EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(4, 2));
-    EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
-    EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 12));
-    EXPECT_EQ(level[3], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 8));
+    EXPECT_EQ(level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(4, 2));
+    EXPECT_EQ(level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
+    EXPECT_EQ(level[2], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 12));
+    EXPECT_EQ(level[3], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 8));
     EXPECT_EQ(level.get_number_of_levels(), 4);
 
     level.split_level(4, 1);
-    EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
-    EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
-    EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 12));
-    EXPECT_EQ(level[3], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 8));
+    EXPECT_EQ(level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
+    EXPECT_EQ(level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
+    EXPECT_EQ(level[2], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 12));
+    EXPECT_EQ(level[3], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 8));
     EXPECT_EQ(level.get_number_of_levels(), 4);
 
     level.split_level(1, 1);
-    EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
-    EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
-    EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 13));
-    EXPECT_EQ(level[3], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 6));
+    EXPECT_EQ(level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
+    EXPECT_EQ(level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
+    EXPECT_EQ(level[2], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 13));
+    EXPECT_EQ(level[3], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 6));
     EXPECT_EQ(level.get_number_of_levels(), 4);
 
     level.split_level(1, 3);
-    EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
-    EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
-    EXPECT_EQ(level[2], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 16));
+    EXPECT_EQ(level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(5, 1));
+    EXPECT_EQ(level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(3, 2));
+    EXPECT_EQ(level[2], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 16));
     EXPECT_EQ(level.get_number_of_levels(), 3);
 
     EXPECT_ANY_THROW(level.split_level(1, 0));
@@ -90,7 +90,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_total_number_of_simpson_intervals)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -99,7 +99,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, max_level)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -108,7 +108,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_number_of_simpson_intervals)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -119,7 +119,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_begin_index)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -131,7 +131,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_begin_time)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -143,7 +143,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_index_time)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -160,7 +160,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_number_of_levels)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 2);
     level.emplace_back(2, 1);
 
@@ -169,26 +169,26 @@ namespace
 
   TEST(TimestepAdaptivityTest, OptimizeHistoryFromUnoptimizedHistory)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
-    const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
+    Mixture::TimestepAdaptivityInfo level{};
+    const Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         0.0, 1.0, true);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
 
-    const auto [remove_items, new_level] = MIXTURE::optimize_history_integration(level, 25,
+    const auto [remove_items, new_level] = Mixture::optimize_history_integration(level, 25,
         [&](const std::array<std::optional<unsigned int>, 5>& indices)
         {
           const double begin_time = level.get_index_time(indices[0].value(), 0.0, dt);
           const double end_time = level.get_index_time(indices[4].value(), 0.0, dt);
-          return MIXTURE::is_model_equation_simpson_rule_integration_below_tolerance(
+          return Mixture::is_model_equation_simpson_rule_integration_below_tolerance(
               growth_evolution, time, begin_time, end_time, tolerance * (end_time - begin_time));
         });
 
     level = new_level;
 
-    EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 1));
-    EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 1));
+    EXPECT_EQ(level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 1));
+    EXPECT_EQ(level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 1));
 
     std::array comparison = {false, true, true, true, false, true, true, true, false, true, false,
         true, false, false, false, false, false, false, false, false, false, false, false, false,
@@ -199,27 +199,27 @@ namespace
 
   TEST(TimestepAdaptivityTest, OptimizeHistoryFromPartiallyOptimizedHistory)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(1, 2);
 
-    const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
+    const Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         0.0, 1.0, true);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
 
-    const auto [remove_items, new_level] = MIXTURE::optimize_history_integration(level, 21,
+    const auto [remove_items, new_level] = Mixture::optimize_history_integration(level, 21,
         [&](const std::array<std::optional<unsigned int>, 5>& indices)
         {
           const double begin_time = level.get_index_time(indices[0].value(), 0.0, dt);
           const double end_time = level.get_index_time(indices[4].value(), 0.0, dt);
-          return MIXTURE::is_model_equation_simpson_rule_integration_below_tolerance(
+          return Mixture::is_model_equation_simpson_rule_integration_below_tolerance(
               growth_evolution, time, begin_time, end_time, tolerance * (end_time - begin_time));
         });
 
 
-    EXPECT_EQ(new_level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 1));
-    EXPECT_EQ(new_level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 1));
+    EXPECT_EQ(new_level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 1));
+    EXPECT_EQ(new_level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 1));
 
     std::array comparison = {false, true, false, true, false, true, false, true, false, false,
         false, false, false, false, false, false, false, false, false, false, false};
@@ -229,26 +229,26 @@ namespace
 
   TEST(TimestepAdaptivityTest, OptimizeHistoryFromOptimizedHistory)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(2, 1);
     level.emplace_back(1, 1);
-    const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
+    const Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution(
         0.0, 1.0, true);
     const double time = 30;
     const double dt = 1.0;
     const double tolerance = 1e-8 / 24;
 
-    const auto [remove_items, new_level] = MIXTURE::optimize_history_integration(level, 17,
+    const auto [remove_items, new_level] = Mixture::optimize_history_integration(level, 17,
         [&](const std::array<std::optional<unsigned int>, 5>& indices)
         {
           const double begin_time = level.get_index_time(indices[0].value(), 0.0, dt);
           const double end_time = level.get_index_time(indices[4].value(), 0.0, dt);
-          return MIXTURE::is_model_equation_simpson_rule_integration_below_tolerance(
+          return Mixture::is_model_equation_simpson_rule_integration_below_tolerance(
               growth_evolution, time, begin_time, end_time, tolerance * (end_time - begin_time));
         });
 
-    EXPECT_EQ(level[0], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 1));
-    EXPECT_EQ(level[1], MIXTURE::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 1));
+    EXPECT_EQ(level[0], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(2, 1));
+    EXPECT_EQ(level[1], Mixture::TimestepAdaptivityInfo::TimestepAdaptivityInfoItem(1, 1));
 
     std::array comparison = {false, false, false, false, false, false, false, false, false, false,
         false, false, false, false, false, false, false};
@@ -258,7 +258,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, GetBaseTimestep)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 1);
     level.emplace_back(2, 2);
     level.emplace_back(1, 1);
@@ -278,7 +278,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_base_indices)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 1);
     level.emplace_back(2, 2);
     level.emplace_back(1, 1);
@@ -291,7 +291,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_index_from_base)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(2, 2);
     level.emplace_back(1, 1);
 
@@ -322,11 +322,11 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_base_indexWithBase)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 1);
     level.emplace_back(1, 1);
 
-    MIXTURE::TimestepAdaptivityInfo base{};
+    Mixture::TimestepAdaptivityInfo base{};
     base.emplace_back(1, 4);
 
     EXPECT_EQ(level.get_base_index(base, 0), 0);
@@ -339,11 +339,11 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_base_indicesWithBase)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(3, 1);
     level.emplace_back(1, 1);
 
-    MIXTURE::TimestepAdaptivityInfo base{};
+    Mixture::TimestepAdaptivityInfo base{};
     base.emplace_back(1, 4);
 
     auto base_indices = level.get_base_indices<unsigned int, 6>(base, {0, 1, 2, 3, 4, 5});
@@ -353,7 +353,7 @@ namespace
 
   TEST(TimestepAdaptivityTest, get_indices_from_base)
   {
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     level.emplace_back(2, 2);
     level.emplace_back(1, 1);
 
@@ -370,7 +370,7 @@ namespace
 #ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
     auto get_indices_from_base = [&]() {
       return level.get_indices_from_base<unsigned int, 3>({0, 3, 1});
     };
@@ -382,7 +382,7 @@ namespace
 #ifndef FOUR_C_ENABLE_ASSERTIONS
     GTEST_SKIP() << "Skip debug assertion tests in release mode.";
 #endif
-    MIXTURE::TimestepAdaptivityInfo level{};
+    Mixture::TimestepAdaptivityInfo level{};
 
     auto get_base_indices = [&]() { return level.get_base_indices<unsigned int, 3>({0, 3, 1}); };
     EXPECT_ANY_THROW(get_base_indices());

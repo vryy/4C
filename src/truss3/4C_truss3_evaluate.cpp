@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Truss3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -142,7 +142,7 @@ int Discret::ELEMENTS::Truss3::evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public) cyron 03/08|
  *----------------------------------------------------------------------------------------------------------*/
 
-int Discret::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -153,7 +153,7 @@ int Discret::ELEMENTS::Truss3::evaluate_neumann(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<double>>& ele_state,
+void Discret::Elements::Truss3::energy(const std::map<std::string, std::vector<double>>& ele_state,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& intenergy)
 {
   if (material()->material_type() != Core::Materials::m_linelast1D)
@@ -206,7 +206,7 @@ void Discret::ELEMENTS::Truss3::energy(const std::map<std::string, std::vector<d
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      tk 11/08|
  *--------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::nln_stiff_mass(
+void Discret::Elements::Truss3::nln_stiff_mass(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force)
@@ -286,7 +286,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass(
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) cyron 08/08|
  *-----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
+void Discret::Elements::Truss3::nln_stiff_mass_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector& DummyForce)
@@ -316,7 +316,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_tot_lag(
  | linear stiffness and mass matrix (private) | engineering strain measure, small displacements and
  rotations |
  *-----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
+void Discret::Elements::Truss3::nln_stiff_mass_eng_str(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::SerialDenseMatrix& DummyStiffMatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector& DummyForce)
@@ -374,7 +374,7 @@ void Discret::ELEMENTS::Truss3::nln_stiff_mass_eng_str(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
+void Discret::Elements::Truss3::prep_calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::Matrix<6, 1>& curr_nodal_coords,
     Core::LinAlg::Matrix<6, 6>& dcurr_nodal_coords_du, Core::LinAlg::Matrix<6, 1>& dN_dx)
@@ -416,7 +416,7 @@ void Discret::ELEMENTS::Truss3::prep_calc_internal_force_stiff_tot_lag(
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
+void Discret::Elements::Truss3::calc_internal_force_stiff_tot_lag(
     const std::map<std::string, std::vector<double>>& ele_state,
     Core::LinAlg::SerialDenseVector& forcevec, Core::LinAlg::SerialDenseMatrix& stiffmat)
 {
@@ -469,7 +469,7 @@ void Discret::ELEMENTS::Truss3::calc_internal_force_stiff_tot_lag(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::calc_gp_stresses(
+void Discret::Elements::Truss3::calc_gp_stresses(
     Teuchos::ParameterList& params, const std::map<std::string, std::vector<double>>& ele_state)
 {
   // safety check
@@ -540,7 +540,7 @@ void Discret::ELEMENTS::Truss3::calc_gp_stresses(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::lump_mass(Core::LinAlg::SerialDenseMatrix* emass)
+void Discret::Elements::Truss3::lump_mass(Core::LinAlg::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -561,7 +561,7 @@ void Discret::ELEMENTS::Truss3::lump_mass(Core::LinAlg::SerialDenseMatrix* emass
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::extract_elemental_variables(Core::Elements::LocationArray& la,
+void Discret::Elements::Truss3::extract_elemental_variables(Core::Elements::LocationArray& la,
     const Core::FE::Discretization& discretization, const Teuchos::ParameterList& params,
     std::map<std::string, std::vector<double>>& ele_state)
 {

@@ -19,7 +19,7 @@ namespace Core::Nodes
   class Node;
 }
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
     \brief Helper function for the nodal nullspace of solid elements in 3D
@@ -38,7 +38,7 @@ namespace Discret::ELEMENTS
   */
   Core::LinAlg::SerialDenseMatrix compute_solid_2d_null_space(
       const Core::Nodes::Node& node, const double* x0);
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -34,35 +34,35 @@ namespace
    * @return dInverseDeformationGradientTransposed_dDisp
    */
   template <Core::FE::CellType celltype,
-      std::enable_if_t<Discret::ELEMENTS::Internal::num_dim<celltype> == 3, int> = 0>
-  Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
-                           Discret::ELEMENTS::Internal::num_dim<celltype>,
-      Discret::ELEMENTS::Internal::num_dim<celltype> *
-          Discret::ELEMENTS::Internal::num_nodes<celltype>>
+      std::enable_if_t<Discret::Elements::Internal::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
+                           Discret::Elements::Internal::num_dim<celltype>,
+      Discret::Elements::Internal::num_dim<celltype> *
+          Discret::Elements::Internal::num_nodes<celltype>>
   compute_linearization_of_deformation_gradient_transposed_wrt_disp(
-      const Discret::ELEMENTS::JacobianMapping<celltype>& jacobian_mapping,
-      const Discret::ELEMENTS::SpatialMaterialMapping<celltype>& spatial_material_mapping,
+      const Discret::Elements::JacobianMapping<celltype>& jacobian_mapping,
+      const Discret::Elements::SpatialMaterialMapping<celltype>& spatial_material_mapping,
       const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
   {
-    Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
-                             Discret::ELEMENTS::Internal::num_dim<celltype>,
-        Discret::ELEMENTS::Internal::num_dim<celltype> *
-            Discret::ELEMENTS::Internal::num_nodes<celltype>>
+    Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
+                             Discret::Elements::Internal::num_dim<celltype>,
+        Discret::Elements::Internal::num_dim<celltype> *
+            Discret::Elements::Internal::num_nodes<celltype>>
         dInverseDeformationGradientTransposed_dDisp(true);
     if (kinematictype != Inpar::Solid::KinemType::linear)
     {
       // dF^-T/dus
-      for (int i = 0; i < Discret::ELEMENTS::Internal::num_dim<celltype>; i++)
+      for (int i = 0; i < Discret::Elements::Internal::num_dim<celltype>; i++)
       {
-        for (int n = 0; n < Discret::ELEMENTS::Internal::num_nodes<celltype>; n++)
+        for (int n = 0; n < Discret::Elements::Internal::num_nodes<celltype>; n++)
         {
-          for (int j = 0; j < Discret::ELEMENTS::Internal::num_dim<celltype>; j++)
+          for (int j = 0; j < Discret::Elements::Internal::num_dim<celltype>; j++)
           {
-            const int gid = Discret::ELEMENTS::Internal::num_dim<celltype> * n + j;
-            for (int k = 0; k < Discret::ELEMENTS::Internal::num_dim<celltype>; k++)
-              for (int l = 0; l < Discret::ELEMENTS::Internal::num_dim<celltype>; l++)
+            const int gid = Discret::Elements::Internal::num_dim<celltype> * n + j;
+            for (int k = 0; k < Discret::Elements::Internal::num_dim<celltype>; k++)
+              for (int l = 0; l < Discret::Elements::Internal::num_dim<celltype>; l++)
                 dInverseDeformationGradientTransposed_dDisp(
-                    i * Discret::ELEMENTS::Internal::num_dim<celltype> + l, gid) +=
+                    i * Discret::Elements::Internal::num_dim<celltype> + l, gid) +=
                     -spatial_material_mapping.inverse_deformation_gradient_(l, j) *
                     jacobian_mapping.N_XYZ_(k, n) *
                     spatial_material_mapping.inverse_deformation_gradient_(k, i);
@@ -85,39 +85,39 @@ namespace
    * w.r.t. displacements times material gradient of fluid pressure
    */
   template <Core::FE::CellType celltype,
-      std::enable_if_t<Discret::ELEMENTS::Internal::num_dim<celltype> == 3, int> = 0>
-  Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
-                           Discret::ELEMENTS::Internal::num_dim<celltype>,
-      Discret::ELEMENTS::Internal::num_dim<celltype> *
-          Discret::ELEMENTS::Internal::num_nodes<celltype>>
+      std::enable_if_t<Discret::Elements::Internal::num_dim<celltype> == 3, int> = 0>
+  Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
+                           Discret::Elements::Internal::num_dim<celltype>,
+      Discret::Elements::Internal::num_dim<celltype> *
+          Discret::Elements::Internal::num_nodes<celltype>>
   evaluate_inverse_deformation_gradient_linearization_multiplication(
-      const Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
-                                     Discret::ELEMENTS::Internal::num_dim<celltype>,
-          Discret::ELEMENTS::Internal::num_dim<celltype> *
-              Discret::ELEMENTS::Internal::num_nodes<celltype>>&
+      const Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
+                                     Discret::Elements::Internal::num_dim<celltype>,
+          Discret::Elements::Internal::num_dim<celltype> *
+              Discret::Elements::Internal::num_nodes<celltype>>&
           d_inverse_deformationgradient_transposed_ddisp,
-      const Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype>, 1>& Gradp,
+      const Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype>, 1>& Gradp,
       const Inpar::Solid::KinemType& kinematictype = Inpar::Solid::KinemType::nonlinearTotLag)
   {
     // dF^-T/dus * Grad p
-    Core::LinAlg::Matrix<Discret::ELEMENTS::Internal::num_dim<celltype> *
-                             Discret::ELEMENTS::Internal::num_dim<celltype>,
-        Discret::ELEMENTS::Internal::num_dim<celltype> *
-            Discret::ELEMENTS::Internal::num_nodes<celltype>>
+    Core::LinAlg::Matrix<Discret::Elements::Internal::num_dim<celltype> *
+                             Discret::Elements::Internal::num_dim<celltype>,
+        Discret::Elements::Internal::num_dim<celltype> *
+            Discret::Elements::Internal::num_nodes<celltype>>
         dInverseDeformationGradient_dDisp_Gradp(true);
     if (kinematictype != Inpar::Solid::KinemType::linear)
     {
-      for (int i = 0; i < Discret::ELEMENTS::Internal::num_dim<celltype>; i++)
+      for (int i = 0; i < Discret::Elements::Internal::num_dim<celltype>; i++)
       {
-        for (int n = 0; n < Discret::ELEMENTS::Internal::num_nodes<celltype>; n++)
+        for (int n = 0; n < Discret::Elements::Internal::num_nodes<celltype>; n++)
         {
-          for (int j = 0; j < Discret::ELEMENTS::Internal::num_dim<celltype>; j++)
+          for (int j = 0; j < Discret::Elements::Internal::num_dim<celltype>; j++)
           {
-            const int gid = Discret::ELEMENTS::Internal::num_dim<celltype> * n + j;
-            for (int l = 0; l < Discret::ELEMENTS::Internal::num_dim<celltype>; l++)
+            const int gid = Discret::Elements::Internal::num_dim<celltype> * n + j;
+            for (int l = 0; l < Discret::Elements::Internal::num_dim<celltype>; l++)
               dInverseDeformationGradient_dDisp_Gradp(i, gid) +=
                   d_inverse_deformationgradient_transposed_ddisp(
-                      i * Discret::ELEMENTS::Internal::num_dim<celltype> + l, gid) *
+                      i * Discret::Elements::Internal::num_dim<celltype> + l, gid) *
                   Gradp(l);
           }
         }
@@ -128,7 +128,7 @@ namespace
 }  // namespace
 
 template <Core::FE::CellType celltype>
-Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
+Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
     celltype>::SolidPoroPressureVelocityBasedEleCalc()
     : gauss_integration_(
           create_gauss_integration<celltype>(get_gauss_rule_stiffness_matrix_poro<celltype>()))
@@ -136,7 +136,7 @@ Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::poro_setup(
+void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype>::poro_setup(
     Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container)
 {
   // attention: Make sure to use the same gauss integration rule as in the solid elements in case
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::poro_se
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
+void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
     AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
@@ -339,7 +339,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
+void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoro& porofluidmat,
     AnisotropyProperties anisotropy_properties, const Inpar::Solid::KinemType& kinematictype,
@@ -458,7 +458,7 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<
 
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::coupling_stress_poroelast(
+void Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<celltype>::coupling_stress_poroelast(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
     const Inpar::Solid::KinemType& kinematictype, const CouplStressIO& couplingstressIO,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
@@ -532,10 +532,10 @@ void Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<celltype>::couplin
 
 
 // template classes
-template class Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::tet10>;
+template class Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::hex8>;
+template class Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::hex27>;
+template class Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::tet4>;
+template class Discret::Elements::SolidPoroPressureVelocityBasedEleCalc<Core::FE::CellType::tet10>;
 
 
 FOUR_C_NAMESPACE_CLOSE

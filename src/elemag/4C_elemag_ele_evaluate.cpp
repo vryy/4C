@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ElemagType::pre_evaluate(Core::FE::Discretization& dis,
+void Discret::Elements::ElemagType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
@@ -27,7 +27,7 @@ void Discret::ELEMENTS::ElemagType::pre_evaluate(Core::FE::Discretization& dis,
 
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Elemag::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Elemag::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -35,12 +35,12 @@ int Discret::ELEMENTS::Elemag::evaluate(Teuchos::ParameterList& params,
 {
   Teuchos::RCP<Core::Mat::Material> mat = material();
 
-  if (dynamic_cast<const Discret::ELEMENTS::ElemagDiff*>(this))
-    return Discret::ELEMENTS::ElemagFactory::provide_impl(shape(), "diff")
+  if (dynamic_cast<const Discret::Elements::ElemagDiff*>(this))
+    return Discret::Elements::ElemagFactory::provide_impl(shape(), "diff")
         ->evaluate(
             this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
   else
-    return Discret::ELEMENTS::ElemagFactory::provide_impl(shape(), "std")
+    return Discret::Elements::ElemagFactory::provide_impl(shape(), "std")
         ->evaluate(
             this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
 
@@ -49,7 +49,7 @@ int Discret::ELEMENTS::Elemag::evaluate(Teuchos::ParameterList& params,
 
 /*---------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Elemag::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Elemag::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)

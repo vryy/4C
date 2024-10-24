@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface*
-Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::impl(const Core::Elements::Element* ele)
+Discret::Elements::ScaTraHDGBoundaryImplInterface*
+Discret::Elements::ScaTraHDGBoundaryImplInterface::impl(const Core::Elements::Element* ele)
 {
   switch (ele->shape())
   {
@@ -75,14 +75,14 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImplInterface::impl(const Core::Elements::El
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>*
-Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::ScaTraHDGBoundaryImpl<distype>*
+Discret::Elements::ScaTraHDGBoundaryImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>>(
-            new Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>());
+        return std::unique_ptr<Discret::Elements::ScaTraHDGBoundaryImpl<distype>>(
+            new Discret::Elements::ScaTraHDGBoundaryImpl<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -91,7 +91,7 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::instance(Core::Utils::Singlet
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
+Discret::Elements::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
     : xyze_(true),
       funct_(true),
       deriv_(true),
@@ -106,8 +106,8 @@ Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::ScaTraHDGBoundaryImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
-    Discret::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ScaTraHDGBoundaryImpl<distype>::evaluate_neumann(
+    Discret::Elements::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra)

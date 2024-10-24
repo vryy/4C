@@ -20,45 +20,45 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Nurbs::SoNurbs27Type Discret::ELEMENTS::Nurbs::SoNurbs27Type::instance_;
+Discret::Elements::Nurbs::SoNurbs27Type Discret::Elements::Nurbs::SoNurbs27Type::instance_;
 
-Discret::ELEMENTS::Nurbs::SoNurbs27Type& Discret::ELEMENTS::Nurbs::SoNurbs27Type::instance()
+Discret::Elements::Nurbs::SoNurbs27Type& Discret::Elements::Nurbs::SoNurbs27Type::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::SoNurbs27Type::create(
+Core::Communication::ParObject* Discret::Elements::Nurbs::SoNurbs27Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::Nurbs::SoNurbs27(-1, -1);
+  auto* object = new Discret::Elements::Nurbs::SoNurbs27(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::SoNurbs27Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::SoNurbs27Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::SoNurbs27>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::Nurbs::SoNurbs27>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::SoNurbs27Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::SoNurbs27Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::SoNurbs27>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Nurbs::SoNurbs27>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::Nurbs::SoNurbs27Type::nodal_block_information(
+void Discret::Elements::Nurbs::SoNurbs27Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -66,13 +66,13 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Nurbs::SoNurbs27Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Nurbs::SoNurbs27Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::Nurbs::SoNurbs27Type::setup_element_definition(
+void Discret::Elements::Nurbs::SoNurbs27Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -90,7 +90,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27Type::setup_element_definition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, owner)
+Discret::Elements::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, owner)
 {
   invJ_.resize(NUMGPT_SONURBS27, Core::LinAlg::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
@@ -99,7 +99,7 @@ Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, o
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -110,7 +110,7 @@ Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, o
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(const Discret::ELEMENTS::Nurbs::SoNurbs27& old)
+Discret::Elements::Nurbs::SoNurbs27::SoNurbs27(const Discret::Elements::Nurbs::SoNurbs27& old)
     : SoBase(old), detJ_(old.detJ_)
 {
   invJ_.resize(old.invJ_.size());
@@ -125,16 +125,16 @@ Discret::ELEMENTS::Nurbs::SoNurbs27::SoNurbs27(const Discret::ELEMENTS::Nurbs::S
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Nurbs::SoNurbs27::clone() const
+Core::Elements::Element* Discret::Elements::Nurbs::SoNurbs27::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::Nurbs::SoNurbs27(*this);
+  auto* newelement = new Discret::Elements::Nurbs::SoNurbs27(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Nurbs::SoNurbs27::shape() const
+Core::FE::CellType Discret::Elements::Nurbs::SoNurbs27::shape() const
 {
   return Core::FE::CellType::nurbs27;
 }
@@ -142,7 +142,7 @@ Core::FE::CellType Discret::ELEMENTS::Nurbs::SoNurbs27::shape() const
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Nurbs::SoNurbs27::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -167,7 +167,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::pack(Core::Communication::PackBuffer& 
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Nurbs::SoNurbs27::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -193,7 +193,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::unpack(Core::Communication::UnpackBuff
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::SoNurbs27::print(std::ostream& os) const
+void Discret::Elements::Nurbs::SoNurbs27::print(std::ostream& os) const
 {
   os << "So_nurbs27 ";
   Element::print(os);
@@ -205,7 +205,7 @@ void Discret::ELEMENTS::Nurbs::SoNurbs27::print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::SoNurbs27::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::SoNurbs27::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, SoNurbs27>(
       Core::Communication::buildSurfaces, *this);
@@ -214,7 +214,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::SoN
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Nurbs::SoNurbs27::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::SoNurbs27::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, SoNurbs27>(
       Core::Communication::buildLines, *this);

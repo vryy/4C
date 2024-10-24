@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidTypeImmersedBase : public FluidType
     {
@@ -271,7 +271,7 @@ namespace Discret
 
 
     };  // class FluidImmersedBase
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

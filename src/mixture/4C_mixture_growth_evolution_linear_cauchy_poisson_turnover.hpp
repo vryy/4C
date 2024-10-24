@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   /*!
    * @brief Defines the evolution equation of net 1D mass production during growth and remodeling
@@ -78,7 +78,7 @@ namespace MIXTURE
     /// a swtich to enable the basal mass production rate
     bool enable_basal_mass_production_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

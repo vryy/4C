@@ -32,8 +32,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
-    :  // Discret::ELEMENTS::FluidBoundaryInterface(),
+Discret::Elements::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
+    :  // Discret::Elements::FluidBoundaryInterface(),
       xyze_(true),
       funct_(true),
       deriv_(true),
@@ -45,9 +45,9 @@ Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
       densaf_(1.0)
 {
   // pointer to class FluidImplParameterTimInt for time integration
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
+  fldparatimint_ = Discret::Elements::FluidEleParameterTimInt::instance();
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
+  fldpara_ = Discret::Elements::FluidEleParameterStd::instance();
 
   return;
 }
@@ -55,8 +55,8 @@ Discret::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
-    Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::evaluate_action(
+    Discret::Elements::FluidBoundary* ele1, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -210,8 +210,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_action(
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+int Discret::Elements::FluidBoundaryImpl<distype>::evaluate_neumann(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
@@ -232,7 +232,7 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
 
   // get Gaussrule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get local node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
@@ -266,8 +266,8 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
   // extract pressure values from global velocity/pressure vector
   // (needed for weakly_compressible fluids)
   Core::LinAlg::Matrix<bdrynen_, 1> epreaf(true);
-  Discret::ELEMENTS::FluidEleParameter* fldpara =
-      Discret::ELEMENTS::FluidEleParameterStd::instance();
+  Discret::Elements::FluidEleParameter* fldpara =
+      Discret::Elements::FluidEleParameterStd::instance();
   if (fldpara->physical_type() == Inpar::FLUID::weakly_compressible or
       fldpara->physical_type() == Inpar::FLUID::weakly_compressible_stokes)
   {
@@ -503,8 +503,8 @@ int Discret::ELEMENTS::FluidBoundaryImpl<distype>::evaluate_neumann(
  | compute additional term at Neumann inflow boundary          vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::neumann_inflow(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -539,7 +539,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   bool is_newton = fldpara_->is_newton();
 
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get global node coordinates for nsd_-dimensional domain
   // (nsd_: number of spatial dimensions of FluidBoundary element!)
@@ -740,15 +740,15 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::neumann_inflow(
   }
 
   return;
-}  // Discret::ELEMENTS::FluidSurface::neumann_inflow
+}  // Discret::Elements::FluidSurface::neumann_inflow
 
 
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over surface (private)            gjb 07/07|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::integrate_shape_function(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
@@ -757,7 +757,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
 
   // get Gaussrule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
@@ -801,14 +801,14 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::integrate_shape_function(
 
 
   return;
-}  // Discret::ELEMENTS::FluidSurface::integrate_shape_function
+}  // Discret::Elements::FluidSurface::integrate_shape_function
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::element_mean_curvature(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
     std::vector<double>& enormals)
@@ -818,7 +818,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
 
   // get Gauss rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // node normals &
   Core::LinAlg::Matrix<nsd_, bdrynen_> norm_elem(true);
@@ -971,13 +971,13 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::element_mean_curvature(
     elevec1[inode * numdofpernode_ + (numdofpernode_ - 1)] = 0.0;
   }  // END: loop over nodes
 
-}  // Discret::ELEMENTS::FluidSurface::element_mean_curvature
+}  // Discret::Elements::FluidSurface::element_mean_curvature
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::area_calculation(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm)
 {
   //------------------------------------------------------------------
@@ -1041,7 +1041,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
 
   // get Gauss rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
@@ -1059,7 +1059,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
   // end of actual area calculation
   //------------------------------------------------------------------
 
-}  // Discret::ELEMENTS::FluidSurface::area_calculation
+}  // Discret::Elements::FluidSurface::area_calculation
 
 
 /*----------------------------------------------------------------------*
@@ -1067,8 +1067,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::area_calculation(
  |                                                           vg 06/2013 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::pressure_boundary_integral(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm)
 {
   // extract pressure values from global velocity/pressure vector
@@ -1115,7 +1115,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
 
   // get Gauss rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // loop over integration points
   for (int gpid = 0; gpid < intpoints.ip().nquad; gpid++)
@@ -1133,15 +1133,15 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::pressure_boundary_integral(
   // set final value for pressure boundary integral
   params.set<double>("pressure boundary integral", press_int);
 
-}  // Discret::ELEMENTS::FluidSurface::pressure_boundary_integral
+}  // Discret::Elements::FluidSurface::pressure_boundary_integral
 
 
 /*----------------------------------------------------------------------*
  |                                                        ismail 10/2010|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::center_of_mass_calculation(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm)
 {
   //------------------------------------------------------------------
@@ -1151,7 +1151,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
@@ -1235,21 +1235,21 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::center_of_mass_calculation(
   // set new center of mass
   params.set("total area", area + elem_area);
 
-}  // Discret::ELEMENTS::FluidSurface::center_of_mass_calculation
+}  // Discret::Elements::FluidSurface::center_of_mass_calculation
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::compute_flow_rate(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get integration rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // extract local values from the global vectors
   // renamed to "velaf" to be consistent in fluidimplicitintegration.cpp (krank 12/13)
@@ -1357,14 +1357,14 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_flow_rate(
       //     (is identical to the total flow rate computed above)
     }
   }
-}  // Discret::ELEMENTS::FluidSurface::compute_flow_rate
+}  // Discret::Elements::FluidSurface::compute_flow_rate
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::flow_rate_deriv(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -1389,7 +1389,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
 
   // get integration rule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // order of accuracy of grid velocity determination
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
@@ -1637,15 +1637,15 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::flow_rate_deriv(
       //-------------------------------------------------------------------
     }
   }
-}  // Discret::ELEMENTS::FluidSurface::flow_rate_deriv
+}  // Discret::Elements::FluidSurface::flow_rate_deriv
 
 
 /*----------------------------------------------------------------------*
  |  Impedance related parameters on boundary elements          AC 03/08  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::impedance_integration(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -1655,7 +1655,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
 
   // get Gaussrule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
@@ -1704,20 +1704,20 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::impedance_integration(
   }
 
   return;
-}  // Discret::ELEMENTS::FluidSurface::impedance_integration
+}  // Discret::Elements::FluidSurface::impedance_integration
 
 
 /*---------------------------------------------------------------------------*
  |  linearization of flux w.r.t velocities on boundary elements  Thon 10/15  |
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::FluidBoundary* ele,
+void Discret::Elements::FluidBoundaryImpl<distype>::d_qdu(Discret::Elements::FluidBoundary* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // get Gaussrule
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
   // element!)
@@ -1774,7 +1774,7 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::d_qdu(Discret::ELEMENTS::Flu
  |  get density                                                vg 06/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
+void Discret::Elements::FluidBoundaryImpl<distype>::get_density(
     Teuchos::RCP<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<bdrynen_, 1>& escaaf, const double thermpressaf,
     const Core::LinAlg::Matrix<bdrynen_, 1>& epreaf)
@@ -1891,8 +1891,8 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::get_density(
  |  Evaluating the velocity component of the traction      ismail 05/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_component(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::calc_traction_velocity_component(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -1962,9 +1962,9 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
 
   // get Gaussrule
   //  const Core::FE::IntPointsAndWeights<bdrynsd_>
-  //  intpoints(Discret::ELEMENTS::DisTypeToGaussRuleForExactSol<distype>::rule);
+  //  intpoints(Discret::Elements::DisTypeToGaussRuleForExactSol<distype>::rule);
   const Core::FE::IntPointsAndWeights<bdrynsd_> intpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary
@@ -2045,27 +2045,27 @@ void Discret::ELEMENTS::FluidBoundaryImpl<distype>::calc_traction_velocity_compo
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidBoundaryImpl<distype>::compute_neumann_uv_integral(
-    Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+void Discret::Elements::FluidBoundaryImpl<distype>::compute_neumann_uv_integral(
+    Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
 }
-// Discret::ELEMENTS::FluidSurface::compute_neumann_uv_integral
+// Discret::Elements::FluidSurface::compute_neumann_uv_integral
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::line3>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::nurbs2>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::nurbs3>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::nurbs4>;
-template class Discret::ELEMENTS::FluidBoundaryImpl<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::line2>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::line3>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::nurbs2>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::nurbs3>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::nurbs4>;
+template class Discret::Elements::FluidBoundaryImpl<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

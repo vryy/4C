@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     template <int nsd, int nen>
@@ -133,7 +133,7 @@ namespace Discret
 
       //! constructor
       ScaTraEleInternalVariableManagerElchElectrodeSTIThermo(
-          int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
+          int numscal, const Discret::Elements::ScaTraEleParameterElch* elchpara)
           :  // call base class constructors
             ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>(numscal, elchpara),
             ScaTraEleInternalVariableManagerSTIThermo<nsd, nen>(){};
@@ -167,9 +167,9 @@ namespace Discret
       void set_frt() override
       {
         const double faraday =
-            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+            Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
         const double gasconstant =
-            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
+            Discret::Elements::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
         vmelch::frt_ = faraday / (gasconstant * vmthermo::temp());
       }
@@ -177,7 +177,7 @@ namespace Discret
       //! get GP temperature
       double temp() { return vmthermo::temp(); }
     };  // class ScaTraEleInternalVariableManagerElchElectrodeSTIThermo
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

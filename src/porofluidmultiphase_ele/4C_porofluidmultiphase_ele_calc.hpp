@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class PoroFluidMultiPhaseEleParameter;
@@ -243,7 +243,7 @@ namespace Discret
       /*========================================================================*/
 
       //! pointer to general scalar transport parameter class
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* para_;
+      Discret::Elements::PoroFluidMultiPhaseEleParameter* para_;
 
       /*========================================================================*/
       //! @name Galerkin approximation and related
@@ -288,7 +288,7 @@ namespace Discret
       Teuchos::RCP<PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>> evaluator_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

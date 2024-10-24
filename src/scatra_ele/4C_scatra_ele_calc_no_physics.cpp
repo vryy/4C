@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                gebauer 06/19 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::instance(
+Discret::Elements::ScaTraEleCalcNoPhysics<distype, probdim>*
+Discret::Elements::ScaTraEleCalcNoPhysics<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::pair<std::string, int>>(
@@ -35,9 +35,9 @@ Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::instance(
  | private constructor for singletons                     gebauer 06/19 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcNoPhysics<distype, probdim>::ScaTraEleCalcNoPhysics(
+Discret::Elements::ScaTraEleCalcNoPhysics<distype, probdim>::ScaTraEleCalcNoPhysics(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname)
 {
 }

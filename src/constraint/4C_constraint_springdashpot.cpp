@@ -212,7 +212,7 @@ void CONSTRAINTS::SpringDashpot::evaluate_robin(Teuchos::RCP<Core::LinAlg::Spars
         // it to truss element
         if (node->num_element() != 1) FOUR_C_THROW("Node may only have one element");
         auto* ele = node->elements();
-        auto* truss_ele = dynamic_cast<Discret::ELEMENTS::Truss3*>(ele[0]);
+        auto* truss_ele = dynamic_cast<Discret::Elements::Truss3*>(ele[0]);
         if (truss_ele == nullptr)
         {
           FOUR_C_THROW(

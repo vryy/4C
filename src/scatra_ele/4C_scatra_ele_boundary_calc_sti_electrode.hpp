@@ -27,7 +27,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleBoundaryCalcElchElectrodeUtils;
 
@@ -35,8 +35,8 @@ namespace Discret
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcSTIElectrode : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelectrodeutils = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
+      using my = Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelectrodeutils = Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeUtils;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -82,7 +82,7 @@ namespace Discret
               emasterphinp,
           double pseudo_contact_fac, const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
-          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacrhsfac, double detF,
           Core::LinAlg::SerialDenseMatrix& k_ss, Core::LinAlg::SerialDenseMatrix& k_sm,
           Core::LinAlg::SerialDenseVector& r_s);
@@ -120,7 +120,7 @@ namespace Discret
               emasterphinp,
           double pseudo_contact_fac, const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
-          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           double timefacfac, double timefacwgt, double detF,
           ScaTra::DifferentiationType differentiationtype,
           const Core::LinAlg::Matrix<nsd_, nen_>& dsqrtdetg_dd,
@@ -176,7 +176,7 @@ namespace Discret
       //! nodal electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
       std::vector<Core::LinAlg::Matrix<nen_, 1>> eelchnp_;
     };  // class ScaTraEleBoundaryCalcSTIElectrode
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

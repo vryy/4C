@@ -11,14 +11,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterXFEM* Discret::ELEMENTS::FluidEleParameterXFEM::instance(
+Discret::Elements::FluidEleParameterXFEM* Discret::Elements::FluidEleParameterXFEM::instance(
     Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterXFEM>(
-            new Discret::ELEMENTS::FluidEleParameterXFEM());
+        return std::unique_ptr<Discret::Elements::FluidEleParameterXFEM>(
+            new Discret::Elements::FluidEleParameterXFEM());
       });
 
   return singleton_owner.instance(action);
@@ -27,8 +27,8 @@ Discret::ELEMENTS::FluidEleParameterXFEM* Discret::ELEMENTS::FluidEleParameterXF
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
-    : Discret::ELEMENTS::FluidEleParameterStd::FluidEleParameterStd(),
+Discret::Elements::FluidEleParameterXFEM::FluidEleParameterXFEM()
+    : Discret::Elements::FluidEleParameterStd::FluidEleParameterStd(),
       vcellgausspts_(Cut::VCellGaussPts_DirectDivergence),
       bcellgausspts_(Cut::BCellGaussPts_Tessellation),
       coupling_method_(Inpar::XFEM::Nitsche),
@@ -49,7 +49,7 @@ Discret::ELEMENTS::FluidEleParameterXFEM::FluidEleParameterXFEM()
 //----------------------------------------------------------------------*/
 //    check parameter combination for consistency
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency(int myrank) const
+void Discret::Elements::FluidEleParameterXFEM::check_parameter_consistency(int myrank) const
 {
   if (visc_adjoint_scaling_ == Inpar::XFEM::adj_sym &&
       coupling_method_ == Inpar::XFEM::Hybrid_LM_viscous_stress)
@@ -92,7 +92,7 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency(int m
 //----------------------------------------------------------------------*/
 //    check parameter combination for consistency
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency_for_averaging_strategy(
+void Discret::Elements::FluidEleParameterXFEM::check_parameter_consistency_for_averaging_strategy(
     int myrank, Inpar::XFEM::AveragingStrategy averaging_strategy) const
 {
   // Determine, whether this is an embedded-sided Nitsche-approach
@@ -154,7 +154,7 @@ void Discret::ELEMENTS::FluidEleParameterXFEM::check_parameter_consistency_for_a
 //----------------------------------------------------------------------*/
 //    set parameters
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterXFEM::set_element_xfem_parameter(
+void Discret::Elements::FluidEleParameterXFEM::set_element_xfem_parameter(
     Teuchos::ParameterList& params,  ///< parameter list
     int myrank                       ///< pid (for output purpose)
 )

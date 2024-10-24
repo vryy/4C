@@ -57,34 +57,34 @@ namespace
   }
 }  // namespace
 
-MIXTURE::PAR::MapMixtureRule::MapMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
+Mixture::PAR::MapMixtureRule::MapMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata.parameters.get<double>("DENS")),
       num_constituents_(matdata.parameters.get<int>("NUMCONST")),
       mass_fractions_map_(matdata.parameters.get<std::unordered_map<int, std::vector<double>>>(
           "MASSFRACMAPFILE")){};
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::MapMixtureRule::create_rule()
+std::unique_ptr<Mixture::MixtureRule> Mixture::PAR::MapMixtureRule::create_rule()
 {
-  return std::make_unique<MIXTURE::MapMixtureRule>(this);
+  return std::make_unique<Mixture::MapMixtureRule>(this);
 }
 
-MIXTURE::MapMixtureRule::MapMixtureRule(MIXTURE::PAR::MapMixtureRule* params)
+Mixture::MapMixtureRule::MapMixtureRule(Mixture::PAR::MapMixtureRule* params)
     : MixtureRule(params), params_(params)
 {
 }
 
-void MIXTURE::MapMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
+void Mixture::MapMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   MixtureRule::setup(params, eleGID);
 }
 
-void MIXTURE::MapMixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
+void Mixture::MapMixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureRule::unpack_mixture_rule(buffer);
+  Mixture::MixtureRule::unpack_mixture_rule(buffer);
 }
 
-void MIXTURE::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::MapMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)

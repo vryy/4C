@@ -24,14 +24,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroReac(
+Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroReac(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
+    : Discret::Elements::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
+      Discret::Elements::ScaTraEleCalcPoro<distype>::ScaTraEleCalcPoro(
           numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
+      Discret::Elements::ScaTraEleCalcAdvReac<distype>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
+      Discret::Elements::ScaTraEleCalcPoroReac<distype>::ScaTraEleCalcPoroReac(
           numdofpernode, numscal, disname),
       efluxnp_(0)
 {
@@ -45,8 +45,8 @@ Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ScaTraEleCalcMultiPoroRe
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>*
-Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::instance(
+Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>*
+Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -65,7 +65,7 @@ Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::instance(
  | setup element evaluation                                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
+int Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   pororeac::setup_calc(ele, discretization);
@@ -355,7 +355,7 @@ int Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::setup_calc(
  | extract element based or nodal values                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -485,7 +485,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_element_and
  | extract element based or nodal values (L2-projection)    vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     const int numfluidphases)
@@ -520,7 +520,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::extract_nodal_flux(
  |  compute the solid pressure at gauss point  (protected)    vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::compute_pore_pressure()
+double Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::compute_pore_pressure()
 {
   return var_manager()->solid_pressure();
 }
@@ -529,7 +529,7 @@ double Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::compute_pore_pres
  |  evaluate single material  (protected)                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::materials(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -580,7 +580,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::materials(
  |                                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_fluid(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -626,7 +626,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_flui
  |                                                     kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_vol_frac(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_vol_frac(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -669,7 +669,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_vol_
  | Species in solid                                        wirthl 12/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_solid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_solid(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -716,7 +716,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_soli
  | Species temperature                                     wirthl 12/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temperature(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temperature(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -789,7 +789,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::mat_multi_poro_temp
  | set internal variables                                           vuong 08/16 |
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<
     distype>::set_internal_variables_for_mat_and_rhs()
 {
   var_manager()->set_internal_variables_multi_poro(my::funct_, my::derxy_, my::deriv_, my::xjm_,
@@ -807,7 +807,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<
  |  Set advanced reaction terms and derivatives                      vuong 08/16 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reaction_terms(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reaction_terms(
     const int k,                                            //!< index of current scalar
     const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
     const double* gpcoord                                   //!< current Gauss-point coordinates
@@ -867,7 +867,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::set_advanced_reacti
  |  Get right hand side including reaction bodyforce term       kremheller 02/18 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::get_rhs_int(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::get_rhs_int(
     double& rhsint,       //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
     const int k           //!< index of current scalar
@@ -881,7 +881,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::get_rhs_int(
  | calculation of reactive element matrix for coupled reactions kremheller 02/18 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_react(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_react(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double taufac, const double densnp,
     const Core::LinAlg::Matrix<nen_, 1>& sgconv, const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -895,7 +895,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_react(
  |  fill the coupling vector and add variables to reactions          vuong 08/16 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_and_add_variables(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vector_and_add_variables(
     const int k, Mat::MatListReactions& matreaclist, ScaTraEleReaManagerAdvReac& remanager)
 {
   // if it is empty rebuilt it
@@ -986,7 +986,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::fill_coupling_vecto
  |  calculation of convective element matrix in convective form    vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double densnp, const Core::LinAlg::Matrix<nen_, 1>& sgconv)
 {
@@ -1006,7 +1006,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv(
  |  calculation of convective element matrix in convective form    vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_mass(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_mass(
     Core::LinAlg::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
 {
   if (var_manager()->evaluate_scalar(k))
@@ -1038,7 +1038,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_mass(
  |  calculation of convective element matrix: add conservative contributions   vuong 08/16 |
  *------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_cons(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_cons(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
@@ -1052,7 +1052,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_c
  | adaption of convective term for rhs                     vuong 08/16 |
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::recompute_conv_phi_for_rhs(const int k,
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::recompute_conv_phi_for_rhs(const int k,
     const Core::LinAlg::Matrix<nsd_, 1>& sgvelint, const double densnp, const double densn,
     const double vdiv)
 {
@@ -1065,7 +1065,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::recompute_conv_phi_
  |  standard Galerkin convective term (OD mesh)       kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_conv_od_mesh(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_conv_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsfac, const double densnp, const double J,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const Core::LinAlg::Matrix<nsd_, 1>& convelint)
@@ -1164,7 +1164,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_conv_od_mesh(
  |  standard Galerkin temporal term (OD mesh)         kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_od_mesh(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double fac, const double densam, const double densnp,
     const double phinp, const double hist, const double J,
@@ -1188,7 +1188,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_od_me
  | hist and source term (OD mesh)                     kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od_mesh(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double J, const Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh,
     const double densnp)
@@ -1251,7 +1251,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_sourc
  | diffusive term (OD mesh)                           kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_diff_od_mesh(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_diff_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double diffcoeff, const double fac, const double rhsfac, const double J,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const Core::LinAlg::Matrix<nsd_, 1>& convelint,
@@ -1296,7 +1296,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_diff_od_mesh(
  | reactive term (OD mesh)                            kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_react_od_mesh(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_react_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi, const double J,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh)
@@ -1317,7 +1317,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_react_od_mesh(
  | convective term (OD fluid)                         kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const int ndofpernodefluid,             //!< number of dofs per node of fluid element
@@ -1421,7 +1421,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_od_fl
  | convective term -- conservative contributions (OD fluid) kremheller 07/17 |
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_cons_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_cons_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const int ndofpernodefluid,             //!< number of dofs per node of fluid element
@@ -1437,7 +1437,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_mat_conv_add_c
  | temporal term (OD fluid)                           kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix to be filled
     const int k,                            //!< index of current scalar
     const int
@@ -1481,7 +1481,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_od_fl
  | correct pre-factor has to be passed                                   |
  *-----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_matrix_type_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_matrix_type_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k,
     const std::vector<double>* prefaclinmassodfluid, const int totalnummultiphasedofpernode,
     double prefac)
@@ -1511,7 +1511,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_lin_mass_matri
  |  + advanced reaction terms if reactionmanager is active     kremheller 07/17 |
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_source_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double densnp)
 {
@@ -1602,7 +1602,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_hist_and_sourc
  | reactive term (OD fluid)                           kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_react_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_react_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi)
 {
@@ -1627,7 +1627,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_react_od_fluid
  |  standard Galerkin diffusive term (OD fluid)     kremheller 07/17 |
  *----------------------------------------------------------------   */
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_diff_od_fluid(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::calc_diff_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
     const int k,                            //!< index of current scalar
     const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -1675,7 +1675,7 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::calc_diff_od_fluid(
  | put it into its own function                           wirthl 12/18 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::apply_shape_derivs_pressure_grad(
+void Discret::Elements::ScaTraEleCalcMultiPoroReac<distype>::apply_shape_derivs_pressure_grad(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double vrhs,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const Core::LinAlg::Matrix<nsd_, 1> refgradpres)
 {
@@ -1780,29 +1780,29 @@ void Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::apply_shape_derivs_
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::quad4>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::quad4>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::quad9>;
+// Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::quad9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::hex8>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::hex8>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tet10>;
+// Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::tet10>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::nurbs9>;
+// Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::nurbs9>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::nurbs27>;
+// Discret::Elements::ScaTraEleCalcMultiPoroReac<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

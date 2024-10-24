@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-bool Discret::ELEMENTS::KirchhoffLoveShellNurbs::read_element(const std::string& eletype,
+bool Discret::Elements::KirchhoffLoveShellNurbs::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // set discretization type

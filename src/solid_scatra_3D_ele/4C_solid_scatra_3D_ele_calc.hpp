@@ -23,14 +23,14 @@ namespace Mat
 {
   class So3Material;
 }  // namespace Mat
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   class ParamsInterface;
-}  // namespace Solid::ELEMENTS
+}  // namespace Solid::Elements
 
 
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   template <Core::FE::CellType celltype, typename SolidFormulation>
   class SolidScatraEleCalc
@@ -104,7 +104,7 @@ namespace Discret::ELEMENTS
 
     SolidFormulationHistory<SolidFormulation> history_data_{};
   };
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

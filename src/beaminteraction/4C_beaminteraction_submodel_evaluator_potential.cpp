@@ -815,7 +815,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup_potential_reductio
     Core::Elements::Element* ele_ptr = discret_ptr()->g_element(ele_gid);
 
     data_maps.ele_gid_length_map.insert(std::make_pair(
-        ele_gid, dynamic_cast<Discret::ELEMENTS::Beam3Base*>(ele_ptr)->ref_length()));
+        ele_gid, dynamic_cast<Discret::Elements::Beam3Base*>(ele_ptr)->ref_length()));
 
     int left_node_gid = *ele_ptr->node_ids();
     // n_right is the local node-ID of the elements right node (at xi = 1) whereas the elements left

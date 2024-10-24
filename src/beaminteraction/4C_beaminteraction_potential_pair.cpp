@@ -67,8 +67,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
   // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
-  const Discret::ELEMENTS::Beam3Base* beamele1 =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+  const Discret::Elements::Beam3Base* beamele1 =
+      dynamic_cast<const Discret::Elements::Beam3Base*>(ele_ptrs[0]);
 
   // at the moment, both elements of a beam contact pair must be of same type Todo
   const unsigned int numnodes_centerline = beamele1->num_centerline_nodes();
@@ -82,7 +82,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       {
         case 2:
         {
-          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+          if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
             return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>>();
           else
           {
@@ -95,7 +95,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 3:
         {
-          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+          if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
             return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>>();
           else
           {
@@ -108,7 +108,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 4:
         {
-          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+          if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
             return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>>();
           else
           {
@@ -121,7 +121,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         }
         case 5:
         {
-          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+          if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
             return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>>();
           else
           {
@@ -150,7 +150,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
       {
         case 2:
         {
-          if (ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+          if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
             return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>>();
           else
           {

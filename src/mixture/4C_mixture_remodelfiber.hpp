@@ -24,7 +24,7 @@ namespace Core::Communication
   class UnpackBuffer;
 }  // namespace Core::Communication
 
-namespace MIXTURE
+namespace Mixture
 {
   template <typename T>
   class RemodelFiberMaterial;
@@ -131,7 +131,7 @@ namespace MIXTURE
    private:
     const std::shared_ptr<Implementation::RemodelFiberImplementation<2, double>> impl_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -21,7 +21,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! Class for Evaluating boundary integrals for porous media problems
     /*!
@@ -78,7 +78,7 @@ namespace Discret
       \param intpoints        (i) Gaussian integration points
 
       */
-      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -104,7 +104,7 @@ namespace Discret
       \param intpoints        (i) Gaussian integration points
 
       */
-      int evaluate_od(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate_od(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -393,13 +393,13 @@ namespace Discret
           ) override;
 
       int compute_volume(Teuchos::ParameterList& params,
-          Discret::ELEMENTS::Fluid* ele,             //!< current fluid element
+          Discret::Elements::Fluid* ele,             //!< current fluid element
           Core::FE::Discretization& discretization,  //!< fluid discretization
           std::vector<int>& lm,                      //!< location vector for DOF management
           Core::LinAlg::SerialDenseVector& elevec1   //!< reference to element vector to be filled
           ) override;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

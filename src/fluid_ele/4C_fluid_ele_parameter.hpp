@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleParameter
     {
@@ -329,10 +329,10 @@ namespace Discret
 
      private:
       //! access time-integration parameters
-      Discret::ELEMENTS::FluidEleParameterTimInt* fldparatimint_;
+      Discret::Elements::FluidEleParameterTimInt* fldparatimint_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

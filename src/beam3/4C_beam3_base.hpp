@@ -42,7 +42,7 @@ namespace Core::Geo::MeshFree
 
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ParamsInterface;
   }
@@ -62,7 +62,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! base class for all beam elements
     class Beam3Base : public Core::Elements::Element
@@ -412,7 +412,7 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline Solid::ELEMENTS::ParamsInterface& params_interface() const
+      inline Solid::Elements::ParamsInterface& params_interface() const
       {
         if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -718,7 +718,7 @@ namespace Discret
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_;
 
       Teuchos::RCP<BrownianDynamics::ParamsInterface> browndyn_interface_ptr_;
 
@@ -728,7 +728,7 @@ namespace Discret
       Beam3Base();
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

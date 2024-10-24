@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
 
 
   // cast first element to Beam3Base
-  beam_element_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
+  beam_element_ = dynamic_cast<const Discret::Elements::Beam3Base*>(element1());
 
   if (beam_element_ == nullptr)
     FOUR_C_THROW(
@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::setup()
   beamele_reflength_ = beam_element_->ref_length();
 
   // cast second element to RigidSphere
-  sphere_element_ = dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(element2());
+  sphere_element_ = dynamic_cast<const Discret::Elements::Rigidsphere*>(element2());
 
   if (sphere_element_ == nullptr)
     FOUR_C_THROW(

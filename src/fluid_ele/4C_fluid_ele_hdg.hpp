@@ -29,7 +29,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidHDGType : public FluidType
     {
@@ -236,7 +236,7 @@ namespace Discret
     };  // class Fluid
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

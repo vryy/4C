@@ -16,13 +16,13 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
+Mixture::PAR::MixtureGrowthStrategy::MixtureGrowthStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : Core::Mat::PAR::Parameter(matdata)
 {
 }
 
-MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::factory(const int matid)
+Mixture::PAR::MixtureGrowthStrategy* Mixture::PAR::MixtureGrowthStrategy::factory(const int matid)
 {
   // for the sake of safety
   if (Global::Problem::instance()->materials() == Teuchos::null)
@@ -45,16 +45,16 @@ MIXTURE::PAR::MixtureGrowthStrategy* MIXTURE::PAR::MixtureGrowthStrategy::factor
   {
     case Core::Materials::mix_growth_strategy_isotropic:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::IsotropicGrowthStrategy>(curmat);
+      return Mat::create_material_parameter_instance<Mixture::PAR::IsotropicGrowthStrategy>(curmat);
     }
     case Core::Materials::mix_growth_strategy_anisotropic:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::AnisotropicGrowthStrategy>(
+      return Mat::create_material_parameter_instance<Mixture::PAR::AnisotropicGrowthStrategy>(
           curmat);
     }
     case Core::Materials::mix_growth_strategy_stiffness:
     {
-      return Mat::create_material_parameter_instance<MIXTURE::PAR::StiffnessGrowthStrategy>(curmat);
+      return Mat::create_material_parameter_instance<Mixture::PAR::StiffnessGrowthStrategy>(curmat);
     }
     default:
       FOUR_C_THROW(

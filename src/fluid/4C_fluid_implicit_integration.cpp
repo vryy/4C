@@ -641,8 +641,8 @@ void FLD::FluidImplicitTimeInt::setup_locsys_dirichlet_bc(double time)
         if (numdim_ == 2)
           FOUR_C_THROW("Locsys: Node Normal for type 'ale', only 3D case is implemented.");
         else
-          nodeNormalParams.set<Discret::ELEMENTS::Ale3::ActionType>(
-              "action", Discret::ELEMENTS::Ale3::ba_calc_ale_node_normal);
+          nodeNormalParams.set<Discret::Elements::Ale3::ActionType>(
+              "action", Discret::Elements::Ale3::ba_calc_ale_node_normal);
       }
       else
       {
@@ -1916,8 +1916,8 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
     Core::Elements::Element* actface = facediscret_->l_row_face(i);
 
     {
-      Discret::ELEMENTS::FluidIntFace* ele =
-          dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
+      Discret::Elements::FluidIntFace* ele =
+          dynamic_cast<Discret::Elements::FluidIntFace*>(actface);
       if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
 
       // get the parent fluid elements
@@ -1960,7 +1960,7 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
 #endif
 
       // call the egde-based assemble and evaluate routine
-      Discret::ELEMENTS::FluidIntFaceImplInterface::impl(ele)
+      Discret::Elements::FluidIntFaceImplInterface::impl(ele)
           ->assemble_internal_faces_using_neighbor_data(ele, material, nds_master, nds_slave,
               Inpar::XFEM::face_type_std, edgebasedparams, *facediscret_, sysmat_linalg,
               residual_col);
@@ -5502,7 +5502,7 @@ void FLD::FluidImplicitTimeInt::set_face_general_fluid_parameter()
     faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
 
-  Discret::ELEMENTS::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams, Teuchos::null,
+  Discret::Elements::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 

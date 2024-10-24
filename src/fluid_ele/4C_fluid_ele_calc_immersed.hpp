@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidImmersedBase;
 
     template <Core::FE::CellType distype>
     class FluidEleCalcImmersed : public FluidEleCalc<distype>
     {
-      typedef Discret::ELEMENTS::FluidEleCalc<distype> my;
+      typedef Discret::Elements::FluidEleCalc<distype> my;
       using my::nen_;
       using my::nsd_;
 
@@ -56,7 +56,7 @@ namespace Discret
         be calculated
 
        */
-      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -113,12 +113,12 @@ namespace Discret
           ) override;
 
       // current element
-      Discret::ELEMENTS::FluidImmersedBase* immersedele_;
+      Discret::Elements::FluidImmersedBase* immersedele_;
       // number of current gp
       int gp_iquad_;
 
     };  // class FluidEleCalcImmersed
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

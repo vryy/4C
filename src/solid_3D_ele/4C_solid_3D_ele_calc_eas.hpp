@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   enum class EasType
   {
@@ -36,36 +36,36 @@ namespace Solid::ELEMENTS
     eastype_undefined
   };
 
-  template <Solid::ELEMENTS::EasType eastype>
+  template <Solid::Elements::EasType eastype>
   struct EasTypeToNumEas
   {
   };
   template <>
-  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_h8_9>
+  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_h8_9>
   {
     static constexpr int num_eas = 9;
   };
   template <>
-  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_h8_21>
+  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_h8_21>
   {
     static constexpr int num_eas = 21;
   };
   template <>
-  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_sh8_7>
+  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_sh8_7>
   {
     static constexpr int num_eas = 7;
   };
   template <>
-  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_sh18_9>
+  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_sh18_9>
   {
     static constexpr int num_eas = 9;
   };
   template <>
-  struct EasTypeToNumEas<Solid::ELEMENTS::EasType::eastype_undefined>
+  struct EasTypeToNumEas<Solid::Elements::EasType::eastype_undefined>
   {
   };
 
-}  // namespace Solid::ELEMENTS
+}  // namespace Solid::Elements
 
 namespace Mat
 {
@@ -79,13 +79,13 @@ namespace Solid::ModelEvaluator
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     /// struct for EAS matrices and vectors to be stored between iterations
-    template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype>
+    template <Core::FE::CellType celltype, Solid::Elements::EasType eastype>
     struct EasIterationData
     {
-      constexpr static int num_eas = Solid::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
+      constexpr static int num_eas = Solid::Elements::EasTypeToNumEas<eastype>::num_eas;
 
       /// inverse EAS matrix K_{alpha alpha}
       Core::LinAlg::Matrix<num_eas, num_eas> invKaa_{true};
@@ -104,7 +104,7 @@ namespace Discret
       Core::LinAlg::Matrix<num_eas, 1> alpha_{true};
     };
 
-    template <Core::FE::CellType celltype, Solid::ELEMENTS::EasType eastype,
+    template <Core::FE::CellType celltype, Solid::Elements::EasType eastype,
         Inpar::Solid::KinemType>
     class SolidEleCalcEas
     {
@@ -174,7 +174,7 @@ namespace Discret
 
      private:
       /// EAS matrices and vectors to be stored between iterations
-      Discret::ELEMENTS::EasIterationData<celltype, eastype> eas_iteration_data_ = {};
+      Discret::Elements::EasIterationData<celltype, eastype> eas_iteration_data_ = {};
 
       // line search parameter (old step length)
       double old_step_length_;
@@ -188,7 +188,7 @@ namespace Discret
       Core::FE::GaussIntegration stiffness_matrix_integration_;
       Core::FE::GaussIntegration mass_matrix_integration_;
     };  // class SolidEleCalcEas
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

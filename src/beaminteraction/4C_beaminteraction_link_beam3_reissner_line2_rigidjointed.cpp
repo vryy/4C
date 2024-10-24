@@ -55,7 +55,7 @@ BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::BeamLinkBeam3rLine2RigidJointe
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
   if (linkele_ != Teuchos::null)
-    linkele_ = Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Beam3r>(
+    linkele_ = Teuchos::rcp_dynamic_cast<Discret::Elements::Beam3r>(
         Teuchos::RCP(old.linkele_->clone(), true));
   else
     linkele_ = Teuchos::null;
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::setup(int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::make_rcp<Discret::ELEMENTS::Beam3r>(-1, 0);
+  linkele_ = Teuchos::make_rcp<Discret::Elements::Beam3r>(-1, 0);
 
   // set material
   linkele_->set_material(0, Mat::factory(matnum));
@@ -173,7 +173,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::unpack(
     Core::Communication::UnpackBuffer dataele_buffer(dataele);
     Core::Communication::ParObject* object =
         Core::Communication::factory(dataele_buffer);  // Unpack is done here
-    Discret::ELEMENTS::Beam3r* linkele = dynamic_cast<Discret::ELEMENTS::Beam3r*>(object);
+    Discret::Elements::Beam3r* linkele = dynamic_cast<Discret::Elements::Beam3r*>(object);
     if (linkele == nullptr)
       FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2RigidJointed");
     linkele_ = Teuchos::RCP(linkele);

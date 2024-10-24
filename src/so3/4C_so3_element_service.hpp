@@ -21,7 +21,7 @@ namespace Discret
   {
     class GaussIntegration;
   }
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
      * \brief Assemble nodal element count
@@ -55,7 +55,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     std::vector<double> project_nodal_quantity_to_xi(
         const Core::LinAlg::Matrix<3, 1>& xi, const std::vector<double>& nodal_quantity);
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

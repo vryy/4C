@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleDiffManagerElchElectrode;
@@ -176,9 +176,9 @@ namespace Discret
           ) override;
 
       //! get utility class supporting element evaluation for electrodes
-      Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* utils()
+      Discret::Elements::ScaTraEleUtilsElchElectrode<distype>* utils()
       {
-        return static_cast<Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>*>(
+        return static_cast<Discret::Elements::ScaTraEleUtilsElchElectrode<distype>*>(
             myelch::utils_);
       };
 
@@ -386,7 +386,7 @@ namespace Discret
 
       //! constructor
       ScaTraEleInternalVariableManagerElchElectrode(
-          int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
+          int numscal, const Discret::Elements::ScaTraEleParameterElch* elchpara)
           : ScaTraEleInternalVariableManagerElch<nsd, nen>(numscal, elchpara),
             invf_(1. / vmelch::parameters_->faraday())
       {
@@ -442,7 +442,7 @@ namespace Discret
       //! constant parameter 1./F
       const double invf_;
     };  // class ScaTraEleInternalVariableManagerElchElectrode
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
-MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
+Mixture::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : RemodelFiberMaterial<T>(matdata),
       passive_params_{matdata.parameters.get<double>("K1"), matdata.parameters.get<double>("K2"),
@@ -34,22 +34,22 @@ MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExpo
 }
 
 template <typename T>
-std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
-MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::create_remodel_fiber_material() const
+std::unique_ptr<Mixture::RemodelFiberMaterial<T>>
+Mixture::PAR::RemodelFiberMaterialExponentialActive<T>::create_remodel_fiber_material() const
 {
-  return std::make_unique<MIXTURE::RemodelFiberMaterialExponentialActive<T>>(this);
+  return std::make_unique<Mixture::RemodelFiberMaterialExponentialActive<T>>(this);
 }
 
 
 template <typename T>
-MIXTURE::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
+Mixture::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(
     const PAR::RemodelFiberMaterialExponentialActive<T>* matdata)
     : params_(matdata)
 {
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponentialActive<T>::get_cauchy_stress(T I4) const
+T Mixture::RemodelFiberMaterialExponentialActive<T>::get_cauchy_stress(T I4) const
 {
   const T dPIact = params_->dPsiAct_;
 
@@ -57,19 +57,19 @@ T MIXTURE::RemodelFiberMaterialExponentialActive<T>::get_cauchy_stress(T I4) con
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponentialActive<T>::get_d_cauchy_stress_d_i4(T I4) const
+T Mixture::RemodelFiberMaterialExponentialActive<T>::get_d_cauchy_stress_d_i4(T I4) const
 {
   return get_d_exponential_fiber_cauchy_stress_d_i4<T>(params_->passive_params_, I4);
 }
 
 template <typename T>
-T MIXTURE::RemodelFiberMaterialExponentialActive<T>::get_d_cauchy_stress_d_i4_d_i4(T I4) const
+T Mixture::RemodelFiberMaterialExponentialActive<T>::get_d_cauchy_stress_d_i4_d_i4(T I4) const
 {
   return get_d_exponential_fiber_cauchy_stress_d_i4_d_i4<T>(params_->passive_params_, I4);
 }
 
-template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>;
-template class MIXTURE::PAR::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
-template class MIXTURE::RemodelFiberMaterialExponentialActive<double>;
-template class MIXTURE::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
+template class Mixture::PAR::RemodelFiberMaterialExponentialActive<double>;
+template class Mixture::PAR::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
+template class Mixture::RemodelFiberMaterialExponentialActive<double>;
+template class Mixture::RemodelFiberMaterialExponentialActive<Sacado::Fad::DFad<double>>;
 FOUR_C_NAMESPACE_CLOSE

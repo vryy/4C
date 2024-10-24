@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
         "surface!");
 
   // Check that the beam element is a Simo-Reissner beam.
-  auto beam_ele = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(this->element1());
+  auto beam_ele = dynamic_cast<const Discret::Elements::Beam3r*>(this->element1());
   if (beam_ele == nullptr)
     FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
   const double beam_cross_section_radius =

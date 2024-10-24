@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Truss3::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Truss3::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
@@ -38,6 +38,6 @@ bool Discret::ELEMENTS::Truss3::read_element(const std::string& eletype, const s
 /*------------------------------------------------------------------------*
  | Set cross section area                           (public) mueller 03/12|
  *------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::set_cross_sec(const double& crosssec) { crosssec_ = crosssec; }
+void Discret::Elements::Truss3::set_cross_sec(const double& crosssec) { crosssec_ = crosssec; }
 
 FOUR_C_NAMESPACE_CLOSE

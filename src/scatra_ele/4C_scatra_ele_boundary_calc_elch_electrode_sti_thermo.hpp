@@ -21,17 +21,17 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelch = Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
-      using myelectrode = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
-      using myelectrodeutils = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils;
+      using my = Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
+      using myelectrodeutils = Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeUtils;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -88,7 +88,7 @@ namespace Discret
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& test_master,
           const Core::LinAlg::Matrix<nsd_, nen_>& dsqrtdetg_dd,
           const Core::LinAlg::Matrix<nsd_, nen_>& shape_spatial_derivatives,
-          const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+          const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
           ScaTra::DifferentiationType differentiationtype, double timefacfac, double timefacwgt,
           double detF, int num_dof_per_node, Core::LinAlg::SerialDenseMatrix& k_ss,
           Core::LinAlg::SerialDenseMatrix& k_ms);
@@ -132,7 +132,7 @@ namespace Discret
       //! nodal temperature variables associated with time t_{n+1} or t_{n+alpha_f}
       Core::LinAlg::Matrix<nen_, 1> etempnp_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeSTIThermo
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

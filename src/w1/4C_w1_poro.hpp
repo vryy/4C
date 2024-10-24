@@ -31,7 +31,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
@@ -99,15 +99,15 @@ namespace Discret
         switch (distype)
         {
           case Core::FE::CellType::tri3:
-            return Discret::ELEMENTS::WallTri3PoroType::instance().unique_par_object_id();
+            return Discret::Elements::WallTri3PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::quad4:
-            return Discret::ELEMENTS::WallQuad4PoroType::instance().unique_par_object_id();
+            return Discret::Elements::WallQuad4PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::quad9:
-            return Discret::ELEMENTS::WallQuad9PoroType::instance().unique_par_object_id();
+            return Discret::Elements::WallQuad9PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::nurbs4:
-            return Discret::ELEMENTS::WallNurbs4PoroType::instance().unique_par_object_id();
+            return Discret::Elements::WallNurbs4PoroType::instance().unique_par_object_id();
           case Core::FE::CellType::nurbs9:
-            return Discret::ELEMENTS::WallNurbs9PoroType::instance().unique_par_object_id();
+            return Discret::Elements::WallNurbs9PoroType::instance().unique_par_object_id();
           default:
             FOUR_C_THROW("unknown element type");
             break;
@@ -149,20 +149,20 @@ namespace Discret
         switch (distype)
         {
           case Core::FE::CellType::tri3:
-            return Discret::ELEMENTS::WallTri3PoroType::instance();
+            return Discret::Elements::WallTri3PoroType::instance();
           case Core::FE::CellType::quad4:
-            return Discret::ELEMENTS::WallQuad4PoroType::instance();
+            return Discret::Elements::WallQuad4PoroType::instance();
           case Core::FE::CellType::quad9:
-            return Discret::ELEMENTS::WallQuad9PoroType::instance();
+            return Discret::Elements::WallQuad9PoroType::instance();
           case Core::FE::CellType::nurbs4:
-            return Discret::ELEMENTS::WallNurbs4PoroType::instance();
+            return Discret::Elements::WallNurbs4PoroType::instance();
           case Core::FE::CellType::nurbs9:
-            return Discret::ELEMENTS::WallNurbs9PoroType::instance();
+            return Discret::Elements::WallNurbs9PoroType::instance();
           default:
             FOUR_C_THROW("unknown element type");
             break;
         }
-        return Discret::ELEMENTS::WallQuad4PoroType::instance();
+        return Discret::Elements::WallQuad4PoroType::instance();
       }
 
       //!@}
@@ -653,7 +653,7 @@ namespace Discret
       std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

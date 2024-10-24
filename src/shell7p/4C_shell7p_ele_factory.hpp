@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   // forward declaration
   class Shell7pEleCalcInterface;
@@ -38,7 +38,7 @@ namespace Discret::ELEMENTS
     static std::unique_ptr<Shell7pEleCalcInterface> define_calculation_interface_type(
         const std::set<Inpar::Solid::EleTech>& eletech);
   };  // class Shell7pFactory
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

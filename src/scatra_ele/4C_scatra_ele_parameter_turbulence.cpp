@@ -16,8 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterTurbulence*
-Discret::ELEMENTS::ScaTraEleParameterTurbulence::instance(const std::string& disname)
+Discret::Elements::ScaTraEleParameterTurbulence*
+Discret::Elements::ScaTraEleParameterTurbulence::instance(const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
       [](const std::string& disname)
@@ -33,7 +33,7 @@ Discret::ELEMENTS::ScaTraEleParameterTurbulence::instance(const std::string& dis
 /*----------------------------------------------------------------------*
  | private constructor for singletons                        fang 08/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
+Discret::Elements::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
     const std::string& disname  //!< name of discretization
     )
     : turbmodel_(Inpar::FLUID::no_model),
@@ -60,7 +60,7 @@ Discret::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
       mean_cai_(0.0),
       adapt_csgs_phi_(false),
       turbinflow_(false),
-      timintparams_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname))
+      timintparams_(Discret::Elements::ScaTraEleParameterTimInt::instance(disname))
 {
   return;
 }
@@ -69,7 +69,7 @@ Discret::ELEMENTS::ScaTraEleParameterTurbulence::ScaTraEleParameterTurbulence(
 /*----------------------------------------------------------------------*
  | set parameters                                       rasthofer 11/11 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterTurbulence::set_parameters(
+void Discret::Elements::ScaTraEleParameterTurbulence::set_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

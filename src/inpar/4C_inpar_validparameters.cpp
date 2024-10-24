@@ -408,7 +408,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
   Inpar::XFEM::set_valid_parameters(*list);
   Inpar::CONSTRAINTS::set_valid_parameters(*list);
 
-  Inpar::LUBRICATION::set_valid_parameters(*list);
+  Inpar::Lubrication::set_valid_parameters(*list);
   Inpar::ScaTra::set_valid_parameters(*list);
   Inpar::LevelSet::set_valid_parameters(*list);
   Inpar::ElCh::set_valid_parameters(*list);

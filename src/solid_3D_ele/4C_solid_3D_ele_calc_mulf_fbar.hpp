@@ -22,7 +22,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   template <Core::FE::CellType celltype>
   struct MulfFBarPreparationData
@@ -213,7 +213,7 @@ namespace Discret::ELEMENTS
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1>&
             force_vector)
     {
-      Discret::ELEMENTS::add_internal_force_vector(
+      Discret::Elements::add_internal_force_vector(
           linearization.Bop, stress, integration_factor / linearization.fbar_factor, force_vector);
     }
 
@@ -226,9 +226,9 @@ namespace Discret::ELEMENTS
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
             Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      Discret::ELEMENTS::add_elastic_stiffness_matrix(linearization.Bop, stress,
+      Discret::Elements::add_elastic_stiffness_matrix(linearization.Bop, stress,
           integration_factor * linearization.fbar_factor, stiffness_matrix);
-      Discret::ELEMENTS::add_geometric_stiffness_matrix(jacobian_mapping.N_XYZ_, stress,
+      Discret::Elements::add_geometric_stiffness_matrix(jacobian_mapping.N_XYZ_, stress,
           integration_factor / linearization.fbar_factor, stiffness_matrix);
 
       // additional stiffness matrix needed for fbar method
@@ -287,7 +287,7 @@ namespace Discret::ELEMENTS
 
 
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

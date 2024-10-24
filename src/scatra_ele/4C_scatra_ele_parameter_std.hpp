@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ScaTraEleParameterTimInt;
@@ -210,9 +210,9 @@ namespace Discret
       //! @}
 
       //! parameter class for time integration
-      Discret::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
+      Discret::Elements::ScaTraEleParameterTimInt* scatraparatimint_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

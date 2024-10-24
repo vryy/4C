@@ -11,7 +11,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   /*----------------------------------------------------------------------*
@@ -91,6 +91,6 @@ namespace Discret::ELEMENTS
 
     return nullspace;
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE

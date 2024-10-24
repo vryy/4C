@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-std::vector<double> Discret::ELEMENTS::SoHex27::soh27_element_center_refe_coords()
+std::vector<double> Discret::Elements::SoHex27::soh27_element_center_refe_coords()
 {
   // update element geometry
   Core::LinAlg::Matrix<NUMNOD_SOH27, NUMDIM_SOH27> xrefe;  // material coord. of element

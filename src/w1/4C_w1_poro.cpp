@@ -20,8 +20,8 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
-    : Discret::ELEMENTS::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
+Discret::Elements::Wall1Poro<distype>::Wall1Poro(int id, int owner)
+    : Discret::Elements::Wall1(id, owner), intpoints_(distype), weights_(true), myknots_(numdim_)
 {
   numgpt_ = intpoints_.num_points();
 
@@ -37,8 +37,8 @@ Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(int id, int owner)
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const Discret::ELEMENTS::Wall1Poro<distype>& old)
-    : Discret::ELEMENTS::Wall1(old),
+Discret::Elements::Wall1Poro<distype>::Wall1Poro(const Discret::Elements::Wall1Poro<distype>& old)
+    : Discret::Elements::Wall1(old),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
       xsi_(old.xsi_),
@@ -54,14 +54,14 @@ Discret::ELEMENTS::Wall1Poro<distype>::Wall1Poro(const Discret::ELEMENTS::Wall1P
 }
 
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::Wall1Poro<distype>::clone() const
+Core::Elements::Element* Discret::Elements::Wall1Poro<distype>::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::Wall1Poro<distype>(*this);
+  auto* newelement = new Discret::Elements::Wall1Poro<distype>(*this);
   return newelement;
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Wall1Poro<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -96,11 +96,11 @@ void Discret::ELEMENTS::Wall1Poro<distype>::pack(Core::Communication::PackBuffer
   for (int i = 0; i < size; ++i) add_to_pack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // add base class Element
-  Discret::ELEMENTS::Wall1::pack(data);
+  Discret::Elements::Wall1::pack(data);
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Wall1Poro<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -139,7 +139,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::unpack(Core::Communication::UnpackBu
   std::vector<char> basedata(0);
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::ELEMENTS::Wall1::unpack(basedata_buffer);
+  Discret::Elements::Wall1::unpack(basedata_buffer);
 
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
@@ -148,20 +148,20 @@ void Discret::ELEMENTS::Wall1Poro<distype>::unpack(Core::Communication::UnpackBu
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1Poro<distype>::lines()
 {
   return Core::Communication::element_boundary_factory<Wall1Line, Wall1Poro>(
       Core::Communication::buildLines, *this);
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1Poro<distype>::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1Poro<distype>::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::print(std::ostream& os) const
+void Discret::Elements::Wall1Poro<distype>::print(std::ostream& os) const
 {
   os << "Wall1_Poro ";
   Element::print(os);
@@ -169,7 +169,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::print(std::ostream& os) const
 }
 
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1Poro<distype>::read_element(const std::string& eletype,
+bool Discret::Elements::Wall1Poro<distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -188,7 +188,7 @@ bool Discret::ELEMENTS::Wall1Poro<distype>::read_element(const std::string& elet
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::
+void Discret::Elements::Wall1Poro<distype>::
     read_anisotropic_permeability_directions_from_element_line_definition(
         const Core::IO::InputParameterContainer& container)
 {
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::
+void Discret::Elements::Wall1Poro<distype>::
     read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
         const Core::IO::InputParameterContainer& container)
 {
@@ -216,7 +216,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::get_materials()
+void Discret::Elements::Wall1Poro<distype>::get_materials()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)
@@ -248,7 +248,7 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
+void Discret::Elements::Wall1Poro<distype>::get_materials_pressure_based()
 {
   // get structure material
   if (struct_mat_ == Teuchos::null)
@@ -287,13 +287,13 @@ void Discret::ELEMENTS::Wall1Poro<distype>::get_materials_pressure_based()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Wall1Poro<distype>::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::Wall1Poro<distype>::vis_names(std::map<std::string, int>& names)
 {
   solid_material()->vis_names(names);
 }
 
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Wall1Poro<distype>::vis_data(
+bool Discret::Elements::Wall1Poro<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -302,10 +302,10 @@ bool Discret::ELEMENTS::Wall1Poro<distype>::vis_data(
   return solid_material()->vis_data(name, data, numgpt_, this->id());
 }
 
-template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs4>;
-template class Discret::ELEMENTS::Wall1Poro<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::Wall1Poro<Core::FE::CellType::tri3>;
+template class Discret::Elements::Wall1Poro<Core::FE::CellType::quad4>;
+template class Discret::Elements::Wall1Poro<Core::FE::CellType::quad9>;
+template class Discret::Elements::Wall1Poro<Core::FE::CellType::nurbs4>;
+template class Discret::Elements::Wall1Poro<Core::FE::CellType::nurbs9>;
 
 FOUR_C_NAMESPACE_CLOSE

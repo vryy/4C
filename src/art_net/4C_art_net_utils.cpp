@@ -99,7 +99,7 @@ bool Arteries::ArteryScatraCloneStrategy::determine_ele_type(
     Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype)
 {
   // clone the element
-  Discret::ELEMENTS::Artery* myele = static_cast<Discret::ELEMENTS::Artery*>(actele);
+  Discret::Elements::Artery* myele = static_cast<Discret::Elements::Artery*>(actele);
   // only the pressure based artery supports this function so far
   if (myele->impl_type() == Inpar::ArtDyn::impltype_pressure_based)
   {
@@ -124,7 +124,7 @@ void Arteries::ArteryScatraCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  Discret::Elements::Transport* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans != nullptr)
   {
     // set material

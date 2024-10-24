@@ -27,14 +27,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcXFEM<distype>*
-Discret::ELEMENTS::FluidEleCalcXFEM<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidEleCalcXFEM<distype>*
+Discret::Elements::FluidEleCalcXFEM<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcXFEM<distype>>(
-            new Discret::ELEMENTS::FluidEleCalcXFEM<distype>());
+        return std::unique_ptr<Discret::Elements::FluidEleCalcXFEM<distype>>(
+            new Discret::Elements::FluidEleCalcXFEM<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -44,8 +44,8 @@ Discret::ELEMENTS::FluidEleCalcXFEM<distype>::instance(Core::Utils::SingletonAct
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
-    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
+Discret::Elements::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
+    : Discret::Elements::FluidEleCalc<distype>::FluidEleCalc(),
       densaf_master_(0.0),
       densaf_slave_(0.0),
       viscaf_master_(0.0),
@@ -71,20 +71,20 @@ Discret::ELEMENTS::FluidEleCalcXFEM<distype>::FluidEleCalcXFEM()
 {
   // we use the standard parameter list here, since there are not any additional
   // xfem-specific parameters required in this derived class
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterXFEM::instance();
-  fldparaxfem_ = static_cast<Discret::ELEMENTS::FluidEleParameterXFEM*>(my::fldpara_);
+  my::fldpara_ = Discret::Elements::FluidEleParameterXFEM::instance();
+  fldparaxfem_ = static_cast<Discret::Elements::FluidEleParameterXFEM*>(my::fldpara_);
 }
 
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*-------------------------------------------------------------------------------*
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::evaluate_xfem(Discret::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::evaluate_xfem(Discret::Elements::Fluid* ele,
         Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -112,7 +112,7 @@ namespace Discret
               Evaluate routine for cut elements of XFEM  (public)
     *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::integrate_shape_function_xfem(Discret::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::integrate_shape_function_xfem(Discret::Elements::Fluid* ele,
         Core::FE::Discretization& discretization, const std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& elevec1_epetra,
         const std::vector<Core::FE::GaussIntegration>& intpoints,
@@ -134,7 +134,7 @@ namespace Discret
 
     /// error computation
     template <Core::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::compute_error(Discret::Elements::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
         Core::FE::Discretization& discretization, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& ele_dom_norms)
@@ -147,7 +147,7 @@ namespace Discret
     }
 
     template <Core::FE::CellType distype>
-    int FluidEleCalcXFEM<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+    int FluidEleCalcXFEM<distype>::compute_error(Discret::Elements::Fluid* ele,
         Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
         Core::FE::Discretization& discretization, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& ele_dom_norms,  // squared element domain norms
@@ -771,7 +771,7 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error_interface(
-        Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
+        Discret::Elements::Fluid* ele,                             ///< fluid element
         Core::FE::Discretization& dis,                             ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -903,7 +903,7 @@ namespace Discret
         Core::LinAlg::Matrix<3, 1> x_side(true);
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
+        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
         Core::Elements::LocationArray cutla(1);
@@ -922,7 +922,7 @@ namespace Discret
 
         // coupling object between background element and each coupling element (side for
         // xfluid-sided coupling, element for other couplings)
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> ci;
+        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> ci;
 
         // pointer to coupling element
         Core::Elements::Element* coupl_ele = nullptr;
@@ -979,7 +979,7 @@ namespace Discret
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
-          si = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
+          si = Discret::Elements::XFLUID::SlaveElementInterface<
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
@@ -1001,7 +1001,7 @@ namespace Discret
 
             Core::Geo::initial_position_array(coupl_xyze, coupl_ele);
 
-            ci = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
+            ci = Discret::Elements::XFLUID::SlaveElementInterface<
                 distype>::create_slave_element_representation(coupl_ele, coupl_xyze);
 
             // set velocity (and pressure) of coupling/slave element at current time step
@@ -1263,7 +1263,7 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::element_xfem_interface_hybrid_lm(
-        Discret::ELEMENTS::Fluid* ele,                             ///< fluid element
+        Discret::Elements::Fluid* ele,                             ///< fluid element
         Core::FE::Discretization& dis,                             ///< background discretization
         const std::vector<int>& lm,                                ///< element local map
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
@@ -1451,7 +1451,7 @@ namespace Discret
 
       // side coupling implementation between background element and each cutting side OR
       // embedded element
-      std::map<int, Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>> ci;
+      std::map<int, Teuchos::RCP<Discret::Elements::XFLUID::HybridLMInterface<distype>>> ci;
 
       //-----------------------------------------------------------------------------------
       //                     application-specific flags & parameters
@@ -1512,7 +1512,7 @@ namespace Discret
 
 
       // map of Nitsche-interfaces for building convective stabilization terms
-      std::map<int, Teuchos::RCP<Discret::ELEMENTS::XFLUID::NitscheInterface<distype>>> si_nit;
+      std::map<int, Teuchos::RCP<Discret::Elements::XFLUID::NitscheInterface<distype>>> si_nit;
 
       // map of boundary element gids and coupling contributions from convective stabilization terms
       std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>> side_coupling_extra;
@@ -1540,7 +1540,7 @@ namespace Discret
         Core::LinAlg::Matrix<3, 1> x_side(true);
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
+        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
         Core::Elements::LocationArray cutla(1);
@@ -1621,7 +1621,7 @@ namespace Discret
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
-          si = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
+          si = Discret::Elements::XFLUID::SlaveElementInterface<
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
@@ -1662,13 +1662,13 @@ namespace Discret
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
           {
-            ci[coup_sid] = Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>::
+            ci[coup_sid] = Discret::Elements::XFLUID::HybridLMInterface<distype>::
                 create_hybrid_lm_coupling_x_fluid_wdbc(
                     fldparaxfem_->is_viscous_adjoint_symmetric());
           }
           else if (is_mesh_coupling_side)
           {
-            ci[coup_sid] = Discret::ELEMENTS::XFLUID::HybridLMInterface<
+            ci[coup_sid] = Discret::Elements::XFLUID::HybridLMInterface<
                 distype>::create_hybrid_lm_coupling_x_fluid_wdbc(coupl_ele, coupl_xyze,
                 fldparaxfem_->is_viscous_adjoint_symmetric());
           }
@@ -1700,7 +1700,7 @@ namespace Discret
               averaging_strategy == Inpar::XFEM::Mean)  // for coupling-sided and two-sided coupling
             FOUR_C_THROW("embedded or two-sided coupling not supported");
 
-          ci[coup_sid] = Discret::ELEMENTS::XFLUID::HybridLMInterface<
+          ci[coup_sid] = Discret::Elements::XFLUID::HybridLMInterface<
               distype>::create_hybrid_lm_coupling_x_fluid_sided(coupl_ele, coupl_xyze, C_uiu, C_uui,
               rhC_ui, eleGsui, eleGuis, fldparaxfem_->is_viscous_adjoint_symmetric());
         }
@@ -1753,13 +1753,13 @@ namespace Discret
               Core::LinAlg::SerialDenseMatrix& rhC_ui = side_matrices_extra[2];
               Core::LinAlg::SerialDenseMatrix& C_uiui = side_matrices_extra[3];
 
-              si_nit[coup_sid] = Discret::ELEMENTS::XFLUID::NitscheInterface<
+              si_nit[coup_sid] = Discret::Elements::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_sided(side, side_xyze, elemat1_epetra,
                   C_uiu, C_uui, C_uiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
             }
             else
             {
-              si_nit[coup_sid] = Discret::ELEMENTS::XFLUID::NitscheInterface<
+              si_nit[coup_sid] = Discret::Elements::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_wdbc(side, side_xyze, elemat1_epetra,
                   elevec1_epetra, *fldparaxfem_);
             }
@@ -1779,7 +1779,7 @@ namespace Discret
             }
             else
             {
-              si_nit[coup_sid] = Discret::ELEMENTS::XFLUID::NitscheInterface<
+              si_nit[coup_sid] = Discret::Elements::XFLUID::NitscheInterface<
                   distype>::create_nitsche_coupling_x_fluid_wdbc(elemat1_epetra, elevec1_epetra,
                   *fldparaxfem_);
             }
@@ -2440,11 +2440,11 @@ namespace Discret
 
       // build interface coupling matrices - therefore iterate through the interface elements
       for (typename std::map<int,
-               Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>>>::iterator sit =
+               Teuchos::RCP<Discret::Elements::XFLUID::HybridLMInterface<distype>>>::iterator sit =
                ci.begin();
            sit != ci.end(); ++sit)
       {
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>> si = sit->second;
+        Teuchos::RCP<Discret::Elements::XFLUID::HybridLMInterface<distype>> si = sit->second;
         const int coup_sid = sit->first;
 
         // creation of Cuiu,Cuui,rhCui,Guis and Gsui:
@@ -3004,7 +3004,7 @@ namespace Discret
      *-------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::hybrid_lm_evaluate_surf_based(
-        Discret::ELEMENTS::XFLUID::HybridLMInterface<distype>& si,
+        Discret::Elements::XFLUID::HybridLMInterface<distype>& si,
         const Core::LinAlg::Matrix<nen_, nen_>& bK_ss,
         Core::LinAlg::BlockMatrix<Core::LinAlg::Matrix<nen_, nen_>, numstressdof_, numdofpernode_>&
             K_su,
@@ -3175,7 +3175,7 @@ namespace Discret
     /*--------------------------------------------------------------------------------
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
-    void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(Discret::ELEMENTS::Fluid* ele,
+    void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(Discret::Elements::Fluid* ele,
         Core::FE::Discretization& dis, const std::vector<int>& lm,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,
@@ -3343,7 +3343,7 @@ namespace Discret
         x_side_.clear();
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> si;
+        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
         Core::Elements::LocationArray cutla(1);
@@ -3359,7 +3359,7 @@ namespace Discret
 
         // coupling object between background element and each coupling element (side for
         // xfluid-sided coupling, element for other couplings)
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::NitscheInterface<distype>> ci;
+        Teuchos::RCP<Discret::Elements::XFLUID::NitscheInterface<distype>> ci;
 
         // pointer to coupling element
         Core::Elements::Element* coupl_ele = nullptr;
@@ -3451,7 +3451,7 @@ namespace Discret
 
           // create auxiliary coupling object for the boundary element, in order to perform
           // projection
-          si = Discret::ELEMENTS::XFLUID::SlaveElementInterface<
+          si = Discret::Elements::XFLUID::SlaveElementInterface<
               distype>::create_slave_element_representation(side, side_xyze);
 
           // set displacement of side
@@ -3486,13 +3486,13 @@ namespace Discret
           if (is_ls_coupling_side)  //... for problems with cut interface defined by level-set
                                     // field, currently only one-sided
           {
-            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::Elements::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_wdbc(elemat1_epetra, elevec1_epetra,
                 *fldparaxfem_);
           }
           else if (is_mesh_coupling_side)
           {
-            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::Elements::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_wdbc(coupl_ele, coupl_xyze,
                 elemat1_epetra, elevec1_epetra, *fldparaxfem_);
           }
@@ -3518,13 +3518,13 @@ namespace Discret
           if (non_xfluid_coupling)
           {
             // create interface for the embedded element and the associated side
-            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::Elements::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_two_sided(coupl_ele, coupl_xyze, elemat1_epetra,
                 C_uiu, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
           }
           else  // ... for xfluid-sided coupling
           {
-            ci = Discret::ELEMENTS::XFLUID::NitscheInterface<
+            ci = Discret::Elements::XFLUID::NitscheInterface<
                 distype>::create_nitsche_coupling_x_fluid_sided(coupl_ele, coupl_xyze,
                 elemat1_epetra, C_uiu, C_uui, eleCuiui, elevec1_epetra, rhC_ui, *fldparaxfem_);
           }
@@ -3976,7 +3976,7 @@ namespace Discret
             LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
         const Core::LinAlg::Matrix<nsd_, 1>& x,       ///< global coordinates of Gaussian point
         const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
+        Discret::Elements::XFLUID::SlaveElementInterface<distype>&
             si,                                 ///< side implementation for cutter element
         Core::LinAlg::Matrix<3, 1>& rst,        ///< local coordinates of GP for bg element
         double& kappa_m,                        ///< fluid sided weighting
@@ -4160,7 +4160,7 @@ namespace Discret
             itractionn_jump,                     ///< prescribed interface jump vector for traction
         const Core::LinAlg::Matrix<nsd_, 1>& x,  ///< global coordinates of Gaussian point
         const Core::LinAlg::Matrix<nsd_, 1>& normal,  ///< normal vector at Gaussian point
-        Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>&
+        Discret::Elements::XFLUID::SlaveElementInterface<distype>&
             si,                          ///< side implementation for cutter element
         const double& presn_m,           ///< coupling master pressure
         Core::LinAlg::Matrix<3, 1>& rst  ///< local coordinates of GP for bg element
@@ -4496,7 +4496,7 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::calculate_continuity_xfem(
-        Discret::ELEMENTS::Fluid* ele,                    ///< fluid element
+        Discret::Elements::Fluid* ele,                    ///< fluid element
         Core::FE::Discretization& dis,                    ///< discretization
         const std::vector<int>& lm,                       ///< local map
         Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
@@ -4548,7 +4548,7 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::calculate_continuity_xfem(
-        Discret::ELEMENTS::Fluid* ele,                   ///< fluid element
+        Discret::Elements::Fluid* ele,                   ///< fluid element
         Core::FE::Discretization& dis,                   ///< discretization
         const std::vector<int>& lm,                      ///< local map
         Core::LinAlg::SerialDenseVector& elevec1_epetra  ///< element vector
@@ -4600,17 +4600,17 @@ namespace Discret
       return;
     }
 
-  }  // end namespace ELEMENTS
+  }  // end namespace Elements
 }  // end namespace Discret
 
 // Ursula is responsible for this comment!
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::wedge15>;
-// template class Discret::ELEMENTS::FluidEleCalcXFEM<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::hex8>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::hex20>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::hex27>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::tet4>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::tet10>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::wedge6>;
+template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::wedge15>;
+// template class Discret::Elements::FluidEleCalcXFEM<Core::FE::CellType::pyramid5>;
 
 FOUR_C_NAMESPACE_CLOSE

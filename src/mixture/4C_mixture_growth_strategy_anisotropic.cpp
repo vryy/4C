@@ -16,22 +16,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
+Mixture::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
-    : MIXTURE::PAR::MixtureGrowthStrategy(matdata),
+    : Mixture::PAR::MixtureGrowthStrategy(matdata),
       init_mode_(matdata.parameters.get<int>("INIT")),
       fiber_id_(matdata.parameters.get<int>("FIBER_ID"))
 {
 }
 
-std::unique_ptr<MIXTURE::MixtureGrowthStrategy>
-MIXTURE::PAR::AnisotropicGrowthStrategy::create_growth_strategy()
+std::unique_ptr<Mixture::MixtureGrowthStrategy>
+Mixture::PAR::AnisotropicGrowthStrategy::create_growth_strategy()
 {
-  return std::make_unique<MIXTURE::AnisotropicGrowthStrategy>(this);
+  return std::make_unique<Mixture::AnisotropicGrowthStrategy>(this);
 }
 
-MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
-    MIXTURE::PAR::AnisotropicGrowthStrategy* params)
+Mixture::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
+    Mixture::PAR::AnisotropicGrowthStrategy* params)
     : params_(params),
       anisotropy_extension_(params_->init_mode_, 0.0, false,
           Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyStandard>(nullptr),
@@ -41,7 +41,7 @@ MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::pack_mixture_growth_strategy(
+void Mixture::AnisotropicGrowthStrategy::pack_mixture_growth_strategy(
     Core::Communication::PackBuffer& data) const
 {
   MixtureGrowthStrategy::pack_mixture_growth_strategy(data);
@@ -49,7 +49,7 @@ void MIXTURE::AnisotropicGrowthStrategy::pack_mixture_growth_strategy(
   anisotropy_extension_.pack_anisotropy(data);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
+void Mixture::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
     Core::Communication::UnpackBuffer& buffer)
 {
   MixtureGrowthStrategy::unpack_mixture_growth_strategy(buffer);
@@ -57,13 +57,13 @@ void MIXTURE::AnisotropicGrowthStrategy::unpack_mixture_growth_strategy(
   anisotropy_extension_.unpack_anisotropy(buffer);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
+void Mixture::AnisotropicGrowthStrategy::register_anisotropy_extensions(Mat::Anisotropy& anisotropy)
 {
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
-    Core::LinAlg::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
+void Mixture::AnisotropicGrowthStrategy::evaluate_inverse_growth_deformation_gradient(
+    Core::LinAlg::Matrix<3, 3>& iFgM, const Mixture::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
   const Core::LinAlg::Matrix<3, 3> Id = Core::LinAlg::identity_matrix<3>();
@@ -72,8 +72,8 @@ void MIXTURE::AnisotropicGrowthStrategy::evaluate_inverse_growth_deformation_gra
       anisotropy_extension_.get_structural_tensor(gp, 0), 1.0, Id);
 }
 
-void MIXTURE::AnisotropicGrowthStrategy::evaluate_growth_stress_cmat(
-    const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
+void Mixture::AnisotropicGrowthStrategy::evaluate_growth_stress_cmat(
+    const Mixture::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
     const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
     const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,

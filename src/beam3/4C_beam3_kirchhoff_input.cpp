@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3k::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Beam3k::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // read number of material model and cross-sections specs

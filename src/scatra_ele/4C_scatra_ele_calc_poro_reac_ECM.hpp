@@ -22,7 +22,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class ScaTraEleCalcPoroReacECM : public ScaTraEleCalcPoroReac<distype>
@@ -69,7 +69,7 @@ namespace Discret
       double compute_struct_chem_potential(Mat::StructPoroReactionECM& structmat, const int gp);
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

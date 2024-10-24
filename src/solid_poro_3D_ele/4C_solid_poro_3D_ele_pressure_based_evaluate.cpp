@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-int Discret::ELEMENTS::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -133,7 +133,7 @@ int Discret::ELEMENTS::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
                 discretization, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
           },
           solid_calc_variant_);
-      Discret::ELEMENTS::lump_matrix(elemat2);
+      Discret::Elements::lump_matrix(elemat2);
       return 0;
     }
     case Core::Elements::struct_poro_calc_scatracoupling:
@@ -230,7 +230,7 @@ int Discret::ELEMENTS::SolidPoroPressureBased::evaluate(Teuchos::ParameterList& 
   }
 }
 
-int Discret::ELEMENTS::SolidPoroPressureBased::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SolidPoroPressureBased::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)

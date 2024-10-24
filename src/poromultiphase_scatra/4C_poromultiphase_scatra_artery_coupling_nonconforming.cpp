@@ -876,8 +876,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_f
   // set the right hand side factor
   if (contdis_->name() == "porofluid")
   {
-    Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter* eleparams =
-        Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance("porofluid");
+    Discret::Elements::PoroFluidMultiPhaseEleParameter* eleparams =
+        Discret::Elements::PoroFluidMultiPhaseEleParameter::instance("porofluid");
     // artery
     timefacrhs_art_ = 1.0;
     // continuous
@@ -885,8 +885,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::set_time_f
   }
   else if (contdis_->name() == "scatra")
   {
-    Discret::ELEMENTS::ScaTraEleParameterTimInt* eleparams =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra");
+    Discret::Elements::ScaTraEleParameterTimInt* eleparams =
+        Discret::Elements::ScaTraEleParameterTimInt::instance("scatra");
     // artery
     timefacrhs_art_ = eleparams->time_fac_rhs();
     // continuous

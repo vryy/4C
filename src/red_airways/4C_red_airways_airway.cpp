@@ -15,39 +15,39 @@ FOUR_C_NAMESPACE_OPEN
 
 using namespace Core::FE;
 
-Discret::ELEMENTS::RedAirwayType Discret::ELEMENTS::RedAirwayType::instance_;
+Discret::Elements::RedAirwayType Discret::Elements::RedAirwayType::instance_;
 
 
-Discret::ELEMENTS::RedAirwayType& Discret::ELEMENTS::RedAirwayType::instance() { return instance_; }
+Discret::Elements::RedAirwayType& Discret::Elements::RedAirwayType::instance() { return instance_; }
 
 
-Core::Communication::ParObject* Discret::ELEMENTS::RedAirwayType::create(
+Core::Communication::ParObject* Discret::Elements::RedAirwayType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::RedAirway* object = new Discret::ELEMENTS::RedAirway(-1, -1);
+  Discret::Elements::RedAirway* object = new Discret::Elements::RedAirway(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirwayType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedAirwayType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_AIRWAY")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::RedAirway>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::RedAirway>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirwayType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedAirwayType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::RedAirway>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::RedAirway>(id, owner);
   return ele;
 }
 
@@ -57,7 +57,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::RedAirwayType::create(
  |                                                             (public) |
  |                                                           roth 10/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirwayType::setup_element_definition(
+void Discret::Elements::RedAirwayType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["RED_AIRWAY"];
@@ -91,13 +91,13 @@ void Discret::ELEMENTS::RedAirwayType::setup_element_definition(
  |  ctor (public)                                           ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedAirway::RedAirway(int id, int owner) : Core::Elements::Element(id, owner) {}
+Discret::Elements::RedAirway::RedAirway(int id, int owner) : Core::Elements::Element(id, owner) {}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                      ismail 01/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedAirway::RedAirway(const Discret::ELEMENTS::RedAirway& old)
+Discret::Elements::RedAirway::RedAirway(const Discret::Elements::RedAirway& old)
     : Core::Elements::Element(old),
       elem_type_(old.elem_type_),
       resistance_(old.resistance_),
@@ -111,9 +111,9 @@ Discret::ELEMENTS::RedAirway::RedAirway(const Discret::ELEMENTS::RedAirway& old)
  |  to it                                                      (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::RedAirway::clone() const
+Core::Elements::Element* Discret::Elements::RedAirway::clone() const
 {
-  Discret::ELEMENTS::RedAirway* newelement = new Discret::ELEMENTS::RedAirway(*this);
+  Discret::Elements::RedAirway* newelement = new Discret::Elements::RedAirway(*this);
   return newelement;
 }
 
@@ -121,7 +121,7 @@ Core::Elements::Element* Discret::ELEMENTS::RedAirway::clone() const
  |                                                             (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::RedAirway::shape() const
+Core::FE::CellType Discret::Elements::RedAirway::shape() const
 {
   switch (num_node())
   {
@@ -138,7 +138,7 @@ Core::FE::CellType Discret::ELEMENTS::RedAirway::shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::RedAirway::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::RedAirway::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::RedAirway::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::RedAirway::unpack(Core::Communication::UnpackBuffer& buf
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::RedAirway::print(std::ostream& os) const
+void Discret::Elements::RedAirway::print(std::ostream& os) const
 {
   os << "RedAirway ";
   Element::print(os);
@@ -225,7 +225,7 @@ void Discret::ELEMENTS::RedAirway::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirway::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::RedAirway::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -234,7 +234,7 @@ bool Discret::ELEMENTS::RedAirway::vis_data(const std::string& name, std::vector
 }
 
 
-const Discret::ReducedLung::AirwayParams& Discret::ELEMENTS::RedAirway::get_airway_params() const
+const Discret::ReducedLung::AirwayParams& Discret::Elements::RedAirway::get_airway_params() const
 {
   return airway_params_;
 }
@@ -242,7 +242,7 @@ const Discret::ReducedLung::AirwayParams& Discret::ELEMENTS::RedAirway::get_airw
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::RedAirway::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::RedAirway::lines()
 {
   FOUR_C_ASSERT(num_line() == 1, "RED_AIRWAY element must have one and only one line");
 

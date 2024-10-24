@@ -19,14 +19,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType celltype>
-Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEleCalc()
+Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::SolidPoroPressureBasedEleCalc()
     : gauss_integration_(
           create_gauss_integration<celltype>(get_gauss_rule_stiffness_matrix_poro<celltype>()))
 {
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
+void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
     Mat::StructPoro& porostructmat, const Core::IO::InputParameterContainer& container)
 {
   // attention: Make sure to use the same gauss integration rule as in the solid elements in case
@@ -35,7 +35,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::poro_setup(
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
+void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlinear_force_stiffness(
     const Core::Elements::Element& ele, Mat::StructPoro& porostructmat,
     Mat::FluidPoroMultiPhase& porofluidmat, const Inpar::Solid::KinemType& kinematictype,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<
+void Discret::Elements::SolidPoroPressureBasedEleCalc<
     celltype>::evaluate_nonlinear_force_stiffness_od(const Core::Elements::Element& ele,
     Mat::StructPoro& porostructmat, Mat::FluidPoroMultiPhase& porofluidmat,
     const Inpar::Solid::KinemType& kinematictype, const Core::FE::Discretization& discretization,
@@ -247,7 +247,7 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<
 }
 
 template <Core::FE::CellType celltype>
-void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress(
+void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress(
     const Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
@@ -267,9 +267,9 @@ void Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<celltype>::coupling_stress
 }
 
 // template classes
-template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::SolidPoroPressureBasedEleCalc<Core::FE::CellType::tet10>;
+template class Discret::Elements::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex8>;
+template class Discret::Elements::SolidPoroPressureBasedEleCalc<Core::FE::CellType::hex27>;
+template class Discret::Elements::SolidPoroPressureBasedEleCalc<Core::FE::CellType::tet4>;
+template class Discret::Elements::SolidPoroPressureBasedEleCalc<Core::FE::CellType::tet10>;
 
 FOUR_C_NAMESPACE_CLOSE

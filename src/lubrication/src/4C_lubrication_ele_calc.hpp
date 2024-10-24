@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class LubricationEleParameter;
@@ -109,7 +109,7 @@ namespace Discret
 
       //! evaluate action
       virtual int evaluate_action(Core::Elements::Element* ele, Teuchos::ParameterList& params,
-          Core::FE::Discretization& discretization, const LUBRICATION::Action& action,
+          Core::FE::Discretization& discretization, const FourC::Lubrication::Action& action,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -316,7 +316,7 @@ namespace Discret
       /*========================================================================*/
 
       //! pointer to general lubrication parameter class
-      Discret::ELEMENTS::LubricationEleParameter* lubricationpara_;
+      Discret::Elements::LubricationEleParameter* lubricationpara_;
 
       /*========================================================================*/
       //! @name pressure degrees of freedom and related
@@ -478,7 +478,7 @@ namespace Discret
       double visc_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

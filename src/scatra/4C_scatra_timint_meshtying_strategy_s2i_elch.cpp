@@ -257,9 +257,9 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
                                ? *slave_node->x().data() * *slave_node->x().data() * four_pi
                                : 1.0;
         const double timefacfac =
-            Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(dis->name())->time_fac() * fac;
+            Discret::Elements::ScaTraEleParameterTimInt::instance(dis->name())->time_fac() * fac;
         const double timefacrhsfac =
-            Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(dis->name())->time_fac_rhs() *
+            Discret::Elements::ScaTraEleParameterTimInt::instance(dis->name())->time_fac_rhs() *
             fac;
         if (timefacfac < 0.0 or timefacrhsfac < 0.0)
           FOUR_C_THROW("Integration factor is negative!");
@@ -297,7 +297,7 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
         // define flux linearization terms
         double dj_ded_conc(0.0), dj_del_conc(0.0), dj_ded_pot(0.0), dj_del_pot(0.0);
         // calculate flux linearizations
-        Discret::ELEMENTS::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
+        Discret::Elements::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
             epdderiv, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, el_conc,
             ed_conc, cmax, eta, dj_ded_conc, dj_del_conc, dj_ded_pot, dj_del_pot);
 
@@ -397,7 +397,7 @@ void ScaTra::MeshtyingStrategyS2IElch::update() const
           const double conductivity_inverse =
               1. / condition->parameters().get<double>("CONDUCTIVITY");
           const double faraday =
-              Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+              Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
 
           // pre-compute integration factor
           const double integrationfac(condition->parameters().get<double>("MOLMASS") *
@@ -584,7 +584,7 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
+  if (Discret::Elements::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
       Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
@@ -622,12 +622,12 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
 
     // overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * fac;
     const double timefacrhsfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * fac;
     if (timefacfac < 0.0 or timefacrhsfac < 0.0) FOUR_C_THROW("Integration factor is negative!");
 
-    Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
+    Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<
         distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(matelectrode,
         my::ephinp_slave_, my::ephinp_master_, dummy_slave_temp, dummy_master_temp,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
@@ -651,7 +651,7 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
+  if (Discret::Elements::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
       Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
@@ -675,20 +675,20 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
 
   // overall integration factors
   const double timefacfac =
-      Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * lumpedarea;
+      Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * lumpedarea;
   const double timefacrhsfac =
-      Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * lumpedarea;
+      Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * lumpedarea;
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
   // no deformation available
   const double dummy_detF(1.0);
 
-  Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<
+  Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<
       distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(matelectrode,
       ephinp_slave, ephinp_master, dummy_slave_temp, dummy_master_temp, pseudo_contact_fac,
       my::funct_slave_, my::funct_master_, my::funct_slave_, my::funct_master_,
       my::scatraparamsboundary_, timefacfac, timefacrhsfac, dummy_detF,
-      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt(),
+      Discret::Elements::ScaTraEleParameterElch::instance("scatra")->frt(),
       my::numdofpernode_slave_, k_ss, k_sm, k_ms, k_mm, r_s, r_m);
 }
 
@@ -700,7 +700,7 @@ template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 double ScaTra::MortarCellCalcElch<distype_s, distype_m>::get_frt() const
 {
   // fetch factor F/RT from electrochemistry parameter list
-  return Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt();
+  return Discret::Elements::ScaTraEleParameterElch::instance("scatra")->frt();
 }
 
 
@@ -818,7 +818,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
     FOUR_C_THROW("Invalid number of degrees of freedom per node!");
-  if (Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
+  if (Discret::Elements::ScaTraEleParameterElch::instance("scatra")->equ_pot() !=
       Inpar::ElCh::equpot_divi)
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
@@ -857,7 +857,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
 
     // evaluate overall integration factor
     const double timefac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac();
+        Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac();
     const double timefacfac = timefac * fac;
     if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
@@ -866,7 +866,7 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
     // no deformation available
     const double dummy_detF(1.0);
 
-    Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype_s>::
+    Discret::Elements::ScaTraEleBoundaryCalcElchElectrodeSTIThermo<distype_s>::
         template evaluate_s2_i_coupling_od_at_integration_point<distype_m>(*matelectrode,
             my::ephinp_slave_, etempnp_slave_, dummy_master_temp, my::ephinp_master_,
             pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::test_lm_slave_,
@@ -907,9 +907,9 @@ double ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::get_frt() cons
   // safety check
   if (temperature <= 0.) FOUR_C_THROW("Temperature is non-positive!");
 
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+  const double faraday = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
   const double gasconstant =
-      Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
+      Discret::Elements::ScaTraEleParameterElch::instance("scatra")->gas_constant();
 
   // evaluate factor F/RT
   return faraday / (gasconstant * temperature);
@@ -1080,15 +1080,15 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
 
     // evaluate overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("thermo")->time_fac() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("thermo")->time_fac() * fac;
     const double timefacrhsfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("thermo")->time_fac_rhs() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("thermo")->time_fac_rhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
     const double dummy_detF(1.0);
 
-    Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<
+    Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<
         distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(*matelectrode,
         my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
         pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,
@@ -1158,13 +1158,13 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
 
     // overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("thermo")->time_fac() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("thermo")->time_fac() * fac;
     if (timefacfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
     // no deformation available
     const double dummy_detF(1.0);
 
-    Discret::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype_s>::
+    Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype_s>::
         template evaluate_s2_i_coupling_od_at_integration_point<distype_m>(*matelectrode,
             my::ephinp_slave_[0], my::ephinp_master_[0], eelchnp_slave_, eelchnp_master_,
             pseudo_contact_fac, my::funct_slave_, my::funct_master_, my::scatraparamsboundary_,

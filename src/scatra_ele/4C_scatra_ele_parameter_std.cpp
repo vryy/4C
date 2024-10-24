@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterStd* Discret::ELEMENTS::ScaTraEleParameterStd::instance(
+Discret::Elements::ScaTraEleParameterStd* Discret::Elements::ScaTraEleParameterStd::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -28,7 +28,7 @@ Discret::ELEMENTS::ScaTraEleParameterStd* Discret::ELEMENTS::ScaTraEleParameterS
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
+Discret::Elements::ScaTraEleParameterStd::ScaTraEleParameterStd(
     const std::string& disname  //!< name of discretization
     )
     : is_ale_(false),
@@ -67,13 +67,13 @@ Discret::ELEMENTS::ScaTraEleParameterStd::ScaTraEleParameterStd(
       mat_gp_(false),
       tau_value_(0.),
       // we have to know the time parameters here to check for illegal combinations
-      scatraparatimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname))
+      scatraparatimint_(Discret::Elements::ScaTraEleParameterTimInt::instance(disname))
 {
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterStd::set_nodeset_parameters(
+void Discret::Elements::ScaTraEleParameterStd::set_nodeset_parameters(
     Teuchos::ParameterList& parameters)
 {
   nds_disp_ = parameters.get<int>("ndsdisp", -1);
@@ -89,7 +89,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_nodeset_parameters(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::ParameterList& parameters)
+void Discret::Elements::ScaTraEleParameterStd::set_parameters(Teuchos::ParameterList& parameters)
 {
   // set ale case
   is_ale_ = parameters.get<bool>("isale", false);
@@ -231,7 +231,7 @@ void Discret::ELEMENTS::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
   has_external_force_ = parameters.get<bool>("has_external_force", false);
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_disp() const
+int Discret::Elements::ScaTraEleParameterStd::nds_disp() const
 {
   FOUR_C_ASSERT(nds_disp_ != -1,
       "You try to access the number of dofset associated with displacement dofs without "
@@ -239,7 +239,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_disp() const
   return nds_disp_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_growth() const
+int Discret::Elements::ScaTraEleParameterStd::nds_growth() const
 {
   FOUR_C_ASSERT(nds_growth_ != -1,
       "You try to access the number of dofset associated with interface growth dofs without "
@@ -247,7 +247,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_growth() const
   return nds_growth_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_micro() const
+int Discret::Elements::ScaTraEleParameterStd::nds_micro() const
 {
   FOUR_C_ASSERT(nds_micro_ != -1,
       "You try to access the number of dofset to write micro scale values on without having "
@@ -255,7 +255,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_micro() const
   return nds_micro_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_pres() const
+int Discret::Elements::ScaTraEleParameterStd::nds_pres() const
 {
   FOUR_C_ASSERT(nds_pres_ != -1,
       "You try to access the number of dofset associated with pressure dofs without having "
@@ -263,7 +263,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_pres() const
   return nds_pres_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_scatra() const
+int Discret::Elements::ScaTraEleParameterStd::nds_scatra() const
 {
   FOUR_C_ASSERT(nds_scatra_ != -1,
       "You try to access the number of dofset associated with scalar transport dofs without having "
@@ -271,7 +271,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_scatra() const
   return nds_scatra_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_thermo() const
+int Discret::Elements::ScaTraEleParameterStd::nds_thermo() const
 {
   FOUR_C_ASSERT(nds_thermo_ != -1,
       "You try to access the number of dofset associated with temperature dofs without having "
@@ -279,7 +279,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_thermo() const
   return nds_thermo_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_two_tensor_quantity() const
+int Discret::Elements::ScaTraEleParameterStd::nds_two_tensor_quantity() const
 {
   FOUR_C_ASSERT(nds_two_tensor_quantitiy_ != -1,
       "You try to access the number of dofset associated with two-tensor quantity dofs without "
@@ -287,7 +287,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_two_tensor_quantity() const
   return nds_two_tensor_quantitiy_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_vel() const
+int Discret::Elements::ScaTraEleParameterStd::nds_vel() const
 {
   FOUR_C_ASSERT(nds_vel_ != -1,
       "You try to access the number of dofset associated with velocity related dofs without "
@@ -295,7 +295,7 @@ int Discret::ELEMENTS::ScaTraEleParameterStd::nds_vel() const
   return nds_vel_;
 }
 
-int Discret::ELEMENTS::ScaTraEleParameterStd::nds_wss() const
+int Discret::Elements::ScaTraEleParameterStd::nds_wss() const
 {
   FOUR_C_ASSERT(nds_wss_ != -1,
       "You try to access the number of dofset associated with wall shear stress dofs without "

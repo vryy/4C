@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class PreStress;
 
@@ -87,7 +87,7 @@ namespace Discret
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>&
               inverseJacobian,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-          const Inpar::Solid::PreStress prestressType, Discret::ELEMENTS::PreStress& mulfHistory,
+          const Inpar::Solid::PreStress prestressType, Discret::Elements::PreStress& mulfHistory,
           int gp);
 
       /*!
@@ -107,7 +107,7 @@ namespace Discret
           Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::dim<distype>>& defgrd,
           const Core::LinAlg::Matrix<Core::FE::num_nodes<distype>, Core::FE::dim<distype>>& xdisp,
           const Core::LinAlg::Matrix<Core::FE::dim<distype>, Core::FE::num_nodes<distype>>& derivs,
-          Discret::ELEMENTS::PreStress& mulfHistory, int gp);
+          Discret::Elements::PreStress& mulfHistory, int gp);
 
       /*!
        * \brief Compute the deformation gradient in case of no prestressing
@@ -189,7 +189,7 @@ namespace Discret
           const Teuchos::ParameterList& sdyn, const std::string& eletype);
 
     }  // namespace Utils
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

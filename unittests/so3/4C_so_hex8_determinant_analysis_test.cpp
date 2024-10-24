@@ -16,9 +16,9 @@ namespace
   class SoHex8DetermAnalys : public ::testing::Test
   {
    protected:
-    Teuchos::RCP<Discret::ELEMENTS::SoHex8DeterminantAnalysis> analyser_;
+    Teuchos::RCP<Discret::Elements::SoHex8DeterminantAnalysis> analyser_;
     // Set up testing environment.
-    void SetUp() override { analyser_ = Discret::ELEMENTS::SoHex8DeterminantAnalysis::create(); }
+    void SetUp() override { analyser_ = Discret::Elements::SoHex8DeterminantAnalysis::create(); }
     // Delete pointers.
     void TearDown() override { analyser_ = Teuchos::null; }
   };

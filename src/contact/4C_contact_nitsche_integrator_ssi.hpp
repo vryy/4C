@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleParameterTimInt;
     class ScaTraEleParameterBoundary;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 namespace CONTACT
@@ -54,13 +54,13 @@ namespace CONTACT
 
    protected:
     //! access method to scatra time integration factors
-    const Discret::ELEMENTS::ScaTraEleParameterTimInt* get_scatra_ele_parameter_tim_int() const
+    const Discret::Elements::ScaTraEleParameterTimInt* get_scatra_ele_parameter_tim_int() const
     {
       return scatraparamstimint_;
     }
 
     //! access method to scatra-scatra coupling specific parameters
-    const Discret::ELEMENTS::ScaTraEleParameterBoundary* get_scatra_ele_parameter_boundary() const
+    const Discret::Elements::ScaTraEleParameterBoundary* get_scatra_ele_parameter_boundary() const
     {
       return scatraparamsboundary_;
     }
@@ -300,9 +300,9 @@ namespace CONTACT
         Core::Gen::Pairedvector<int, double>& d_conc_dd);
 
     //! scatra time integration factors
-    const Discret::ELEMENTS::ScaTraEleParameterTimInt* scatraparamstimint_;
+    const Discret::Elements::ScaTraEleParameterTimInt* scatraparamstimint_;
     //! scatra-scatra coupling specific parameters
-    const Discret::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
+    const Discret::Elements::ScaTraEleParameterBoundary* scatraparamsboundary_;
   };
 }  // namespace CONTACT
 FOUR_C_NAMESPACE_CLOSE

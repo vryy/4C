@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Truss3ScatraType : public Truss3Type
     {
@@ -119,7 +119,7 @@ namespace Discret
       // don't want = operator
       Truss3Scatra& operator=(const Truss3Scatra& old);
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

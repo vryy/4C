@@ -72,13 +72,13 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
 {
   // Check the type of the second element.
   const bool other_is_beam =
-      dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele_ptrs[1]) != nullptr;
+      dynamic_cast<Discret::Elements::Beam3Base const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_solid =
-      dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele_ptrs[1]) != nullptr ||
-      dynamic_cast<Discret::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr ||
-      dynamic_cast<Discret::ELEMENTS::KirchhoffLoveShellNurbs const*>(ele_ptrs[1]) != nullptr;
+      dynamic_cast<Discret::Elements::SoBase const*>(ele_ptrs[1]) != nullptr ||
+      dynamic_cast<Discret::Elements::Solid const*>(ele_ptrs[1]) != nullptr ||
+      dynamic_cast<Discret::Elements::KirchhoffLoveShellNurbs const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
-      ele_ptrs[1]->element_type() == Discret::ELEMENTS::RigidsphereType::instance();
+      ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance();
 
   if (other_is_beam or other_is_solid)
   {
@@ -91,8 +91,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
     // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
     // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
-    const Discret::ELEMENTS::Beam3Base* beamele1 =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+    const Discret::Elements::Beam3Base* beamele1 =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele_ptrs[0]);
 
     const unsigned int numnodes_centerline = beamele1->num_centerline_nodes();
     const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;

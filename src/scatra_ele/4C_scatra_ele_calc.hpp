@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 namespace FLD
 {
   template <Core::FE::CellType distype, int numdofpernode,
-      Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+      Discret::Elements::Fluid::EnrichmentType enrtype>
   class RotationallySymmetricPeriodicBC;
 }
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleParameterStd;
@@ -1083,11 +1083,11 @@ namespace Discret
       /*========================================================================*/
 
       //! pointer to general scalar transport parameter class
-      Discret::ELEMENTS::ScaTraEleParameterStd* scatrapara_;
+      Discret::Elements::ScaTraEleParameterStd* scatrapara_;
       //! pointer to turbulence parameter class
-      Discret::ELEMENTS::ScaTraEleParameterTurbulence* turbparams_;
+      Discret::Elements::ScaTraEleParameterTurbulence* turbparams_;
       //! pointer to time integration parameter class
-      Discret::ELEMENTS::ScaTraEleParameterTimInt* scatraparatimint_;
+      Discret::Elements::ScaTraEleParameterTimInt* scatraparatimint_;
 
       /*========================================================================*/
       //! @name manager classes for efficient application to various problems
@@ -1117,7 +1117,7 @@ namespace Discret
 
       //! for the handling of rotationally symmetric periodic boundary conditions
       Teuchos::RCP<
-          FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, Discret::ELEMENTS::Fluid::none>>
+          FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, Discret::Elements::Fluid::none>>
           rotsymmpbc_;
       //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
       Core::LinAlg::Matrix<nsd_, nen_> evelnp_;
@@ -1470,7 +1470,7 @@ namespace Discret
       const int numscal_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

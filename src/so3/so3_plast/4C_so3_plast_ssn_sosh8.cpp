@@ -25,24 +25,24 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8PlastType Discret::ELEMENTS::SoSh8PlastType::instance_;
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_,
-                    Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_>>
-    Discret::ELEMENTS::SoSh8Plast::jac_refe_;
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_,
-                    Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::nsd_>>
-    Discret::ELEMENTS::SoSh8Plast::jac_curr_;
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::SoSh8Plast::num_ans *
-                                         Discret::ELEMENTS::SoSh8Plast::num_sp,
-                    Discret::ELEMENTS::SoSh8Plast::numdofperelement_>>
-    Discret::ELEMENTS::SoSh8Plast::B_ans_loc_;
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::SoSh8Plast::numstr_,
-                    Discret::ELEMENTS::SoSh8Plast::numstr_>>
-    Discret::ELEMENTS::SoSh8Plast::TinvT_;
+Discret::Elements::SoSh8PlastType Discret::Elements::SoSh8PlastType::instance_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<Core::FE::CellType::hex8>::nsd_,
+                    Discret::Elements::So3Plast<Core::FE::CellType::hex8>::nsd_>>
+    Discret::Elements::SoSh8Plast::jac_refe_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<Core::FE::CellType::hex8>::nsd_,
+                    Discret::Elements::So3Plast<Core::FE::CellType::hex8>::nsd_>>
+    Discret::Elements::SoSh8Plast::jac_curr_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::SoSh8Plast::num_ans *
+                                         Discret::Elements::SoSh8Plast::num_sp,
+                    Discret::Elements::SoSh8Plast::numdofperelement_>>
+    Discret::Elements::SoSh8Plast::B_ans_loc_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::SoSh8Plast::numstr_,
+                    Discret::Elements::SoSh8Plast::numstr_>>
+    Discret::Elements::SoSh8Plast::TinvT_;
 
 
 
-Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::instance()
+Discret::Elements::SoSh8PlastType& Discret::Elements::SoSh8PlastType::instance()
 {
   return instance_;
 }
@@ -51,10 +51,10 @@ Discret::ELEMENTS::SoSh8PlastType& Discret::ELEMENTS::SoSh8PlastType::instance()
 | create the new element type (public)                     seitz 05/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::create(
+Core::Communication::ParObject* Discret::Elements::SoSh8PlastType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoSh8Plast(-1, -1);
+  auto* object = new Discret::Elements::SoSh8Plast(-1, -1);
   object->unpack(buffer);
   return object;
 }
@@ -63,13 +63,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh8PlastType::create(
 | create the new element type (public)                     seitz 05/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh8PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoSh8Plast>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoSh8Plast>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -79,18 +79,18 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
 | create the new element type (public)                     seitz 05/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh8PlastType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh8PlastType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoSh8Plast>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoSh8Plast>(id, owner);
   return ele;
 }
 
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -102,7 +102,7 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
   {
     // get the actual element
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoSh8Plast*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -110,27 +110,27 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
       switch (actele->thickdir_)
       {
         // check for automatic definition of thickness direction
-        case Discret::ELEMENTS::SoSh8Plast::autoj:
+        case Discret::Elements::SoSh8Plast::autoj:
         {
           actele->thickdir_ = actele->findthickdir();
           break;
         }
         // check for enforced definition of thickness direction
-        case Discret::ELEMENTS::SoSh8Plast::globx:
+        case Discret::Elements::SoSh8Plast::globx:
         {
           Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(0) = 1.0;
           actele->thickdir_ = actele->enfthickdir(thickdirglo);
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::globy:
+        case Discret::Elements::SoSh8Plast::globy:
         {
           Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(1) = 1.0;
           actele->thickdir_ = actele->enfthickdir(thickdirglo);
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::globz:
+        case Discret::Elements::SoSh8Plast::globz:
         {
           Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(2) = 1.0;
@@ -145,15 +145,15 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
 
       switch (actele->thickdir_)
       {
-        case Discret::ELEMENTS::SoSh8Plast::globx:
-        case Discret::ELEMENTS::SoSh8Plast::globy:
-        case Discret::ELEMENTS::SoSh8Plast::globz:
+        case Discret::Elements::SoSh8Plast::globx:
+        case Discret::Elements::SoSh8Plast::globy:
+        case Discret::Elements::SoSh8Plast::globz:
         {
           FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::autor:
-        case Discret::ELEMENTS::SoSh8Plast::enfor:
+        case Discret::Elements::SoSh8Plast::autor:
+        case Discret::Elements::SoSh8Plast::enfor:
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
@@ -169,8 +169,8 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::autos:
-        case Discret::ELEMENTS::SoSh8Plast::enfos:
+        case Discret::Elements::SoSh8Plast::autos:
+        case Discret::Elements::SoSh8Plast::enfos:
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
@@ -186,8 +186,8 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::autot:
-        case Discret::ELEMENTS::SoSh8Plast::enfot:
+        case Discret::Elements::SoSh8Plast::autot:
+        case Discret::Elements::SoSh8Plast::enfot:
         {
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
@@ -198,32 +198,32 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::undefined:
+        case Discret::Elements::SoSh8Plast::undefined:
         {
-          if (actele->eastype_ == Discret::ELEMENTS::soh8p_eassosh8)
+          if (actele->eastype_ == Discret::Elements::soh8p_eassosh8)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->re_init_eas(Discret::ELEMENTS::soh8p_easmild);
+            actele->re_init_eas(Discret::Elements::soh8p_easmild);
             actele->anstype_ = SoSh8Plast::ansnone_p;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easmild++;
           }
-          else if (actele->eastype_ == Discret::ELEMENTS::soh8p_easnone)
+          else if (actele->eastype_ == Discret::Elements::soh8p_easnone)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->re_init_eas(Discret::ELEMENTS::soh8p_easnone);
+            actele->re_init_eas(Discret::Elements::soh8p_easnone);
             actele->anstype_ = SoSh8Plast::ansnone_p;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easnone++;
           }
-          else if (actele->eastype_ == Discret::ELEMENTS::soh8p_easmild)
+          else if (actele->eastype_ == Discret::Elements::soh8p_easmild)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->re_init_eas(Discret::ELEMENTS::soh8p_easmild);
+            actele->re_init_eas(Discret::Elements::soh8p_easmild);
             actele->anstype_ = SoSh8Plast::ansnone_p;
             actele->init_jacobian_mapping();
           }
-          else if (actele->eastype_ == Discret::ELEMENTS::soh8p_easnone)
+          else if (actele->eastype_ == Discret::Elements::soh8p_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
             actele->anstype_ = SoSh8Plast::ansnone_p;
@@ -233,7 +233,7 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
             FOUR_C_THROW("Undefined EAS type");
           break;
         }
-        case Discret::ELEMENTS::SoSh8Plast::none:
+        case Discret::Elements::SoSh8Plast::none:
           break;
         default:
           FOUR_C_THROW("no thickness direction for So_sh8");
@@ -267,7 +267,7 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8Plast*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoSh8Plast*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }
@@ -278,7 +278,7 @@ int Discret::ELEMENTS::SoSh8PlastType::initialize(Core::FE::Discretization& dis)
 /*---------------------------------------------------------------------*
 |                                                          seitz 05/14 |
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8PlastType::setup_element_definition(
+void Discret::Elements::SoSh8PlastType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -300,8 +300,8 @@ void Discret::ELEMENTS::SoSh8PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
-    : SoBase(id, owner), Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(id, owner)
+Discret::Elements::SoSh8Plast::SoSh8Plast(int id, int owner)
+    : SoBase(id, owner), Discret::Elements::So3Plast<Core::FE::CellType::hex8>(id, owner)
 {
   thickdir_ = globx;
   nodes_rearranged_ = false;
@@ -311,7 +311,7 @@ Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -321,8 +321,8 @@ Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(const Discret::ELEMENTS::SoSh8Plast& old)
-    : SoBase(old), Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>(old)
+Discret::Elements::SoSh8Plast::SoSh8Plast(const Discret::Elements::SoSh8Plast& old)
+    : SoBase(old), Discret::Elements::So3Plast<Core::FE::CellType::hex8>(old)
 {
   return;
 }
@@ -331,16 +331,16 @@ Discret::ELEMENTS::SoSh8Plast::SoSh8Plast(const Discret::ELEMENTS::SoSh8Plast& o
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 05/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh8Plast::clone() const
+Core::Elements::Element* Discret::Elements::SoSh8Plast::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoSh8Plast(*this);
+  auto* newelement = new Discret::Elements::SoSh8Plast(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoSh8Plast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -348,7 +348,7 @@ void Discret::ELEMENTS::SoSh8Plast::pack(Core::Communication::PackBuffer& data) 
   int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class So3Plast Element
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::pack(data);
+  Discret::Elements::So3Plast<Core::FE::CellType::hex8>::pack(data);
   // thickdir
   add_to_pack(data, thickdir_);
   add_to_pack(data, thickvec_);
@@ -361,7 +361,7 @@ void Discret::ELEMENTS::SoSh8Plast::pack(Core::Communication::PackBuffer& data) 
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoSh8Plast::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -369,7 +369,7 @@ void Discret::ELEMENTS::SoSh8Plast::unpack(Core::Communication::UnpackBuffer& bu
   std::vector<char> basedata(0);
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::unpack(basedata_buffer);
+  Discret::Elements::So3Plast<Core::FE::CellType::hex8>::unpack(basedata_buffer);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(extract_int(buffer));
   extract_from_pack(buffer, thickvec_);
@@ -379,7 +379,7 @@ void Discret::ELEMENTS::SoSh8Plast::unpack(Core::Communication::UnpackBuffer& bu
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
-void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const
+void Discret::Elements::SoSh8Plast::print(std::ostream& os) const
 {
   os << "So_sh8Plast ";
   Element::print(os);
@@ -389,7 +389,7 @@ void Discret::ELEMENTS::SoSh8Plast::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 05/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh8Plast::read_element(const std::string& eletype,
+bool Discret::Elements::SoSh8Plast::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   std::string buffer = container.get<std::string>("KINEM");
@@ -519,7 +519,7 @@ bool Discret::ELEMENTS::SoSh8Plast::read_element(const std::string& eletype,
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast::findthickdir()
+Discret::Elements::SoSh8Plast::ThicknessDirection Discret::Elements::SoSh8Plast::findthickdir()
 {
   // update element geometry
   Core::LinAlg::Matrix<nen_, nsd_> xrefe(false);  // material coord. of element
@@ -624,7 +624,7 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast::enfthickdir(
+Discret::Elements::SoSh8Plast::ThicknessDirection Discret::Elements::SoSh8Plast::enfthickdir(
     Core::LinAlg::Matrix<nsd_, 1>& thickdirglo)
 {
   // update element geometry
@@ -717,7 +717,7 @@ Discret::ELEMENTS::SoSh8Plast::ThicknessDirection Discret::ELEMENTS::SoSh8Plast:
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::evaluate_t(
+void Discret::Elements::SoSh8Plast::evaluate_t(
     const Core::LinAlg::Matrix<nsd_, nsd_>& jac, Core::LinAlg::Matrix<numstr_, numstr_>& TinvT)
 {
   // build T^T transformation matrix which maps
@@ -781,7 +781,7 @@ void Discret::ELEMENTS::SoSh8Plast::evaluate_t(
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::anssetup(
+void Discret::Elements::SoSh8Plast::anssetup(
     const Core::LinAlg::Matrix<nen_, nsd_>& xrefe,  // material element coords
     const Core::LinAlg::Matrix<nen_, nsd_>& xcurr,  // current element coords
     std::vector<Core::LinAlg::Matrix<nsd_, nen_>>**
@@ -917,9 +917,9 @@ void Discret::ELEMENTS::SoSh8Plast::anssetup(
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::re_init_eas(const Discret::ELEMENTS::So3PlastEasType EASType)
+void Discret::Elements::SoSh8Plast::re_init_eas(const Discret::Elements::So3PlastEasType EASType)
 {
-  neas_ = Discret::ELEMENTS::plast_eas_type_to_num_eas_v(EASType);
+  neas_ = Discret::Elements::plast_eas_type_to_num_eas_v(EASType);
   eastype_ = EASType;
 
   if (eastype_ != soh8p_easnone)
@@ -942,7 +942,7 @@ void Discret::ELEMENTS::SoSh8Plast::re_init_eas(const Discret::ELEMENTS::So3Plas
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
+void Discret::Elements::SoSh8Plast::nln_stiffmass(
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
     std::vector<double>& temp,  // current temperatures
@@ -1112,38 +1112,38 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
         {
           case soh8p_eassosh8:
             Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas>(
                 cM.values(), cmat().data(), m_eas().values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, numstr_,
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas>(
                 1.0, KaaInv_->values(), detJ_w, m_eas().values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, numstr_,
                 numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
             Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_, numstr_,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas>(
                 1.0, Kda.values(), detJ_w, cb.data(), m_eas().values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numstr_, 1>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, numstr_, 1>(
                 1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().data());
             break;
           case soh8p_easmild:
             Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas>(
                 cM.values(), cmat().data(), m_eas().values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, numstr_,
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas>(
                 1.0, KaaInv_->values(), detJ_w, m_eas().values(), cM.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_,
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, numstr_,
                 numdofperelement_>(1.0, Kad_->values(), detJ_w, m_eas().values(), cb.data());
             Core::LinAlg::DenseFunctions::multiply_tn<double, numdofperelement_, numstr_,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas>(
                 1.0, Kda.values(), detJ_w, cb.data(), m_eas().values());
             Core::LinAlg::DenseFunctions::multiply_tn<double,
-                PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
+                PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, numstr_, 1>(
                 1.0, feas_->values(), detJ_w, m_eas().values(), p_k2().data());
             break;
           case soh8p_easnone:
@@ -1197,30 +1197,30 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
     {
       case soh8p_eassosh8:
         Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
-            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas,
-            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
+            PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas,
+            PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas>(
             0., kdakaai.values(), 1., Kda.values(), KaaInv_->values());
         if (stiffmatrix != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_>(
+              PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, numdofperelement_>(
               1., stiffmatrix->data(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
+              PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, 1>(
               1., force->data(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easmild:
         Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
-            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas,
-            PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
+            PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas,
+            PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas>(
             0., kdakaai.values(), 1., Kda.values(), KaaInv_->values());
         if (stiffmatrix != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
+              PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, numdofperelement_>(
               1., stiffmatrix->data(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double, numdofperelement_,
-              PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
+              PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, 1>(
               1., force->data(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easnone:
@@ -1239,7 +1239,7 @@ void Discret::ELEMENTS::SoSh8Plast::nln_stiffmass(
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8Plast::calculate_bop(
+void Discret::Elements::SoSh8Plast::calculate_bop(
     Core::LinAlg::Matrix<numstr_, numdofperelement_>* bop,
     const Core::LinAlg::Matrix<nsd_, nsd_>* defgrd, const Core::LinAlg::Matrix<nsd_, nen_>* N_XYZ,
     const int gp)
@@ -1312,7 +1312,7 @@ void Discret::ELEMENTS::SoSh8Plast::calculate_bop(
 }
 
 
-void Discret::ELEMENTS::SoSh8Plast::ans_strains(const int gp,
+void Discret::Elements::SoSh8Plast::ans_strains(const int gp,
     std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>& jac_sps,  // jac at all sampling points
     std::vector<Core::LinAlg::Matrix<nsd_, nsd_>>&
         jac_cur_sps  // current jac at all sampling points

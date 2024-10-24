@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class LubricationType : public Core::Elements::ElementType
     {
@@ -331,7 +331,7 @@ namespace Discret
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       LubricationBoundary(int id, int owner, int nnode, const int* nodeids,
-          Core::Nodes::Node** nodes, Discret::ELEMENTS::Lubrication* parent, const int lsurface);
+          Core::Nodes::Node** nodes, Discret::Elements::Lubrication* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -424,13 +424,13 @@ namespace Discret
       }
 
       //! Return a pointer to the parent element of this boundary element
-      Discret::ELEMENTS::Lubrication* parent_element() const override
+      Discret::Elements::Lubrication* parent_element() const override
       {
         Core::Elements::Element* parent = Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Lubrication*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Lubrication*>(parent) != nullptr,
             "Master element is no Lubrication element");
-        return static_cast<Discret::ELEMENTS::Lubrication*>(parent);
+        return static_cast<Discret::Elements::Lubrication*>(parent);
       }
 
 
@@ -537,7 +537,7 @@ namespace Discret
     };  // class LubricationBoundary
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

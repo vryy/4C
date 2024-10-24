@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ArteryEleCalc<distype>::ArteryEleCalc(
+Discret::Elements::ArteryEleCalc<distype>::ArteryEleCalc(
     const int numdofpernode, const std::string& disname)
     : funct_(), deriv_(), tderiv_(), xjm_(), xji_(), derxy_()
 {
@@ -20,7 +20,7 @@ Discret::ELEMENTS::ArteryEleCalc<distype>::ArteryEleCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::ArteryEleCalc<distype>::calculate_ele_length(Artery* ele)
+double Discret::Elements::ArteryEleCalc<distype>::calculate_ele_length(Artery* ele)
 {
   // get node coordinates and number of elements per node
   Core::Nodes::Node** nodes = ele->nodes();
@@ -46,6 +46,6 @@ double Discret::ELEMENTS::ArteryEleCalc<distype>::calculate_ele_length(Artery* e
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ArteryEleCalc<Core::FE::CellType::line2>;
+template class Discret::Elements::ArteryEleCalc<Core::FE::CellType::line2>;
 
 FOUR_C_NAMESPACE_CLOSE

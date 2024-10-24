@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class StructuralSurfaceType : public Core::Elements::ElementType
     {
@@ -491,7 +491,7 @@ namespace Discret
     };  // class StructuralSurface : public Core::Elements::Element
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

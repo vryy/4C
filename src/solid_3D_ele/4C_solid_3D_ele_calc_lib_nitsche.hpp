@@ -29,7 +29,7 @@ namespace Mat
   class So3Material;
 }
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   namespace Internal
   {
@@ -267,9 +267,9 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype, typename SolidFormulation>
   CauchyNDirLinearizationDependencies<celltype>
   get_initialized_cauchy_n_dir_linearization_dependencies(
-      const Discret::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
+      const Discret::Elements::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
           evaluator,
-      Discret::ELEMENTS::CauchyNDirLinearizations<3>& linearizations)
+      Discret::Elements::CauchyNDirLinearizations<3>& linearizations)
   {
     CauchyNDirLinearizationDependencies<celltype> linearization_dependencies{};
     linearization_dependencies.d_cauchyndir_dF =
@@ -322,14 +322,14 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   void evaluate_cauchy_n_dir_linearizations(
       const CauchyNDirLinearizationDependencies<celltype>& linearization_dependencies,
-      Discret::ELEMENTS::CauchyNDirLinearizations<3>& linearizations)
+      Discret::Elements::CauchyNDirLinearizations<3>& linearizations)
   {
     // evaluate first derivative w.r.t. displacements
     if (linearizations.d_cauchyndir_dd)
     {
       FOUR_C_ASSERT(linearization_dependencies.d_F_dd && linearization_dependencies.d_cauchyndir_dF,
           "Not all tensors are computed!");
-      Discret::ELEMENTS::evaluate_d_cauchy_n_dir_d_displacements<celltype>(
+      Discret::Elements::evaluate_d_cauchy_n_dir_d_displacements<celltype>(
           *linearization_dependencies.d_F_dd, *linearization_dependencies.d_cauchyndir_dF,
           *linearizations.d_cauchyndir_dd);
     }
@@ -341,7 +341,7 @@ namespace Discret::ELEMENTS
       FOUR_C_ASSERT(
           linearization_dependencies.d_F_dd && linearization_dependencies.d2_cauchyndir_dF_dn,
           "Not all tensors are computed!");
-      Discret::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements_d_normal<celltype>(
+      Discret::Elements::evaluate_d2_cauchy_n_dir_d_displacements_d_normal<celltype>(
           *linearization_dependencies.d_F_dd, *linearization_dependencies.d2_cauchyndir_dF_dn,
           *linearizations.d2_cauchyndir_dd_dn);
     }
@@ -352,7 +352,7 @@ namespace Discret::ELEMENTS
       FOUR_C_ASSERT(
           linearization_dependencies.d_F_dd && linearization_dependencies.d2_cauchyndir_dF_ddir,
           "Not all tensors are computed!");
-      Discret::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements_d_dir<celltype>(
+      Discret::Elements::evaluate_d2_cauchy_n_dir_d_displacements_d_dir<celltype>(
           *linearization_dependencies.d_F_dd, *linearization_dependencies.d2_cauchyndir_dF_ddir,
           *linearizations.d2_cauchyndir_dd_ddir);
     }
@@ -363,7 +363,7 @@ namespace Discret::ELEMENTS
       FOUR_C_ASSERT(
           linearization_dependencies.d_F_dd && linearization_dependencies.d2_cauchyndir_dF2,
           "Not all tensors are computed!");
-      Discret::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements2<celltype>(
+      Discret::Elements::evaluate_d2_cauchy_n_dir_d_displacements2<celltype>(
           *linearization_dependencies.d_F_dd, *linearization_dependencies.d2_cauchyndir_dF2,
           *linearizations.d2_cauchyndir_dd2);
     }
@@ -374,7 +374,7 @@ namespace Discret::ELEMENTS
       FOUR_C_ASSERT(
           linearization_dependencies.d_F_dxi && linearization_dependencies.d_cauchyndir_dF,
           "Not all tensors are computed!");
-      Discret::ELEMENTS::evaluate_d_cauchy_n_dir_d_xi<celltype>(*linearization_dependencies.d_F_dxi,
+      Discret::Elements::evaluate_d_cauchy_n_dir_d_xi<celltype>(*linearization_dependencies.d_F_dxi,
           *linearization_dependencies.d_cauchyndir_dF, *linearizations.d_cauchyndir_dxi);
     }
 
@@ -384,7 +384,7 @@ namespace Discret::ELEMENTS
       FOUR_C_ASSERT(
           linearization_dependencies.d2_F_dxi_dd && linearization_dependencies.d_cauchyndir_dF,
           "Not all tensors are computed!");
-      Discret::ELEMENTS::evaluate_d2_cauchy_n_dir_d_displacements_d_xi<celltype>(
+      Discret::Elements::evaluate_d2_cauchy_n_dir_d_displacements_d_xi<celltype>(
           *linearization_dependencies.d2_F_dxi_dd, *linearization_dependencies.d_cauchyndir_dF,
           *linearizations.d2_cauchyndir_dd_dxi);
     }
@@ -461,7 +461,7 @@ namespace Discret::ELEMENTS
         Internal::EvaluateCauchyNDirAction<dim>(element, mat, disp, xi, n, dir, linearizations),
         variant);
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

@@ -39,8 +39,8 @@ namespace
       {
         testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(nodeidshex8[i], coordshex8[i], 0));
       }
-      Teuchos::RCP<Discret::ELEMENTS::SoHex8> testhex8ele =
-          Teuchos::make_rcp<Discret::ELEMENTS::SoHex8>(0, 0);
+      Teuchos::RCP<Discret::Elements::SoHex8> testhex8ele =
+          Teuchos::make_rcp<Discret::Elements::SoHex8>(0, 0);
       testhex8ele->set_node_ids(8, nodeidshex8.data());
       testdis_->add_element(testhex8ele);
 
@@ -58,8 +58,8 @@ namespace
       {
         testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(nodeidstet4[j], coordstet4[j], 0));
       }
-      Teuchos::RCP<Discret::ELEMENTS::SoTet4> testtet4ele =
-          Teuchos::make_rcp<Discret::ELEMENTS::SoTet4>(2, 0);
+      Teuchos::RCP<Discret::Elements::SoTet4> testtet4ele =
+          Teuchos::make_rcp<Discret::Elements::SoTet4>(2, 0);
       testtet4ele->set_node_ids(4, nodeidstet4.data());
       testdis_->add_element(testtet4ele);
 

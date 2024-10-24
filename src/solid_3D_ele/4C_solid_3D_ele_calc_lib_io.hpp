@@ -26,7 +26,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   namespace Internal
   {
@@ -285,14 +285,14 @@ namespace Discret::ELEMENTS
 
             Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<celltype>(
                 ele, gp_data, *global_data, false, stiffness_matrix_integration);
-            Discret::ELEMENTS::assemble_nodal_element_count(global_nodal_element_count, ele);
+            Discret::Elements::assemble_nodal_element_count(global_nodal_element_count, ele);
             break;
           }
           case Inpar::Solid::GaussPointDataOutputType::gauss_points:
           {
             std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data =
                 gp_data_output_manager.get_gauss_point_data().at(quantity_name);
-            Discret::ELEMENTS::assemble_gauss_point_values(global_data, gp_data, ele);
+            Discret::Elements::assemble_gauss_point_values(global_data, gp_data, ele);
             break;
           }
           case Inpar::Solid::GaussPointDataOutputType::none:
@@ -305,7 +305,7 @@ namespace Discret::ELEMENTS
       }
     }
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 FOUR_C_NAMESPACE_CLOSE
 
 #endif
