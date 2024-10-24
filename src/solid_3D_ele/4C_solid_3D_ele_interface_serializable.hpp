@@ -10,8 +10,8 @@
 #include "4C_comm_pack_buffer.hpp"
 #include "4C_comm_pack_helpers.hpp"
 
+#include <type_traits>
 #include <variant>
-#include <vector>
 
 
 #ifndef FOUR_C_SOLID_3D_ELE_INTERFACE_SERIALIZABLE_HPP
@@ -24,6 +24,9 @@ namespace Discret::Elements
 
   namespace Internal
   {
+    template <typename T>
+    using VariantItemInternalType = decltype(*std::declval<T>());
+
     /*!
      * @brief This struct should be used to serialize an item within a sum type (e.g.
      *std::variant).
@@ -39,13 +42,17 @@ namespace Discret::Elements
     {
       PackAction(Core::Communication::PackBuffer& buffer) : data(buffer) {}
 
-      template <typename T, std::enable_if_t<Core::Communication::is_packable<T>, bool> = true>
+      template <typename T,
+          std::enable_if_t<Core::Communication::is_packable<const VariantItemInternalType<T>>,
+              bool> = true>
       void operator()(const T& packable)
       {
         packable->pack(data);
       }
 
-      template <typename T, std::enable_if_t<!Core::Communication::is_packable<T>, bool> = true>
+      template <typename T,
+          std::enable_if_t<!Core::Communication::is_packable<const VariantItemInternalType<T>>,
+              bool> = true>
       void operator()(const T& other)
       {
         // do nothing if it is not packable
@@ -69,13 +76,17 @@ namespace Discret::Elements
     {
       UnpackAction(Core::Communication::UnpackBuffer& buffer) : buffer_(buffer) {}
 
-      template <typename T, std::enable_if_t<Core::Communication::is_unpackable<T&>, bool> = true>
+      template <typename T,
+          std::enable_if_t<Core::Communication::is_unpackable<VariantItemInternalType<T>>, bool> =
+              true>
       void operator()(T& unpackable)
       {
         unpackable->unpack(buffer_);
       }
 
-      template <typename T, std::enable_if_t<!Core::Communication::is_unpackable<T&>, bool> = true>
+      template <typename T,
+          std::enable_if_t<!Core::Communication::is_unpackable<VariantItemInternalType<T>>, bool> =
+              true>
       void operator()(T& other)
       {
         // do nothing if it is not unpackable
