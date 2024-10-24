@@ -252,10 +252,15 @@ bool Solid::IMPLICIT::OneStepTheta::assemble_force(Core::LinAlg::Vector<double>&
 void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
     Core::LinAlg::Vector<double>& f) const
 {
-  // viscous damping forces at t_{n}
-  Core::LinAlg::assemble_my_vector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
-  // viscous damping forces at t_{n+1}
-  Core::LinAlg::assemble_my_vector(1.0, f, theta_, *fvisconp_ptr_);
+  // the following is only done for rayleigh damping as for material damping viscous forces are
+  // already added at element level and else would be added twice
+  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  {
+    // viscous damping forces at t_{n}
+    Core::LinAlg::assemble_my_vector(1.0, f, 1.0 - theta_, *fviscon_ptr_);
+    // viscous damping forces at t_{n+1}
+    Core::LinAlg::assemble_my_vector(1.0, f, theta_, *fvisconp_ptr_);
+  }
 
   // inertial forces at t_{n}
   Core::LinAlg::assemble_my_vector(1.0, f, (1.0 - theta_), *finertian_ptr_);
@@ -272,8 +277,8 @@ void Solid::IMPLICIT::OneStepTheta::add_visco_mass_contributions(
   const double& dt = (*global_state().get_delta_time())[0];
   // add inertial contributions and scale the structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false, 1.0 / (theta_ * dt * dt), 1.0);
-  // add Rayleigh damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  // add damping contributions
+  if (tim_int().get_data_sdyn().get_damping_type() != Inpar::Solid::damp_none)
     stiff_ptr->add(*global_state().get_damp_matrix(), false, 1.0 / dt, 1.0);
 }
 

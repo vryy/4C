@@ -37,7 +37,7 @@ DIVERCONT              stop
 TIMESTEP               0.001
 NUMSTEP                100
 MAXTIME                10000
-DAMPING                Material
+DAMPING                No
 PREDICT                ConstDis
 TOLDISP                1.0E-12
 TOLRES                 1.0E-08

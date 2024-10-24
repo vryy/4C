@@ -120,6 +120,9 @@ void Solid::EXPLICIT::AdamsBashforth2::set_state(const Core::LinAlg::Vector<doub
 void Solid::EXPLICIT::AdamsBashforth2::add_visco_mass_contributions(
     Core::LinAlg::Vector<double>& f) const
 {
+  // do not add damping forces for material damping to residual as already done on element level
+  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_material) return;
+
   // viscous damping forces at t_{n+1}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
 }
