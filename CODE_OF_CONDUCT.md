@@ -1,5 +1,7 @@
 
-# Contributor Covenant Code of Conduct
+# Code of Conduct
+
+> **Preamble:** This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 2.1, available at [https://www.contributor-covenant.org/version/2/1/code_of_conduct.html](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html). It has been extended with the request to adhere to well-established ethics in research practice (see details below).
 
 ## Our Pledge
 
@@ -13,6 +15,8 @@ identity and orientation.
 We pledge to act and interact in ways that contribute to an open, welcoming,
 diverse, inclusive, and healthy community.
 
+We pledge to undertake every effort to adhere to [The European Code of Conduct for Research Integrity – Revised Edition 2023](http://www.doi.org/10.26356/ECOC) in all our activities.
+
 ## Our Standards
 
 Examples of behavior that contributes to a positive environment for our
@@ -25,6 +29,7 @@ community include:
   and learning from the experience
 * Focusing on what is best not just for us as individuals, but for the overall
   community
+* Follow well established standards for performing research as defined in [The European Code of Conduct for Research Integrity – Revised Edition 2023](http://www.doi.org/10.26356/ECOC)
 
 Examples of unacceptable behavior include:
 
@@ -36,6 +41,7 @@ Examples of unacceptable behavior include:
   without their explicit permission
 * Other conduct which could reasonably be considered inappropriate in a
   professional setting
+* Scientific misconduct as defined in [The European Code of Conduct for Research Integrity – Revised Edition 2023](http://www.doi.org/10.26356/ECOC)
 
 ## Enforcement Responsibilities
 
