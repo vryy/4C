@@ -33,8 +33,8 @@ FOUR_C_NAMESPACE_OPEN
 //   Allocate one static instance of the internal implementation
 //   class for edge-based stabilizations and return pointer to it
 //-----------------------------------------------------------------
-Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::impl(
-    Discret::ELEMENTS::FluidIntFace* surfele)
+Discret::Elements::FluidIntFaceStab* Discret::Elements::FluidIntFaceStab::impl(
+    Discret::Elements::FluidIntFace* surfele)
 {
   switch (surfele->shape())
   {
@@ -206,18 +206,18 @@ Discret::ELEMENTS::FluidIntFaceStab* Discret::ELEMENTS::FluidIntFaceStab::impl(
 }
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
-Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::instance(
+Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>*
+Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::instance(
     Core::Utils::SingletonAction action)
 {
   static Core::Utils::SingletonOwner<
-      Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>
+      Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>>
       singleton_owner(
           []()
           {
             return std::unique_ptr<
-                Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>>(
-                new Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>());
+                Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>>(
+                new Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>());
           });
 
   return singleton_owner.instance(action);
@@ -235,7 +235,7 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::instan
 //                          constructor
 //-----------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInternalSurfaceStab()
+Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInternalSurfaceStab()
     : FluidIntFaceStab(),
       elematrix_mm_(true),  ///< element matrix master-master block
       elematrix_ms_(true),  ///< element matrix master-slave block
@@ -372,7 +372,7 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidI
 //  get the required degree to integrate face stabilizations terms
 //-----------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::degree(
+int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::degree(
     const Core::FE::CellType parent_ele_distype)
 {
   int degree = 0;
@@ -460,12 +460,12 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::de
 //    evaluate implementation for internal surface stabilization
 //-----------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::evaluate_edge_based_stabilization(Discret::ELEMENTS::FluidIntFace*
+int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
+    ndistype>::evaluate_edge_based_stabilization(Discret::Elements::FluidIntFace*
                                                      intface,  ///< internal face element
     Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-    Discret::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
-    Discret::ELEMENTS::FluidEleParameterIntFace&
+    Discret::Elements::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
+    Discret::Elements::FluidEleParameterIntFace&
         fldintfacepara,                        ///< general parameter for internal face
     Teuchos::ParameterList& params,            ///< parameter list
     Core::FE::Discretization& discretization,  ///< discretization
@@ -1234,7 +1234,7 @@ int Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 //   reassemble matrix block from master-slave pairs to patch-node block for field (row, col)
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::reassemble_mat_block(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::reassemble_mat_block(
     const int row_block,                         ///< row block
     const int col_block,                         ///< column block
     Core::LinAlg::SerialDenseMatrix& mat_block,  ///< matrix block
@@ -1308,7 +1308,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::r
 //   reassemble rhs block from master/slave rhs to patch-node block for field (row)
 //-------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::reassemble_rhs_block(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::reassemble_rhs_block(
     const int row_block,                                          ///< row block
     Core::LinAlg::SerialDenseVector& rhs_block,                   ///< rhs block
     Core::LinAlg::Matrix<numdofpernode_ * piel, 1>& elevector_m,  ///< element vector master block
@@ -1342,7 +1342,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::r
 //            get data for parent elements and surface element
 //-----------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::get_element_data(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::get_element_data(
     FluidIntFace* surfele,                        ///< surface FluidIntFace element
     Fluid* master_ele,                            ///< master parent element
     Fluid* slave_ele,                             ///< slave  parent element
@@ -1586,7 +1586,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
  |                                                          schott 02/13|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::eval_shape_func_and_derivs_at_int_point(const double wquad,  ///< Gaussian weight
     const Core::LinAlg::Matrix<facensd_, 1>&
         xi_gp,  ///< local coordinates of gaussian point w.r.t the master's face
@@ -1760,7 +1760,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
  |                                                          schott 02/13|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
     eval_vel_pres_and_derivs_at_int_point(bool use2ndderiv,  ///< flag to use 2nd order derivatives
         bool isAle  ///< flag, whether we are on an ALE-fluid
     )
@@ -1986,7 +1986,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::
  |                                                          schott 04/12|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::eval_shape_func_and_derivs_at_int_point(Core::FE::GaussIntegration::iterator&
                                                            iquad,  ///< actual integration point
     int master_eid,                                                ///< master parent element
@@ -2187,8 +2187,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
-    ndistype>::set_convective_velint(Discret::ELEMENTS::FluidEleParameterIntFace& fldintfacepara,
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
+    ndistype>::set_convective_velint(Discret::Elements::FluidEleParameterIntFace& fldintfacepara,
     const bool isale)
 {
   // get convective velocity at integration point
@@ -2236,7 +2236,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::ghost_penalty2nd_normal(const double& tau_timefacfac_u_2nd,
     const double& tau_timefacfac_p_2nd)
 {
@@ -2442,7 +2442,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::ghost_penalty2nd_full(const double& tau_timefacfac_u_2nd,
     const double& tau_timefacfac_p_2nd)
 {
@@ -2541,7 +2541,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_eos(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_eos(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
 )
@@ -2619,7 +2619,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::p
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_streamline_eos(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_streamline_eos(
     const Core::LinAlg::Matrix<nsd_, nsd_>& vderxyaf_diff_scaled)
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: terms: div_streamline_eos");
@@ -2741,7 +2741,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::d
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_eos(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::div_eos(
     const double& tau_timefacfac_div,  ///< (time factor div) x (integration factor)
     const double& tau_timefacfac_rhs   ///< (time factor rhs) x (integration factor)
 )
@@ -2832,7 +2832,7 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::d
 
 
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_krylov_2dz(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::pressure_krylov_2dz(
     const double& tau_timefacfacpre,  ///< tau * (time factor pressure) x (integration factor)
     const double& tau_timefacfacrhs   ///< tau * (time factor rhs)      x (integration factor)
 )
@@ -2913,10 +2913,10 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::p
 // compute h_k w.r.t master and slave element                                         schott 04/12
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_patch_hk(
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_patch_hk(
     Fluid* master,                             ///< master fluid element
     Fluid* slave,                              ///< slave fluid element
-    Discret::ELEMENTS::FluidIntFace* intface,  ///< intface element
+    Discret::Elements::FluidIntFace* intface,  ///< intface element
     const Inpar::FLUID::EosElementLength&
         eos_element_length  ///< which definition of element length?
 )
@@ -2956,10 +2956,10 @@ void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::c
 // compute h_k based on the largest diameter of the element's faces(3D), lines(2D) element  schott
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_surf_with_max_diameter(Fluid* master,  ///< master fluid element
     Fluid* slave,                                                      ///< slave fluid element
-    Discret::ELEMENTS::FluidIntFace* intface                           ///< intface element
+    Discret::Elements::FluidIntFace* intface                           ///< intface element
 )
 {
   double patch_hk = 0.0;
@@ -3106,10 +3106,10 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 //                                                                                         schott
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_diameter_to_opp_surf(Fluid* master,  ///< master fluid element
     Fluid* slave,                                                    ///< slave fluid element
-    Discret::ELEMENTS::FluidIntFace* intface                         ///< intface element
+    Discret::Elements::FluidIntFace* intface                         ///< intface element
 )
 {
   double patch_hk = 0.0;
@@ -3290,8 +3290,8 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
 double
-Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_surf_diameter(
-    Discret::ELEMENTS::FluidIntFace* intface  ///< intface element
+Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::compute_surf_diameter(
+    Discret::Elements::FluidIntFace* intface  ///< intface element
 )
 {
   if (nsd_ == 3)
@@ -3362,10 +3362,10 @@ Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::comput
 // just for quadrilateral/hexahedral elements                                               schott
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_dist_to_opp_surf(Fluid* master,  ///< master fluid element
     Fluid* slave,                                                ///< slave fluid element
-    Discret::ELEMENTS::FluidIntFace* intface                     ///< intface element
+    Discret::Elements::FluidIntFace* intface                     ///< intface element
 )
 {
   const int side_id_master = intface->face_master_number();
@@ -3446,7 +3446,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 // compute h_k based on the maximal diameter of the master and slave element               schott
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+double Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_patch_hk_ele_diameter(Fluid* master,  ///< master fluid element
     Fluid* slave                                             ///< slave fluid element
 )
@@ -3582,7 +3582,7 @@ double Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 // computation of edge-oriented/ghost-penalty stabilization parameter                 schott 12/02
 //------------------------------------------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
-void Discret::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
+void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::compute_stabilization_params(const bool is_ghost_penalty_reconstruct,
     const bool use2ndderiv, const Inpar::FLUID::EosTauType tautype, const bool EOS_conv_stream,
     const bool EOS_conv_cross, const bool EOS_div_vel_jump, const double max_vel_L2_norm,

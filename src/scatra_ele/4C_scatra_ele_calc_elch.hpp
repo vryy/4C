@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleDiffManagerElch;
@@ -271,7 +271,7 @@ namespace Discret
       const ScaTraEleParameterElch* elchparams_;
 
       //! utility class supporting element evaluation
-      Discret::ELEMENTS::ScaTraEleUtilsElch<distype>* utils_;
+      Discret::Elements::ScaTraEleUtilsElch<distype>* utils_;
     };
 
 
@@ -326,7 +326,7 @@ namespace Discret
 
      public:
       ScaTraEleInternalVariableManagerElch(
-          int numscal, const Discret::ELEMENTS::ScaTraEleParameterElch* elchpara)
+          int numscal, const Discret::Elements::ScaTraEleParameterElch* elchpara)
           : ScaTraEleInternalVariableManager<nsd, nen>(numscal),
             parameters_(elchpara),
             frt_(0.),
@@ -407,11 +407,11 @@ namespace Discret
       virtual void set_frt() { frt_ = parameters_->frt(); }
 
       //! return parameter class
-      const Discret::ELEMENTS::ScaTraEleParameterElch* elch_params() const { return parameters_; };
+      const Discret::Elements::ScaTraEleParameterElch* elch_params() const { return parameters_; };
 
      protected:
       //! parameter class for electrochemistry problems
-      const Discret::ELEMENTS::ScaTraEleParameterElch* parameters_;
+      const Discret::Elements::ScaTraEleParameterElch* parameters_;
 
       /*========================================================================*/
       //! @name constant internal variables
@@ -432,7 +432,7 @@ namespace Discret
       // subgrid velocity
       Core::LinAlg::Matrix<nen, 1> sgconv_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

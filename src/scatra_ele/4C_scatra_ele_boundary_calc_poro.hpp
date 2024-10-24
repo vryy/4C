@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcPoro : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim> my;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -67,7 +67,7 @@ namespace Discret
       bool isnodalporosity_;
 
     };  // class ScaTraEleBoundaryCalcPoro
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
  |  Singleton access method                               hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::instance(
+Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>*
+Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -47,9 +47,9 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::instance(
  |  Private constructor                                   hemmler 07/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCalcPoro(
+Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundaryCalcPoro(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
+    : Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
           numdofpernode, numscal, disname),
       eporosity_(true),
       eprenp_(true),
@@ -62,7 +62,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::ScaTraEleBoundar
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_action(
+int Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_action(
     Core::Elements::FaceElement* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, ScaTra::BoundaryAction action,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -183,7 +183,7 @@ int Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::evaluate_act
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 std::vector<double>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_flux(
+Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_flux(
     const Core::Elements::FaceElement* ele,
     const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephinp,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelnp, Core::LinAlg::SerialDenseVector& erhs)
@@ -235,7 +235,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::calc_convective_
  |  get the material constants  (protected)                  vuong 10/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::compute_porosity(
+double Discret::Elements::ScaTraEleBoundaryCalcPoro<distype, probdim>::compute_porosity(
     const Core::Elements::FaceElement* ele  //!< the element we are dealing with
 )
 {
@@ -255,15 +255,15 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<distype, probdim>::compute_p
 
 
 // template classes
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::quad9, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::tri6, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::line3, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::nurbs3, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::nurbs9, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::quad4, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::quad8, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::quad9, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::tri6, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::line3, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::nurbs3, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcPoro<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

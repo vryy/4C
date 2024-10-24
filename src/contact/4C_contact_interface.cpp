@@ -7638,7 +7638,7 @@ void CONTACT::Interface::set_condition_specific_parameters()
   {
     // read interface parameters and set them to the scatra boundary parameter class
     auto& s2icouplinglist = interface_params().sublist("ContactS2ICoupling", true);
-    Discret::ELEMENTS::ScaTraEleParameterBoundary::instance("scatra")->set_parameters(
+    Discret::Elements::ScaTraEleParameterBoundary::instance("scatra")->set_parameters(
         s2icouplinglist);
   }
 }

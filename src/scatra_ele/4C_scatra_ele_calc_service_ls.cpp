@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements::Element* ele,
+int Discret::Elements::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const ScaTra::Action& action, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -72,7 +72,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLS<distype>::evaluate_action(Core::Elements:
  |  calculate error compared to analytical solution    rasthofer 04/14 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solution(
+void Discret::Elements::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_solution(
     const Core::Elements::Element* ele, const std::vector<Core::LinAlg::Matrix<nen_, 1>>& ephizero,
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& errors)
 {
@@ -130,7 +130,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::cal_error_compared_to_analyt_s
  | smoothed heaviside function                          rasthofer 04/12 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
+void Discret::Elements::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
     const double charelelength, const double phi, double& smoothH)
 {
   // assume interface thickness
@@ -150,25 +150,25 @@ void Discret::ELEMENTS::ScaTraEleCalcLS<distype>::smooth_heaviside_function(
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

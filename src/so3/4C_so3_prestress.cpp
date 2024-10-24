@@ -13,13 +13,13 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::PreStressType Discret::ELEMENTS::PreStressType::instance_;
+Discret::Elements::PreStressType Discret::Elements::PreStressType::instance_;
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 07/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PreStress::PreStress(const int numnode, const int ngp, const bool istet4)
+Discret::Elements::PreStress::PreStress(const int numnode, const int ngp, const bool istet4)
     : ParObject(), isinit_(false), numnode_(numnode)
 {
   // allocate history memory
@@ -38,7 +38,7 @@ Discret::ELEMENTS::PreStress::PreStress(const int numnode, const int ngp, const 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 11/06|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PreStress::PreStress(const Discret::ELEMENTS::PreStress& old)
+Discret::Elements::PreStress::PreStress(const Discret::Elements::PreStress& old)
     : ParObject(old),
       isinit_(old.isinit_),
       numnode_(old.numnode_),
@@ -53,7 +53,7 @@ Discret::ELEMENTS::PreStress::PreStress(const Discret::ELEMENTS::PreStress& old)
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PreStress::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::PreStress::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::PreStress::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PreStress::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::PreStress::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::PreStress::unpack(Core::Communication::UnpackBuffer& buf
   return;
 }
 
-int Discret::ELEMENTS::PreStress::unique_par_object_id() const
+int Discret::Elements::PreStress::unique_par_object_id() const
 {
   return PreStressType::instance().unique_par_object_id();
 }

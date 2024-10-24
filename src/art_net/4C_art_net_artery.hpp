@@ -33,7 +33,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ArteryType : public Core::Elements::ElementType
     {
@@ -365,7 +365,7 @@ namespace Discret
     //=======================================================================
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

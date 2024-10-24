@@ -35,7 +35,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ElemagIntFace;
     class ElemagEleParameter;
@@ -58,7 +58,7 @@ namespace Discret
       virtual ~ElemagIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void assemble_internal_faces_using_neighbor_data(
-          Discret::ELEMENTS::ElemagIntFace* intface,      ///< internal face element
+          Discret::Elements::ElemagIntFace* intface,      ///< internal face element
           std::vector<int>& nds_master,                   ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,                    ///< nodal dofset w.r.t. slave element
           Teuchos::ParameterList& params,                 ///< parameter list
@@ -69,7 +69,7 @@ namespace Discret
 
       //! Evaluate internal faces
       virtual int evaluate_internal_faces(
-          Discret::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Discret::Elements::ElemagIntFace* intface,  ///< internal face element
           Teuchos::ParameterList& params,             ///< parameter list
           Core::FE::Discretization& discretization,   ///< discretization
           std::vector<int>& patchlm,                  ///< patch local map
@@ -86,7 +86,7 @@ namespace Discret
 
 
       /// Internal implementation class for ElemagIntFace elements (the first object is created in
-      /// Discret::ELEMENTS::ElemagIntFace::Evaluate)
+      /// Discret::Elements::ElemagIntFace::Evaluate)
       static ElemagIntFaceImplInterface* impl(const Core::Elements::Element* ele);
     };
 
@@ -127,7 +127,7 @@ namespace Discret
 
       //! Assemble internal faces integrals using data from both parent elements
       void assemble_internal_faces_using_neighbor_data(
-          Discret::ELEMENTS::ElemagIntFace* intface,      ///< internal face element
+          Discret::Elements::ElemagIntFace* intface,      ///< internal face element
           std::vector<int>& nds_master,                   ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,                    ///< nodal dofset w.r.t. slave element
           Teuchos::ParameterList& params,                 ///< parameter list
@@ -138,7 +138,7 @@ namespace Discret
 
       //! Evaluate internal faces
       int evaluate_internal_faces(
-          Discret::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Discret::Elements::ElemagIntFace* intface,  ///< internal face element
           Teuchos::ParameterList& params,             ///< parameter list
           Core::FE::Discretization& discretization,   ///< discretization
           std::vector<int>& patchlm,                  ///< patch local map
@@ -159,13 +159,13 @@ namespace Discret
 
      private:
       //! pointer to parameter lists
-      Discret::ELEMENTS::ElemagEleParameter* elemagpara_;
+      Discret::Elements::ElemagEleParameter* elemagpara_;
       //! pointer to parameter list for time integration
-      Discret::ELEMENTS::ElemagEleParameterTimInt* elemagparatimint_;
+      Discret::Elements::ElemagEleParameterTimInt* elemagparatimint_;
 
     };  // end class ElemagIntFaceImpl
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

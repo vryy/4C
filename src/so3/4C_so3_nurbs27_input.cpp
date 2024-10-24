@@ -13,7 +13,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Nurbs::SoNurbs27::read_element(const std::string& eletype,
+bool Discret::Elements::Nurbs::SoNurbs27::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model

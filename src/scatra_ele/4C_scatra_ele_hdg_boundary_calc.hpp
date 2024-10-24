@@ -23,7 +23,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraHDGBoundary;
 
@@ -46,7 +46,7 @@ namespace Discret
         This class does not provide a definition for this function, it
         must be defined in ScaTraHDGBoundaryImpl.
        */
-      virtual int evaluate_neumann(Discret::ELEMENTS::ScaTraHDGBoundary* ele,
+      virtual int evaluate_neumann(Discret::Elements::ScaTraHDGBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) = 0;
@@ -78,7 +78,7 @@ namespace Discret
       static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int evaluate_neumann(Discret::ELEMENTS::ScaTraHDGBoundary* ele,
+      int evaluate_neumann(Discret::Elements::ScaTraHDGBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra) override;
@@ -103,7 +103,7 @@ namespace Discret
 
     };  // class ScaTraHDGBoundaryImpl
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

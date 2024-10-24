@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
     class ScaTraEleCalcChemo : public virtual ScaTraEleCalc<distype, probdim>
@@ -86,7 +86,7 @@ namespace Discret
 
     };  // end Chemotaxis
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

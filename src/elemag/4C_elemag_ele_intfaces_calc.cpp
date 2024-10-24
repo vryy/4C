@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ElemagIntFaceImplInterface* Discret::ELEMENTS::ElemagIntFaceImplInterface::impl(
+Discret::Elements::ElemagIntFaceImplInterface* Discret::Elements::ElemagIntFaceImplInterface::impl(
     const Core::Elements::Element* ele)
 {
   switch (ele->shape())
@@ -59,14 +59,14 @@ Discret::ELEMENTS::ElemagIntFaceImplInterface* Discret::ELEMENTS::ElemagIntFaceI
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagIntFaceImpl<distype>*
-Discret::ELEMENTS::ElemagIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::ElemagIntFaceImpl<distype>*
+Discret::Elements::ElemagIntFaceImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::ElemagIntFaceImpl<distype>>(
-            new Discret::ELEMENTS::ElemagIntFaceImpl<distype>());
+        return std::unique_ptr<Discret::Elements::ElemagIntFaceImpl<distype>>(
+            new Discret::Elements::ElemagIntFaceImpl<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -76,7 +76,7 @@ Discret::ELEMENTS::ElemagIntFaceImpl<distype>::instance(Core::Utils::SingletonAc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagIntFaceImpl<distype>::ElemagIntFaceImpl()
+Discret::Elements::ElemagIntFaceImpl<distype>::ElemagIntFaceImpl()
 {
   return;
 }
@@ -85,8 +85,8 @@ Discret::ELEMENTS::ElemagIntFaceImpl<distype>::ElemagIntFaceImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    Discret::ELEMENTS::ElemagIntFace* intface,               // internal face element
+void Discret::Elements::ElemagIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
+    Discret::Elements::ElemagIntFace* intface,               // internal face element
     std::vector<int>& nds_master,                            // nodal dofset w.r.t. master element
     std::vector<int>& nds_slave,                             // nodal dofset w.r.t. slave element
     Teuchos::ParameterList& params,                          // parameter list
@@ -103,8 +103,8 @@ void Discret::ELEMENTS::ElemagIntFaceImpl<distype>::assemble_internal_faces_usin
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagIntFaceImpl<distype>::evaluate_internal_faces(
-    Discret::ELEMENTS::ElemagIntFace* intface,  // internal face element
+int Discret::Elements::ElemagIntFaceImpl<distype>::evaluate_internal_faces(
+    Discret::Elements::ElemagIntFace* intface,  // internal face element
     Teuchos::ParameterList& params,             // parameter list
     Core::FE::Discretization& discretization,   // discretization
     std::vector<int>& patchlm,                  // patch local map

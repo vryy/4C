@@ -18,45 +18,45 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::SoHex8fbarType Discret::ELEMENTS::SoHex8fbarType::instance_;
+Discret::Elements::SoHex8fbarType Discret::Elements::SoHex8fbarType::instance_;
 
-Discret::ELEMENTS::SoHex8fbarType& Discret::ELEMENTS::SoHex8fbarType::instance()
+Discret::Elements::SoHex8fbarType& Discret::Elements::SoHex8fbarType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex8fbarType::create(
+Core::Communication::ParObject* Discret::Elements::SoHex8fbarType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoHex8fbar(-1, -1);
+  auto* object = new Discret::Elements::SoHex8fbar(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8fbarType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoHex8fbar>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoHex8fbar>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex8fbarType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex8fbarType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoHex8fbar>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoHex8fbar>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::SoHex8fbarType::nodal_block_information(
+void Discret::Elements::SoHex8fbarType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -65,13 +65,13 @@ void Discret::ELEMENTS::SoHex8fbarType::nodal_block_information(
   np = 0;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex8fbarType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SoHex8fbarType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::SoHex8fbarType::setup_element_definition(
+void Discret::Elements::SoHex8fbarType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -95,16 +95,16 @@ void Discret::ELEMENTS::SoHex8fbarType::setup_element_definition(
  |  ctor (public)                                             popp 07/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(int id, int owner) : Discret::ELEMENTS::SoHex8(id, owner)
+Discret::Elements::SoHex8fbar::SoHex8fbar(int id, int owner) : Discret::Elements::SoHex8(id, owner)
 {
   if (Prestress::is_mulf(pstype_))
-    prestress_ = Teuchos::make_rcp<Discret::ELEMENTS::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8 + 1);
+    prestress_ = Teuchos::make_rcp<Discret::Elements::PreStress>(NUMNOD_SOH8, NUMGPT_SOH8 + 1);
 
   Teuchos::RCP<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -115,8 +115,8 @@ Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(int id, int owner) : Discret::ELEMENTS
  |  copy-ctor (public)                                        popp 07/10|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(const Discret::ELEMENTS::SoHex8fbar& old)
-    : Discret::ELEMENTS::SoHex8(old)
+Discret::Elements::SoHex8fbar::SoHex8fbar(const Discret::Elements::SoHex8fbar& old)
+    : Discret::Elements::SoHex8(old)
 {
   return;
 }
@@ -125,9 +125,9 @@ Discret::ELEMENTS::SoHex8fbar::SoHex8fbar(const Discret::ELEMENTS::SoHex8fbar& o
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex8fbar::clone() const
+Core::Elements::Element* Discret::Elements::SoHex8fbar::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoHex8fbar(*this);
+  auto* newelement = new Discret::Elements::SoHex8fbar(*this);
   return newelement;
 }
 
@@ -135,7 +135,7 @@ Core::Elements::Element* Discret::ELEMENTS::SoHex8fbar::clone() const
  |  Pack data                                                  (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoHex8fbar::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::SoHex8fbar::pack(Core::Communication::PackBuffer& data) 
   int type = unique_par_object_id();
   add_to_pack(data, type);
   // add base class So_hex8 Element
-  Discret::ELEMENTS::SoHex8::pack(data);
+  Discret::Elements::SoHex8::pack(data);
 
   return;
 }
@@ -152,7 +152,7 @@ void Discret::ELEMENTS::SoHex8fbar::pack(Core::Communication::PackBuffer& data) 
  |  Unpack data                                                (public) |
  |                                                            popp 07/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoHex8fbar::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -160,7 +160,7 @@ void Discret::ELEMENTS::SoHex8fbar::unpack(Core::Communication::UnpackBuffer& bu
   std::vector<char> basedata(0);
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::ELEMENTS::SoHex8::unpack(basedata_buffer);
+  Discret::Elements::SoHex8::unpack(basedata_buffer);
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
@@ -171,7 +171,7 @@ void Discret::ELEMENTS::SoHex8fbar::unpack(Core::Communication::UnpackBuffer& bu
 /*----------------------------------------------------------------------*
  |  print this element (public)                               popp 07/10|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::print(std::ostream& os) const
+void Discret::Elements::SoHex8fbar::print(std::ostream& os) const
 {
   os << "So_hex8fbar ";
   Element::print(os);

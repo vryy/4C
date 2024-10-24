@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -56,7 +56,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& par
       elevec[1] = &elevec2;
       elevec[2] = &elevec3;
 
-      return Discret::ELEMENTS::PoroFluidMultiPhaseFactory::provide_impl(
+      return Discret::Elements::PoroFluidMultiPhaseFactory::provide_impl(
           shape(), numdofpernode, discretization.name())
           ->evaluate(this, params, discretization, la, elemat, elevec);
       break;
@@ -73,13 +73,13 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate(Teuchos::ParameterList& par
   }  // switch(action)
 
   return 0;
-}  // Discret::ELEMENTS::PoroFluidMultiPhase::Evaluate
+}  // Discret::Elements::PoroFluidMultiPhase::Evaluate
 
 
 /*----------------------------------------------------------------------*
  |  dummy                                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -94,7 +94,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterL
 /*---------------------------------------------------------------------*
 |  Call the element to set all basic parameter             vuong 08/16 |
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discretization& dis,
+void Discret::Elements::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discretization& dis,
     Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
     Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
     Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
@@ -107,7 +107,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discreti
   {
     case POROFLUIDMULTIPHASE::set_general_parameter:
     {
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(dis.name())
+      Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(dis.name())
           ->set_general_parameters(p);
 
       break;
@@ -115,7 +115,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discreti
 
     case POROFLUIDMULTIPHASE::set_timestep_parameter:
     {
-      Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(dis.name())
+      Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(dis.name())
           ->set_time_step_parameters(p);
 
       break;

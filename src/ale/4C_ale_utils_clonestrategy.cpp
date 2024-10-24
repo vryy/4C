@@ -53,14 +53,14 @@ void ALE::Utils::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
 {
   if (nurbsdis == false)
   {
-    Discret::ELEMENTS::Ale2* ale2 = dynamic_cast<Discret::ELEMENTS::Ale2*>(newele.get());
+    Discret::Elements::Ale2* ale2 = dynamic_cast<Discret::Elements::Ale2*>(newele.get());
     if (ale2 != nullptr)
     {
       ale2->set_material(0, Mat::factory(matid));
     }
     else
     {
-      Discret::ELEMENTS::Ale3* ale3 = dynamic_cast<Discret::ELEMENTS::Ale3*>(newele.get());
+      Discret::Elements::Ale3* ale3 = dynamic_cast<Discret::Elements::Ale3*>(newele.get());
       if (ale3 != nullptr)
       {
         ale3->set_material(0, Mat::factory(matid));
@@ -73,16 +73,16 @@ void ALE::Utils::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements:
   }
   else
   {
-    Discret::ELEMENTS::Nurbs::Ale2Nurbs* ale2 =
-        dynamic_cast<Discret::ELEMENTS::Nurbs::Ale2Nurbs*>(newele.get());
+    Discret::Elements::Nurbs::Ale2Nurbs* ale2 =
+        dynamic_cast<Discret::Elements::Nurbs::Ale2Nurbs*>(newele.get());
     if (ale2 != nullptr)
     {
       ale2->set_material(0, Mat::factory(matid));
     }
     else
     {
-      Discret::ELEMENTS::Nurbs::Ale3Nurbs* ale3 =
-          dynamic_cast<Discret::ELEMENTS::Nurbs::Ale3Nurbs*>(newele.get());
+      Discret::Elements::Nurbs::Ale3Nurbs* ale3 =
+          dynamic_cast<Discret::Elements::Nurbs::Ale3Nurbs*>(newele.get());
 
       if (ale3 != nullptr)
       {
@@ -108,7 +108,7 @@ bool ALE::Utils::AleCloneStrategy::determine_ele_type(
   // Fluid meshes may be split into Eulerian and ALE regions.
   // Check, whether actele is a fluid element in order to account for
   // the possible split in Eulerian an ALE regions
-  Discret::ELEMENTS::Fluid* f3 = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
+  Discret::Elements::Fluid* f3 = dynamic_cast<Discret::Elements::Fluid*>(actele);
   if (f3 != nullptr)
   {
     cloneit = f3->is_ale();  // if not ALE, element will not be cloned

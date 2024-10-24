@@ -28,14 +28,14 @@ FOUR_C_NAMESPACE_OPEN
 #define STAB
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcPoro<distype>*
-Discret::ELEMENTS::FluidEleCalcPoro<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidEleCalcPoro<distype>*
+Discret::Elements::FluidEleCalcPoro<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcPoro<distype>>(
-            new Discret::ELEMENTS::FluidEleCalcPoro<distype>());
+        return std::unique_ptr<Discret::Elements::FluidEleCalcPoro<distype>>(
+            new Discret::Elements::FluidEleCalcPoro<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -43,8 +43,8 @@ Discret::ELEMENTS::FluidEleCalcPoro<distype>::instance(Core::Utils::SingletonAct
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
-    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(),
+Discret::Elements::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
+    : Discret::Elements::FluidEleCalc<distype>::FluidEleCalc(),
       N_XYZ_(true),
       N_XYZ2_(true),
       N_XYZ2full_(true),
@@ -79,21 +79,21 @@ Discret::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
   anisotropic_permeability_nodal_coeffs_.resize(nsd_, std::vector<double>(nen_, 0.0));
 
   // change pointer to parameter list in base class to poro parameters
-  Base::fldpara_ = Discret::ELEMENTS::FluidEleParameterPoro::instance();
+  Base::fldpara_ = Discret::Elements::FluidEleParameterPoro::instance();
   // this is just for convenience. The same pointer as above to circumvent casts when accessing poro
   // specific paramters
-  porofldpara_ = Discret::ELEMENTS::FluidEleParameterPoro::instance();
+  porofldpara_ = Discret::Elements::FluidEleParameterPoro::instance();
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::pre_evaluate(Teuchos::ParameterList& params,
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization)
+void Discret::Elements::FluidEleCalcPoro<distype>::pre_evaluate(Teuchos::ParameterList& params,
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization)
 {
   // do nothing
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_service(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_service(Discret::Elements::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_service(Discret::ELEM
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -135,7 +135,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fl
   Teuchos::RCP<const Mat::FluidPoro> actmat = Teuchos::rcp_static_cast<const Mat::FluidPoro>(mat);
   const_permeability_ = (actmat->permeability_function() == Mat::PAR::constant);
 
-  auto* poroele = dynamic_cast<Discret::ELEMENTS::FluidPoro*>(ele);
+  auto* poroele = dynamic_cast<Discret::Elements::FluidPoro*>(ele);
 
   if (poroele)
   {
@@ -157,7 +157,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fl
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -316,7 +316,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Discret::ELEMENTS::Fl
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_od(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -471,7 +471,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Discret::ELEMENTS:
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& elemat1,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
@@ -508,7 +508,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate(Teuchos::ParameterLis
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_od(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& elemat1,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& elevec1,
@@ -547,7 +547,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_od(Teuchos::Parameter
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::sysmat(Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleCalcPoro<distype>::sysmat(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelnp, const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
     const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& eprenp,
@@ -704,7 +704,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::sysmat(Teuchos::ParameterList
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::sysmat_od(Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleCalcPoro<distype>::sysmat_od(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelnp, const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
     const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& eprenp,
@@ -809,7 +809,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::sysmat_od(Teuchos::ParameterL
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation(
+void Discret::Elements::FluidEleCalcPoro<distype>::evaluate_pressure_equation(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
     const Core::LinAlg::Matrix<nen_, 1>* eporositydot,
@@ -867,7 +867,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation_non_transient(
+void Discret::Elements::FluidEleCalcPoro<distype>::evaluate_pressure_equation_non_transient(
     Teuchos::ParameterList& params, const double& timefacfacpre, const double& rhsfac,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
     const Core::LinAlg::Matrix<nsd_, nen_>& dgradphi_dp,
@@ -1098,7 +1098,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_pressure_equation_no
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelnp, const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
     const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& eprenp,
@@ -1608,7 +1608,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop_od(
+void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop_od(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelnp,
     const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
@@ -1775,7 +1775,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::gauss_point_loop_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const double& timefacfac,
+void Discret::Elements::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const double& timefacfac,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
     const Core::LinAlg::Matrix<nen_, 1>& epreaf,
     const Core::LinAlg::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus, const double& dphi_dp,
@@ -1977,7 +1977,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_momentum_od(const
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const double& timefacfacpre,
+void Discret::Elements::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const double& timefacfacpre,
     const double& dphi_dp, const double& dphi_dJ, const double& dphi_dJJ, const double& dphi_dJdp,
     const double& refporositydot, const Core::LinAlg::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>& dphi_dus,
@@ -2300,7 +2300,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::fill_matrix_conti_od(const do
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_3d_mesh_motion_od(
+void Discret::Elements::FluidEleCalcPoro<distype>::lin_3d_mesh_motion_od(
     Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
     const double& dphi_dJ, const double& refporositydot, const double& timefac,
     const double& timefacfac)
@@ -3179,7 +3179,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_3d_mesh_motion_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3d_pres_od(
+void Discret::Elements::FluidEleCalcPoro<distype>::lin_mesh_motion_3d_pres_od(
     Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
@@ -3804,7 +3804,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_3d_pres_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_2d_mesh_motion_od(
+void Discret::Elements::FluidEleCalcPoro<distype>::lin_2d_mesh_motion_od(
     Core::LinAlg::Matrix<nsd_ * nen_, nsd_ * nen_>& ecoupl_u, const double& dphi_dp,
     const double& dphi_dJ, const double& refporositydot, const double& timefac,
     const double& timefacfac)
@@ -4102,7 +4102,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_2d_mesh_motion_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2d_pres_od(
+void Discret::Elements::FluidEleCalcPoro<distype>::lin_mesh_motion_2d_pres_od(
     Core::LinAlg::Matrix<nen_, nsd_ * nen_>& ecoupl_p, const double& dphi_dp, const double& dphi_dJ,
     const double& refporositydot, const double& timefacfac)
 {
@@ -4465,7 +4465,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::lin_mesh_motion_2d_pres_od(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::pspg(
+void Discret::Elements::FluidEleCalcPoro<distype>::pspg(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, nen_>& ppmat,
     Core::LinAlg::Matrix<nen_, 1>& preforce,
     const Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -4611,7 +4611,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::pspg(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::stab_biot(
+void Discret::Elements::FluidEleCalcPoro<distype>::stab_biot(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, nen_>& ppmat,
     Core::LinAlg::Matrix<nen_, 1>& preforce,
     const Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -4680,7 +4680,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::stab_biot(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_f_derivative(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_f_derivative(
     const Core::LinAlg::Matrix<nsd_, nen_>& edispnp,
     const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv,
     Core::LinAlg::Matrix<nsd_ * nsd_, nsd_>& F_x, Core::LinAlg::Matrix<nsd_ * nsd_, nsd_>& F_X)
@@ -4704,7 +4704,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_f_derivative(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_gradients(const double& J,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_gradients(const double& J,
     const double& dphidp, const double& dphidJ,
     const Core::LinAlg::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
     const Core::LinAlg::Matrix<nsd_ * nsd_, nsd_>& F_x, const Core::LinAlg::Matrix<nsd_, 1>& gradp,
@@ -4720,7 +4720,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_gradients(const doubl
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_porosity_gradient(const double& dphidp,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_porosity_gradient(const double& dphidp,
     const double& dphidJ, const Core::LinAlg::Matrix<nsd_, 1>& gradJ,
     const Core::LinAlg::Matrix<nsd_, 1>& gradp, const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
     Core::LinAlg::Matrix<nsd_, 1>& grad_porosity, Core::LinAlg::Matrix<nsd_, 1>& refgrad_porosity)
@@ -4736,7 +4736,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_porosity_gradient(con
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization(const double& dphi_dp,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_linearization(const double& dphi_dp,
     const double& dphi_dpp, const double& dphi_dJdp, const Core::LinAlg::Matrix<nsd_, 1>& gradJ,
     Core::LinAlg::Matrix<nsd_, nen_>& dgradphi_dp)
 {
@@ -4753,7 +4753,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization(const d
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization_od(const double& dphi_dJ,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_linearization_od(const double& dphi_dJ,
     const double& dphi_dJJ, const double& dphi_dJp,
     const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv,
     const Core::LinAlg::Matrix<nsd_ * nsd_, 1>& defgrd_IT_vec,
@@ -4850,7 +4850,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_linearization_od(cons
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_porosity(Teuchos::ParameterList& params,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_porosity(Teuchos::ParameterList& params,
     const double& press, const double& J, const int& gp,
     const Core::LinAlg::Matrix<nen_, 1>& shapfct, const Core::LinAlg::Matrix<nen_, 1>* myporosity,
     double& porosity, double* dphi_dp, double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ,
@@ -4861,7 +4861,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_porosity(Teuchos::Par
 }
 
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::FluidEleCalcPoro<distype>::setup_material_derivatives()
+double Discret::Elements::FluidEleCalcPoro<distype>::setup_material_derivatives()
 {
   //------------------------get determinant of Jacobian dX / ds
   // transposed jacobian "dX/ds"
@@ -4919,8 +4919,8 @@ double Discret::ELEMENTS::FluidEleCalcPoro<distype>::setup_material_derivatives(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::get_struct_material(
-    Discret::ELEMENTS::Fluid* ele)
+void Discret::Elements::FluidEleCalcPoro<distype>::get_struct_material(
+    Discret::Elements::Fluid* ele)
 {
   // get fluid material
   {
@@ -4939,7 +4939,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::get_struct_material(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::reac_stab(
+void Discret::Elements::FluidEleCalcPoro<distype>::reac_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -5105,7 +5105,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::reac_stab(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::get_material_paramters(
+void Discret::Elements::FluidEleCalcPoro<distype>::get_material_paramters(
     Teuchos::RCP<const Core::Mat::Material> material)
 {
   if (Base::fldpara_->mat_gp())
@@ -5130,7 +5130,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::get_material_paramters(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_spatial_reaction_terms(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_spatial_reaction_terms(
     Teuchos::RCP<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nsd_>& invdefgrd)
 {
@@ -5179,7 +5179,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_spatial_reaction_term
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_spatial_reaction_terms(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_lin_spatial_reaction_terms(
     Teuchos::RCP<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>* dJ_dus,
@@ -5312,7 +5312,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_spatial_reaction_
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_scale_velocity()
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_scale_velocity()
 {
   //----------------------------------------------------------------------
   // computation of various residuals and residual-based values such as
@@ -5381,7 +5381,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_and_subgrid_s
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_stabilization_parameters(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_stabilization_parameters(
     const double& vol)
 {
   // calculate stabilization parameters at integration point
@@ -5414,7 +5414,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_stabilization_paramet
     */
 
     // get element-type constant for tau
-    const double mk = Discret::ELEMENTS::mk<distype>();
+    const double mk = Discret::Elements::mk<distype>();
 
     // total reaction coefficient sigma_tot: sum of "artificial" reaction
     // due to time factor and reaction coefficient
@@ -5502,7 +5502,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_stabilization_paramet
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_conti(double dphi_dp)
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_old_rhs_conti(double dphi_dp)
 {
   double vel_grad_porosity = 0.0;
   for (int idim = 0; idim < nsd_; ++idim)
@@ -5551,7 +5551,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_old_rhs_conti(double 
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_du(const double& timefacfac,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_lin_res_m_du(const double& timefacfac,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resMRea_Du)
 {
@@ -5627,7 +5627,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_du(const do
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_du_stabilization(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_lin_res_m_du_stabilization(
     const double& timefacfac, Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du)
 {
   if (Base::is_higher_order_ele_ and Base::visceff_)
@@ -5651,7 +5651,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_du_stabiliz
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::calc_div_eps(
+void Discret::Elements::FluidEleCalcPoro<distype>::calc_div_eps(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -5774,7 +5774,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::calc_div_eps(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_dp(const double& timefacfacpre,
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_lin_res_m_dp(const double& timefacfacpre,
     const double& dphi_dp, Core::LinAlg::Matrix<nsd_, nen_>& lin_resM_Dp)
 {
   /* poroelasticity pressure term */
@@ -5832,7 +5832,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_lin_res_m_dp(const do
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_point(
+void Discret::Elements::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_point(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelnp,
     const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
@@ -5984,7 +5984,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_point_od(
+void Discret::Elements::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_point_od(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& evelnp,
     const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
@@ -6133,8 +6133,8 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::evaluate_variables_at_gauss_p
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::ParameterList& params,
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization, std::vector<int>& lm,
+int Discret::Elements::FluidEleCalcPoro<distype>::compute_volume(Teuchos::ParameterList& params,
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   //----------------------------------------------------------------
@@ -6208,7 +6208,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_volume(Teuchos::Parame
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_def_gradient(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_def_gradient(
     Core::LinAlg::Matrix<nsd_, nsd_>& defgrd, const Core::LinAlg::Matrix<nsd_, nen_>& N_XYZ,
     const Core::LinAlg::Matrix<nsd_, nen_>& xcurr)
 {
@@ -6227,7 +6227,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_def_gradient(
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Elements::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
@@ -6240,7 +6240,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Elements::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const Core::FE::GaussIntegration& intpoints)
@@ -6448,7 +6448,7 @@ int Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_error(Discret::ELEMENT
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residual(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_mixture_strong_residual(
     Teuchos::ParameterList& params, const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd,
     const Core::LinAlg::Matrix<nsd_, nen_>& edispnp, const Core::LinAlg::Matrix<nsd_, nen_>& edispn,
     const Core::LinAlg::Matrix<nsd_ * nsd_, nsd_>& F_X, const int gp, const bool computeLinOD)
@@ -6781,7 +6781,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
 }
 
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_effective_stiffness()
+double Discret::Elements::FluidEleCalcPoro<distype>::compute_effective_stiffness()
 {
   Teuchos::RCP<Core::Mat::Material> curmat = struct_mat_->get_material();
   double effective_stiffness = 0.0;
@@ -6820,7 +6820,7 @@ double Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_effective_stiffness
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_jacobian_determinant_volume_change(
+void Discret::Elements::FluidEleCalcPoro<distype>::compute_jacobian_determinant_volume_change(
     double& J, double& volchange, const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd,
     const Core::LinAlg::Matrix<nsd_, nen_>& N_XYZ,
     const Core::LinAlg::Matrix<nsd_, nen_>& nodaldisp)
@@ -6853,7 +6853,7 @@ void Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_jacobian_determinant_
 
 template <Core::FE::CellType distype>
 std::vector<double>
-Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_anisotropic_permeability_coeffs_at_gp() const
+Discret::Elements::FluidEleCalcPoro<distype>::compute_anisotropic_permeability_coeffs_at_gp() const
 {
   std::vector<double> anisotropic_permeability_coeffs(nsd_, 0.0);
 
@@ -6870,20 +6870,20 @@ Discret::ELEMENTS::FluidEleCalcPoro<distype>::compute_anisotropic_permeability_c
   return anisotropic_permeability_coeffs;
 }
 
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::wedge15>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::nurbs9>;
-template class Discret::ELEMENTS::FluidEleCalcPoro<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::hex8>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::hex20>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::hex27>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::tet4>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::tet10>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::wedge6>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::wedge15>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidEleCalcPoro<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

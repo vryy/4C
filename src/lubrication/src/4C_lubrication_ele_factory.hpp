@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class LubricationEleInterface;
@@ -41,7 +41,7 @@ namespace Discret
 
     };  // end class LubricationFactory
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

@@ -37,7 +37,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class Wall1Line;
@@ -732,7 +732,7 @@ namespace Discret
           const int* nodeids,  ///< global ids of nodes attached to this element
           Core::Nodes::Node**
               nodes,  ///<  the discretizations map of nodes to build ptrs to nodes from
-          Discret::ELEMENTS::Wall1* parent,  ///< The parent wall element of this line
+          Discret::Elements::Wall1* parent,  ///< The parent wall element of this line
           const int lline  ///< the local line number of this line w.r.t. the parent element
       );
 
@@ -887,7 +887,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

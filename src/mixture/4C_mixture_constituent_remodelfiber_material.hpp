@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   template <typename T>
@@ -37,7 +37,7 @@ namespace MIXTURE
         std::exit(1);
       }
 
-      [[nodiscard]] virtual std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
+      [[nodiscard]] virtual std::unique_ptr<Mixture::RemodelFiberMaterial<T>>
       create_remodel_fiber_material() const = 0;
     };
   }  // namespace PAR
@@ -73,7 +73,7 @@ namespace MIXTURE
     [[nodiscard]] virtual T get_d_cauchy_stress_d_i4_d_i4(T I4) const = 0;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

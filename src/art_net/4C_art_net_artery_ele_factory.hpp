@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ArteryEleInterface;
@@ -44,7 +44,7 @@ namespace Discret
 
     };  // end class ArtNetFactory
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

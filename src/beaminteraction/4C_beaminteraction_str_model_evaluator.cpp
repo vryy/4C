@@ -159,7 +159,7 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
   auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
     const Core::Elements::Element* element = node.elements()[0];
-    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    const auto* beamelement = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
     if (beamelement != nullptr && !beamelement->is_centerline_node(node))
       return *element->nodes()[0];
     else
@@ -171,17 +171,17 @@ void Solid::ModelEvaluator::BeamInteraction::setup()
                                        Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
     {
       return Core::Binstrategy::DefaultRelevantPoints{
           .correct_node = correct_node,
       }(discret, ele, disnp);
     }
-    else if (ele.element_type() == Discret::ELEMENTS::RigidsphereType::instance())
+    else if (ele.element_type() == Discret::Elements::RigidsphereType::instance())
     {
       double currpos[3] = {0.0, 0.0, 0.0};
       Core::Binstrategy::Utils::get_current_node_pos(discret, ele.nodes()[0], disnp, currpos);
-      const double radius = dynamic_cast<const Discret::ELEMENTS::Rigidsphere&>(ele).radius();
+      const double radius = dynamic_cast<const Discret::Elements::Rigidsphere&>(ele).radius();
       return {{currpos[0] - radius, currpos[1] - radius, currpos[2] - radius},
           {currpos[0] + radius, currpos[1] + radius, currpos[2] + radius}};
     }

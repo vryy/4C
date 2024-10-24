@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ScaTraEleDiffManagerElch;
@@ -115,7 +115,7 @@ namespace Discret
       //! number of transported scalars
       const int numscal_;
     };  // class ScaTraEleUtilsElch
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -447,7 +447,7 @@ void FLD::XFluid::set_element_general_fluid_xfem_parameter()
 
   //------------------------------------------------------------------------------------------------------
   // set the params in the XFEM-parameter-list class
-  Discret::ELEMENTS::FluidType::instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
+  Discret::Elements::FluidType::instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 
   return;
@@ -477,7 +477,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     if (physicaltype_ == Inpar::FLUID::oseen)
       faceparams.set<int>("OSEENFIELDFUNCNO", params_->get<int>("OSEENFIELDFUNCNO"));
 
-    Discret::ELEMENTS::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams,
+    Discret::Elements::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams,
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -492,7 +492,7 @@ void FLD::XFluid::set_face_general_fluid_xfem_parameter()
     faceparams.sublist("XFLUID DYNAMIC/STABILIZATION") =
         params_->sublist("XFLUID DYNAMIC/STABILIZATION");
 
-    Discret::ELEMENTS::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams,
+    Discret::Elements::FluidIntFaceType::instance().pre_evaluate(*discret_, faceparams,
         Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
   }
 
@@ -539,7 +539,7 @@ void FLD::XFluid::set_element_time_parameter()
   // call standard loop over elements
   // discret_->evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  Discret::ELEMENTS::FluidType::instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
+  Discret::Elements::FluidType::instance().pre_evaluate(*discret_, eleparams, Teuchos::null,
       Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
 }
 
@@ -850,14 +850,14 @@ void FLD::XFluid::assemble_mat_and_rhs_vol_terms()
     Core::Elements::Element* actele = discret_->l_row_element(i);
     // Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
-    Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
+    Discret::Elements::Fluid* ele = dynamic_cast<Discret::Elements::Fluid*>(actele);
     if (ele == nullptr)
     {
       FOUR_C_THROW("expect fluid element");
     }
 
-    Discret::ELEMENTS::FluidEleInterface* impl =
-        Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
+    Discret::Elements::FluidEleInterface* impl =
+        Discret::Elements::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
     Cut::ElementHandle* e = state_->wizard()->get_element(actele);
 
@@ -1313,8 +1313,8 @@ void FLD::XFluid::assemble_mat_and_rhs_face_terms(
     {
       Core::Elements::Element* actface = xdiscret->l_row_face(i);
 
-      Discret::ELEMENTS::FluidIntFace* face_ele =
-          dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
+      Discret::Elements::FluidIntFace* face_ele =
+          dynamic_cast<Discret::Elements::FluidIntFace*>(actface);
       if (face_ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
 
       const bool gmsh_EOS_out(params_->sublist("XFEM").get<bool>("GMSH_EOS_OUT"));
@@ -1360,14 +1360,14 @@ void FLD::XFluid::integrate_shape_function(Teuchos::ParameterList& eleparams,
     Core::Elements::Element* actele = discret.l_row_element(i);
     Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
-    Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
+    Discret::Elements::Fluid* ele = dynamic_cast<Discret::Elements::Fluid*>(actele);
     if (ele == nullptr)
     {
       FOUR_C_THROW("expect fluid element");
     }
 
-    Discret::ELEMENTS::FluidEleInterface* impl =
-        Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
+    Discret::Elements::FluidEleInterface* impl =
+        Discret::Elements::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
     Cut::ElementHandle* e = state_->wizard()->get_element(actele);
 
@@ -1956,14 +1956,14 @@ void FLD::XFluid::compute_error_norms(Core::LinAlg::SerialDenseVector& glob_dom_
 
     Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
-    Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
+    Discret::Elements::Fluid* ele = dynamic_cast<Discret::Elements::Fluid*>(actele);
 
     Cut::ElementHandle* e = state_->wizard()()->get_element(actele);
 
     Core::Elements::LocationArray la(1);
 
-    Discret::ELEMENTS::FluidEleInterface* impl =
-        Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
+    Discret::Elements::FluidEleInterface* impl =
+        Discret::Elements::FluidFactory::provide_impl_xfem(actele->shape(), "xfem");
 
     // xfem element
     if (e != nullptr)

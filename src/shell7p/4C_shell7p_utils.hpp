@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   /*!
    * @brief A struct holding the number of EAS parameters for each locking type
@@ -52,9 +52,9 @@ namespace Solid::ELEMENTS
     double thickness;
     int num_ans;
   };
-}  // namespace Solid::ELEMENTS
+}  // namespace Solid::Elements
 
-namespace Discret::ELEMENTS::Shell::Internal
+namespace Discret::Elements::Shell::Internal
 {
   template <Core::FE::CellType distype>
   inline static constexpr int num_node = Core::FE::num_nodes<distype>;
@@ -64,7 +64,7 @@ namespace Discret::ELEMENTS::Shell::Internal
 
   template <Core::FE::CellType distype>
   inline static constexpr int numdofperelement = num_node<distype>* node_dof;
-}  // namespace Discret::ELEMENTS::Shell::Internal
+}  // namespace Discret::Elements::Shell::Internal
 
 namespace Solid::Utils::Shell
 {
@@ -152,17 +152,17 @@ namespace Solid::Utils::Shell
 
   }  // namespace Director
 
-  namespace read_element
+  namespace ReadElement
   {
     int read_and_set_element_material(const Core::IO::InputParameterContainer& container);
 
     void read_and_set_locking_types(const Core::FE::CellType& distype,
         const Core::IO::InputParameterContainer& container,
-        Solid::ELEMENTS::ShellLockingTypes& locking_types);
+        Solid::Elements::ShellLockingTypes& locking_types);
 
     int read_and_set_num_ans(const Core::FE::CellType& distype);
 
-  }  // namespace read_element
+  }  // namespace ReadElement
 
 }  // namespace Solid::Utils::Shell
 

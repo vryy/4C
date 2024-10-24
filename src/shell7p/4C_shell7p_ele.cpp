@@ -22,42 +22,42 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::Shell7pType Discret::ELEMENTS::Shell7pType::instance_;
+Discret::Elements::Shell7pType Discret::Elements::Shell7pType::instance_;
 
-Discret::ELEMENTS::Shell7pType& Discret::ELEMENTS::Shell7pType::instance() { return instance_; }
+Discret::Elements::Shell7pType& Discret::Elements::Shell7pType::instance() { return instance_; }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL7P") return create(id, owner);
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Shell7pType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::Shell7p>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::Shell7p>(id, owner);
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Shell7pType::create(
+Core::Communication::ParObject* Discret::Elements::Shell7pType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::Shell7p(-1, -1);
+  auto* object = new Discret::Elements::Shell7p(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-void Discret::ELEMENTS::Shell7pType::nodal_block_information(
+void Discret::Elements::Shell7pType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   Solid::Utils::Shell::nodal_block_information_shell(dwele, numdf, dimns, nv, np);
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Shell7pType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  auto* shell = dynamic_cast<Discret::ELEMENTS::Shell7p*>(node.elements()[0]);
+  auto* shell = dynamic_cast<Discret::Elements::Shell7p*>(node.elements()[0]);
   if (!shell) FOUR_C_THROW("Cannot cast to Shell7p");
   int j;
   for (j = 0; j < shell->num_node(); ++j)
@@ -75,7 +75,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Shell7pType::compute_null_spa
 }
 
 
-void Discret::ELEMENTS::Shell7pType::setup_element_definition(
+void Discret::Elements::Shell7pType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defsgeneral = definitions["SHELL7P"];
@@ -164,7 +164,7 @@ void Discret::ELEMENTS::Shell7pType::setup_element_definition(
                             .build();
 }
 
-int Discret::ELEMENTS::Shell7pType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::Shell7pType::initialize(Core::FE::Discretization& dis)
 {
   Solid::Utils::Shell::Director::setup_shell_element_directors(*this, dis);
 
@@ -173,7 +173,7 @@ int Discret::ELEMENTS::Shell7pType::initialize(Core::FE::Discretization& dis)
 
 
 
-Discret::ELEMENTS::Shell7p::Shell7p(const Discret::ELEMENTS::Shell7p& other)
+Discret::Elements::Shell7p::Shell7p(const Discret::Elements::Shell7p& other)
     : Core::Elements::Element(other),
       distype_(other.distype_),
       interface_ptr_(other.interface_ptr_),
@@ -186,8 +186,8 @@ Discret::ELEMENTS::Shell7p::Shell7p(const Discret::ELEMENTS::Shell7p& other)
   shell_interface_ = Shell7pFactory::provide_shell7p_calculation_interface(other, other.eletech_);
 }
 
-Discret::ELEMENTS::Shell7p& Discret::ELEMENTS::Shell7p::operator=(
-    const Discret::ELEMENTS::Shell7p& other)
+Discret::Elements::Shell7p& Discret::Elements::Shell7p::operator=(
+    const Discret::Elements::Shell7p& other)
 {
   if (this == &other) return *this;
   Core::Elements::Element::operator=(other);
@@ -203,19 +203,19 @@ Discret::ELEMENTS::Shell7p& Discret::ELEMENTS::Shell7p::operator=(
 }
 
 
-Core::Elements::Element* Discret::ELEMENTS::Shell7p::clone() const { return new Shell7p(*this); }
+Core::Elements::Element* Discret::Elements::Shell7p::clone() const { return new Shell7p(*this); }
 
 
-int Discret::ELEMENTS::Shell7p::num_line() const
+int Discret::Elements::Shell7p::num_line() const
 {
   return Core::FE::get_number_of_element_lines(distype_);
 }
 
 
-int Discret::ELEMENTS::Shell7p::num_surface() const { return 1; }
+int Discret::Elements::Shell7p::num_surface() const { return 1; }
 
 
-void Discret::ELEMENTS::Shell7p::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Shell7p::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -241,7 +241,7 @@ void Discret::ELEMENTS::Shell7p::pack(Core::Communication::PackBuffer& data) con
 }
 
 
-void Discret::ELEMENTS::Shell7p::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Shell7p::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -270,18 +270,18 @@ void Discret::ELEMENTS::Shell7p::unpack(Core::Communication::UnpackBuffer& buffe
 }
 
 
-Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::Shell7p::solid_material(int nummat) const
+Teuchos::RCP<Mat::So3Material> Discret::Elements::Shell7p::solid_material(int nummat) const
 {
   return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
       Core::Elements::Element::material(nummat), true);
 }
 
 
-void Discret::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::Elements::Shell7p::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
@@ -291,7 +291,7 @@ void Discret::ELEMENTS::Shell7p::set_params_interface_ptr(const Teuchos::Paramet
 }
 
 
-void Discret::ELEMENTS::Shell7p::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::Shell7p::vis_names(std::map<std::string, int>& names)
 {
   std::string result_thickness = "thickness";
   names[result_thickness] = 1;
@@ -299,7 +299,7 @@ void Discret::ELEMENTS::Shell7p::vis_names(std::map<std::string, int>& names)
 }  // vis_names()
 
 
-bool Discret::ELEMENTS::Shell7p::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::Shell7p::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -311,7 +311,7 @@ bool Discret::ELEMENTS::Shell7p::vis_data(const std::string& name, std::vector<d
 }  // vis_data()
 
 
-void Discret::ELEMENTS::Shell7p::print(std::ostream& os) const
+void Discret::Elements::Shell7p::print(std::ostream& os) const
 {
   os << "Shell7p ";
   os << " discretization type: " << Core::FE::cell_type_to_string(distype_).c_str();
@@ -319,22 +319,22 @@ void Discret::ELEMENTS::Shell7p::print(std::ostream& os) const
 }
 
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7p::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Shell7p::lines()
 {
   return Core::Communication::element_boundary_factory<Shell7pLine, Shell7p>(
       Core::Communication::buildLines, *this);
 }
 
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Shell7p::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Shell7p::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
 
-bool Discret::ELEMENTS::Shell7p::read_element(const std::string& eletype,
+bool Discret::Elements::Shell7p::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
-  Solid::ELEMENTS::ShellData shell_data = {};
+  Solid::Elements::ShellData shell_data = {};
 
   // set discretization type
   distype_ = Core::FE::string_to_cell_type(distype);
@@ -345,11 +345,11 @@ bool Discret::ELEMENTS::Shell7p::read_element(const std::string& eletype,
   shell_data.thickness = thickness_;
 
   // extract number of EAS parameters for different locking types
-  Solid::ELEMENTS::ShellLockingTypes locking_types = {};
+  Solid::Elements::ShellLockingTypes locking_types = {};
   if (container.get_if<std::string>("EAS") != nullptr)
   {
     eletech_.insert(Inpar::Solid::EleTech::eas);
-    Solid::Utils::Shell::read_element::read_and_set_locking_types(
+    Solid::Utils::Shell::ReadElement::read_and_set_locking_types(
         distype_, container, locking_types);
   }
 
@@ -362,7 +362,7 @@ bool Discret::ELEMENTS::Shell7p::read_element(const std::string& eletype,
   {
     if (container.get<bool>("ANS"))
     {
-      shell_data.num_ans = Solid::Utils::Shell::read_element::read_and_set_num_ans(distype_);
+      shell_data.num_ans = Solid::Utils::Shell::ReadElement::read_and_set_num_ans(distype_);
     }
   }
 
@@ -371,7 +371,7 @@ bool Discret::ELEMENTS::Shell7p::read_element(const std::string& eletype,
 
   // read and set number of material model
   set_material(
-      0, Mat::factory(Solid::Utils::Shell::read_element::read_and_set_element_material(container)));
+      0, Mat::factory(Solid::Utils::Shell::ReadElement::read_and_set_element_material(container)));
 
   // setup shell calculation interface
   shell_interface_->setup(*this, *solid_material(), container, locking_types, shell_data);

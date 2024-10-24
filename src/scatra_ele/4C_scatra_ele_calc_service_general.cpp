@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
+int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -776,7 +776,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action(
  | evaluate service routine                                  fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
+int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_service(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -831,7 +831,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_service(
  | calculate filtered fields for turbulent Prandtl number   fang 02/15 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_box_filter(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -910,14 +910,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_box_filter(
   params.set<double>("dens_temp_hat", dens_temp_hat);
   params.set<double>("phi2_hat", phi2_hat);
   params.set<double>("phiexpression_hat", phiexpression_hat);
-}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_box_filter
+}  // Discret::Elements::ScaTraEleCalc<distype,probdim>::calc_box_filter
 
 
 /*-----------------------------------------------------------------------------*
  | calculate mass matrix + rhs for initial time derivative calc.     gjb 03/12 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivative(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_initial_time_derivative(
     Core::Elements::Element* ele,              //!< current element
     Core::LinAlg::SerialDenseMatrix& emat,     //!< element matrix
     Core::LinAlg::SerialDenseVector& erhs,     //!< element residual
@@ -1069,7 +1069,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_initial_time_deriv
  |  correct_rhs_from_calc_rhs_lin_mass                             ehrl 06/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_rhs_lin_mass(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_rhs_lin_mass(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
     const double phinp)
 {
@@ -1085,7 +1085,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::correct_rhs_from_calc_r
  |  Integrate shape functions over domain (private)           gjb 07/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::integrate_shape_functions(
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& elevec1,
     const Core::LinAlg::IntSerialDenseVector& dofids)
 {
@@ -1123,7 +1123,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::integrate_shape_functio
   |  calculate weighted mass flux (no reactive flux so far)     gjb 06/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_flux(
     Core::LinAlg::Matrix<3, nen_>& flux, const Core::Elements::Element* ele,
     const Inpar::ScaTra::FluxType fluxtype, const int k)
 {
@@ -1229,7 +1229,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_flux(
  | calculate domain integral, i.e., surface area or volume of domain element   fang 07/15 |
  *----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
     const Core::Elements::Element* ele,      //!< the element we are dealing with
     Core::LinAlg::SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
 )
@@ -1253,14 +1253,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_domain_integral(
 
   // write result into result vector
   scalar(0) = domainintegral;
-}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_domain_integral
+}  // Discret::Elements::ScaTraEleCalc<distype,probdim>::calc_domain_integral
 
 
 /*----------------------------------------------------------------------*
 |  calculate scalar(s) and domain integral                     vg 09/08|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_scalars(
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& scalars,
     const bool inverting, const bool calc_grad_phi)
 {
@@ -1296,7 +1296,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
 
     if (calc_grad_phi)
     {
-      Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs();
+      Discret::Elements::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs();
 
       for (int k = 0; k < numscal_; k++)
       {
@@ -1312,7 +1312,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalars(
  | calculate scalar time derivative(s) and domain integral   fang 03/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_derivatives(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_derivatives(
     const Core::FE::Discretization& discretization,  //!< discretization
     const std::vector<int>& lm,                      //!< location vector
     Core::LinAlg::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
@@ -1346,14 +1346,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_scalar_time_d
     // calculate integral of domain
     scalars(numscal_) += fac;
   }  // loop over integration points
-}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calculate_scalar_time_derivatives
+}  // Discret::Elements::ScaTraEleCalc<distype,probdim>::calculate_scalar_time_derivatives
 
 
 /*----------------------------------------------------------------------*
 |  calculate momentum vector and minus domain integral          mw 06/14|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volume(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_volume(
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseVector& momandvol,
     const double interface_thickness)
 {
@@ -1418,7 +1418,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calculate_momentum_and_
  | calculate normalized subgrid-diffusivity matrix              vg 10/08|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
     const Core::Elements::Element* ele, Core::LinAlg::SerialDenseMatrix& emat)
 {
   /*----------------------------------------------------------------------*/
@@ -1453,7 +1453,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff_matrix(
  | finite difference check on element level (for debugging only) (protected)   fang 10/14 |
  *----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements::Element* ele,
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements::Element* ele,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
     Core::LinAlg::SerialDenseVector& subgrdiff)
 {
@@ -1628,7 +1628,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::fd_check(Core::Elements
   |  calculate error compared to analytical solution           gjb 10/08|
   *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_analyt_solution(
     const Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& errors)
 {
@@ -1806,14 +1806,14 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::cal_error_compared_to_a
       FOUR_C_THROW("Unknown analytical solution!");
       break;
   }  // switch(errortype)
-}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::cal_error_compared_to_analyt_solution
+}  // Discret::Elements::ScaTraEleCalc<distype,probdim>::cal_error_compared_to_analyt_solution
 
 
 /*----------------------------------------------------------------------*
 |  calculate system matrix and rhs (public)                  vuong 07/16|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rhs(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_and_rhs(
     Core::Elements::Element* ele,           ///< the element whose matrix is calculated
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -1973,7 +1973,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hetero_reac_mat_an
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_point(
+double Discret::Elements::ScaTraEleCalc<distype, probdim>::eval_det_f_at_int_point(
     const Core::Elements::Element* const& ele,
     const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {

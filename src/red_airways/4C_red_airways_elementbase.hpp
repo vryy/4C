@@ -31,7 +31,7 @@ namespace Core::FE
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class RedAirwayImplInterface;
@@ -1109,7 +1109,7 @@ namespace Discret
 
     };  // class RedInterAcinarDep
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

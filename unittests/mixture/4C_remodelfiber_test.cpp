@@ -28,7 +28,7 @@ namespace
   {
    protected:
     template <typename T>
-    MIXTURE::Implementation::RemodelFiberImplementation<2, T> generate_fiber()
+    Mixture::Implementation::RemodelFiberImplementation<2, T> generate_fiber()
     {
       Core::IO::InputParameterContainer container;
       container.add("K1", 1.3);
@@ -36,26 +36,26 @@ namespace
       container.add("COMPRESSION", true);
 
       fiber_material_parameter_ =
-          std::make_shared<MIXTURE::PAR::RemodelFiberMaterialExponential<FADdouble>>(
+          std::make_shared<Mixture::PAR::RemodelFiberMaterialExponential<FADdouble>>(
               Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       const auto material =
-          std::make_shared<const MIXTURE::RemodelFiberMaterialExponential<FADdouble>>(
+          std::make_shared<const Mixture::RemodelFiberMaterialExponential<FADdouble>>(
               fiber_material_parameter_.get());
 
-      MIXTURE::Implementation::RemodelFiberImplementation<2, T> fiber(
+      Mixture::Implementation::RemodelFiberImplementation<2, T> fiber(
           material, {3.4, 12.0, true}, 1.1);
       return fiber;
     }
 
     // parameters
-    std::shared_ptr<MIXTURE::PAR::RemodelFiberMaterialExponential<FADdouble>>
+    std::shared_ptr<Mixture::PAR::RemodelFiberMaterialExponential<FADdouble>>
         fiber_material_parameter_;
   };
 
   TEST_F(RemodelFiberTest, TestEvaluateDGrowthEvolutionEquationDtDGrowth)
   {
-    MIXTURE::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
         generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
@@ -74,7 +74,7 @@ namespace
 
   TEST_F(RemodelFiberTest, TestEvaluateDGrowthEvolutionEquationDtDRemodel)
   {
-    MIXTURE::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
         generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
@@ -93,7 +93,7 @@ namespace
 
   TEST_F(RemodelFiberTest, TestEvaluateDRemodelEvolutionEquationDtDGrowth)
   {
-    MIXTURE::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
         generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
@@ -111,7 +111,7 @@ namespace
 
   TEST_F(RemodelFiberTest, TestEvaluateDRemodelEvolutionEquationDtDRemodel)
   {
-    MIXTURE::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
         generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;
@@ -129,7 +129,7 @@ namespace
 
   TEST_F(RemodelFiberTest, TestEvaluateDFiberCauchyStressDRemodel)
   {
-    MIXTURE::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
+    Mixture::Implementation::RemodelFiberImplementation<2, FADdouble> fiber =
         generate_fiber<FADdouble>();
 
     const double lambda_f = 1.02;

@@ -40,7 +40,7 @@ namespace Core::Elements
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     class PoroFluidMultiPhaseEleParameter;
 
@@ -86,14 +86,14 @@ namespace Discret
         virtual ~PhaseManagerInterface() = default;
 
         //! factory method
-        static Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
-        create_phase_manager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+        static Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+        create_phase_manager(const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
             int nsd, Core::Materials::MaterialType mattype,
             const POROFLUIDMULTIPHASE::Action& action, int totalnumdofpernode, int numfluidphases);
 
         //! factory method
-        static Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
-        wrap_phase_manager(const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
+        static Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+        wrap_phase_manager(const Discret::Elements::PoroFluidMultiPhaseEleParameter& para, int nsd,
             Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
             Teuchos::RCP<PhaseManagerInterface> corephasemanager);
 
@@ -1652,7 +1652,7 @@ namespace Discret
        * **********************************************************************
        *----------------------------------------------------------------------*/
     }  // namespace PoroFluidManager
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 

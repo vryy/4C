@@ -14,16 +14,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
-    const Discret::ELEMENTS::SolidElementProperties& properties)
+void Discret::Elements::add_to_pack(Core::Communication::PackBuffer& data,
+    const Discret::Elements::SolidElementProperties& properties)
 {
   add_to_pack(data, static_cast<int>(properties.kintype));
   add_to_pack(data, static_cast<int>(properties.element_technology));
   add_to_pack(data, static_cast<int>(properties.prestress_technology));
 }
 
-void Discret::ELEMENTS::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-    Discret::ELEMENTS::SolidElementProperties& properties)
+void Discret::Elements::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
+    Discret::Elements::SolidElementProperties& properties)
 {
   properties.kintype = static_cast<Inpar::Solid::KinemType>(extract_int(buffer));
   properties.element_technology = static_cast<ElementTechnology>(extract_int(buffer));

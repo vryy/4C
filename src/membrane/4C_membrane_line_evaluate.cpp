@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Integrate a Line Neumann boundary condition (public)   fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::MembraneLine<distype>::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -160,9 +160,9 @@ int Discret::ELEMENTS::MembraneLine<distype>::evaluate_neumann(Teuchos::Paramete
   return 0;
 }
 
-template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::MembraneLine<Core::FE::CellType::quad9>;
+template class Discret::Elements::MembraneLine<Core::FE::CellType::tri3>;
+template class Discret::Elements::MembraneLine<Core::FE::CellType::tri6>;
+template class Discret::Elements::MembraneLine<Core::FE::CellType::quad4>;
+template class Discret::Elements::MembraneLine<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

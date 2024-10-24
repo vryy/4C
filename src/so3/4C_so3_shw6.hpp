@@ -23,7 +23,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class SoShw6Type : public Core::Elements::ElementType
     {
@@ -63,7 +63,7 @@ namespace Discret
     This element adopts the ANS approach to improve shear and curvature-thickness
     (trapezoidal) locking. However, being triangular inplane, the ANS evaluation
     points of the shear strains are choosen just on two of three surfaces (See
-    also Discret::ELEMENTS::So_shw6::soshw6_anssetup).
+    also Discret::Elements::So_shw6::soshw6_anssetup).
     Thus, the element becomes mesh dependent (where in material space lies my
     parameter space), but this is in favour of less pronounced shear locking
     compared to a invariant formulation (locking free just for certain mesh configurations).
@@ -323,7 +323,7 @@ namespace Discret
     };  // class So_shw6
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

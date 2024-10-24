@@ -663,11 +663,11 @@ namespace PoroMultiPhaseScaTra
     std::vector<Core::LinAlg::Matrix<numdim_, numdim_>> inv_j_;
 
     //! phase manager of the fluid
-    Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface> phasemanager_;
+    Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
     //! variable manager of the fluid
     Teuchos::RCP<
-        Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<numdim_, numnodescont_>>
+        Discret::Elements::PoroFluidManager::VariableManagerInterface<numdim_, numnodescont_>>
         variablemanager_;
 
     //! scale vector

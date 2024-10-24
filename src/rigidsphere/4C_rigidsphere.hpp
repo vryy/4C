@@ -32,7 +32,7 @@ namespace BEAMINTERACTION
 }
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ParamsInterface;
   }
@@ -40,7 +40,7 @@ namespace Solid
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class RigidsphereType : public Core::Elements::ElementType
     {
@@ -423,7 +423,7 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline Solid::ELEMENTS::ParamsInterface& params_interface()
+      inline Solid::Elements::ParamsInterface& params_interface()
       {
         if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -433,7 +433,7 @@ namespace Discret
       /*! \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_;
 
       //! radius of the sphere
       double radius_;
@@ -492,7 +492,7 @@ namespace Discret
     // << operator
     std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

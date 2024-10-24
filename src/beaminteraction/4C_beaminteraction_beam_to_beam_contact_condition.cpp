@@ -81,8 +81,8 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
   // numnodalvalues = 2: positions AND tangents ==> Hermite interpolation
 
-  const Discret::ELEMENTS::Beam3Base* beamele1 =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele_ptrs[0]);
+  const Discret::Elements::Beam3Base* beamele1 =
+      dynamic_cast<const Discret::Elements::Beam3Base*>(ele_ptrs[0]);
 
   const unsigned int numnodes_centerline = beamele1->num_centerline_nodes();
   const unsigned int numnodalvalues = beamele1->hermite_centerline_interpolation() ? 2 : 1;

@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
-    : Discret::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
+Discret::Elements::Shell7pEleCalc<distype>::Shell7pEleCalc()
+    : Discret::Elements::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
           Shell::create_gauss_integration_points<distype>(Shell::get_gauss_rule<distype>()))
 {
@@ -36,10 +36,10 @@ Discret::ELEMENTS::Shell7pEleCalc<distype>::Shell7pEleCalc()
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::setup(Core::Elements::Element& ele,
+void Discret::Elements::Shell7pEleCalc<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container,
-    const Solid::ELEMENTS::ShellLockingTypes& locking_types,
-    const Solid::ELEMENTS::ShellData& shell_data)
+    const Solid::Elements::ShellLockingTypes& locking_types,
+    const Solid::Elements::ShellData& shell_data)
 {
   shell_data_ = shell_data;
   // initialize current thickness at all gp
@@ -49,7 +49,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::setup(Core::Elements::Element& 
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Shell7pEleCalc<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, shell_data_.sdc);
   add_to_pack(data, shell_data_.thickness);
@@ -58,7 +58,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::pack(Core::Communication::PackB
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Shell7pEleCalc<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, shell_data_.sdc);
   extract_from_pack(buffer, shell_data_.thickness);
@@ -68,7 +68,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::unpack(Core::Communication::Unp
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::material_post_setup(
+void Discret::Elements::Shell7pEleCalc<distype>::material_post_setup(
     Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   // element/nodal wise defined data
@@ -79,14 +79,14 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::material_post_setup(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::reset_to_last_converged(
+void Discret::Elements::Shell7pEleCalc<distype>::reset_to_last_converged(
     Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   solid_material.reset_step();
 }
 
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
+double Discret::Elements::Shell7pEleCalc<distype>::calculate_internal_energy(
     Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -186,7 +186,7 @@ double Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_internal_energy(
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
+void Discret::Elements::Shell7pEleCalc<distype>::calculate_stresses_strains(
     Core::Elements::Element& ele, Mat::So3Material& solid_material, const ShellStressIO& stressIO,
     const ShellStrainIO& strainIO, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -299,7 +299,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::calculate_stresses_strains(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffness_mass(
+void Discret::Elements::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffness_mass(
     Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -481,14 +481,14 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::evaluate_nonlinear_force_stiffn
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::recover(Core::Elements::Element& ele,
+void Discret::Elements::Shell7pEleCalc<distype>::recover(Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
-    Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& str_interface)
+    Teuchos::ParameterList& params, Solid::Elements::ParamsInterface& str_interface)
 {
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element& ele,
+void Discret::Elements::Shell7pEleCalc<distype>::update(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
@@ -577,7 +577,7 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::update(Core::Elements::Element&
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalc<distype>::vis_data(
+void Discret::Elements::Shell7pEleCalc<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   if (name == "thickness")
@@ -593,10 +593,10 @@ void Discret::ELEMENTS::Shell7pEleCalc<distype>::vis_data(
 }  // vis_data()
 
 // template classes
-template class Discret::ELEMENTS::Shell7pEleCalc<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::Shell7pEleCalc<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::Shell7pEleCalc<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::Shell7pEleCalc<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::Shell7pEleCalc<Core::FE::CellType::tri6>;
+template class Discret::Elements::Shell7pEleCalc<Core::FE::CellType::quad4>;
+template class Discret::Elements::Shell7pEleCalc<Core::FE::CellType::quad8>;
+template class Discret::Elements::Shell7pEleCalc<Core::FE::CellType::quad9>;
+template class Discret::Elements::Shell7pEleCalc<Core::FE::CellType::tri3>;
+template class Discret::Elements::Shell7pEleCalc<Core::FE::CellType::tri6>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -60,10 +60,10 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
       Core::LinAlg::Matrix<3, 1> tan;
       const Core::Elements::ElementType& eot = element1()->element_type();
 
-      if (eot == Discret::ELEMENTS::Beam3rType::instance())
+      if (eot == Discret::Elements::Beam3rType::instance())
       {
-        const Discret::ELEMENTS::Beam3r* ele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element1());
+        const Discret::Elements::Beam3r* ele =
+            dynamic_cast<const Discret::Elements::Beam3r*>(element1());
         if (ele->hermite_centerline_interpolation())
           tan = ele->tref()[n];
         else
@@ -71,16 +71,16 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam, 
               "ERROR: Beam3tosolidmeshtying: beam::n_val_=2 detected for beam3r element w/o "
               "Hermite centerline");
       }
-      else if (eot == Discret::ELEMENTS::Beam3kType::instance())
+      else if (eot == Discret::Elements::Beam3kType::instance())
       {
-        const Discret::ELEMENTS::Beam3k* ele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3k*>(element1());
+        const Discret::Elements::Beam3k* ele =
+            dynamic_cast<const Discret::Elements::Beam3k*>(element1());
         tan = ele->tref()[n];
       }
-      else if (eot == Discret::ELEMENTS::Beam3ebType::instance())
+      else if (eot == Discret::Elements::Beam3ebType::instance())
       {
-        const Discret::ELEMENTS::Beam3eb* ele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element1());
+        const Discret::Elements::Beam3eb* ele =
+            dynamic_cast<const Discret::Elements::Beam3eb*>(element1());
         tan = ele->tref()[n];
       }
       else

@@ -34,7 +34,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -582,7 +582,7 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 03/11|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
+void Discret::Elements::SoHex8fbar::init_jacobian_mapping()
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
@@ -627,7 +627,7 @@ void Discret::ELEMENTS::SoHex8fbar::init_jacobian_mapping()
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -730,12 +730,12 @@ int Discret::ELEMENTS::SoHex8fbar::evaluate_neumann(Teuchos::ParameterList& para
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // Discret::ELEMENTS::So_hex8fbar::evaluate_neumann
+}  // Discret::Elements::So_hex8fbar::evaluate_neumann
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                          // current displacements
     std::vector<double>* acc,                                           // current accelerations
     std::vector<double>& residual,                                      // current residual displ
@@ -903,7 +903,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         if (str_params_interface().is_tolerate_errors())
         {
           str_params_interface().set_ele_eval_error_flag(
-              Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+              Solid::Elements::ele_error_negative_det_of_def_gradient);
           stiffmatrix->clear();
           force->clear();
           return;
@@ -1379,7 +1379,7 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
         Core::LinAlg::SerialDenseVector glstrain_epetra(Mat::NUM_STRESS_3D);
         Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
-        // if (kintype_ == Discret::ELEMENTS::So_hex8::soh8_nonlinear)
+        // if (kintype_ == Discret::Elements::So_hex8::soh8_nonlinear)
         //{
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -1443,17 +1443,17 @@ void Discret::ELEMENTS::SoHex8fbar::nlnstiffmass(std::vector<int>& lm,  // locat
   } /* ==================================================== end of Loop over GP */
 
   return;
-}  // Discret::ELEMENTS::So_hex8fbar::nlnstiffmass
+}  // Discret::Elements::So_hex8fbar::nlnstiffmass
 
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8fbarType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex8fbarType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex8fbar*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoHex8fbar*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8fbar* failed");
     actele->init_jacobian_mapping();
   }
@@ -1464,8 +1464,8 @@ int Discret::ELEMENTS::SoHex8fbarType::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::def_gradient(const std::vector<double>& disp,
-    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoHex8fbar::def_gradient(const std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid point
@@ -1526,8 +1526,8 @@ void Discret::ELEMENTS::SoHex8fbar::def_gradient(const std::vector<double>& disp
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
-    const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoHex8fbar::update_jacobian_mapping(
+    const std::vector<double>& disp, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid
@@ -1592,7 +1592,7 @@ void Discret::ELEMENTS::SoHex8fbar::update_jacobian_mapping(
 /*----------------------------------------------------------------------*
  |  Update inelastic deformation (G&R)                       braeu 07/16|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8fbar::update_element(
+void Discret::Elements::SoHex8fbar::update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   if (solid_material()->uses_extended_update())

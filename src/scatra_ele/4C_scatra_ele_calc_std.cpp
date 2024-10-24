@@ -16,8 +16,8 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::instance(
+Discret::Elements::ScaTraEleCalcStd<distype, probdim>*
+Discret::Elements::ScaTraEleCalcStd<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::pair<std::string, int>>(
@@ -36,9 +36,9 @@ Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::instance(
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::ScaTraEleCalcStd(
+Discret::Elements::ScaTraEleCalcStd<distype, probdim>::ScaTraEleCalcStd(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname)
 {
   return;
@@ -48,33 +48,33 @@ Discret::ELEMENTS::ScaTraEleCalcStd<distype, probdim>::ScaTraEleCalcStd(
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line2, 1>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line3, 1>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line3,2>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::line3,3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::line2, 1>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::line3, 1>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::line3,2>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::line3,3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::tri3, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::tri6, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad4, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad4, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad9, 2>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::quad9,3>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::nurbs9, 2>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::nurbs9,3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::tri3, 2>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::tri6, 2>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::quad4, 2>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::quad4, 3>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::quad9, 2>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::quad9,3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::nurbs9, 2>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::nurbs9,3>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::hex8, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::hex27, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::tet4, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::tet10, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::pyramid5, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcStd<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::hex8, 3>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::hex27, 3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::tet4, 3>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::tet10, 3>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::Elements::ScaTraEleCalcStd<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

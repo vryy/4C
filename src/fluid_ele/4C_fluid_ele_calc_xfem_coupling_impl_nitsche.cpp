@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     namespace XFLUID
     {
@@ -26,7 +26,7 @@ namespace Discret
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
           Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
           Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-          const Discret::ELEMENTS::FluidEleParameterXFEM&
+          const Discret::Elements::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(),
@@ -47,7 +47,7 @@ namespace Discret
               slave_xyze,  ///< global node coordinates of slave element
           Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
           Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-          const Discret::ELEMENTS::FluidEleParameterXFEM&
+          const Discret::Elements::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
@@ -72,7 +72,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
           Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
           Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-          const Discret::ELEMENTS::FluidEleParameterXFEM&
+          const Discret::Elements::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
@@ -3260,286 +3260,286 @@ namespace Discret
 
 
     }  // namespace XFLUID
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 
 
 // pairs with numdof=3
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad9, 3>;
 
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::dis_none, 3>;
 
 // volume coupled with numdof = 3, FSI Slavesided, FPI
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::hex8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::hex8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::hex8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::hex8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::hex8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::hex8, 3>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::hex8, 3>;
 
 // pairs with numdof=4
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad9, 4>;
 //
 
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tet4, 4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::wedge15,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tet4,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::wedge15,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tet4,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::wedge15,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tet4,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::wedge15,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tet4,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::wedge15,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tet4,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::wedge15,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tet4,4>; template class
-// Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tet10,4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::hex8, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::hex20, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::hex27, 4>;
-// template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+// template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::wedge15,4>;
 
 
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::dis_none, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::dis_none, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::dis_none, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::dis_none, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::dis_none, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::dis_none, 4>;
-template class Discret::ELEMENTS::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::NitscheCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::dis_none, 4>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -273,17 +273,17 @@ double CONTACT::Utils::solid_cauchy_at_xi(CONTACT::Element* cele,
 
   if (!cele->mo_data().parent_pf_pres().size())
   {  // The element can be either an old so3 element or a new solid element
-    if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(cele->parent_element());
+    if (auto* solid_ele = dynamic_cast<Discret::Elements::SoBase*>(cele->parent_element());
         solid_ele != nullptr)
     {
       solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->mo_data().parent_disp(), n, dir,
           sigma_nt, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, nullptr);
     }
-    else if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::Solid*>(cele->parent_element());
+    else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(cele->parent_element());
              solid_ele != nullptr)
     {
-      Discret::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
+      Discret::Elements::CauchyNDirLinearizations<3> cauchy_linearizations{};
       sigma_nt = solid_ele->get_normal_cauchy_stress_at_xi<3>(
           cele->mo_data().parent_disp(), pxsi, n, dir, cauchy_linearizations);
     }
@@ -294,7 +294,7 @@ double CONTACT::Utils::solid_cauchy_at_xi(CONTACT::Element* cele,
   }
   else
   {
-    dynamic_cast<Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
+    dynamic_cast<Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>*>(
         cele->parent_element())
         ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, cele->mo_data().parent_disp(),
             cele->mo_data().parent_pf_pres(), n, dir, sigma_nt, nullptr, nullptr, nullptr, nullptr,

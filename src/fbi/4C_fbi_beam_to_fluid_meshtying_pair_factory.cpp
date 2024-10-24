@@ -24,8 +24,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::create_pair(
     FBI::BeamToFluidMeshtyingParams& params_ptr)
 {
   // Cast the fluid element.
-  Discret::ELEMENTS::Fluid const* fluidele =
-      dynamic_cast<Discret::ELEMENTS::Fluid const*>(ele_ptrs[1]);
+  Discret::Elements::Fluid const* fluidele =
+      dynamic_cast<Discret::Elements::Fluid const*>(ele_ptrs[1]);
   Core::FE::CellType shape = fluidele->shape();
 
   // Get the meshtying discretization method.

@@ -65,9 +65,9 @@ void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<Core::Element
 {
   // cast pointers to current element on source discretization and to current cloned element on
   // target discretization
-  auto* oldele_transport = dynamic_cast<Discret::ELEMENTS::Transport*>(oldele);
-  Teuchos::RCP<Discret::ELEMENTS::Transport> newele_transport =
-      Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Transport>(newele);
+  auto* oldele_transport = dynamic_cast<Discret::Elements::Transport*>(oldele);
+  Teuchos::RCP<Discret::Elements::Transport> newele_transport =
+      Teuchos::rcp_dynamic_cast<Discret::Elements::Transport>(newele);
 
   // safety check
   if (oldele_transport == nullptr or newele_transport == Teuchos::null)

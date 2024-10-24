@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleInterface;
 
@@ -53,7 +53,7 @@ namespace Discret
 
     };  // end class FluidFactory
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

@@ -36,7 +36,7 @@ namespace Discret
   // Forward declarations
   class Discretization;
 
-  namespace ELEMENTS
+  namespace Elements
   {
     class KirchhoffLoveShellNurbsType : public Core::Elements::ElementType
     {
@@ -244,9 +244,9 @@ namespace Discret
       std::array<Core::FE::GaussRule1D, 2> gaussrule_;
 
       //! Data exchange between the element and the time integrator
-      Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

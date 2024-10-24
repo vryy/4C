@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameterElch::instance(
+Discret::Elements::ScaTraEleParameterElch* Discret::Elements::ScaTraEleParameterElch::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -33,7 +33,7 @@ Discret::ELEMENTS::ScaTraEleParameterElch* Discret::ELEMENTS::ScaTraEleParameter
 /*----------------------------------------------------------------------*
  | protected constructor for singletons                      fang 02/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
+Discret::Elements::ScaTraEleParameterElch::ScaTraEleParameterElch(
     const std::string& disname  //!< name of discretization
     )
     : boundaryfluxcoupling_(true),
@@ -50,7 +50,7 @@ Discret::ELEMENTS::ScaTraEleParameterElch::ScaTraEleParameterElch(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::ScaTraEleParameterElch::set_parameters(Teuchos::ParameterList& parameters)
+void Discret::Elements::ScaTraEleParameterElch::set_parameters(Teuchos::ParameterList& parameters)
 {
   // coupling of lithium-ion flux density and electric current density at Dirichlet and Neumann
   // boundaries

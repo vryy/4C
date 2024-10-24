@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3r::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Beam3r::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   /* the triad field is discretized with Lagrange polynomials of order num_node()-1;
@@ -81,7 +81,7 @@ bool Discret::ELEMENTS::Beam3r::read_element(const std::string& eletype, const s
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3r::set_centerline_hermite(const bool yesno)
+void Discret::Elements::Beam3r::set_centerline_hermite(const bool yesno)
 {
   centerline_hermite_ = yesno;
 }

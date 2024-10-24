@@ -14,14 +14,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameterTimInt::instance(
+Discret::Elements::FluidEleParameterTimInt* Discret::Elements::FluidEleParameterTimInt::instance(
     Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterTimInt>(
-            new Discret::ELEMENTS::FluidEleParameterTimInt());
+        return std::unique_ptr<Discret::Elements::FluidEleParameterTimInt>(
+            new Discret::Elements::FluidEleParameterTimInt());
       });
 
   return singleton_owner.instance(action);
@@ -30,7 +30,7 @@ Discret::ELEMENTS::FluidEleParameterTimInt* Discret::ELEMENTS::FluidEleParameter
 //----------------------------------------------------------------------*/
 // private constructor of FluidEleParameterTimInt
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
+Discret::Elements::FluidEleParameterTimInt::FluidEleParameterTimInt()
     : set_general_fluid_timeparameter_(false),
       is_genalpha_(false),
       is_genalpha_np_(false),
@@ -56,7 +56,7 @@ Discret::ELEMENTS::FluidEleParameterTimInt::FluidEleParameterTimInt()
 //----------------------------------------------------------------------*/
 // set time parameters which are equal for every fluid  rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
+void Discret::Elements::FluidEleParameterTimInt::set_element_time_parameter(
     Teuchos::ParameterList& params)
 {
   // second check: timealgo
@@ -227,7 +227,7 @@ void Discret::ELEMENTS::FluidEleParameterTimInt::set_element_time_parameter(
 //----------------------------------------------------------------------*/
 // print fluid time parameter to screen                 rasthofer 11/13 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterTimInt::print_fluid_time_parameter()
+void Discret::Elements::FluidEleParameterTimInt::print_fluid_time_parameter()
 {
   std::cout << std::endl
             << "|-----------------------------------------------------------" << std::endl;

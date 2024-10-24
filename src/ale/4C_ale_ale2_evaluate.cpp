@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Ale2::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::Ale2::ActionType act = Ale2::none;
+  Discret::Elements::Ale2::ActionType act = Ale2::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -166,7 +166,7 @@ int Discret::ELEMENTS::Ale2::evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -176,7 +176,7 @@ int Discret::ELEMENTS::Ale2::evaluate_neumann(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::edge_geometry(int i, int j,
+void Discret::Elements::Ale2::edge_geometry(int i, int j,
     const Core::LinAlg::SerialDenseMatrix& xyze, double* length, double* sin_alpha,
     double* cos_alpha)
 {
@@ -195,7 +195,7 @@ void Discret::ELEMENTS::Ale2::edge_geometry(int i, int j,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Ale2::ale2_area_tria(
+double Discret::Elements::Ale2::ale2_area_tria(
     const Core::LinAlg::SerialDenseMatrix& xyze, int i, int j, int k)
 {
   double a, b, c; /* geometrical values */
@@ -214,7 +214,7 @@ double Discret::ELEMENTS::Ale2::ale2_area_tria(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
+void Discret::Elements::Ale2::ale2_torsional(int i, int j, int k,
     const Core::LinAlg::SerialDenseMatrix& xyze, Core::LinAlg::SerialDenseMatrix* k_torsion)
 {
   /*
@@ -308,7 +308,7 @@ void Discret::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::ale2_tors_spring_tri3(
+void Discret::Elements::Ale2::ale2_tors_spring_tri3(
     Core::LinAlg::SerialDenseMatrix* sys_mat, const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   int i, j; /* counters */
@@ -325,7 +325,7 @@ void Discret::ELEMENTS::Ale2::ale2_tors_spring_tri3(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::ale2_tors_spring_quad4(
+void Discret::Elements::Ale2::ale2_tors_spring_quad4(
     Core::LinAlg::SerialDenseMatrix* sys_mat, const Core::LinAlg::SerialDenseMatrix& xyze)
 {
   int i, j; /* counters */
@@ -378,7 +378,7 @@ void Discret::ELEMENTS::Ale2::ale2_tors_spring_quad4(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* sys_mat,
+void Discret::Elements::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* sys_mat,
     Core::LinAlg::SerialDenseVector& residual, std::vector<double>& displacements,
     const bool spatialconfiguration)
 {
@@ -565,7 +565,7 @@ void Discret::ELEMENTS::Ale2::static_ke_spring(Core::LinAlg::SerialDenseMatrix* 
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
+void Discret::Elements::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     const std::vector<double>& disp, Core::LinAlg::SerialDenseMatrix* stiffmatrix,
     Core::LinAlg::SerialDenseVector* force, Teuchos::ParameterList& params,
     const bool spatialconfiguration, const bool pseudolinear)
@@ -752,7 +752,7 @@ void Discret::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, std::vector<int>& lm,
+void Discret::Elements::Ale2::static_ke_laplace(Core::FE::Discretization& dis, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix* sys_mat, Core::LinAlg::SerialDenseVector& residual,
     std::vector<double>& displacements, const bool spatialconfiguration)
 {
@@ -897,7 +897,7 @@ void Discret::ELEMENTS::Ale2::static_ke_laplace(Core::FE::Discretization& dis, s
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::calc_b_op_lin(Core::LinAlg::SerialDenseMatrix& boplin,
+void Discret::Elements::Ale2::calc_b_op_lin(Core::LinAlg::SerialDenseMatrix& boplin,
     Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double& det,
     const int iel)
 {
@@ -933,7 +933,7 @@ void Discret::ELEMENTS::Ale2::calc_b_op_lin(Core::LinAlg::SerialDenseMatrix& bop
 
 /*-----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::jacobian_matrix(const Core::LinAlg::SerialDenseMatrix& xrefe,
+void Discret::Elements::Ale2::jacobian_matrix(const Core::LinAlg::SerialDenseMatrix& xrefe,
     const Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
@@ -959,7 +959,7 @@ void Discret::ELEMENTS::Ale2::jacobian_matrix(const Core::LinAlg::SerialDenseMat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::def_grad(Core::LinAlg::SerialDenseVector& F,
+void Discret::Elements::Ale2::def_grad(Core::LinAlg::SerialDenseVector& F,
     Core::LinAlg::SerialDenseVector& strain, const Core::LinAlg::SerialDenseMatrix& xrefe,
     const Core::LinAlg::SerialDenseMatrix& xcure, Core::LinAlg::SerialDenseMatrix& boplin,
     const int iel)
@@ -996,7 +996,7 @@ void Discret::ELEMENTS::Ale2::def_grad(Core::LinAlg::SerialDenseVector& F,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::kg(Core::LinAlg::SerialDenseMatrix& estif,
+void Discret::Elements::Ale2::kg(Core::LinAlg::SerialDenseMatrix& estif,
     const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseMatrix& stress,
     const double fac, const int nd, const int numeps)
 {
@@ -1012,7 +1012,7 @@ void Discret::ELEMENTS::Ale2::kg(Core::LinAlg::SerialDenseMatrix& estif,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::keu(Core::LinAlg::SerialDenseMatrix& estif,
+void Discret::Elements::Ale2::keu(Core::LinAlg::SerialDenseMatrix& estif,
     const Core::LinAlg::SerialDenseMatrix& b_cure, const Core::LinAlg::SerialDenseMatrix& C,
     const double fac, const int nd, const int numeps)
 {
@@ -1027,7 +1027,7 @@ void Discret::ELEMENTS::Ale2::keu(Core::LinAlg::SerialDenseMatrix& estif,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::fint(const Core::LinAlg::SerialDenseMatrix& stress,
+void Discret::Elements::Ale2::fint(const Core::LinAlg::SerialDenseMatrix& stress,
     const Core::LinAlg::SerialDenseMatrix& b_cure, Core::LinAlg::SerialDenseVector& intforce,
     const double fac, const int nd)
 
@@ -1048,7 +1048,7 @@ void Discret::ELEMENTS::Ale2::fint(const Core::LinAlg::SerialDenseMatrix& stress
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::call_mat_geo_nonl(
+void Discret::Elements::Ale2::call_mat_geo_nonl(
     const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
     Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
     Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
@@ -1137,7 +1137,7 @@ void Discret::ELEMENTS::Ale2::call_mat_geo_nonl(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
+void Discret::Elements::Ale2::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
     Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
@@ -1185,7 +1185,7 @@ void Discret::ELEMENTS::Ale2::material_response3d_plane(Core::LinAlg::SerialDens
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
+void Discret::Elements::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
@@ -1199,7 +1199,7 @@ void Discret::ELEMENTS::Ale2::material_response3d(Core::LinAlg::Matrix<6, 1>* st
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::green_lagrange_plane3d(
+void Discret::Elements::Ale2::green_lagrange_plane3d(
     const Core::LinAlg::SerialDenseVector& glplane, Core::LinAlg::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}
@@ -1214,7 +1214,7 @@ void Discret::ELEMENTS::Ale2::green_lagrange_plane3d(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::b_op_lin_cure(Core::LinAlg::SerialDenseMatrix& b_cure,
+void Discret::Elements::Ale2::b_op_lin_cure(Core::LinAlg::SerialDenseMatrix& b_cure,
     const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseVector& F,
     const int numeps, const int nd)
 {
@@ -1249,7 +1249,7 @@ void Discret::ELEMENTS::Ale2::b_op_lin_cure(Core::LinAlg::SerialDenseMatrix& b_c
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::compute_det_jac(Core::LinAlg::SerialDenseVector& elevec1,
+void Discret::Elements::Ale2::compute_det_jac(Core::LinAlg::SerialDenseVector& elevec1,
     const std::vector<int>& lm, const std::vector<double>& disp)
 {
   const int numnode = num_node();
@@ -1336,7 +1336,7 @@ void Discret::ELEMENTS::Ale2::compute_det_jac(Core::LinAlg::SerialDenseVector& e
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale2::evaluate_oddy(
+void Discret::Elements::Ale2::evaluate_oddy(
     const Core::LinAlg::SerialDenseMatrix& xjm, double det, double& qm)
 {
   // compute C

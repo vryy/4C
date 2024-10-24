@@ -26,10 +26,10 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     enum EvalErrorFlag : int;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Solid
 
 // Several parameters which are fixed for Solid Hex8
@@ -42,7 +42,7 @@ const int NUMDIM_SOH8 = 3;   ///< number of dimensions
 struct GpRuleSoH8
 {
   static constexpr enum Core::FE::GaussRule3D rule =
-      Discret::ELEMENTS::DisTypeToOptGaussRule<Core::FE::CellType::hex8>::rule;
+      Discret::Elements::DisTypeToOptGaussRule<Core::FE::CellType::hex8>::rule;
 };
 /// total gauss points per element
 const unsigned NUMGPT_SOH8 = Core::FE::GaussRule3DToNumGaussPoints<GpRuleSoH8::rule>::value;
@@ -54,7 +54,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class PreStress;
@@ -99,11 +99,11 @@ namespace Discret
     A structural 8-node hexahedral solid element for large deformations. As its
     discretization is fixed many data structures are evaluated just once and kept
     for performance (e.g. shape functions, derivatives, etc.,
-    see Discret::ELEMENTS::So_hex8::Integrator_So_hex8). It heavily uses
+    see Discret::Elements::So_hex8::Integrator_So_hex8). It heavily uses
     Epetra objects and methods and therefore relies on their performance.
 
     There are 2 sets of EAS enhancements for GL-strains to alleviate locking
-    (see Discret::ELEMENTS::So_hex8::EASType).
+    (see Discret::Elements::So_hex8::EASType).
 
     */
     class SoHex8 : public SoBase
@@ -506,10 +506,10 @@ namespace Discret
       // line search parameter (old step length)
       double old_step_length_;
       /// Prestressing object
-      Teuchos::RCP<Discret::ELEMENTS::PreStress> prestress_;
+      Teuchos::RCP<Discret::Elements::PreStress> prestress_;
       // compute Jacobian mapping wrt to deformed configuration
       virtual void update_jacobian_mapping(
-          const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress);
+          const std::vector<double>& disp, Discret::Elements::PreStress& prestress);
 
       //! Update history variables at the end of time step (fiber direction, inelastic deformation)
       //! (braeu 07/16)
@@ -519,7 +519,7 @@ namespace Discret
 
       // compute defgrd in all gp for given disp
       virtual void def_gradient(const std::vector<double>& disp,
-          Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress);
+          Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::Elements::PreStress& prestress);
 
 
       // internal calculation methods
@@ -540,7 +540,7 @@ namespace Discret
           const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const;
 
       void soh8_error_handling(const double& det_curr, Teuchos::ParameterList& params, int line_id,
-          FourC::Solid::ELEMENTS::EvalErrorFlag flag);
+          FourC::Solid::Elements::EvalErrorFlag flag);
 
       //! init the inverse of the jacobian and its determinant in the material configuration
       virtual void init_jacobian_mapping();
@@ -605,7 +605,7 @@ namespace Discret
       void soh8_easinit();
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void soh8_reiniteas(Discret::ELEMENTS::SoHex8::EASType EASType);
+      void soh8_reiniteas(Discret::Elements::SoHex8::EASType EASType);
 
       //! EAS technology, setup necessary data
       void soh8_eassetup(
@@ -785,7 +785,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

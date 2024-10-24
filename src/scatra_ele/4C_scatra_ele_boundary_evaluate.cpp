@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::TransportBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -33,7 +33,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::TransportBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  return Discret::ELEMENTS::ScaTraBoundaryFactory::provide_impl(
+  return Discret::Elements::ScaTraBoundaryFactory::provide_impl(
       this, parent_element()->impl_type(), numdofpernode, numscal, discretization.name())
       ->evaluate(this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3);
 }
@@ -107,7 +107,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary condition on boundary element   fang 01/15 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::TransportBoundary::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -126,7 +126,7 @@ int Discret::ELEMENTS::TransportBoundary::evaluate_neumann(Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::location_vector(const Core::FE::Discretization& dis,
+void Discret::Elements::TransportBoundary::location_vector(const Core::FE::Discretization& dis,
     Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

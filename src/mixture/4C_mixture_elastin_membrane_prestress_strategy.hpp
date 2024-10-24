@@ -21,7 +21,7 @@ namespace Mat
   class CoordinateSystemProvider;
 }
 
-namespace MIXTURE
+namespace Mixture
 {
   // Forward declaration of mixture classes
   class MixtureConstituent;
@@ -55,7 +55,7 @@ namespace MIXTURE
      */
     virtual double evaluate_mue_frac(MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
-        MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
+        Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const = 0;
   };
 
@@ -81,7 +81,7 @@ namespace MIXTURE
     virtual void evaluate_membrane_stress(
         Core::LinAlg::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

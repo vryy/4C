@@ -78,7 +78,7 @@ void electromagnetics_drt()
   if (not elemagdishdg->filled() || not elemagdishdg->have_dofs()) elemagdishdg->fill_complete();
   // Asking the discretization how many internal DOF the elements have and creating the additional
   // DofSet
-  int eledofs = dynamic_cast<Discret::ELEMENTS::Elemag*>(elemagdishdg->l_col_element(0))
+  int eledofs = dynamic_cast<Discret::Elements::Elemag*>(elemagdishdg->l_col_element(0))
                     ->num_dof_per_element_auxiliary();
   Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
       Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);

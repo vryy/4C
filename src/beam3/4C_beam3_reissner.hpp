@@ -47,7 +47,7 @@ namespace LargeRotations
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Beam3rType : public Core::Elements::ElementType
     {
@@ -1206,7 +1206,7 @@ namespace Discret
     std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

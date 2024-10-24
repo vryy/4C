@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class PoroFluidMultiPhaseType : public Core::Elements::ElementType
     {
@@ -371,7 +371,7 @@ namespace Discret
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       PoroFluidMultiPhaseBoundary(int id, int owner, int nnode, const int* nodeids,
-          Core::Nodes::Node** nodes, Discret::ELEMENTS::PoroFluidMultiPhase* parent,
+          Core::Nodes::Node** nodes, Discret::Elements::PoroFluidMultiPhase* parent,
           const int lsurface);
 
       /*!
@@ -465,13 +465,13 @@ namespace Discret
       }
 
       //! Return a pointer to the parent element of this boundary element
-      Discret::ELEMENTS::PoroFluidMultiPhase* parent_element() const override
+      Discret::Elements::PoroFluidMultiPhase* parent_element() const override
       {
         Core::Elements::Element* parent = Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::PoroFluidMultiPhase*>(parent) != nullptr,
             "Master element is no PoroFluidMultiPhase element");
-        return static_cast<Discret::ELEMENTS::PoroFluidMultiPhase*>(parent);
+        return static_cast<Discret::Elements::PoroFluidMultiPhase*>(parent);
       }
 
 
@@ -601,7 +601,7 @@ namespace Discret
     };  // class PoroFluidMultiPhaseBoundary
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

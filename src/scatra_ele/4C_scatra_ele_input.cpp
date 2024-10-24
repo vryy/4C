@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | read element input                                        fang 02/15 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Transport::read_element(const std::string& eletype,
+bool Discret::Elements::Transport::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read implementation type

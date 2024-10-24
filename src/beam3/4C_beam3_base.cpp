@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
+Discret::Elements::Beam3Base::Beam3Base(int id, int owner)
     : Core::Elements::Element(id, owner),
       Tref_(0),
       centerline_hermite_(true),
@@ -37,7 +37,7 @@ Discret::ELEMENTS::Beam3Base::Beam3Base(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Beam3Base::Beam3Base(const Discret::ELEMENTS::Beam3Base& old)
+Discret::Elements::Beam3Base::Beam3Base(const Discret::Elements::Beam3Base& old)
     : Core::Elements::Element(old),
       Tref_(old.Tref_),
       centerline_hermite_(old.centerline_hermite_),
@@ -49,7 +49,7 @@ Discret::ELEMENTS::Beam3Base::Beam3Base(const Discret::ELEMENTS::Beam3Base& old)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Beam3Base::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -70,7 +70,7 @@ void Discret::ELEMENTS::Beam3Base::pack(Core::Communication::PackBuffer& data) c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Beam3Base::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -90,10 +90,10 @@ void Discret::ELEMENTS::Beam3Base::unpack(Core::Communication::UnpackBuffer& buf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::Elements::Beam3Base::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   else
     interface_ptr_ = Teuchos::null;
@@ -101,7 +101,7 @@ void Discret::ELEMENTS::Beam3Base::set_params_interface_ptr(const Teuchos::Param
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
+void Discret::Elements::Beam3Base::set_brownian_dyn_params_interface_ptr()
 {
   browndyn_interface_ptr_ = interface_ptr_->get_brownian_dyn_param_interface();
 
@@ -110,7 +110,7 @@ void Discret::ELEMENTS::Beam3Base::set_brownian_dyn_params_interface_ptr()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Beam3Base::params_interface_ptr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::Beam3Base::params_interface_ptr()
 {
   return interface_ptr_;
 }
@@ -118,14 +118,14 @@ Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Beam3Base::para
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<BrownianDynamics::ParamsInterface>
-Discret::ELEMENTS::Beam3Base::brownian_dyn_params_interface_ptr() const
+Discret::Elements::Beam3Base::brownian_dyn_params_interface_ptr() const
 {
   return browndyn_interface_ptr_;
 }
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gids(
+std::vector<int> Discret::Elements::Beam3Base::get_additive_dof_gids(
     const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
@@ -147,7 +147,7 @@ std::vector<int> Discret::ELEMENTS::Beam3Base::get_additive_dof_gids(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-std::vector<int> Discret::ELEMENTS::Beam3Base::get_rot_vec_dof_gids(
+std::vector<int> Discret::Elements::Beam3Base::get_rot_vec_dof_gids(
     const Core::FE::Discretization& discret, const Core::Nodes::Node& node) const
 {
   std::vector<int> dofgids;
@@ -166,14 +166,14 @@ std::vector<int> Discret::ELEMENTS::Beam3Base::get_rot_vec_dof_gids(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Beam3Base::get_circular_cross_section_radius_for_interactions() const
+double Discret::Elements::Beam3Base::get_circular_cross_section_radius_for_interactions() const
 {
   return get_beam_material().get_interaction_radius();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::get_ref_pos_at_xi(
+void Discret::Elements::Beam3Base::get_ref_pos_at_xi(
     Core::LinAlg::Matrix<3, 1>& refpos, const double& xi) const
 {
   const int numclnodes = this->num_centerline_nodes();
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::Beam3Base::get_ref_pos_at_xi(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Mat::BeamMaterial& Discret::ELEMENTS::Beam3Base::get_beam_material() const
+Mat::BeamMaterial& Discret::Elements::Beam3Base::get_beam_material() const
 {
   // get the material law
   Teuchos::RCP<Core::Mat::Material> material_ptr = material();
@@ -202,7 +202,7 @@ Mat::BeamMaterial& Discret::ELEMENTS::Beam3Base::get_beam_material() const
  *-----------------------------------------------------------------------------------------------*/
 
 template <typename T>
-Mat::BeamMaterialTemplated<T>& Discret::ELEMENTS::Beam3Base::get_templated_beam_material() const
+Mat::BeamMaterialTemplated<T>& Discret::Elements::Beam3Base::get_templated_beam_material() const
 {
   return *Teuchos::rcp_dynamic_cast<Mat::BeamMaterialTemplated<T>>(material(), true);
 };
@@ -211,7 +211,7 @@ Mat::BeamMaterialTemplated<T>& Discret::ELEMENTS::Beam3Base::get_templated_beam_
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices(
+void Discret::Elements::Beam3Base::get_constitutive_matrices(
     Core::LinAlg::Matrix<3, 3, T>& CN, Core::LinAlg::Matrix<3, 3, T>& CM) const
 {
   get_templated_beam_material<T>().get_constitutive_matrix_of_forces_material_frame(CN);
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-void Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor(
+void Discret::Elements::Beam3Base::get_translational_and_rotational_mass_inertia_tensor(
     double& mass_inertia_translational, Core::LinAlg::Matrix<3, 3, T>& J) const
 {
   get_translational_mass_inertia_factor(mass_inertia_translational);
@@ -230,7 +230,7 @@ void Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
+void Discret::Elements::Beam3Base::get_translational_mass_inertia_factor(
     double& mass_inertia_translational) const
 {
   mass_inertia_translational = get_beam_material().get_translational_mass_inertia_factor();
@@ -238,7 +238,7 @@ void Discret::ELEMENTS::Beam3Base::get_translational_mass_inertia_factor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix<3, 1>& gamma) const
+void Discret::Elements::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix<3, 1>& gamma) const
 {
   switch (brownian_dyn_params_interface().how_beam_damping_coefficients_are_specified())
   {
@@ -289,7 +289,7 @@ void Discret::ELEMENTS::Beam3Base::get_damping_coefficients(Core::LinAlg::Matrix
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <unsigned int ndim, typename T>
-void Discret::ELEMENTS::Beam3Base::get_background_velocity(
+void Discret::Elements::Beam3Base::get_background_velocity(
     Teuchos::ParameterList& params,  //!< parameter list
     const Core::LinAlg::Matrix<ndim, 1, T>&
         evaluationpoint,                              //!< point at which background velocity and
@@ -317,7 +317,7 @@ void Discret::ELEMENTS::Beam3Base::get_background_velocity(
  | space; the shift affects computation on element level within that           |
  | iteration step, only (no change in global variables performed)              |
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::un_shift_node_position(
+void Discret::Elements::Beam3Base::un_shift_node_position(
     std::vector<double>& disp, Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const
 {
   /* get number of degrees of freedom per node; note:
@@ -354,7 +354,7 @@ void Discret::ELEMENTS::Beam3Base::un_shift_node_position(
 
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>& disp,
+void Discret::Elements::Beam3Base::get_directions_of_shifts(std::vector<double>& disp,
     Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox,
     std::vector<bool>& shift_in_dim) const
 {
@@ -394,7 +394,7 @@ void Discret::ELEMENTS::Beam3Base::get_directions_of_shifts(std::vector<double>&
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::get_pos_of_binding_spot(Core::LinAlg::Matrix<3, 1>& pos,
+void Discret::Elements::Beam3Base::get_pos_of_binding_spot(Core::LinAlg::Matrix<3, 1>& pos,
     std::vector<double>& disp, Inpar::BEAMINTERACTION::CrosslinkerType linkertype, int bspotlocn,
     Core::Geo::MeshFree::BoundingBox const& periodic_boundingbox) const
 {
@@ -408,7 +408,7 @@ void Discret::ELEMENTS::Beam3Base::get_pos_of_binding_spot(Core::LinAlg::Matrix<
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matrix<3, 3>& triad,
+void Discret::Elements::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matrix<3, 3>& triad,
     std::vector<double>& disp, Inpar::BEAMINTERACTION::CrosslinkerType linkertype,
     int bspotlocn) const
 {
@@ -419,7 +419,7 @@ void Discret::ELEMENTS::Beam3Base::get_triad_of_binding_spot(Core::LinAlg::Matri
 
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::get_bounding_volume(
+Core::GeometricSearch::BoundingVolume Discret::Elements::Beam3Base::get_bounding_volume(
     const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
@@ -453,30 +453,30 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Beam3Base::get_bounding
 /*--------------------------------------------------------------------------------------------*
  | explicit template instantiations                                                           |
  *--------------------------------------------------------------------------------------------*/
-template void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices<double>(
+template void Discret::Elements::Beam3Base::get_constitutive_matrices<double>(
     Core::LinAlg::Matrix<3, 3, double>& CN, Core::LinAlg::Matrix<3, 3, double>& CM) const;
-template void Discret::ELEMENTS::Beam3Base::get_constitutive_matrices<Sacado::Fad::DFad<double>>(
+template void Discret::Elements::Beam3Base::get_constitutive_matrices<Sacado::Fad::DFad<double>>(
     Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& CN,
     Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>& CM) const;
 
 template void
-Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<double>(
+Discret::Elements::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<double>(
     double&, Core::LinAlg::Matrix<3, 3, double>&) const;
-template void Discret::ELEMENTS::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<
+template void Discret::Elements::Beam3Base::get_translational_and_rotational_mass_inertia_tensor<
     Sacado::Fad::DFad<double>>(
     double&, Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
-template void Discret::ELEMENTS::Beam3Base::get_background_velocity<3, double>(
+template void Discret::Elements::Beam3Base::get_background_velocity<3, double>(
     Teuchos::ParameterList&, const Core::LinAlg::Matrix<3, 1, double>&,
     Core::LinAlg::Matrix<3, 1, double>&, Core::LinAlg::Matrix<3, 3, double>&) const;
-template void Discret::ELEMENTS::Beam3Base::get_background_velocity<3, Sacado::Fad::DFad<double>>(
+template void Discret::Elements::Beam3Base::get_background_velocity<3, Sacado::Fad::DFad<double>>(
     Teuchos::ParameterList&, const Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<3, 1, Sacado::Fad::DFad<double>>&,
     Core::LinAlg::Matrix<3, 3, Sacado::Fad::DFad<double>>&) const;
 
 template Mat::BeamMaterialTemplated<double>&
-Discret::ELEMENTS::Beam3Base::get_templated_beam_material<double>() const;
+Discret::Elements::Beam3Base::get_templated_beam_material<double>() const;
 template Mat::BeamMaterialTemplated<Sacado::Fad::DFad<double>>&
-Discret::ELEMENTS::Beam3Base::get_templated_beam_material<Sacado::Fad::DFad<double>>() const;
+Discret::Elements::Beam3Base::get_templated_beam_material<Sacado::Fad::DFad<double>>() const;
 
 FOUR_C_NAMESPACE_CLOSE

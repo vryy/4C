@@ -71,7 +71,7 @@ void ScaTra::ScatraFluidCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans != nullptr)
   {
     trans->set_material(matid, oldele);
@@ -140,7 +140,7 @@ void ScaTra::ScatraReactionCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  Discret::ELEMENTS::Transport* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  Discret::Elements::Transport* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans != nullptr)
   {
     trans->set_material(matid, oldele);

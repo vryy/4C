@@ -42,7 +42,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     bool is_beam_element(Core::Elements::Element const& element)
     {
-      return (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&element) != nullptr) ? true
+      return (dynamic_cast<const Discret::Elements::Beam3Base*>(&element) != nullptr) ? true
                                                                                       : false;
     }
 
@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     bool is_rigid_sphere_element(Core::Elements::Element const& element)
     {
-      return (dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(&element) != nullptr) ? true
+      return (dynamic_cast<const Discret::Elements::Rigidsphere*>(&element) != nullptr) ? true
                                                                                         : false;
     }
 
@@ -86,8 +86,8 @@ namespace BEAMINTERACTION
       // TODO: actually we would have to check all elements of all processors!!! Gather?
       for (int i = 0; i < static_cast<int>(node.num_element()); ++i)
       {
-        const Discret::ELEMENTS::Beam3Base* beamele =
-            dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(node.elements()[i]);
+        const Discret::Elements::Beam3Base* beamele =
+            dynamic_cast<const Discret::Elements::Beam3Base*>(node.elements()[i]);
 
         if (beamele != nullptr and beamele->is_centerline_node(node)) beamclnode = true;
       }
@@ -210,8 +210,8 @@ namespace BEAMINTERACTION
       get_current_element_dis(discret, ele, ia_discolnp, eledisp);
 
       // cast to beambase element
-      Discret::ELEMENTS::Beam3Base const* beamele =
-          dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele);
+      Discret::Elements::Beam3Base const* beamele =
+          dynamic_cast<Discret::Elements::Beam3Base const*>(ele);
 
       // so far, only beam elements can be cut by a periodic boundary
       if (beamele == nullptr) return;
@@ -434,8 +434,8 @@ namespace BEAMINTERACTION
                   node->elements()[j]) != sortedfilamenteles.end())
             continue;
 
-          Discret::ELEMENTS::Beam3Base* currbeamele =
-              dynamic_cast<Discret::ELEMENTS::Beam3Base*>(node->elements()[j]);
+          Discret::Elements::Beam3Base* currbeamele =
+              dynamic_cast<Discret::Elements::Beam3Base*>(node->elements()[j]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
           if (currbeamele == nullptr)
@@ -464,8 +464,8 @@ namespace BEAMINTERACTION
       // loop over all elements in sorted order
       for (unsigned int se_iter = 0; se_iter < sortedfilamenteles.size(); ++se_iter)
       {
-        Discret::ELEMENTS::Beam3Base* beamele =
-            dynamic_cast<Discret::ELEMENTS::Beam3Base*>(sortedfilamenteles[se_iter]);
+        Discret::Elements::Beam3Base* beamele =
+            dynamic_cast<Discret::Elements::Beam3Base*>(sortedfilamenteles[se_iter]);
 
         // init variables set in beam eles
         std::vector<double> bspotposxi;
@@ -506,7 +506,7 @@ namespace BEAMINTERACTION
         Core::LinAlg::Matrix<3, 3>& bspottriad, std::vector<double>& eledisp)
     {
       // cast to beambase element
-      Discret::ELEMENTS::Beam3Base* beamele = dynamic_cast<Discret::ELEMENTS::Beam3Base*>(ele);
+      Discret::Elements::Beam3Base* beamele = dynamic_cast<Discret::Elements::Beam3Base*>(ele);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (beamele == nullptr) FOUR_C_THROW("Dynamic cast to beam3base failed");
@@ -635,7 +635,7 @@ namespace BEAMINTERACTION
     unsigned int get_number_of_element_centerline_dof(const Core::Elements::Element* ele)
     {
       std::vector<unsigned int> local_centerline_dof_indices;
-      auto beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+      auto beam_element = dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
       if (beam_element != nullptr)
       {
         beam_element->centerline_dof_indices_of_element(local_centerline_dof_indices);
@@ -657,7 +657,7 @@ namespace BEAMINTERACTION
     {
       // First we need the local IDs of the centerline DOFs.
       std::vector<unsigned int> local_centerline_dof_indices;
-      auto beam_element = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+      auto beam_element = dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
       if (beam_element != nullptr)
       {
         beam_element->centerline_dof_indices_of_element(local_centerline_dof_indices);
@@ -698,8 +698,8 @@ namespace BEAMINTERACTION
       ele->location_vector(discret, lmrow, dummy1, dummy2);
       num_dof = lmrow.size();
 
-      const Discret::ELEMENTS::Beam3Base* beamele =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+      const Discret::Elements::Beam3Base* beamele =
+          dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
       if (beamele != nullptr)
       {
@@ -718,7 +718,7 @@ namespace BEAMINTERACTION
     std::vector<int> get_element_rot_gid_indices(
         const Core::FE::Discretization& discret, const Core::Elements::Element* element)
     {
-      const auto* beam_sr_element = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
+      const auto* beam_sr_element = dynamic_cast<const Discret::Elements::Beam3r*>(element);
       if (beam_sr_element == nullptr)
         FOUR_C_THROW(
             "The function get_element_rot_gid_indices is only implemented for Simo-Reissner beam "
@@ -866,8 +866,8 @@ namespace BEAMINTERACTION
       // extract the Dof values of this element from displacement vector
       get_current_element_dis(discret, ele, ia_discolnp, eledispvec);
 
-      Discret::ELEMENTS::Beam3Base const* beam_element_ptr =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+      Discret::Elements::Beam3Base const* beam_element_ptr =
+          dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
       if (beam_element_ptr != nullptr)
       {
@@ -896,8 +896,8 @@ namespace BEAMINTERACTION
       // extract the Dof values of this element from displacement vector
       get_current_element_dis(discret, ele, ia_discolnp, eledispvec);
 
-      Discret::ELEMENTS::Beam3Base const* beam_element_ptr =
-          dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+      Discret::Elements::Beam3Base const* beam_element_ptr =
+          dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
       if (beam_element_ptr != nullptr)
       {
@@ -1225,17 +1225,17 @@ namespace BEAMINTERACTION
         // get ele pointer
         Core::Elements::Element* eleptr = discret->l_row_element(i);
 
-        if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
+        if (dynamic_cast<Discret::Elements::Beam3Base const*>(eleptr) != nullptr)
         {
           eletypeset[0].insert(eleptr->id());
         }
-        else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
+        else if (dynamic_cast<Discret::Elements::Rigidsphere const*>(eleptr) != nullptr)
         {
           eletypeset[1].insert(eleptr->id());
         }
-        else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(eleptr) != nullptr ||
-                 dynamic_cast<Discret::ELEMENTS::Solid const*>(eleptr) != nullptr ||
-                 dynamic_cast<Discret::ELEMENTS::KirchhoffLoveShellNurbs const*>(eleptr) != nullptr)
+        else if (dynamic_cast<Discret::Elements::SoBase const*>(eleptr) != nullptr ||
+                 dynamic_cast<Discret::Elements::Solid const*>(eleptr) != nullptr ||
+                 dynamic_cast<Discret::Elements::KirchhoffLoveShellNurbs const*>(eleptr) != nullptr)
         {
           eletypeset[2].insert(eleptr->id());
         }
@@ -1312,17 +1312,17 @@ namespace BEAMINTERACTION
     Core::Binstrategy::Utils::BinContentType convert_element_to_bin_content_type(
         const Core::Elements::Element* ele)
     {
-      if (dynamic_cast<Discret::ELEMENTS::Beam3Base const*>(ele) != nullptr)
+      if (dynamic_cast<Discret::Elements::Beam3Base const*>(ele) != nullptr)
       {
         return Core::Binstrategy::Utils::BinContentType::Beam;
       }
-      else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere const*>(ele) != nullptr)
+      else if (dynamic_cast<Discret::Elements::Rigidsphere const*>(ele) != nullptr)
       {
         return Core::Binstrategy::Utils::BinContentType::RigidSphere;
       }
-      else if (dynamic_cast<Discret::ELEMENTS::SoBase const*>(ele) != nullptr ||
-               dynamic_cast<Discret::ELEMENTS::Solid const*>(ele) != nullptr ||
-               dynamic_cast<Discret::ELEMENTS::KirchhoffLoveShellNurbs const*>(ele) != nullptr)
+      else if (dynamic_cast<Discret::Elements::SoBase const*>(ele) != nullptr ||
+               dynamic_cast<Discret::Elements::Solid const*>(ele) != nullptr ||
+               dynamic_cast<Discret::Elements::KirchhoffLoveShellNurbs const*>(ele) != nullptr)
       {
         return Core::Binstrategy::Utils::BinContentType::Solid;
       }
@@ -1343,39 +1343,39 @@ namespace BEAMINTERACTION
     template void set_filament_binding_spot_positions(
         Teuchos::RCP<Core::FE::Discretization>, BEAMINTERACTION::SphereBeamLinkingParams&);
 
-    template void apply_binding_spot_force_to_parent_elements<Discret::ELEMENTS::Beam3Base,
-        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
+    template void apply_binding_spot_force_to_parent_elements<Discret::Elements::Beam3Base,
+        Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
-    template void apply_binding_spot_force_to_parent_elements<Discret::ELEMENTS::Rigidsphere,
-        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
+    template void apply_binding_spot_force_to_parent_elements<Discret::Elements::Rigidsphere,
+        Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&);
 
-    template void apply_binding_spot_stiff_to_parent_elements<Discret::ELEMENTS::Beam3Base,
-        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
+    template void apply_binding_spot_stiff_to_parent_elements<Discret::Elements::Beam3Base,
+        Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
-    template void apply_binding_spot_stiff_to_parent_elements<Discret::ELEMENTS::Rigidsphere,
-        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
+    template void apply_binding_spot_stiff_to_parent_elements<Discret::Elements::Rigidsphere,
+        Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
 
-    template void apply_binding_spot_force_stiff_to_parent_elements<Discret::ELEMENTS::Beam3Base,
-        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
+    template void apply_binding_spot_force_stiff_to_parent_elements<Discret::Elements::Beam3Base,
+        Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,
         std::vector<Core::LinAlg::SerialDenseVector>&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>>&);
-    template void apply_binding_spot_force_stiff_to_parent_elements<Discret::ELEMENTS::Rigidsphere,
-        Discret::ELEMENTS::Beam3Base>(Core::FE::Discretization const&,
+    template void apply_binding_spot_force_stiff_to_parent_elements<Discret::Elements::Rigidsphere,
+        Discret::Elements::Beam3Base>(Core::FE::Discretization const&,
         Core::Geo::MeshFree::BoundingBox&, Core::LinAlg::Vector<double>&,
         BEAMINTERACTION::BeamLink&, std::vector<Core::LinAlg::SerialDenseVector> const&,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const&,

@@ -30,7 +30,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 3 dimensional solid element with modifications for porous media
@@ -693,7 +693,7 @@ namespace Discret
       //! get global id of element
       int id() const;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

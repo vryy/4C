@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 // #define DEBUG_SO_HEX8_DET_ANALYSIS
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /** \brief Analyse the Jacobian determiant of Hex8 element
      *
@@ -323,7 +323,7 @@ namespace Discret
        * (i.e. when the input is greater than the ceiling) */
       return input >= ceil ? input % ceil : input;
     }
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

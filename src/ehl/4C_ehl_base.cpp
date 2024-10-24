@@ -73,7 +73,7 @@ EHL::Base::Base(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltim
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis);
   structure_ = Teuchos::rcp_dynamic_cast<Adapter::Structure>(structure->structure_field());
   structure_->setup();
-  lubrication_ = Teuchos::make_rcp<LUBRICATION::LubricationBaseAlgorithm>();
+  lubrication_ = Teuchos::make_rcp<Lubrication::LubricationBaseAlgorithm>();
   lubrication_->setup(*lubricationtimeparams, lubricationparams,
       problem->solver_params(linsolvernumber), lubrication_disname, isale);
   mortaradapter_->store_dirichlet_status(*structure_field()->get_dbc_map_extractor());

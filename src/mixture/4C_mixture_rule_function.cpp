@@ -45,25 +45,25 @@ namespace
   }
 }  // namespace
 
-MIXTURE::PAR::FunctionMixtureRule::FunctionMixtureRule(
+Mixture::PAR::FunctionMixtureRule::FunctionMixtureRule(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureRule(matdata),
       initial_reference_density_(matdata.parameters.get<double>("DENS")),
       mass_fractions_funct_ids_(matdata.parameters.get<std::vector<int>>("MASSFRACFUNCT")){};
 
-std::unique_ptr<MIXTURE::MixtureRule> MIXTURE::PAR::FunctionMixtureRule::create_rule()
+std::unique_ptr<Mixture::MixtureRule> Mixture::PAR::FunctionMixtureRule::create_rule()
 {
-  return std::make_unique<MIXTURE::FunctionMixtureRule>(this);
+  return std::make_unique<Mixture::FunctionMixtureRule>(this);
 }
 
-MIXTURE::FunctionMixtureRule::FunctionMixtureRule(MIXTURE::PAR::FunctionMixtureRule* params)
+Mixture::FunctionMixtureRule::FunctionMixtureRule(Mixture::PAR::FunctionMixtureRule* params)
     : MixtureRule(params), params_(params), mass_fractions_functions_()
 {
   // cannot setup mass_fractions_functions_ here because at this state, functions are not yet read
   // from input
 }
 
-void MIXTURE::FunctionMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
+void Mixture::FunctionMixtureRule::setup(Teuchos::ParameterList& params, const int eleGID)
 {
   MixtureRule::setup(params, eleGID);
 
@@ -71,15 +71,15 @@ void MIXTURE::FunctionMixtureRule::setup(Teuchos::ParameterList& params, const i
       create_functions_from_function_ids(params_->mass_fractions_funct_ids_);
 }
 
-void MIXTURE::FunctionMixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
+void Mixture::FunctionMixtureRule::unpack_mixture_rule(Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureRule::unpack_mixture_rule(buffer);
+  Mixture::MixtureRule::unpack_mixture_rule(buffer);
 
   mass_fractions_functions_ =
       create_functions_from_function_ids(params_->mass_fractions_funct_ids_);
 }
 
-void MIXTURE::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::FunctionMixtureRule::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, const int gp,
     const int eleGID)

@@ -585,85 +585,92 @@ std::unique_ptr<Core::Mat::PAR::Parameter> Mat::make_parameter(
     }
     case Core::Materials::mix_rule_function:
     {
-      return make_parameter_impl<MIXTURE::PAR::FunctionMixtureRule>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::FunctionMixtureRule>(id, type, input_data);
     }
     case Core::Materials::mix_rule_map:
     {
-      return make_parameter_impl<MIXTURE::PAR::MapMixtureRule>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::MapMixtureRule>(id, type, input_data);
     }
     case Core::Materials::mix_rule_simple:
     {
-      return make_parameter_impl<MIXTURE::PAR::SimpleMixtureRule>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::SimpleMixtureRule>(id, type, input_data);
     }
     case Core::Materials::mix_rule_growthremodel:
     {
-      return make_parameter_impl<MIXTURE::PAR::GrowthRemodelMixtureRule>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::GrowthRemodelMixtureRule>(
+          id, type, input_data);
     }
     case Core::Materials::mix_elasthyper:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentElastHyper>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentElastHyper>(
+          id, type, input_data);
     }
     case Core::Materials::mix_elasthyper_damage:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentElastHyperDamage>(
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentElastHyperDamage>(
           id, type, input_data);
     }
     case Core::Materials::mix_elasthyper_elastin_membrane:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentElastHyperElastinMembrane>(
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentElastHyperElastinMembrane>(
           id, type, input_data);
     }
     case Core::Materials::mix_remodelfiber_expl:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentRemodelFiberExpl>(
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentRemodelFiberExpl>(
           id, type, input_data);
     }
     case Core::Materials::mix_full_constrained_mixture_fiber:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentFullConstrainedMixtureFiber>(
-          id, type, input_data);
+      return make_parameter_impl<
+          FourC::Mixture::PAR::MixtureConstituentFullConstrainedMixtureFiber>(id, type, input_data);
     }
     case Core::Materials::mix_remodelfiber_impl:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentRemodelFiberImpl>(
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentRemodelFiberImpl>(
           id, type, input_data);
     }
     case Core::Materials::mix_solid_material:
     {
-      return make_parameter_impl<MIXTURE::PAR::MixtureConstituentSolidMaterial>(
+      return make_parameter_impl<FourC::Mixture::PAR::MixtureConstituentSolidMaterial>(
           id, type, input_data);
     }
     case Core::Materials::mix_growth_strategy_isotropic:
     {
-      return make_parameter_impl<MIXTURE::PAR::IsotropicGrowthStrategy>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::IsotropicGrowthStrategy>(
+          id, type, input_data);
     }
     case Core::Materials::mix_growth_strategy_anisotropic:
     {
-      return make_parameter_impl<MIXTURE::PAR::AnisotropicGrowthStrategy>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::AnisotropicGrowthStrategy>(
+          id, type, input_data);
     }
     case Core::Materials::mix_growth_strategy_stiffness:
     {
-      return make_parameter_impl<MIXTURE::PAR::StiffnessGrowthStrategy>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::StiffnessGrowthStrategy>(
+          id, type, input_data);
     }
     case Core::Materials::mix_prestress_strategy_cylinder:
     {
-      return make_parameter_impl<MIXTURE::PAR::IsotropicCylinderPrestressStrategy>(
+      return make_parameter_impl<FourC::Mixture::PAR::IsotropicCylinderPrestressStrategy>(
           id, type, input_data);
     }
     case Core::Materials::mix_prestress_strategy_iterative:
     {
-      return make_parameter_impl<MIXTURE::PAR::IterativePrestressStrategy>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::IterativePrestressStrategy>(
+          id, type, input_data);
     }
     case Core::Materials::mix_prestress_strategy_constant:
     {
-      return make_parameter_impl<MIXTURE::PAR::ConstantPrestressStrategy>(id, type, input_data);
+      return make_parameter_impl<FourC::Mixture::PAR::ConstantPrestressStrategy>(
+          id, type, input_data);
     }
     case Core::Materials::mix_remodelfiber_material_exponential:
-      return make_parameter_impl<MIXTURE::PAR::RemodelFiberMaterialExponential<double>>(
+      return make_parameter_impl<FourC::Mixture::PAR::RemodelFiberMaterialExponential<double>>(
           id, type, input_data);
     case Core::Materials::mix_remodelfiber_material_exponential_active:
-      return make_parameter_impl<MIXTURE::PAR::RemodelFiberMaterialExponentialActive<double>>(
-          id, type, input_data);
+      return make_parameter_impl<
+          FourC::Mixture::PAR::RemodelFiberMaterialExponentialActive<double>>(id, type, input_data);
     case Core::Materials::mes_anisoactivestress_evolution:
     {
       return make_parameter_impl<Mat::Elastic::PAR::AnisoActiveStressEvolution>(

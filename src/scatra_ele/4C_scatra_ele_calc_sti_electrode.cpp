@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>*
-Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::instance(
+Discret::Elements::ScaTraEleCalcSTIElectrode<distype>*
+Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -40,7 +40,7 @@ Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::instance(
  | calculate element matrix and element right-hand side vector   fang 11/15 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::sysmat(
     Core::Elements::Element* ele,               ///< current element
     Core::LinAlg::SerialDenseMatrix& emat,      ///< element matrix
     Core::LinAlg::SerialDenseVector& erhs,      ///< element right-hand side vector
@@ -121,7 +121,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat(
  | element matrix and right-hand side vector contributions arising from Joule's heat   fang 11/15 |
  *------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_joule(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_joule(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     Core::LinAlg::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_jou
  |
  *--------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mixing(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mixing(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     Core::LinAlg::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -157,7 +157,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mix
   // extract variables and parameters
   const double& concentration = var_manager()->conc();
   const double& diffcoeff = diffmanagerstielectrode_->get_isotropic_diff(0);
-  const double& F = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+  const double& F = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
   const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
   const double& soret = diff_manager()->get_soret();
   const double& temperature = my::scatravarmanager_->phinp(0);
@@ -199,7 +199,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_mix
  | element matrix and right-hand side vector contributions arising from Soret effect   fang 11/15 |
  *------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_soret(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_soret(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     Core::LinAlg::SerialDenseVector& erhs,  //!< element right-hand side vector
     const double& timefacfac,  //!< domain integration factor times time integration factor
@@ -210,7 +210,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_sor
   // extract variables and parameters
   const double& concentration = var_manager()->conc();
   const double& diffcoeff = diffmanagerstielectrode_->get_isotropic_diff(0);
-  const double& F = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+  const double& F = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
   const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
   const double& soret = diff_manager()->get_soret();
   const double& temperature = my::scatravarmanager_->phinp(0);
@@ -272,7 +272,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_and_rhs_sor
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::evaluate_action_od(
+int Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::evaluate_action_od(
     Core::Elements::Element* ele,                     //!< current element
     Teuchos::ParameterList& params,                   //!< parameter list
     Core::FE::Discretization& discretization,         //!< discretization
@@ -314,7 +314,7 @@ int Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::evaluate_action_od(
  11/15 |
  *------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_scatra(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_scatra(
     Core::Elements::Element* ele,          //!< current element
     Core::LinAlg::SerialDenseMatrix& emat  //!< element matrix
 )
@@ -352,7 +352,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::sysmat_od_thermo_sca
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_joule_od(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::calc_mat_joule_od(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -387,7 +387,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_joule_od(
  w.r.t. scatra dofs   fang 11/15 |
  *--------------------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_mixing_od(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::calc_mat_mixing_od(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -439,7 +439,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_mixing_od(
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. concentration dofs
       emat(vi, ui * 2) += timefacfac * my::funct_(vi) *
-                          Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday() /
+                          Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday() /
                           diffcoeff * (term1 + term2 + term3 + term4);
 
       // linearizations of heat of mixing term in thermo residuals w.r.t. electric potential dofs
@@ -454,7 +454,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_mixing_od(
  w.r.t. scatra dofs   fang 11/15 |
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     const double& timefacfac  //!< domain integration factor times time integration factor
 )
@@ -463,7 +463,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
   const double& concentration = var_manager()->conc();
   const double& diffcoeff = diffmanagerstielectrode_->get_isotropic_diff(0);
   const double& diffcoeffderiv = diffmanagerstielectrode_->get_conc_deriv_iso_diff_coef(0, 0);
-  const double& F = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+  const double& F = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
   const Core::LinAlg::Matrix<nsd_, 1>& gradconc = var_manager()->grad_conc();
   const Core::LinAlg::Matrix<nsd_, 1>& gradtemp = my::scatravarmanager_->grad_phi(0);
   const double& soret = diff_manager()->get_soret();
@@ -529,7 +529,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::calc_mat_soret_od(
  | extract quantities for element evaluation                 fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele,              //!< current element
     Teuchos::ParameterList& params,            //!< parameter list
     Core::FE::Discretization& discretization,  //!< discretization
@@ -547,7 +547,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::extract_element_and_
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::get_material_params(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::get_material_params(
     const Core::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
@@ -578,7 +578,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::get_material_params(
  | evaluate Soret material                                   fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::mat_soret(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::mat_soret(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< Soret material
     double& densn,                                           //!< density at time t_(n)
     double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
@@ -591,12 +591,12 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::mat_soret(
   densn = densnp = densam = matsoret->capacity();
   diff_manager()->set_isotropic_diff(matsoret->conductivity(), 0);
   diff_manager()->set_soret(matsoret->soret_coefficient());
-}  // Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::mat_soret
+}  // Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::mat_soret
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::mat_fourier(
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::mat_fourier(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< Fourie material
     double& densn,                                           //!< density at time t_(n)
     double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
@@ -608,14 +608,14 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::mat_fourier(
       Teuchos::rcp_static_cast<const Mat::FourierIso>(material);
   densn = densnp = densam = matfourier->capacity();
   diff_manager()->set_isotropic_diff(matfourier->conductivity(), 0);
-}  // Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::mat_soret
+}  // Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::mat_soret
 
 
 /*------------------------------------------------------------------------------*
  | set internal variables for element evaluation                     fang 11/15 |
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::set_internal_variables_for_mat_and_rhs()
+void Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::set_internal_variables_for_mat_and_rhs()
 {
   // set internal variables for element evaluation
   var_manager()->set_internal_variables_sti_elch(my::funct_, my::derxy_, my::ephinp_, my::ephin_,
@@ -627,7 +627,7 @@ void Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::set_internal_variabl
  | private constructor for singletons                        fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode(
+Discret::Elements::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode(
     const int numdofpernode, const int numscal, const std::string& disname)
     :  // constructors of base classes
       ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname),
@@ -638,7 +638,7 @@ Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode
           Teuchos::make_rcp<ScaTraEleDiffManagerSTIElchElectrode>(my::numscal_)),
 
       // utility class supporting element evaluation for electrodes
-      utils_(Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>::instance(
+      utils_(Discret::Elements::ScaTraEleUtilsElchElectrode<distype>::instance(
           numdofpernode, numscal, disname))
 {
   // safety check
@@ -657,27 +657,27 @@ Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode
 
 // template classes
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tet10>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::tet10>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::pyramid5>;
+// Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::pyramid5>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcSTIElectrode<Core::FE::CellType::nurbs27>;
+// Discret::Elements::ScaTraEleCalcSTIElectrode<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

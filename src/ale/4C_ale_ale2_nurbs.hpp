@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     namespace Nurbs
     {
@@ -48,7 +48,7 @@ namespace Discret
       };
 
 
-      class Ale2Nurbs : public Discret::ELEMENTS::Ale2
+      class Ale2Nurbs : public Discret::Elements::Ale2
       {
        public:
         /*!
@@ -121,7 +121,7 @@ namespace Discret
       };
 
     }  // namespace Nurbs
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 

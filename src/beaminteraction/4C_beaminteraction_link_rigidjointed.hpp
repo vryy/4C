@@ -25,11 +25,11 @@ namespace Core::Communication
 }
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Beam3Base;
     class Beam3r;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 namespace Core::Elements

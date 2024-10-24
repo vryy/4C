@@ -19,15 +19,15 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-Discret::ELEMENTS::KirchhoffLoveShellNurbsType
-    Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance_;
+Discret::Elements::KirchhoffLoveShellNurbsType
+    Discret::Elements::KirchhoffLoveShellNurbsType::instance_;
 
 
 /**
  *
  */
-Discret::ELEMENTS::KirchhoffLoveShellNurbsType&
-Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance()
+Discret::Elements::KirchhoffLoveShellNurbsType&
+Discret::Elements::KirchhoffLoveShellNurbsType::instance()
 {
   return instance_;
 }
@@ -36,11 +36,11 @@ Discret::ELEMENTS::KirchhoffLoveShellNurbsType::instance()
 /**
  *
  */
-Core::Communication::ParObject* Discret::ELEMENTS::KirchhoffLoveShellNurbsType::create(
+Core::Communication::ParObject* Discret::Elements::KirchhoffLoveShellNurbsType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::KirchhoffLoveShellNurbs* object =
-      new Discret::ELEMENTS::KirchhoffLoveShellNurbs(-1, -1);
+  Discret::Elements::KirchhoffLoveShellNurbs* object =
+      new Discret::Elements::KirchhoffLoveShellNurbs(-1, -1);
   object->unpack(buffer);
   return object;
 }
@@ -49,12 +49,12 @@ Core::Communication::ParObject* Discret::ELEMENTS::KirchhoffLoveShellNurbsType::
 /**
  *
  */
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::KirchhoffLoveShellNurbsType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::KirchhoffLoveShellNurbsType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL_KIRCHHOFF_LOVE_NURBS" and eledistype == "NURBS9")
   {
-    return Teuchos::make_rcp<Discret::ELEMENTS::KirchhoffLoveShellNurbs>(id, owner);
+    return Teuchos::make_rcp<Discret::Elements::KirchhoffLoveShellNurbs>(id, owner);
   }
   return Teuchos::null;
 }
@@ -62,16 +62,16 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::KirchhoffLoveShellNurbs
 /**
  *
  */
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::KirchhoffLoveShellNurbsType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::KirchhoffLoveShellNurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::KirchhoffLoveShellNurbs>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::KirchhoffLoveShellNurbs>(id, owner);
 }
 
 /**
  *
  */
-void Discret::ELEMENTS::KirchhoffLoveShellNurbsType::nodal_block_information(
+void Discret::Elements::KirchhoffLoveShellNurbsType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   FOUR_C_THROW("NodalBlockInformation not implemented");
@@ -80,7 +80,7 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbsType::nodal_block_information(
 /**
  *
  */
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::KirchhoffLoveShellNurbsType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::KirchhoffLoveShellNurbsType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   FOUR_C_THROW("ComputeNullSpace not implemented");
@@ -89,7 +89,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::KirchhoffLoveShellNurbsType::
 /**
  *
  */
-void Discret::ELEMENTS::KirchhoffLoveShellNurbsType::setup_element_definition(
+void Discret::Elements::KirchhoffLoveShellNurbsType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["SHELL_KIRCHHOFF_LOVE_NURBS"];
@@ -105,7 +105,7 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbsType::setup_element_definition(
 /**
  *
  */
-Discret::ELEMENTS::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(int id, int owner)
+Discret::Elements::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(int id, int owner)
     : Core::Elements::Element(id, owner),
       material_(0),
       gaussrule_({Core::FE::GaussRule1D::undefined, Core::FE::GaussRule1D::undefined})
@@ -115,8 +115,8 @@ Discret::ELEMENTS::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(int id, int 
 /**
  *
  */
-Discret::ELEMENTS::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(
-    const Discret::ELEMENTS::KirchhoffLoveShellNurbs& old)
+Discret::Elements::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(
+    const Discret::Elements::KirchhoffLoveShellNurbs& old)
     : Core::Elements::Element(old), material_(old.material_), gaussrule_(old.gaussrule_)
 {
 }
@@ -124,15 +124,15 @@ Discret::ELEMENTS::KirchhoffLoveShellNurbs::KirchhoffLoveShellNurbs(
 /**
  *
  */
-Core::Elements::Element* Discret::ELEMENTS::KirchhoffLoveShellNurbs::clone() const
+Core::Elements::Element* Discret::Elements::KirchhoffLoveShellNurbs::clone() const
 {
-  return new Discret::ELEMENTS::KirchhoffLoveShellNurbs(*this);
+  return new Discret::Elements::KirchhoffLoveShellNurbs(*this);
 }
 
 /**
  *
  */
-void Discret::ELEMENTS::KirchhoffLoveShellNurbs::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::KirchhoffLoveShellNurbs::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -151,7 +151,7 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbs::pack(Core::Communication::PackB
 /**
  *
  */
-void Discret::ELEMENTS::KirchhoffLoveShellNurbs::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::KirchhoffLoveShellNurbs::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -171,11 +171,11 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbs::unpack(Core::Communication::Unp
 /**
  *
  */
-void Discret::ELEMENTS::KirchhoffLoveShellNurbs::set_params_interface_ptr(
+void Discret::Elements::KirchhoffLoveShellNurbs::set_params_interface_ptr(
     const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   else
     interface_ptr_ = Teuchos::null;
@@ -185,7 +185,7 @@ void Discret::ELEMENTS::KirchhoffLoveShellNurbs::set_params_interface_ptr(
  *
  */
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::KirchhoffLoveShellNurbs::surfaces()
+Discret::Elements::KirchhoffLoveShellNurbs::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

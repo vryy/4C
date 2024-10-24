@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 11/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh18PlastType Discret::ELEMENTS::SoSh18PlastType::instance_;
+Discret::Elements::SoSh18PlastType Discret::Elements::SoSh18PlastType::instance_;
 
-Discret::ELEMENTS::SoSh18PlastType& Discret::ELEMENTS::SoSh18PlastType::instance()
+Discret::Elements::SoSh18PlastType& Discret::Elements::SoSh18PlastType::instance()
 {
   return instance_;
 }
@@ -36,10 +36,10 @@ Discret::ELEMENTS::SoSh18PlastType& Discret::ELEMENTS::SoSh18PlastType::instance
 | create the new element type (public)                     seitz 11/14 |
 | is called in ElementRegisterType                                     |
 *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::create(
+Core::Communication::ParObject* Discret::Elements::SoSh18PlastType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoSh18Plast(-1, -1);
+  auto* object = new Discret::Elements::SoSh18Plast(-1, -1);
   object->unpack(buffer);
   return object;
 }
@@ -48,13 +48,13 @@ Core::Communication::ParObject* Discret::ELEMENTS::SoSh18PlastType::create(
 | create the new element type (public)                     seitz 11/14 |
 | is called from ParObjectFactory                                      |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18PlastType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoSh18Plast>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoSh18Plast>(id, owner);
     return ele;
   }
   return Teuchos::null;
@@ -64,11 +64,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create
 | create the new element type (public)                     seitz 11/14 |
 | virtual method of ElementType                                        |
 *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoSh18PlastType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoSh18Plast>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoSh18Plast>(id, owner);
   return ele;
 }
 
@@ -76,7 +76,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoSh18PlastType::create
 /*----------------------------------------------------------------------*
 | initialise the element (public)                          seitz 11/14 |
 *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh18PlastType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoSh18PlastType::initialize(Core::FE::Discretization& dis)
 {
   return SoSh18Type::initialize(dis);
 }
@@ -84,7 +84,7 @@ int Discret::ELEMENTS::SoSh18PlastType::initialize(Core::FE::Discretization& dis
 /*----------------------------------------------------------------------*
  | setup the element definition (public)                    seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18PlastType::setup_element_definition(
+void Discret::Elements::SoSh18PlastType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_sh18;
@@ -100,17 +100,17 @@ void Discret::ELEMENTS::SoSh18PlastType::setup_element_definition(
 /*----------------------------------------------------------------------*
  | ctor (public)                                            seitz 11/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(int id, int owner)
+Discret::Elements::SoSh18Plast::SoSh18Plast(int id, int owner)
     : SoBase(id, owner),
-      Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>(id, owner),
-      Discret::ELEMENTS::SoHex18(id, owner),
-      Discret::ELEMENTS::SoSh18(id, owner)
+      Discret::Elements::So3Plast<Core::FE::CellType::hex18>(id, owner),
+      Discret::Elements::SoHex18(id, owner),
+      Discret::Elements::SoSh18(id, owner)
 {
   Teuchos::RCP<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -120,11 +120,11 @@ Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(int id, int owner)
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(const Discret::ELEMENTS::SoSh18Plast& old)
+Discret::Elements::SoSh18Plast::SoSh18Plast(const Discret::Elements::SoSh18Plast& old)
     : SoBase(old),
-      Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>(old),
-      Discret::ELEMENTS::SoHex18(old),
-      Discret::ELEMENTS::SoSh18(old)
+      Discret::Elements::So3Plast<Core::FE::CellType::hex18>(old),
+      Discret::Elements::SoHex18(old),
+      Discret::Elements::SoSh18(old)
 {
   return;
 }
@@ -133,16 +133,16 @@ Discret::ELEMENTS::SoSh18Plast::SoSh18Plast(const Discret::ELEMENTS::SoSh18Plast
  | deep copy this instance of Solid3 and return pointer to              |
  | it (public)                                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoSh18Plast::clone() const
+Core::Elements::Element* Discret::Elements::SoSh18Plast::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoSh18Plast(*this);
+  auto* newelement = new Discret::Elements::SoSh18Plast(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  | pack data (public)                                       seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoSh18Plast::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -151,10 +151,10 @@ void Discret::ELEMENTS::SoSh18Plast::pack(Core::Communication::PackBuffer& data)
   add_to_pack(data, type);
 
   // add base class So3Plast Element
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::pack(data);
+  Discret::Elements::So3Plast<Core::FE::CellType::hex18>::pack(data);
 
   // add base class So3_sh18
-  Discret::ELEMENTS::SoSh18::pack(data);
+  Discret::Elements::SoSh18::pack(data);
 
   return;
 }
@@ -162,7 +162,7 @@ void Discret::ELEMENTS::SoSh18Plast::pack(Core::Communication::PackBuffer& data)
 /*----------------------------------------------------------------------*
  | unpack data (public)                                     seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoSh18Plast::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -170,10 +170,10 @@ void Discret::ELEMENTS::SoSh18Plast::unpack(Core::Communication::UnpackBuffer& b
   std::vector<char> basedata(0);
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer(basedata);
-  Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::unpack(basedata_buffer);
+  Discret::Elements::So3Plast<Core::FE::CellType::hex18>::unpack(basedata_buffer);
   extract_from_pack(buffer, basedata);
   Core::Communication::UnpackBuffer basedata_buffer2(basedata);
-  Discret::ELEMENTS::SoSh18::unpack(basedata_buffer2);
+  Discret::Elements::SoSh18::unpack(basedata_buffer2);
 
   sync_eas();
 
@@ -181,7 +181,7 @@ void Discret::ELEMENTS::SoSh18Plast::unpack(Core::Communication::UnpackBuffer& b
   return;
 }
 
-void Discret::ELEMENTS::SoSh18Plast::print(std::ostream& os) const
+void Discret::Elements::SoSh18Plast::print(std::ostream& os) const
 {
   os << "So_sh18Plast ";
   Element::print(os);
@@ -192,12 +192,12 @@ void Discret::ELEMENTS::SoSh18Plast::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh18Plast::read_element(const std::string& eletype,
+bool Discret::Elements::SoSh18Plast::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
-  bool read = (Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>::read_element(
+  bool read = (Discret::Elements::So3Plast<Core::FE::CellType::hex18>::read_element(
                    eletype, distype, container) &&
-               Discret::ELEMENTS::SoSh18::read_element(eletype, distype, container));
+               Discret::Elements::SoSh18::read_element(eletype, distype, container));
 
   // sync the EAS info
   sync_eas();
@@ -209,7 +209,7 @@ bool Discret::ELEMENTS::SoSh18Plast::read_element(const std::string& eletype,
 /*----------------------------------------------------------------------*
  | read this element, get the material (public)             seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::sync_eas()
+void Discret::Elements::SoSh18Plast::sync_eas()
 {
   if (eas_ == true)
   {
@@ -254,7 +254,7 @@ void Discret::ELEMENTS::SoSh18Plast::sync_eas()
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh18Plast::nln_stiffmass(
+void Discret::Elements::SoSh18Plast::nln_stiffmass(
     std::vector<double>& disp,  // current displacements
     std::vector<double>& vel,   // current velocities
     std::vector<double>& temp,  // current temperatures

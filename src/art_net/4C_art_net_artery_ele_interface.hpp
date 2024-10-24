@@ -34,7 +34,7 @@ namespace Core::FE
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Interface base class for ArteryEleCalc
     /*!
@@ -77,7 +77,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
           Teuchos::RCP<Core::Mat::Material> mat) = 0;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

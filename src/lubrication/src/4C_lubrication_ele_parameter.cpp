@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                  wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationEleParameter::instance(
+Discret::Elements::LubricationEleParameter* Discret::Elements::LubricationEleParameter::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -30,7 +30,7 @@ Discret::ELEMENTS::LubricationEleParameter* Discret::ELEMENTS::LubricationElePar
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       wirtz 10/15 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
+Discret::Elements::LubricationEleParameter::LubricationEleParameter(
     const std::string& disname  //!< name of discretization
     )
 
@@ -46,7 +46,7 @@ Discret::ELEMENTS::LubricationEleParameter::LubricationEleParameter(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationEleParameter::set_time_parameters(
+void Discret::Elements::LubricationEleParameter::set_time_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -57,7 +57,7 @@ void Discret::ELEMENTS::LubricationEleParameter::set_time_parameters(
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     wirtz 10/15 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::LubricationEleParameter::set_general_parameters(
+void Discret::Elements::LubricationEleParameter::set_general_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

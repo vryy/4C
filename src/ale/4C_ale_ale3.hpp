@@ -38,7 +38,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // where should that be put?
     template <Core::FE::CellType dtype>
@@ -395,7 +395,7 @@ namespace Discret
       virtual ~Ale3ImplInterface() = default;
 
       /// Internal implementation class for fluid element
-      static Ale3ImplInterface* impl(Discret::ELEMENTS::Ale3* ele);
+      static Ale3ImplInterface* impl(Discret::Elements::Ale3* ele);
 
       virtual void static_ke_spring(Ale3* ele,        ///< pointer to element
           Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
@@ -602,7 +602,7 @@ namespace Discret
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       Ale3Surface(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Ale3* parent, const int lsurface);
+          Discret::Elements::Ale3* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -768,7 +768,7 @@ namespace Discret
 
       virtual ~Ale3SurfaceImplInterface() = default;
       /// Internal implementation class for ale surface element
-      static Ale3SurfaceImplInterface* impl(Discret::ELEMENTS::Ale3Surface* ele);
+      static Ale3SurfaceImplInterface* impl(Discret::Elements::Ale3Surface* ele);
 
       virtual void element_node_normal(Ale3Surface* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
@@ -889,7 +889,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

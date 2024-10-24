@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
-    const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
+Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+Discret::Elements::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
+    const Discret::Elements::PoroFluidMultiPhaseEleParameter& para, int nsd,
     Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
     int totalnumdofpernode, int numfluidphases)
 {
@@ -46,9 +46,9 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface>
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
-    const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para, int nsd,
+Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
+    const Discret::Elements::PoroFluidMultiPhaseEleParameter& para, int nsd,
     Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
     Teuchos::RCP<PhaseManagerInterface> corephasemanager)
 {
@@ -223,7 +223,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(
+Discret::Elements::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(
     int totalnumdofpernode, int numfluidphases)
     : totalnumdofpernode_(totalnumdofpernode),
       numfluidphases_(numfluidphases),
@@ -251,7 +251,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(
 /*----------------------------------------------------------------------*
  | copy constructor                                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(const PhaseManagerCore& old)
+Discret::Elements::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(const PhaseManagerCore& old)
     : totalnumdofpernode_(old.totalnumdofpernode_),
       numfluidphases_(old.numfluidphases_),
       numvolfrac_(old.numvolfrac_),
@@ -276,7 +276,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::PhaseManagerCore(const Ph
 /*----------------------------------------------------------------------*
  | setup                                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::setup(
+void Discret::Elements::PoroFluidManager::PhaseManagerCore::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   FOUR_C_ASSERT(ele != nullptr, "Element is null pointer for setup of phase manager!");
@@ -349,7 +349,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::setup(
 /*----------------------------------------------------------------------*
  | evaluate pressures, saturations and derivatives at GP     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::evaluate_gp_state(
+void Discret::Elements::PoroFluidManager::PhaseManagerCore::evaluate_gp_state(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
   check_is_setup();
@@ -423,7 +423,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::evaluate_gp_state(
 /*----------------------------------------------------------------------*
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::clear_gp_state()
+void Discret::Elements::PoroFluidManager::PhaseManagerCore::clear_gp_state()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
@@ -447,7 +447,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::clear_gp_state()
 /*----------------------------------------------------------------------*
  * get solid pressure                                        vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::solid_pressure() const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::solid_pressure() const
 {
   check_is_evaluated();
 
@@ -457,7 +457,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::solid_pressure() c
 /*----------------------------------------------------------------------*
  * recalculate solid pressure if volfracs are present  kremheller 09/17 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::recalculate_solid_pressure(
+void Discret::Elements::PoroFluidManager::PhaseManagerCore::recalculate_solid_pressure(
     const double porosity)
 {
   check_is_evaluated();
@@ -474,7 +474,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::recalculate_solid_pr
 /*----------------------------------------------------------------------*
  *    get saturation of phase                               vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::saturation(int phasenum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::saturation(int phasenum) const
 {
   check_is_evaluated();
 
@@ -484,7 +484,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::saturation(int pha
 /*----------------------------------------------------------------------*
  *  get pressure of phase                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::pressure(int phasenum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::pressure(int phasenum) const
 {
   check_is_evaluated();
 
@@ -494,7 +494,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::pressure(int phase
 /*----------------------------------------------------------------------*
  *    get saturation                                        vuong 08/16 |
  *----------------------------------------------------------------------*/
-const std::vector<double>& Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::saturation() const
+const std::vector<double>& Discret::Elements::PoroFluidManager::PhaseManagerCore::saturation() const
 {
   check_is_evaluated();
 
@@ -504,7 +504,7 @@ const std::vector<double>& Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore
 /*----------------------------------------------------------------------*
  *    get volfracs                                     kremheller 08/17 |
  *----------------------------------------------------------------------*/
-const std::vector<double>& Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac() const
+const std::vector<double>& Discret::Elements::PoroFluidManager::PhaseManagerCore::vol_frac() const
 {
   check_is_evaluated();
 
@@ -514,7 +514,7 @@ const std::vector<double>& Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore
 /*----------------------------------------------------------------------*
  *    get volfrac of volfrac 'volfracnum'              kremheller 08/17 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac(int volfracnum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::vol_frac(int volfracnum) const
 {
   check_is_evaluated();
 
@@ -525,7 +525,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac(int volfr
  *  get pressures for volfracs                         kremheller 02/18 |
  *----------------------------------------------------------------------*/
 const std::vector<double>&
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac_pressure() const
+Discret::Elements::PoroFluidManager::PhaseManagerCore::vol_frac_pressure() const
 {
   check_is_evaluated();
 
@@ -535,7 +535,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac_pressure() const
 /*---------------------------------------------------------------------------*
  * get pressures for volume fractions                       kremheller 02/18 |
  *---------------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac_pressure(
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::vol_frac_pressure(
     int volfracnum) const
 {
   check_is_evaluated();
@@ -546,7 +546,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac_pressure(
 /*----------------------------------------------------------------------*
  * get the sum of the additional volume fractions      kremheller 09/17 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::sum_add_vol_frac() const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::sum_add_vol_frac() const
 {
   check_is_evaluated();
 
@@ -556,7 +556,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::sum_add_vol_frac()
 /*----------------------------------------------------------------------*
  *  get pressure                                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-const std::vector<double>& Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::pressure() const
+const std::vector<double>& Discret::Elements::PoroFluidManager::PhaseManagerCore::pressure() const
 {
   check_is_evaluated();
 
@@ -566,7 +566,7 @@ const std::vector<double>& Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore
 /*----------------------------------------------------------------------*
  *   get bulk modulus of phase 'phasenum'                    vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::inv_bulkmodulus(int phasenum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::inv_bulkmodulus(int phasenum) const
 {
   check_is_evaluated();
 
@@ -576,7 +576,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::inv_bulkmodulus(in
 /*----------------------------------------------------------------------*
  *  check if fluid phase 'phasenum' is incompressible  kremheller 06/17 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::incompressible_fluid_phase(
+bool Discret::Elements::PoroFluidManager::PhaseManagerCore::incompressible_fluid_phase(
     int phasenum) const
 {
   check_is_evaluated();
@@ -587,7 +587,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::incompressible_fluid
 /*----------------------------------------------------------------------*
  *   get inverse bulk modulus of solid phase                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::inv_bulkmodulus_solid() const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::inv_bulkmodulus_solid() const
 {
   check_is_evaluated();
 
@@ -597,7 +597,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::inv_bulkmodulus_so
 /*----------------------------------------------------------------------*
  *  check if solid is incompressible                   kremheller 06/17 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::incompressible_solid() const
+bool Discret::Elements::PoroFluidManager::PhaseManagerCore::incompressible_solid() const
 {
   check_is_evaluated();
 
@@ -607,7 +607,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::incompressible_solid
 /*----------------------------------------------------------------------*
  *   get density of phase 'phasenum'                    vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::density(int phasenum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::density(int phasenum) const
 {
   check_is_setup();
 
@@ -617,7 +617,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::density(int phasen
 /*---------------------------------------------------------------------------*
  * get densities for volume fractions                       kremheller 08/17 |
  *---------------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac_density(int volfracnum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::vol_frac_density(int volfracnum) const
 {
   check_is_setup();
 
@@ -627,7 +627,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::vol_frac_density(i
 /*---------------------------------------------------------------------------*
  * get densities of solid phase                                 wirthl 12/18 |
  *---------------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::solid_density() const
+double Discret::Elements::PoroFluidManager::PhaseManagerCore::solid_density() const
 {
   check_is_evaluated();
 
@@ -641,7 +641,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerCore::solid_density() co
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::PhaseManagerDeriv(
+Discret::Elements::PoroFluidManager::PhaseManagerDeriv::PhaseManagerDeriv(
     Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager),
       pressurederiv_(Teuchos::null),
@@ -668,7 +668,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::PhaseManagerDeriv(
 /*----------------------------------------------------------------------*
  | evaluate pressures, saturations and derivatives at GP     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
+void Discret::Elements::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
   // evaluate wrapped phase manager
@@ -763,7 +763,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
 /*----------------------------------------------------------------------*
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::clear_gp_state()
+void Discret::Elements::PoroFluidManager::PhaseManagerDeriv::clear_gp_state()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
@@ -786,7 +786,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::clear_gp_state()
 /*----------------------------------------------------------------------*
  *  get derivative of saturation of phase                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::saturation_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDeriv::saturation_deriv(
     int phasenum, int doftoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -797,7 +797,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::saturation_deriv(
 /*----------------------------------------------------------------------*
  *  get 2nd derivative of saturation of phase          kremheller 05/17 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::saturation_deriv_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDeriv::saturation_deriv_deriv(
     int phasenum, int firstdoftoderive, int seconddoftoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -808,7 +808,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::saturation_deriv_
 /*----------------------------------------------------------------------*
  *  get derivative of pressure of phase                      vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::pressure_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDeriv::pressure_deriv(
     int phasenum, int doftoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -819,7 +819,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::pressure_deriv(
 /*----------------------------------------------------------------------*
  * get derivative of solid pressure                          vuong 08/16 |
  *-----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::solid_pressure_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDeriv::solid_pressure_deriv(
     int doftoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -830,7 +830,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::solid_pressure_de
 /*---------------------------------------------------------------------------*
  * get second derivative of solid pressure                       vuong 08/16 |
  *---------------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::solid_pressure_deriv_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDeriv::solid_pressure_deriv_deriv(
     int doftoderive, int doftoderive2) const
 {
   phasemanager_->check_is_evaluated();
@@ -846,7 +846,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDeriv::solid_pressure_de
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::PhaseManagerDerivAndPorosity(
+Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::PhaseManagerDerivAndPorosity(
     Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDeriv(phasemanager),
       porosity_(0.0),
@@ -865,7 +865,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::PhaseManagerD
 /*----------------------------------------------------------------------*
  | evaluate pressures, saturations and derivatives at GP     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::evaluate_gp_state(
+void Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::evaluate_gp_state(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
   // evaluate base class
@@ -920,7 +920,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::evaluate
 /*----------------------------------------------------------------------*
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::clear_gp_state()
+void Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::clear_gp_state()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
@@ -940,7 +940,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::clear_gp
 /*----------------------------------------------------------------------*
  *  get porosity                                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity() const
+double Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity() const
 {
   check_is_evaluated();
 
@@ -950,7 +950,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosi
 /*----------------------------------------------------------------------*
  *  get Jacobian of deformation gradient               kremheller 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::jacobian_def_grad() const
+double Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::jacobian_def_grad() const
 {
   check_is_evaluated();
 
@@ -960,7 +960,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::jacobi
 /*----------------------------------------------------------------------*
  *  get derivative of porosity wrt jacobian of defgrad kremheller 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::
+double Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::
     porosity_deriv_wrt_jacobian_def_grad() const
 {
   check_is_evaluated();
@@ -971,7 +971,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::
 /*----------------------------------------------------------------------*
  *  get derivative of saturation of phase                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity_deriv(
     int doftoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -982,7 +982,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosi
 /*----------------------------------------------------------------------*
  * check if porosity depends on pressure               kremheller 07/17 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity_depends_on_fluid()
+bool Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity_depends_on_fluid()
     const
 {
   phasemanager_->check_is_evaluated();
@@ -995,7 +995,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity
 /*----------------------------------------------------------------------*
  * check if porosity depends on JacobianDefGradient    kremheller 07/17 |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity_depends_on_struct()
+bool Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity_depends_on_struct()
     const
 {
   phasemanager_->check_is_evaluated();
@@ -1011,7 +1011,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::PhaseManagerReaction(
+Discret::Elements::PoroFluidManager::PhaseManagerReaction::PhaseManagerReaction(
     Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager), numscal_(0)
 {
@@ -1021,7 +1021,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::PhaseManagerReaction(
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::setup(
+void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
@@ -1145,7 +1145,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::setup(
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::evaluate_gp_state(
+void Discret::Elements::PoroFluidManager::PhaseManagerReaction::evaluate_gp_state(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
   phasemanager_->evaluate_gp_state(J, varmanager, matnum);
@@ -1250,7 +1250,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::evaluate_gp_stat
 /*----------------------------------------------------------------------*
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::clear_gp_state()
+void Discret::Elements::PoroFluidManager::PhaseManagerReaction::clear_gp_state()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
@@ -1271,7 +1271,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::clear_gp_state()
 /*----------------------------------------------------------------------*
  | get the reaction term                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_term(int phasenum) const
+double Discret::Elements::PoroFluidManager::PhaseManagerReaction::reac_term(int phasenum) const
 {
   phasemanager_->check_is_evaluated();
   return reacterms_[phasenum];
@@ -1280,7 +1280,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_term(int 
 /*----------------------------------------------------------------------*
  | get the derivative of the reaction term                   vuong 08/16 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerReaction::reac_deriv(
     int phasenum, int doftoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -1290,7 +1290,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_deriv(
 /*----------------------------------------------------------------------*
  | get total number of scalars                         kremheller 07/17 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::num_scal() const
+int Discret::Elements::PoroFluidManager::PhaseManagerReaction::num_scal() const
 {
   phasemanager_->check_is_setup();
   return numscal_;
@@ -1299,7 +1299,7 @@ int Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::num_scal() const
 /*------------------------------------------------------------------------*
  | get the derivative of the reaction term wrt. porosity kremheller 07/17 |
  *------------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_deriv_porosity(
+double Discret::Elements::PoroFluidManager::PhaseManagerReaction::reac_deriv_porosity(
     int phasenum) const
 {
   phasemanager_->check_is_evaluated();
@@ -1309,7 +1309,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_deriv_por
 /*----------------------------------------------------------------------*
  | get the derivative of the reaction term wrt. scalar kremheller 07/17 |
  *----------------------------------------------------------------------*/
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_deriv_scalar(
+double Discret::Elements::PoroFluidManager::PhaseManagerReaction::reac_deriv_scalar(
     int phasenum, int scaltoderive) const
 {
   phasemanager_->check_is_evaluated();
@@ -1320,7 +1320,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::reac_deriv_sca
  | get the scalar to phase mapping                     kremheller 08/17 |
  *----------------------------------------------------------------------*/
 Mat::ScaTraMatMultiPoro::ScalarToPhaseMap
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::scalar_to_phase(int iscal) const
+Discret::Elements::PoroFluidManager::PhaseManagerReaction::scalar_to_phase(int iscal) const
 {
   phasemanager_->check_is_evaluated();
   return scalartophasemap_[iscal];
@@ -1334,7 +1334,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerReaction::scalar_to_phase(int i
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::PhaseManagerDiffusion(
+Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::PhaseManagerDiffusion(
     Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager)
 {
@@ -1345,7 +1345,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::PhaseManagerDif
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
+void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
@@ -1411,7 +1411,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::setup(
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::evaluate_gp_state(
+void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::evaluate_gp_state(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
   // evaluate wrapped manager
@@ -1461,7 +1461,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::evaluate_g
  | zero all values at GP                                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::clear_gp_state()
+void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::clear_gp_state()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
@@ -1477,7 +1477,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::clear_gp_s
  * get diffusion tensor                                         vuong 08/16 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::permeability_tensor(
+void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::permeability_tensor(
     int phasenum, Core::LinAlg::Matrix<nsd, nsd>& permeabilitytensor) const
 {
   phasemanager_->check_is_evaluated();
@@ -1489,7 +1489,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::permeabili
  * check for constant rel permeability                      kremheller 02/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::has_constant_rel_permeability(
+bool Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::has_constant_rel_permeability(
     int phasenum) const
 {
   check_is_setup();
@@ -1500,7 +1500,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::has_consta
  * get relative diffusivity of phase 'phasenum'             kremheller 02/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::rel_permeability(
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::rel_permeability(
     int phasenum) const
 {
   phasemanager_->check_is_evaluated();
@@ -1511,7 +1511,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::rel_perm
  * get relative diffusivity of phase 'phasenum'             kremheller 02/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::rel_permeability_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::rel_permeability_deriv(
     int phasenum) const
 {
   phasemanager_->check_is_evaluated();
@@ -1522,7 +1522,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::rel_perm
  * check for constant dynamic viscosity                     kremheller 06/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::has_constant_dyn_viscosity(
+bool Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::has_constant_dyn_viscosity(
     int phasenum) const
 {
   check_is_setup();
@@ -1533,7 +1533,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::has_consta
  * get dynamic viscosity of phase 'phasenum'                kremheller 02/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity(
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity(
     int phasenum, double abspressgrad, int matnum) const
 {
   phasemanager_->check_is_evaluated();
@@ -1545,7 +1545,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_visc
  *   get dynamic viscosity of phase 'phasenum'         kremheller 02/17 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity(
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity(
     const Core::Mat::Material& material, int phasenum, double abspressgrad) const
 {
   // get the single phase material
@@ -1559,7 +1559,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_visc
  * get derivative of dynamic viscosity of phase 'phasenum'  kremheller 06/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_deriv(
     int phasenum, double abspressgrad) const
 {
   phasemanager_->check_is_evaluated();
@@ -1571,7 +1571,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_visc
  * get derivative of dynamic viscosity of phase 'phasenum'  kremheller 06/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_deriv(
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_deriv(
     const Core::Mat::Material& material, int phasenum, double abspressgrad) const
 {
   // get the single phase material
@@ -1585,7 +1585,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_visc
  * check for constant dynamic viscosity of volume fraction pressures kremheller 02/18 |
  *-------------------------------------------------------------------------------------*/
 template <int nsd>
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
+bool Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<
     nsd>::has_constant_dyn_viscosity_vol_frac_pressure(int volfracpressnum) const
 {
   check_is_setup();
@@ -1598,7 +1598,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
  *-----------------------------------------------------------------------------------*/
 template <int nsd>
 double
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_vol_frac_pressure(
+Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_vol_frac_pressure(
     int volfracpressnum, double abspressgrad, int matnum) const
 {
   phasemanager_->check_is_evaluated();
@@ -1612,7 +1612,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_v
  *----------------------------------------------------------------------------------- --------*/
 template <int nsd>
 double
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_vol_frac_pressure(
+Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_vol_frac_pressure(
     const Core::Mat::Material& material, int volfracpressnum, double abspressgrad) const
 {
   // get the single phase material
@@ -1627,7 +1627,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<nsd>::dyn_viscosity_v
  * get derivative of dynamic viscosity of volume fraction pressure 'volfracnum'  kremheller 02/18 |
  *-------------------------------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<
     nsd>::dyn_viscosity_deriv_vol_frac_pressure(int volfracpressnum, double abspressgrad) const
 {
   phasemanager_->check_is_evaluated();
@@ -1640,7 +1640,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
  * get derivative of dynamic viscosity of volume fraction pressure 'volfracnum'  kremheller 02/18 |
  *-------------------------------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
+double Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<
     nsd>::dyn_viscosity_deriv_vol_frac_pressure(const Core::Mat::Material& material,
     int volfracpressnum, double abspressgrad) const
 {
@@ -1656,7 +1656,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
  * get permeability tensor for volume fraction pressures    kremheller 02/18 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
+void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<
     nsd>::permeability_tensor_vol_frac_pressure(int volfracpressnum,
     Core::LinAlg::Matrix<nsd, nsd>& permeabilitytensorvolfracpressure) const
 {
@@ -1669,7 +1669,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<
  | constructor                                         kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::PhaseManagerVolFrac(
+Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::PhaseManagerVolFrac(
     Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager)
 {
@@ -1680,7 +1680,7 @@ Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::PhaseManagerVolFr
  | constructor                                         kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::setup(
+void Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::setup(
     const Core::Elements::Element* ele, const int matnum)
 {
   // setup the wrapped class
@@ -1738,7 +1738,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::setup(
  | constructor                                         kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::evaluate_gp_state(
+void Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::evaluate_gp_state(
     double J, const VariableManagerMinAccess& varmanager, const int matnum)
 {
   // evaluate wrapped manager
@@ -1793,7 +1793,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::evaluate_gp_
  * get diffusion tensor for volume fractions                kremheller 08/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::diff_tensor_vol_frac(
+void Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::diff_tensor_vol_frac(
     int volfracnum, Core::LinAlg::Matrix<nsd, nsd>& difftensorvolfrac) const
 {
   phasemanager_->check_is_evaluated();
@@ -1805,7 +1805,7 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::diff_tensor_
  * get densities for volume fractions                       kremheller 08/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_add_scalar_dependent_flux(
+bool Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_add_scalar_dependent_flux(
     int volfracnum) const
 {
   phasemanager_->check_is_evaluated();
@@ -1817,7 +1817,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_add_scal
  * check if additional scalar flux dependency active        kremheller 08/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_add_scalar_dependent_flux(
+bool Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_add_scalar_dependent_flux(
     int volfracnum, int iscal) const
 {
   phasemanager_->check_is_evaluated();
@@ -1829,7 +1829,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_add_scal
  * check if receptor-kinetic law active                     kremheller 01/18 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_receptor_kinetic_law(
+bool Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_receptor_kinetic_law(
     int volfracnum, int iscal) const
 {
   phasemanager_->check_is_evaluated();
@@ -1841,7 +1841,7 @@ bool Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::has_receptor
  * get scalar diffs for volume fractions                    kremheller 08/17 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::scalar_diff(
+double Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::scalar_diff(
     int volfracnum, int iscal) const
 {
   phasemanager_->check_is_evaluated();
@@ -1853,7 +1853,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::scalar_dif
  * get scalar omega half for volume fractions               kremheller 01/18 |
  *---------------------------------------------------------------------------*/
 template <int nsd>
-double Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::omega_half(
+double Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::omega_half(
     int volfracnum, int iscal) const
 {
   phasemanager_->check_is_evaluated();
@@ -1865,7 +1865,7 @@ double Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::omega_half
  | zero all values at GP                               kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd>
-void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::clear_gp_state()
+void Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::clear_gp_state()
 {
   // this is just a safety call. All quantities should be recomputed
   // in the next EvaluateGPState call anyway, but you never know ...
@@ -1880,11 +1880,11 @@ void Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<nsd>::clear_gp_sta
 // *----------------------------------------------------------------------*/
 //// template classes
 
-template class Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<1>;
-template class Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<2>;
-template class Discret::ELEMENTS::PoroFluidManager::PhaseManagerDiffusion<3>;
-template class Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<1>;
-template class Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<2>;
-template class Discret::ELEMENTS::PoroFluidManager::PhaseManagerVolFrac<3>;
+template class Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<1>;
+template class Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<2>;
+template class Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<3>;
+template class Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<1>;
+template class Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<2>;
+template class Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<3>;
 
 FOUR_C_NAMESPACE_CLOSE

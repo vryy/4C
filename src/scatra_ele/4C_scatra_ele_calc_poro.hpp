@@ -22,7 +22,7 @@ namespace Mat
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleDiffManagerPoro;
 
@@ -244,7 +244,7 @@ namespace Discret
     }
     //    else
     //      return zeroconvel_;
-  };  // namespace ELEMENTS
+  };  // namespace Elements
   //! return convective part in convective form
   virtual const Core::LinAlg::Matrix<nen, 1>& conv(const int k) const
   {  //    if(k<NO_CONVECTION_NR)

@@ -39,7 +39,7 @@ namespace FLD
   // this routine is supposed to move to fluid_ele_calc_general_service.cpp and use the methods
   // provided there move it if you are using it in a similar way as calc_channel_statistics
   template <int iel>
-  void f3_calc_loma_means(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+  void f3_calc_loma_means(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
       std::vector<double>& velocitypressure, std::vector<double>& temperature,
       Teuchos::ParameterList& params, const double eosfac)
   {
@@ -439,7 +439,7 @@ namespace FLD
       FOUR_C_THROW("Unknown element type for low-Mach-number mean value evaluation\n");
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_calc_loma_means
+  }  // Discret::Elements::Fluid::f3_calc_loma_means
 
 
   /*!
@@ -448,7 +448,7 @@ namespace FLD
   // this routine is supposed to move to fluid_ele_calc_general_service.cpp and use the methods
   // provided there move it if you are using it in a similar way as calc_channel_statistics
   template <int iel>
-  void f3_calc_scatra_means(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+  void f3_calc_scatra_means(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
       std::vector<double>& velocitypressure, std::vector<double>& scalar,
       Teuchos::ParameterList& params)
   {
@@ -822,7 +822,7 @@ namespace FLD
       FOUR_C_THROW("Unknown element type for turbulent passive scalar mean value evaluation\n");
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_calc_scatra_means
+  }  // Discret::Elements::Fluid::f3_calc_scatra_means
 
 
   /*!
@@ -855,8 +855,8 @@ namespace FLD
 
    */
   template <int iel>
-  void f3_apply_box_filter(Discret::ELEMENTS::Fluid* ele,
-      Discret::ELEMENTS::FluidEleParameterStd* fldpara, std::vector<double>& myvel,
+  void f3_apply_box_filter(Discret::Elements::Fluid* ele,
+      Discret::Elements::FluidEleParameterStd* fldpara, std::vector<double>& myvel,
       std::vector<double>& mytemp, const double thermpress, std::vector<double>& vel_hat,
       std::vector<double>& densvel_hat, std::vector<std::vector<double>>& reynoldsstress_hat,
       std::vector<std::vector<double>>& modeled_subgrid_stress, double& volume, double& dens_hat,
@@ -1262,7 +1262,7 @@ namespace FLD
     }
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_apply_box_filter
+  }  // Discret::Elements::Fluid::f3_apply_box_filter
 
 
   /*!
@@ -1323,8 +1323,8 @@ namespace FLD
 
    */
   template <int iel>
-  void f3_calc_smag_const_lij_mij_and_mij_mij(Discret::ELEMENTS::Fluid* ele,
-      Discret::ELEMENTS::FluidEleParameterStd* fldpara,
+  void f3_calc_smag_const_lij_mij_and_mij_mij(Discret::Elements::Fluid* ele,
+      Discret::Elements::FluidEleParameterStd* fldpara,
       Core::LinAlg::MultiVector<double>& col_filtered_vel,
       Core::LinAlg::MultiVector<double>& col_filtered_reynoldsstress,
       Core::LinAlg::MultiVector<double>& col_filtered_modeled_subgrid_stress,
@@ -1790,11 +1790,11 @@ namespace FLD
     }
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_calc_smag_const_lij_mij_and_mij_mij
+  }  // Discret::Elements::Fluid::f3_calc_smag_const_lij_mij_and_mij_mij
 
 
   template <int iel>
-  void f3_calc_vreman_const(Discret::ELEMENTS::Fluid* ele,
+  void f3_calc_vreman_const(Discret::Elements::Fluid* ele,
       Core::LinAlg::MultiVector<double>& col_filtered_strainrate,
       Core::LinAlg::MultiVector<double>& col_filtered_alphaij,
       Core::LinAlg::Vector<double>& col_filtered_expression,
@@ -1995,15 +1995,15 @@ namespace FLD
     }
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_calc_vreman_const
+  }  // Discret::Elements::Fluid::f3_calc_vreman_const
 
 
   /*!
    \brief compute parameters of multifractal subgrid-scale model
   */
   template <int nen, int nsd, Core::FE::CellType distype>
-  void f3_get_mf_params(Discret::ELEMENTS::Fluid* ele,
-      Discret::ELEMENTS::FluidEleParameterStd* fldpara, Teuchos::ParameterList& params,
+  void f3_get_mf_params(Discret::Elements::Fluid* ele,
+      Discret::Elements::FluidEleParameterStd* fldpara, Teuchos::ParameterList& params,
       Teuchos::RCP<Core::Mat::Material> mat, std::vector<double>& vel, std::vector<double>& fsvel)
   {
     // get mfs parameter
@@ -2070,7 +2070,7 @@ namespace FLD
     {
       // use one-point Gauss rule
       Core::FE::IntPointsAndWeights<nsd> intpoints(
-          Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
+          Discret::Elements::DisTypeToStabGaussRule<distype>::rule);
 
       // coordinates of the current integration point
       const double* gpcoord = (intpoints.ip().qxg)[0];
@@ -2741,7 +2741,7 @@ namespace FLD
     (*sum_sgvisc)[nlayer] += sgvisc;
 
     return;
-  }  // Discret::ELEMENTS::Fluid::f3_get_mf_params
+  }  // Discret::Elements::Fluid::f3_get_mf_params
 
 
   //----------------------------------------------------------------------
@@ -2749,8 +2749,8 @@ namespace FLD
   //                                                       rasthofer 08/12
   //----------------------------------------------------------------------
   template <int nen, int nsd, Core::FE::CellType distype>
-  void f3_get_mf_nwc(Discret::ELEMENTS::Fluid* ele,
-      Discret::ELEMENTS::FluidEleParameterStd* fldpara, double& Cai, double& vol,
+  void f3_get_mf_nwc(Discret::Elements::Fluid* ele,
+      Discret::Elements::FluidEleParameterStd* fldpara, double& Cai, double& vol,
       std::vector<double>& vel, std::vector<double>& sca, const double& thermpress)
   {
     // allocate a fixed size array for nodal velocities an scalars
@@ -2787,7 +2787,7 @@ namespace FLD
 
       // use one-point Gauss rule
       Core::FE::IntPointsAndWeights<nsd> intpoints(
-          Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
+          Discret::Elements::DisTypeToStabGaussRule<distype>::rule);
 
       // coordinates of the current integration point
       const double* gpcoord = (intpoints.ip().qxg)[0];
@@ -2815,7 +2815,7 @@ namespace FLD
       if (fldpara->b_gp())
       {
         Core::FE::IntPointsAndWeights<nsd> gauss_intpoints(
-            Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+            Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
         intpoints = gauss_intpoints;
       }
 
@@ -3052,7 +3052,7 @@ namespace FLD
     \param edispnp (in)       : Displacement-vector
   */
   template <Core::FE::CellType distype>
-  void element_node_normal(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+  void element_node_normal(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
       Core::FE::Discretization& discretization, std::vector<int>& lm,
       Core::LinAlg::SerialDenseVector& elevec1)
   {
@@ -3184,7 +3184,7 @@ namespace FLD
 
     // get Gaussrule
     const Core::FE::IntPointsAndWeights<nsd> intpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
     // gaussian points
     // const GaussRule3D          gaussrule = get_optimal_gaussrule(distype);

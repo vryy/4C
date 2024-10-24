@@ -237,7 +237,7 @@ void fsi_immersed_drt()
   auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
     const Core::Elements::Element* element = node.elements()[0];
-    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    const auto* beamelement = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
     if (beamelement != nullptr && !beamelement->is_centerline_node(node))
       return *element->nodes()[0];
     else
@@ -249,7 +249,7 @@ void fsi_immersed_drt()
                                        Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
     {
       return Core::Binstrategy::DefaultRelevantPoints{
           .correct_node = correct_node,
@@ -372,7 +372,7 @@ void fsi_ale_drt()
   auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
     const Core::Elements::Element* element = node.elements()[0];
-    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    const auto* beamelement = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
     if (beamelement != nullptr && !beamelement->is_centerline_node(node))
       return *element->nodes()[0];
     else
@@ -384,7 +384,7 @@ void fsi_ale_drt()
                                        Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
     {
       return Core::Binstrategy::DefaultRelevantPoints{
           .correct_node = correct_node,

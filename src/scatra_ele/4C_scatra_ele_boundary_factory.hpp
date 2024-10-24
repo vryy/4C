@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraBoundaryInterface;
 
@@ -42,7 +42,7 @@ namespace Discret
           const enum Inpar::ScaTra::ImplType impltype, const int numdofpernode, const int numscal,
           const std::string& disname);
     };  // class ScaTraBoundaryFactory
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

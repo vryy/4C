@@ -24,13 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCalcCardiacMonodomain(
+Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCalcCardiacMonodomain(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
+      Discret::Elements::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
           numdofpernode, numscal, disname),
-      Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
+      Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
           numdofpernode, numscal, disname)
 {
 }
@@ -38,8 +38,8 @@ Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::ScaTraEleCa
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
+Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>*
+Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -58,7 +58,7 @@ Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
  |  evaluate single material  (protected)                    ljag 06/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
+void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -91,7 +91,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materi
  |  Material ScaTra                                          ljag 06/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocard(
+void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocard(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_my
 |  calculate system matrix and rhs for ep                 hoermann 06/16|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
+void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat(
     Core::Elements::Element* ele,               ///< the element whose matrix is calculated
     Core::LinAlg::SerialDenseMatrix& emat,      ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs,      ///< element rhs to calculate
@@ -306,7 +306,7 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::sysmat
  | extract element based or nodal values                 hoermann 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
+void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype,
     probdim>::extract_element_and_node_values(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -324,33 +324,33 @@ void Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype,
  *----------------------------------------------------------------------*/
 // template classes
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 1>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line3, 1>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 1>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri6, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 3>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 2>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tri6, 2>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 2>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad4, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad9, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs9, 2>;
+// Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::quad9, 2>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex8, 3>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex8, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex27, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet4, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet10, 3>;
+// Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::hex27, 3>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet4, 3>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::tet10, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::pyramid5, 3>;
+// Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::pyramid5, 3>;
 // template class
-// Discret::ELEMENTS::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs27>;
+// Discret::Elements::ScaTraEleCalcCardiacMonodomain<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

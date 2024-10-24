@@ -32,7 +32,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Beam3Base;
   }
@@ -117,7 +117,7 @@ class PostVtuWriter : public PostVtkWriter
       const Core::FE::CellType nurbs_dis_type) const;
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
-  virtual void write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
+  virtual void write_geo_beam_ele(const Discret::Elements::Beam3Base* beamele,
       std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
       std::vector<double>& coordinates);
 
@@ -136,7 +136,7 @@ class PostVtuWriter : public PostVtkWriter
       const int numdf, std::vector<double>& solution, Core::LinAlg::Vector<double>& ghostedData,
       const int from, const bool fillzeros) const;
 
-  virtual void write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
+  virtual void write_dof_result_step_beam_ele(const Discret::Elements::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
       Teuchos::RCP<Core::LinAlg::Vector<double>>& ghostedData, const int& from,
       const bool fillzeros);

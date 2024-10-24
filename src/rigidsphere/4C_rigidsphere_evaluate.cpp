@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 02/14|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Rigidsphere::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -158,7 +158,7 @@ int Discret::ELEMENTS::Rigidsphere::evaluate(Teuchos::ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private) meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
+void Discret::Elements::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
     std::vector<double>& acc, std::vector<double>& vel, std::vector<double>& disp,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force, Core::LinAlg::SerialDenseVector* inertia_force)
@@ -197,7 +197,7 @@ void Discret::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params
  | calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics grill
  03/14|
  *------------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
+void Discret::Elements::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
     std::vector<double>& vel, std::vector<double>& disp,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseVector* force)
 {
@@ -208,7 +208,7 @@ void Discret::ELEMENTS::Rigidsphere::calc_brownian_forces_and_stiff(Teuchos::Par
 /*------------------------------------------------------------------------------------------------------------*
  | compute drag forces and contribution to stiffness matrix  (private) grill 03/14|
  *-----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
+void Discret::Elements::Rigidsphere::calc_drag_force(Teuchos::ParameterList& params,
     const std::vector<double>& vel,                //!< element velocity vector
     const std::vector<double>& disp,               //!< element displacement vector
     Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -251,7 +251,7 @@ void Discret::ELEMENTS::Rigidsphere::calc_drag_force(Teuchos::ParameterList& par
  in       | |the physical space                                                         (public)
  grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::get_background_velocity(
+void Discret::Elements::Rigidsphere::get_background_velocity(
     Teuchos::ParameterList& params,                 //!< parameter list
     Core::LinAlg::Matrix<3, 1>& velbackground,      //!< velocity of background fluid
     Core::LinAlg::Matrix<3, 3>& velbackgroundgrad)  //!< gradient of velocity of background fluid
@@ -310,7 +310,7 @@ void Discret::ELEMENTS::Rigidsphere::get_background_velocity(
 /*-----------------------------------------------------------------------------------------------------------*
  | computes damping coefficient                                             (private) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Rigidsphere::my_damping_constant()
+double Discret::Elements::Rigidsphere::my_damping_constant()
 {
   // (dynamic) viscosity of background fluid
   double eta = params_interface().get_brownian_dyn_param_interface()->get_viscosity();
@@ -323,7 +323,7 @@ double Discret::ELEMENTS::Rigidsphere::my_damping_constant()
  |computes the number of different random numbers required in each time step for generation of
  stochastic    | |forces; (public)           grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
+int Discret::Elements::Rigidsphere::how_many_random_numbers_i_need()
 {
   /*three randomly excited (translational) DOFs for Rigidsphere element*/
   return 3;
@@ -331,7 +331,7 @@ int Discret::ELEMENTS::Rigidsphere::how_many_random_numbers_i_need()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::get_bounding_volume(
+Core::GeometricSearch::BoundingVolume Discret::Elements::Rigidsphere::get_bounding_volume(
     const Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& result_data_dofbased,
     const Core::GeometricSearch::GeometricSearchParams& params) const
@@ -362,7 +362,7 @@ Core::GeometricSearch::BoundingVolume Discret::ELEMENTS::Rigidsphere::get_boundi
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_variations_at_xi(
+void Discret::Elements::Rigidsphere::get_generalized_interpolation_matrix_variations_at_xi(
     Core::LinAlg::SerialDenseMatrix& Ivar, const double& dummy1,
     const std::vector<double>& dummy2) const
 {
@@ -372,7 +372,7 @@ void Discret::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_variat
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_increments_at_xi(
+void Discret::Elements::Rigidsphere::get_generalized_interpolation_matrix_increments_at_xi(
     Core::LinAlg::SerialDenseMatrix& Iinc, const double& dummy1,
     const std::vector<double>& dummy2) const
 {
@@ -383,7 +383,7 @@ void Discret::ELEMENTS::Rigidsphere::get_generalized_interpolation_matrix_increm
 /*-----------------------------------------------------------------------------------------------------------*
  | computes stochastic forces and resulting stiffness (public) grill   03/14|
  *----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Rigidsphere::calc_stochastic_force(
+void Discret::Elements::Rigidsphere::calc_stochastic_force(
     Teuchos::ParameterList& params,                //!< parameter list
     const std::vector<double>& vel,                //!< element velocity vector
     const std::vector<double>& disp,               //!< element disp vector

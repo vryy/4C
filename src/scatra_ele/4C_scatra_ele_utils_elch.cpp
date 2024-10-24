@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
  | singleton access method                                   fang 08/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleUtilsElch<distype>*
-Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::instance(
+Discret::Elements::ScaTraEleUtilsElch<distype>*
+Discret::Elements::ScaTraEleUtilsElch<distype>::instance(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
     const std::string& disname  ///< name of discretization
@@ -41,7 +41,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::instance(
  | private constructor for singletons                        fang 07/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
+Discret::Elements::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
     const int numdofpernode,    ///< number of degrees of freedom per node
     const int numscal,          ///< number of transported scalars per node
     const std::string& disname  ///< name of discretization
@@ -57,7 +57,7 @@ Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::ScaTraEleUtilsElch(
  07/15 |
  *---------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point(
+void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point(
     const Core::Elements::Element* ele,                        ///< current element
     Core::LinAlg::SerialDenseMatrix& emat,                     ///< element matrix
     Core::LinAlg::SerialDenseVector& erhs,                     ///< element right-hand side vector
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
 ) const
 {
   // for pre-multiplication of i0 with 1/(F z_k)
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+  const double faraday = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
 
   // concentration of active species at integration point
   std::vector<double> conint(numscal_, 0.0);
@@ -666,7 +666,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
   }
 
   return;
-}  // Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point
+}  // Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_integration_point
 
 
 /*----------------------------------------------------------------------------------------------------------------*
@@ -674,7 +674,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_elch_kinetics_at_i
  fang 07/15 |
  *----------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
+void Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point(
     const Core::Elements::Element* ele,        ///< current element
     Core::LinAlg::SerialDenseVector& scalars,  ///< scalars to be computed
     const Teuchos::ParameterList& params,      ///< parameter list
@@ -696,7 +696,7 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
 ) const
 {
   // get Faraday constant
-  const double faraday = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+  const double faraday = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
 
   // get variables with their current values
   // current integrals: (i = epsilon i^E ) is calculated in case of porous media
@@ -1248,14 +1248,14 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_a
   scalars(8) += currderiv;
   scalars(9) += currentresidual;
   scalars(10) += boundaryint_porous;
-}  // Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point
+}  // Discret::Elements::ScaTraEleUtilsElch<distype>::evaluate_electrode_status_at_integration_point
 
 
 /*----------------------------------------------------------------------*
  | evaluate ion material                                     fang 07/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::mat_ion(
+void Discret::Elements::ScaTraEleUtilsElch<distype>::mat_ion(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< ion material
     const int k,                                             //!< ID of ion material
     const Inpar::ElCh::EquPot equpot,  //!< type of closing equation for electric potential
@@ -1292,26 +1292,26 @@ void Discret::ELEMENTS::ScaTraEleUtilsElch<distype>::mat_ion(
 
 // template classes
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::nurbs3>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::quad4>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::nurbs3>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleUtilsElch<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleUtilsElch<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

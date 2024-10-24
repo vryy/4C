@@ -325,7 +325,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vo
   for (int iele = 0; iele < elecolmap->NumMyElements(); ++iele)
   {
     // dynamic_cast necessary because virtual inheritance needs runtime information
-    Discret::ELEMENTS::Transport* myele = dynamic_cast<Discret::ELEMENTS::Transport*>(
+    Discret::Elements::Transport* myele = dynamic_cast<Discret::Elements::Transport*>(
         scatra_algo()->scatra_field()->discretization()->g_element(elecolmap->GID(iele)));
 
     const Core::Mat::Material& material2 = *(myele->material(2));

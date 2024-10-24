@@ -21,7 +21,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
+Mixture::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : PrestressStrategy(matdata), prestretch_()
 {
@@ -29,29 +29,29 @@ MIXTURE::PAR::ConstantPrestressStrategy::ConstantPrestressStrategy(
       matdata.parameters.get<std::vector<double>>("PRESTRETCH").begin(), 9, prestretch_.begin());
 }
 
-std::unique_ptr<MIXTURE::PrestressStrategy>
-MIXTURE::PAR::ConstantPrestressStrategy::create_prestress_strategy()
+std::unique_ptr<Mixture::PrestressStrategy>
+Mixture::PAR::ConstantPrestressStrategy::create_prestress_strategy()
 {
-  std::unique_ptr<MIXTURE::PrestressStrategy> prestressStrategy(
-      new MIXTURE::ConstantPrestressStrategy(this));
+  std::unique_ptr<Mixture::PrestressStrategy> prestressStrategy(
+      new Mixture::ConstantPrestressStrategy(this));
   return prestressStrategy;
 }
 
-MIXTURE::ConstantPrestressStrategy::ConstantPrestressStrategy(
-    MIXTURE::PAR::ConstantPrestressStrategy* params)
+Mixture::ConstantPrestressStrategy::ConstantPrestressStrategy(
+    Mixture::PAR::ConstantPrestressStrategy* params)
     : PrestressStrategy(params), params_(params)
 {
 }
 
-void MIXTURE::ConstantPrestressStrategy::setup(
-    MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
+void Mixture::ConstantPrestressStrategy::setup(
+    Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params, int numgp, int eleGID)
 {
   // nothing to do
 }
 
-void MIXTURE::ConstantPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
+void Mixture::ConstantPrestressStrategy::evaluate_prestress(const MixtureRule& mixtureRule,
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
-    MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
+    Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // setup prestretch
@@ -60,9 +60,9 @@ void MIXTURE::ConstantPrestressStrategy::evaluate_prestress(const MixtureRule& m
   Core::LinAlg::Voigt::matrix_9x1_to_3x3(prestretch_vector, G);
 }
 
-void MIXTURE::ConstantPrestressStrategy::update(
+void Mixture::ConstantPrestressStrategy::update(
     const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-    MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+    Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
     Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
 }

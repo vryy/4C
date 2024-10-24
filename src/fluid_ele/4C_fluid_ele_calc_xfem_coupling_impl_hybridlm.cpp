@@ -12,7 +12,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     namespace XFLUID
     {
@@ -441,168 +441,168 @@ namespace Discret
       }
 
     }  // namespace XFLUID
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 
 // pairs with numdof=3
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad9, 3>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri3,3>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri6,3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad9, 3>;
 
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::dis_none, 3>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::dis_none, 3>;
 
 
 // pairs with numdof=4
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex8,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex20,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::hex27,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet4,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::tet10,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge6,
     Core::FE::CellType::quad9, 4>;
-// template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri3,4>; template class
-// Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+// Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
 // Core::FE::CellType::tri6,4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad4, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad8, 4>;
-template class Discret::ELEMENTS::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
+template class Discret::Elements::XFLUID::HybridLMCoupling<Core::FE::CellType::wedge15,
     Core::FE::CellType::quad9, 4>;
 
 FOUR_C_NAMESPACE_CLOSE

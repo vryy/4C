@@ -31,7 +31,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Elemag;
 
@@ -46,7 +46,7 @@ namespace Discret
         This class does not provide a definition for this function; it
         must be defined in ElemagEleCalc.
        */
-      virtual int evaluate(Discret::ELEMENTS::Elemag* ele, Core::FE::Discretization& discretization,
+      virtual int evaluate(Discret::Elements::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -59,13 +59,13 @@ namespace Discret
         This class does not provide a definition for this function; it
         must be defined in ElemagEleCalc.
        */
-      virtual int integrate_shape_function(Discret::ELEMENTS::Elemag* ele,
+      virtual int integrate_shape_function(Discret::Elements::Elemag* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1) = 0;
     };
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

@@ -16,41 +16,41 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Wall1Type Discret::ELEMENTS::Wall1Type::instance_;
+Discret::Elements::Wall1Type Discret::Elements::Wall1Type::instance_;
 
-Discret::ELEMENTS::Wall1Type& Discret::ELEMENTS::Wall1Type::instance() { return instance_; }
+Discret::Elements::Wall1Type& Discret::Elements::Wall1Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Wall1Type::create(
+Core::Communication::ParObject* Discret::Elements::Wall1Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Wall1* object = new Discret::ELEMENTS::Wall1(-1, -1);
+  Discret::Elements::Wall1* object = new Discret::Elements::Wall1(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALL")
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::ELEMENTS::Wall1>(id, owner);
+      return Teuchos::make_rcp<Discret::Elements::Wall1>(id, owner);
     }
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1Type::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::Wall1>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::Wall1>(id, owner);
 }
 
 
-void Discret::ELEMENTS::Wall1Type::nodal_block_information(
+void Discret::Elements::Wall1Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 2;
@@ -58,13 +58,13 @@ void Discret::ELEMENTS::Wall1Type::nodal_block_information(
   nv = 2;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Wall1Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Wall1Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, int const numdof, int const dimnsp)
 {
   return compute_solid_2d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::Wall1Type::setup_element_definition(
+void Discret::Elements::Wall1Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["WALL"];
@@ -141,7 +141,7 @@ void Discret::ELEMENTS::Wall1Type::setup_element_definition(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1LineType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Wall1Line( id, owner ) );
@@ -152,7 +152,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1LineType::create(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 01/08/|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Wall1::Wall1(int id, int owner)
+Discret::Elements::Wall1::Wall1(int id, int owner)
     : SoBase(id, owner),
       material_(0),
       thickness_(0.0),
@@ -170,7 +170,7 @@ Discret::ELEMENTS::Wall1::Wall1(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 01/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Wall1::Wall1(const Discret::ELEMENTS::Wall1& old)
+Discret::Elements::Wall1::Wall1(const Discret::Elements::Wall1& old)
     : SoBase(old),
       material_(old.material_),
       thickness_(old.thickness_),
@@ -189,9 +189,9 @@ Discret::ELEMENTS::Wall1::Wall1(const Discret::ELEMENTS::Wall1& old)
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Wall1::clone() const
+Core::Elements::Element* Discret::Elements::Wall1::clone() const
 {
-  Discret::ELEMENTS::Wall1* newelement = new Discret::ELEMENTS::Wall1(*this);
+  Discret::Elements::Wall1* newelement = new Discret::Elements::Wall1(*this);
   return newelement;
 }
 
@@ -199,14 +199,14 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1::clone() const
  |                                                             (public) |
  |                                                          mgit 04/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Wall1::shape() const { return distype_; }
+Core::FE::CellType Discret::Elements::Wall1::shape() const { return distype_; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Wall1::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -244,7 +244,7 @@ void Discret::ELEMENTS::Wall1::pack(Core::Communication::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Wall1::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -282,7 +282,7 @@ void Discret::ELEMENTS::Wall1::unpack(Core::Communication::UnpackBuffer& buffer)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1::lines()
 {
   return Core::Communication::element_boundary_factory<Wall1Line, Wall1>(
       Core::Communication::buildLines, *this);
@@ -292,7 +292,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -300,7 +300,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Wall1::sur
 /*-----------------------------------------------------------------------------*
 | Map plane Green-Lagrange strains to 3d                       mayr.mt 05/2014 |
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::green_lagrange_plane3d(
+void Discret::Elements::Wall1::green_lagrange_plane3d(
     const Core::LinAlg::SerialDenseVector& glplane, Core::LinAlg::Matrix<6, 1>& gl3d)
 {
   gl3d(0) = glplane(0);               // E_{11}

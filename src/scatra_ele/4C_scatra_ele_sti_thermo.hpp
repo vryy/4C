@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ScaTraEleDiffManagerSTIThermo;
@@ -211,7 +211,7 @@ namespace Discret
       //! gradient of temperature
       Core::LinAlg::Matrix<nsd, 1> gradtemp_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

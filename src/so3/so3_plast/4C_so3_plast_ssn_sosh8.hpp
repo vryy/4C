@@ -27,7 +27,7 @@ namespace Discret
 {
   // forward declarations
   class So_sh8Plast;
-  namespace ELEMENTS
+  namespace Elements
   {
     class SoSh8PlastType : public SoHex8PlastType
     {
@@ -204,7 +204,7 @@ namespace Discret
       );
 
       //! Re-initialize EAS data, needed for sosh8 morphing
-      void re_init_eas(const Discret::ELEMENTS::So3PlastEasType EASType);
+      void re_init_eas(const Discret::Elements::So3PlastEasType EASType);
 
       void invalid_gp_data() override
       {
@@ -264,7 +264,7 @@ namespace Discret
         return TinvT_.second;
       }
     };  // class So_sh8Plast
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 

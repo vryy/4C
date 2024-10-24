@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -455,7 +455,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
 /*----------------------------------------------------------------------*
  * Evaluate normal at gp (private)                             gee 08/08|
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::surface_integration(std::vector<double>& normal,
+void Discret::Elements::StructuralSurface::surface_integration(std::vector<double>& normal,
     const Core::LinAlg::SerialDenseMatrix& x, const Core::LinAlg::SerialDenseMatrix& deriv)
 {
   // note that the length of this normal is the area dA
@@ -474,7 +474,7 @@ void Discret::ELEMENTS::StructuralSurface::surface_integration(std::vector<doubl
 /*----------------------------------------------------------------------*
  * Evaluate sqrt of determinant of metric at gp (private)      gee 04/08|
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::surface_integration(double& detA,
+void Discret::Elements::StructuralSurface::surface_integration(double& detA,
     std::vector<double>& normal, const Core::LinAlg::SerialDenseMatrix& x,
     const Core::LinAlg::SerialDenseMatrix& deriv)
 {
@@ -505,7 +505,7 @@ void Discret::ELEMENTS::StructuralSurface::surface_integration(double& detA,
 /*----------------------------------------------------------------------*
  * Calculates dnormal/dx_j with Sacado DFAD                   popp 06/13|
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::automatic_d_surface_integration(
+void Discret::Elements::StructuralSurface::automatic_d_surface_integration(
     Core::LinAlg::SerialDenseMatrix& d_normal, const Core::LinAlg::SerialDenseMatrix& x,
     const Core::LinAlg::SerialDenseMatrix& deriv)
 {
@@ -573,7 +573,7 @@ void Discret::ELEMENTS::StructuralSurface::automatic_d_surface_integration(
 /*----------------------------------------------------------------------*
  * Calculates dnormal/dx_j analytically                       popp 06/13|
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::analytical_d_surface_integration(
+void Discret::Elements::StructuralSurface::analytical_d_surface_integration(
     Core::LinAlg::SerialDenseMatrix& d_normal, const Core::LinAlg::SerialDenseMatrix& x,
     const Core::LinAlg::SerialDenseMatrix& deriv)
 {
@@ -627,14 +627,14 @@ void Discret::ELEMENTS::StructuralSurface::analytical_d_surface_integration(
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
     Core::LinAlg::SerialDenseVector& elevector3)
 {
   // start with "none"
-  Discret::ELEMENTS::StructuralSurface::ActionType act = StructuralSurface::none;
+  Discret::Elements::StructuralSurface::ActionType act = StructuralSurface::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -1340,7 +1340,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
 
       // get integration rule
       const Core::FE::IntPointsAndWeights<2> intpoints(
-          Discret::ELEMENTS::DisTypeToOptGaussRule<Core::FE::CellType::quad4>::rule);
+          Discret::Elements::DisTypeToOptGaussRule<Core::FE::CellType::quad4>::rule);
 
       const Teuchos::RCP<Core::FE::Discretization> backgrddis =
           globalproblem->get_dis(backgrddisname);
@@ -1970,7 +1970,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -1984,7 +1984,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
   }
 
   // start with "none"
-  Discret::ELEMENTS::StructuralSurface::ActionType act = StructuralSurface::none;
+  Discret::Elements::StructuralSurface::ActionType act = StructuralSurface::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -2025,7 +2025,7 @@ int Discret::ELEMENTS::StructuralSurface::evaluate(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  * Compute Volume enclosed by surface.                          tk 10/07*
  * ---------------------------------------------------------------------*/
-double Discret::ELEMENTS::StructuralSurface::compute_constr_vols(
+double Discret::Elements::StructuralSurface::compute_constr_vols(
     const Core::LinAlg::SerialDenseMatrix& xc, const int numnode)
 {
   double V = 0.0;
@@ -2091,7 +2091,7 @@ double Discret::ELEMENTS::StructuralSurface::compute_constr_vols(
  * Compute volume and its first and second derivatives          tk 02/09*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
+void Discret::Elements::StructuralSurface::compute_vol_deriv(
     const Core::LinAlg::SerialDenseMatrix& xc, const int numnode, const int ndof, double& V,
     Core::LinAlg::SerialDenseVector& Vdiff1,
     const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Vdiff2, const int minindex,
@@ -2213,7 +2213,7 @@ void Discret::ELEMENTS::StructuralSurface::compute_vol_deriv(
  * Compute surface area and its first and second derivatives    lw 05/08*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::compute_area_deriv(
+void Discret::Elements::StructuralSurface::compute_area_deriv(
     const Core::LinAlg::SerialDenseMatrix& x, const int numnode, const int ndof, double& A,
     Core::LinAlg::SerialDenseVector& Adiff,
     const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Adiff2)
@@ -2349,7 +2349,7 @@ void Discret::ELEMENTS::StructuralSurface::compute_area_deriv(
 }
 
 
-void Discret::ELEMENTS::StructuralSurface::build_normals_at_nodes(
+void Discret::Elements::StructuralSurface::build_normals_at_nodes(
     Core::LinAlg::SerialDenseVector& nodenormals, const std::vector<double>& mydisp, bool refconfig)
 {
   const int numnode = num_node();
@@ -2392,7 +2392,7 @@ void Discret::ELEMENTS::StructuralSurface::build_normals_at_nodes(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::calculate_surface_porosity(
+void Discret::Elements::StructuralSurface::calculate_surface_porosity(
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
 {

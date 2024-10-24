@@ -18,11 +18,11 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   enum class EasType;
 }
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   namespace Internal
   {
@@ -136,7 +136,7 @@ namespace Discret::ELEMENTS
 
     FOUR_C_THROW("Your kinematic type is unknown: %d", kinem_type);
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

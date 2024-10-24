@@ -1654,7 +1654,7 @@ namespace Core::FE
 
     // Get gaussrule
     const Core::FE::IntPointsAndWeights<bdrynsd> intpoints(
-        Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+        Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
     // Get node coordinates
     Core::Geo::fill_initial_position_array<distype, nsd, Core::LinAlg::Matrix<nsd, bdrynen>>(

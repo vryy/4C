@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Artery::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Artery::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
@@ -82,7 +82,7 @@ bool Discret::ELEMENTS::Artery::read_element(const std::string& eletype, const s
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::set_diam_in_material(const double diam)
+void Discret::Elements::Artery::set_diam_in_material(const double diam)
 {
   // now the element knows its material, and we can use it to set the diameter
   Teuchos::RCP<Core::Mat::Material> mat = material();

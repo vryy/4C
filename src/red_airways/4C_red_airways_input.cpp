@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
 | Read in the RED_AIRWAY elements                                       |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAirway::read_element(const std::string& eletype,
+bool Discret::Elements::RedAirway::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
@@ -90,7 +90,7 @@ bool Discret::ELEMENTS::RedAirway::read_element(const std::string& eletype,
 /*----------------------------------------------------------------------*
 | Read in the RED_ACINUS elements                                       |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedAcinus::read_element(const std::string& eletype,
+bool Discret::Elements::RedAcinus::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();
@@ -134,7 +134,7 @@ bool Discret::ELEMENTS::RedAcinus::read_element(const std::string& eletype,
 /*----------------------------------------------------------------------*
 | Read in the RED_ACINAR_INTER_DEP elements                             |
 *-----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedInterAcinarDep::read_element(const std::string& eletype,
+bool Discret::Elements::RedInterAcinarDep::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   const int ndim = Global::Problem::instance()->n_dim();

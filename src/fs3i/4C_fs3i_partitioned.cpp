@@ -131,8 +131,8 @@ void FS3I::PartFS3I::init()
     // set implementation type of cloned scatra elements to advanced reactions
     for (int i = 0; i < fluidscatradis->num_my_col_elements(); ++i)
     {
-      Discret::ELEMENTS::Transport* element =
-          dynamic_cast<Discret::ELEMENTS::Transport*>(fluidscatradis->l_col_element(i));
+      Discret::Elements::Transport* element =
+          dynamic_cast<Discret::Elements::Transport*>(fluidscatradis->l_col_element(i));
       if (element == nullptr)
         FOUR_C_THROW("Invalid element type!");
       else
@@ -381,7 +381,7 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
   auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
   {
     const Core::Elements::Element* element = node.elements()[0];
-    const auto* beamelement = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element);
+    const auto* beamelement = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
     if (beamelement != nullptr && !beamelement->is_centerline_node(node))
       return *element->nodes()[0];
     else
@@ -393,7 +393,7 @@ Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> FS3I::PartFS3I::create_vol_morta
                                        Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
-    if (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(&ele))
+    if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
     {
       return Core::Binstrategy::DefaultRelevantPoints{
           .correct_node = correct_node,

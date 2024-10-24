@@ -92,9 +92,9 @@ namespace
 }  // namespace
 
 template <int numstates, typename T>
-MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::RemodelFiberImplementation(
-    std::shared_ptr<const MIXTURE::RemodelFiberMaterial<T>> material,
-    MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<T> growth_evolution, T lambda_pre)
+Mixture::Implementation::RemodelFiberImplementation<numstates, T>::RemodelFiberImplementation(
+    std::shared_ptr<const Mixture::RemodelFiberMaterial<T>> material,
+    Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<T> growth_evolution, T lambda_pre)
     : lambda_pre_(lambda_pre),
       fiber_material_(std::move(material)),
       growth_evolution_(std::move(growth_evolution))
@@ -105,7 +105,7 @@ MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::RemodelFiberI
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::pack(
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::pack(
     Core::Communication::PackBuffer& data) const
 {
   if constexpr (!std::is_floating_point_v<T>)
@@ -130,7 +130,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::pack(
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   if constexpr (!std::is_floating_point_v<T>)
@@ -157,7 +157,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::unpack(
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::update()
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::update()
 {
   for (std::size_t i = 1; i < numstates; ++i)
   {
@@ -174,7 +174,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::update()
 
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::update_deposition_stretch(
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::update_deposition_stretch(
     const T lambda_pre)
 {
   std::for_each(states_.begin(), states_.end(),
@@ -185,7 +185,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::update_d
 }
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::set_state(
+void Mixture::Implementation::RemodelFiberImplementation<numstates, T>::set_state(
     const T lambda_f, const T lambda_ext)
 {
   states_.back().lambda_f = lambda_f;
@@ -196,7 +196,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::set_stat
 }
 
 template <int numstates, typename T>
-Core::LinAlg::Matrix<2, 2, T> MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+Core::LinAlg::Matrix<2, 2, T> Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::integrate_local_evolution_equations_implicit(const T dt)
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -295,7 +295,7 @@ Core::LinAlg::Matrix<2, 2, T> MIXTURE::Implementation::RemodelFiberImplementatio
 
 
 template <int numstates, typename T>
-void MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+void Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::integrate_local_evolution_equations_explicit(const T dt)
 {
   const IntegrationState<numstates, T> growth_state = std::invoke(
@@ -337,7 +337,7 @@ void MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_growth_evolution_equation_dt(const T lambda_f, const T lambda_r,
     const T lambda_ext, const T growth_scalar) const
 {
@@ -348,7 +348,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_growth_evolution_equation_dt_d_sig(const T lambda_f, const T lambda_r,
     const T lambda_ext, const T growth_scalar) const
 {
@@ -359,7 +359,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_growth_evolution_equation_dt_partial_dgrowth(const T lambda_f, const T lambda_r,
     const T lambda_ext, const T growth_scalar) const
 {
@@ -369,7 +369,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_growth_evolution_equation_dt_partial_d_remodel(const T lambda_f,
     const T lambda_r, const T lambda_ext, const T growth_scalar) const
 {
@@ -380,7 +380,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_growth_evolution_equation_dt_d_growth(const T lambda_f, const T lambda_r,
     const T lambda_ext, const T growth_scalar) const
 {
@@ -389,7 +389,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_growth_evolution_equation_dt_d_remodel(const T lambda_f, const T lambda_r,
     const T lambda_ext, const T growth_scalar) const
 {
@@ -402,7 +402,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_remodel_evolution_equation_dt(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -418,7 +418,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_d_sig(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -433,7 +433,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_d_i4(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -451,7 +451,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_partial_d_growth(const T lambda_f,
     const T lambda_r, const T lambda_ext) const
 {
@@ -462,7 +462,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_partial_d_remodel(const T lambda_f,
     const T lambda_r, const T lambda_ext) const
 {
@@ -475,7 +475,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_d_growth(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -483,7 +483,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_remodel_evolution_equation_dt_d_remodel(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -494,7 +494,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_fiber_cauchy_stress(
+T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_fiber_cauchy_stress(
     const T lambda_f, const T lambda_r, const T lambda_ext) const
 {
   const T I4 = evaluate_i4<T>(lambda_f, lambda_r, lambda_ext);
@@ -502,14 +502,14 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_fi
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_current_homeostatic_fiber_cauchy_stress() const
 {
   return sig_h_;
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_current_fiber_cauchy_stress() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -521,7 +521,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_current_fiber_p_k2_stress() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -534,7 +534,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -549,7 +549,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_fiber_p_k2_stress_d_lambdar() const
 {
   FOUR_C_ASSERT(state_is_set_, "You have to call set_state() before!");
@@ -564,7 +564,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(T dt)
     const
 {
@@ -598,7 +598,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(T dt)
     const
 {
@@ -630,7 +630,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_partial_d_i4(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -639,7 +639,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_partial_d_i4_d_i4(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -648,7 +648,7 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_d_fiber_cauchy_stress_d_remodel(const T lambda_f, const T lambda_r,
     const T lambda_ext) const
 {
@@ -657,14 +657,14 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates,
+T Mixture::Implementation::RemodelFiberImplementation<numstates,
     T>::evaluate_current_growth_scalar() const
 {
   return states_.back().growth_scalar;
 }
 
 template <int numstates, typename T>
-T MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambdar()
+T Mixture::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_current_lambdar()
     const
 {
   return states_.back().lambda_r;
@@ -673,9 +673,9 @@ T MIXTURE::Implementation::RemodelFiberImplementation<numstates, T>::evaluate_cu
 
 //---- REMODELFIBER
 template <int numstates>
-MIXTURE::RemodelFiber<numstates>::RemodelFiber(
+Mixture::RemodelFiber<numstates>::RemodelFiber(
     std::shared_ptr<const RemodelFiberMaterial<double>> material,
-    const MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution,
+    const Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution,
     double lambda_pre)
     : impl_(std::make_unique<Implementation::RemodelFiberImplementation<numstates, double>>(
           material, growth_evolution, lambda_pre))
@@ -683,80 +683,80 @@ MIXTURE::RemodelFiber<numstates>::RemodelFiber(
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::pack(Core::Communication::PackBuffer& data) const
+void Mixture::RemodelFiber<numstates>::pack(Core::Communication::PackBuffer& data) const
 {
   impl_->pack(data);
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Mixture::RemodelFiber<numstates>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   impl_->unpack(buffer);
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::update()
+void Mixture::RemodelFiber<numstates>::update()
 {
   impl_->update();
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::update_deposition_stretch(const double lambda_pre)
+void Mixture::RemodelFiber<numstates>::update_deposition_stretch(const double lambda_pre)
 {
   impl_->update_deposition_stretch(lambda_pre);
 }
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::set_state(const double lambda_f, const double lambda_ext)
+void Mixture::RemodelFiber<numstates>::set_state(const double lambda_f, const double lambda_ext)
 {
   impl_->set_state(lambda_f, lambda_ext);
 }
 
 template <int numstates>
 Core::LinAlg::Matrix<2, 2>
-MIXTURE::RemodelFiber<numstates>::integrate_local_evolution_equations_implicit(const double dt)
+Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_implicit(const double dt)
 {
   return impl_->integrate_local_evolution_equations_implicit(dt);
 };
 
 template <int numstates>
-void MIXTURE::RemodelFiber<numstates>::integrate_local_evolution_equations_explicit(const double dt)
+void Mixture::RemodelFiber<numstates>::integrate_local_evolution_equations_explicit(const double dt)
 {
   impl_->integrate_local_evolution_equations_explicit(dt);
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_current_homeostatic_fiber_cauchy_stress() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_homeostatic_fiber_cauchy_stress() const
 {
   return impl_->evaluate_current_homeostatic_fiber_cauchy_stress();
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_current_fiber_cauchy_stress() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_fiber_cauchy_stress() const
 {
   return impl_->evaluate_current_fiber_cauchy_stress();
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_current_fiber_p_k2_stress() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_fiber_p_k2_stress() const
 {
   return impl_->evaluate_current_fiber_p_k2_stress();
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
 {
   return impl_->evaluate_d_current_fiber_p_k2_stress_d_lambdafsq();
 };
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_d_current_fiber_p_k2_stress_d_lambdar() const
+double Mixture::RemodelFiber<numstates>::evaluate_d_current_fiber_p_k2_stress_d_lambdar() const
 {
   return impl_->evaluate_d_current_fiber_p_k2_stress_d_lambdar();
 };
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::
+double Mixture::RemodelFiber<numstates>::
     evaluate_d_current_growth_evolution_implicit_time_integration_residuum_d_lambdafsq(
         double dt) const
 {
@@ -765,7 +765,7 @@ double MIXTURE::RemodelFiber<numstates>::
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::
+double Mixture::RemodelFiber<numstates>::
     evaluate_d_current_remodel_evolution_implicit_time_integration_residuum_d_lambdafsq(
         double dt) const
 {
@@ -774,19 +774,19 @@ double MIXTURE::RemodelFiber<numstates>::
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_current_growth_scalar() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_growth_scalar() const
 {
   return impl_->evaluate_current_growth_scalar();
 }
 
 template <int numstates>
-double MIXTURE::RemodelFiber<numstates>::evaluate_current_lambdar() const
+double Mixture::RemodelFiber<numstates>::evaluate_current_lambdar() const
 {
   return impl_->evaluate_current_lambdar();
 }
 
-template class MIXTURE::RemodelFiber<2>;
-template class MIXTURE::Implementation::RemodelFiberImplementation<2, Sacado::Fad::DFad<double>>;
-template class MIXTURE::Implementation::RemodelFiberImplementation<2, double>;
+template class Mixture::RemodelFiber<2>;
+template class Mixture::Implementation::RemodelFiberImplementation<2, Sacado::Fad::DFad<double>>;
+template class Mixture::Implementation::RemodelFiberImplementation<2, double>;
 
 FOUR_C_NAMESPACE_CLOSE

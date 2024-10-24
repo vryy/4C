@@ -24,15 +24,15 @@ FOUR_C_NAMESPACE_OPEN
 // forward declaration ...
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ParamsInterface;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Solid
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Torsion3Type : public Core::Elements::ElementType
     {
@@ -283,7 +283,7 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface()
+      inline FourC::Solid::Elements::ParamsInterface& params_interface()
       {
         if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -300,7 +300,7 @@ namespace Discret
       /*! \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<FourC::Solid::Elements::ParamsInterface> interface_ptr_;
 
       //! Bending potential
       BendingPotential bendingpotential_;
@@ -341,7 +341,7 @@ namespace Discret
     std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

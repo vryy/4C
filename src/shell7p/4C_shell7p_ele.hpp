@@ -37,7 +37,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class Shell7pEleCalcInterface;
@@ -132,7 +132,7 @@ namespace Discret
 
 
       //! copy constructor
-      Shell7p(const Discret::ELEMENTS::Shell7p& other);
+      Shell7p(const Discret::Elements::Shell7p& other);
 
       //! copy assignment operator
       Shell7p& operator=(const Shell7p& other);
@@ -195,7 +195,7 @@ namespace Discret
         return (not interface_ptr_.is_null());
       }
 
-      [[nodiscard]] inline Solid::ELEMENTS::ParamsInterface& str_params_interface() const
+      [[nodiscard]] inline Solid::Elements::ParamsInterface& str_params_interface() const
       {
         if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -241,7 +241,7 @@ namespace Discret
       Core::FE::CellType distype_ = Core::FE::CellType::dis_none;
 
       //! interface ptr, data exchange between the element and the time integrator.
-      Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_ = Teuchos::null;
+      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_ = Teuchos::null;
 
       //! element technology
       std::set<Inpar::Solid::EleTech> eletech_ = {};
@@ -258,7 +258,7 @@ namespace Discret
       //! shell calculation interface
       std::shared_ptr<Shell7pEleCalcInterface> shell_interface_ = nullptr;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

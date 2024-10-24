@@ -46,7 +46,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<Beam>::setup()
   // This pair only works for Simo Reissner beam elements.
   const auto check_simo_reissner_beam = [](auto element)
   {
-    const bool is_sr_beam = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element) != nullptr;
+    const bool is_sr_beam = dynamic_cast<const Discret::Elements::Beam3r*>(element) != nullptr;
     if (!is_sr_beam)
       FOUR_C_THROW("The BeamToBeamPointCouplingPair only works for Simo Reissner beams");
   };

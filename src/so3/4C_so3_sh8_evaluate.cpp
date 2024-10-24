@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -117,7 +117,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       for (double& myre : myres) myre = 0.0;
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::Elements::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr, nullptr,
             nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
@@ -146,7 +146,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       std::vector<double> myres(lm.size());
       Core::FE::extract_my_values(*res, myres, lm);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::Elements::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, &elevec3, nullptr,
             nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
@@ -177,7 +177,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> myemat(true);
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::Elements::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &myemat, nullptr, &elevec1, nullptr, nullptr, nullptr,
             params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
@@ -213,7 +213,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       Core::FE::extract_my_values(*res, myres, lm);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::Elements::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, &elemat1, &elemat2, &elevec1, &elevec3, nullptr,
             nullptr, params, Inpar::Solid::stress_none, Inpar::Solid::strain_none);
@@ -264,7 +264,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
           params.get<Inpar::Solid::StrainType>("ioplstrain", Inpar::Solid::strain_none);
 
       // decide whether evaluate 'thin' sosh stiff or 'thick' so_hex8 stiff
-      if (eastype_ != Discret::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ != Discret::Elements::SoHex8::soh8_easmild)
       {
         sosh8_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, nullptr, nullptr, &stress, &strain,
             params, iostress, iostrain);
@@ -441,7 +441,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
       break;
     case Core::Elements::struct_calc_energy:
     {
-      if (eastype_ == Discret::ELEMENTS::SoHex8::soh8_easmild)
+      if (eastype_ == Discret::Elements::SoHex8::soh8_easmild)
       {
         SoHex8::evaluate(params, discretization, lm, elemat1_epetra, elemat2_epetra, elevec1_epetra,
             elevec2_epetra, elevec3_epetra);
@@ -499,7 +499,7 @@ int Discret::ELEMENTS::SoSh8::evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
+double Discret::Elements::SoSh8::sosh8_calc_energy(
     const std::vector<double>& disp, Teuchos::ParameterList& params)
 {
   if (Prestress::is_mulf(pstype_)) FOUR_C_THROW("mulf is unsupported for the So_sh8 element!");
@@ -535,7 +535,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
   if (min_detJ_curr <= 0.0)
   {
     soh8_error_handling(
-        min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
+        min_detJ_curr, params, __LINE__, Solid::Elements::ele_error_determinant_at_corner);
     return 0.0;
   }
 
@@ -630,7 +630,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
       soh8_error_handling(
-          detJ_cur, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          detJ_cur, params, __LINE__, Solid::Elements::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -669,7 +669,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
     if (I3 <= 0.0)
     {
       soh8_error_handling(
-          I3, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          I3, params, __LINE__, Solid::Elements::ele_error_negative_det_of_def_gradient);
       return 0.0;
     }
 
@@ -693,7 +693,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_calc_energy(
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                           // current displacements
     std::vector<double>& residual,                                       // current residual displ
     Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,         // element stiffness matrix
@@ -733,7 +733,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   if (min_detJ_curr <= 0.0)
   {
     soh8_error_handling(
-        min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
+        min_detJ_curr, params, __LINE__, Solid::Elements::ele_error_determinant_at_corner);
     return;
   }
 
@@ -891,7 +891,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (not sosh8_evaluatejacobians(gp, derivs, xrefe, xcurr, jac, detJ, jac_cur, detJ_cur))
     {
       soh8_error_handling(
-          detJ_cur, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          detJ_cur, params, __LINE__, Solid::Elements::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->clear();
       if (force) force->clear();
@@ -934,7 +934,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (I3 <= 0.0)
     {
       soh8_error_handling(
-          I3, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          I3, params, __LINE__, Solid::Elements::ele_error_negative_det_of_def_gradient);
 
       if (stiffmatrix) stiffmatrix->clear();
       if (force) force->clear();
@@ -978,7 +978,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
     if (det_defgrd <= 0.0)
     {
       soh8_error_handling(
-          det_defgrd, params, __LINE__, Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+          det_defgrd, params, __LINE__, Solid::Elements::ele_error_negative_det_of_def_gradient);
       return;
     }
 
@@ -1177,14 +1177,14 @@ void Discret::ELEMENTS::SoSh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // loca
   }
 
   return;
-}  // Discret::ELEMENTS::So_sh8::sosh8_nlnstiffmass
+}  // Discret::Elements::So_sh8::sosh8_nlnstiffmass
 
 
 
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_anssetup(
+void Discret::Elements::SoSh8::sosh8_anssetup(
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,  // material element coords
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,  // current element coords
     std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>**
@@ -1320,7 +1320,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_anssetup(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
+bool Discret::Elements::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
     const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe,
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
@@ -1345,7 +1345,7 @@ bool Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobians(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
+void Discret::Elements::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
     const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& x,
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac, double& detJ) const
@@ -1363,7 +1363,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_evaluatejacobian(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::SoSh8::sosh8_third_invariant(
+double Discret::Elements::SoSh8::sosh8_third_invariant(
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain) const
 {
   Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> rcg(glstrain);
@@ -1380,7 +1380,7 @@ double Discret::ELEMENTS::SoSh8::sosh8_third_invariant(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_get_bop_loc(const unsigned gp,
+void Discret::Elements::SoSh8::sosh8_get_bop_loc(const unsigned gp,
     const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr, const double* r,
     const double* s, const Core::LinAlg::Matrix<num_ans * num_sp, NUMDOF_SOH8>& B_ans_loc,
@@ -1453,7 +1453,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_get_bop_loc(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
+void Discret::Elements::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
     const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac_curr,
     const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
     const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>>& jac_sps,
@@ -1565,7 +1565,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_get_glstrain_loc(const unsigned gp,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
+void Discret::Elements::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
     const std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>>& derivs,
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr,
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
@@ -1597,7 +1597,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_evaluate_t(
+void Discret::Elements::SoSh8::sosh8_evaluate_t(
     const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& jac,
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT)
 {
@@ -1662,7 +1662,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_evaluate_t(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
+void Discret::Elements::SoSh8::sosh8_cauchy(
     Core::LinAlg::Matrix<NUMGPT_SOH8, Mat::NUM_STRESS_3D>* elestress, const int gp,
     const Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>& defgrd,
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
@@ -1751,7 +1751,7 @@ void Discret::ELEMENTS::SoSh8::sosh8_cauchy(
   return;
 }
 
-void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
+void Discret::Elements::SoSh8::do_calc_stc_matrix(
     Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>& elemat1,
     const Inpar::Solid::StcScale stc_scaling, const int stc_layer, std::vector<int>& lm,
     Core::FE::Discretization& discretization, bool calcinverse)
@@ -1954,7 +1954,7 @@ void Discret::ELEMENTS::SoSh8::do_calc_stc_matrix(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoSh8Type::initialize(Core::FE::Discretization& dis)
 {
   // sosh8_gmshplotdis(dis);
 
@@ -1966,7 +1966,7 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
   {
     // get the actual element
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoSh8*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
 
     if (!actele->nodes_rearranged_)
@@ -1975,14 +1975,14 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
       switch (actele->thickdir_)
       {
         // check for automatic definition of thickness direction
-        case Discret::ELEMENTS::SoSh8::autoj:
+        case Discret::Elements::SoSh8::autoj:
         {
           actele->thickdir_ = actele->sosh8_findthickdir();
           altered = true;
           break;
         }
         // check for enforced definition of thickness direction
-        case Discret::ELEMENTS::SoSh8::globx:
+        case Discret::Elements::SoSh8::globx:
         {
           Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(0) = 1.0;
@@ -1990,7 +1990,7 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           altered = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8::globy:
+        case Discret::Elements::SoSh8::globy:
         {
           Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(1) = 1.0;
@@ -1998,7 +1998,7 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           altered = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8::globz:
+        case Discret::Elements::SoSh8::globz:
         {
           Core::LinAlg::Matrix<NUMDIM_SOH8, 1> thickdirglo(true);
           thickdirglo(2) = 1.0;
@@ -2010,7 +2010,7 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           break;
       }
 
-      if (altered and (actele->thickdir_ != Discret::ELEMENTS::SoSh8::undefined))
+      if (altered and (actele->thickdir_ != Discret::Elements::SoSh8::undefined))
       {
         // special element-dependent input of material parameters
         if (actele->material()->material_type() == Core::Materials::m_viscoanisotropic)
@@ -2027,15 +2027,15 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
 
       switch (actele->thickdir_)
       {
-        case Discret::ELEMENTS::SoSh8::globx:
-        case Discret::ELEMENTS::SoSh8::globy:
-        case Discret::ELEMENTS::SoSh8::globz:
+        case Discret::Elements::SoSh8::globx:
+        case Discret::Elements::SoSh8::globy:
+        case Discret::Elements::SoSh8::globz:
         {
           FOUR_C_THROW("This should have been replaced by auto(r|s|t)");
           break;
         }
-        case Discret::ELEMENTS::SoSh8::autor:
-        case Discret::ELEMENTS::SoSh8::enfor:
+        case Discret::Elements::SoSh8::autor:
+        case Discret::Elements::SoSh8::enfor:
         {
           // resorting of nodes,
           // such that previous local r-dir is local t-dir afterwards
@@ -2053,8 +2053,8 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8::autos:
-        case Discret::ELEMENTS::SoSh8::enfos:
+        case Discret::Elements::SoSh8::autos:
+        case Discret::Elements::SoSh8::enfos:
         {
           // resorting of nodes,
           // such that previous local s-dir is local t-dir afterwards
@@ -2070,8 +2070,8 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8::autot:
-        case Discret::ELEMENTS::SoSh8::enfot:
+        case Discret::Elements::SoSh8::autot:
+        case Discret::Elements::SoSh8::enfot:
         {
           // no resorting necessary
           for (int node = 0; node < 8; ++node)
@@ -2082,32 +2082,32 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
           actele->nodes_rearranged_ = true;
           break;
         }
-        case Discret::ELEMENTS::SoSh8::undefined:
+        case Discret::Elements::SoSh8::undefined:
         {
-          if (actele->eastype_ == Discret::ELEMENTS::SoSh8::soh8_eassosh8)
+          if (actele->eastype_ == Discret::Elements::SoSh8::soh8_eassosh8)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->soh8_reiniteas(Discret::ELEMENTS::SoHex8::soh8_easmild);
+            actele->soh8_reiniteas(Discret::Elements::SoHex8::soh8_easmild);
             actele->anstype_ = SoSh8::ansnone;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easmild++;
           }
-          else if (actele->eastype_ == Discret::ELEMENTS::SoSh8::soh8_easnone)
+          else if (actele->eastype_ == Discret::Elements::SoSh8::soh8_easnone)
           {
             // here comes plan B: morph So_sh8 to So_hex8
-            actele->soh8_reiniteas(Discret::ELEMENTS::SoHex8::soh8_easnone);
+            actele->soh8_reiniteas(Discret::Elements::SoHex8::soh8_easnone);
             actele->anstype_ = SoSh8::ansnone;
             actele->init_jacobian_mapping();
             num_morphed_so_hex8_easnone++;
           }
-          else if (actele->eastype_ == Discret::ELEMENTS::SoHex8::soh8_easmild)
+          else if (actele->eastype_ == Discret::Elements::SoHex8::soh8_easmild)
           {
             // this might happen in post filter (for morped sosh8->soh8)
-            actele->soh8_reiniteas(Discret::ELEMENTS::SoHex8::soh8_easmild);
+            actele->soh8_reiniteas(Discret::Elements::SoHex8::soh8_easmild);
             actele->anstype_ = SoSh8::ansnone;
             actele->init_jacobian_mapping();
           }
-          else if (actele->eastype_ == Discret::ELEMENTS::SoHex8::soh8_easnone)
+          else if (actele->eastype_ == Discret::Elements::SoHex8::soh8_easnone)
           {
             // this might happen in post filter (for morped sosh8->soh8)
             actele->anstype_ = SoSh8::ansnone;
@@ -2117,7 +2117,7 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
             FOUR_C_THROW("Undefined EAS type");
           break;
         }
-        case Discret::ELEMENTS::SoSh8::none:
+        case Discret::Elements::SoSh8::none:
           break;
         default:
           FOUR_C_THROW("no thickness direction for So_sh8");
@@ -2151,7 +2151,7 @@ int Discret::ELEMENTS::SoSh8Type::initialize(Core::FE::Discretization& dis)
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoSh8*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoSh8*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_sh8* failed");
     actele->init_jacobian_mapping();
   }

@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
+void Discret::Elements::Wall1::w1_call_matgeononl(
     const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
     Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
     Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
@@ -179,11 +179,11 @@ void Discret::ELEMENTS::Wall1::w1_call_matgeononl(
   }  // switch(material->material_type())
 
   return;
-}  // Discret::ELEMENTS::Wall1::w1_call_matgeononl
+}  // Discret::Elements::Wall1::w1_call_matgeononl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
+void Discret::Elements::Wall1::material_response3d_plane(Core::LinAlg::SerialDenseMatrix& stress,
     Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
@@ -335,7 +335,7 @@ void Discret::ELEMENTS::Wall1::material_response3d_plane(Core::LinAlg::SerialDen
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
+void Discret::Elements::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* stress,
     Core::LinAlg::Matrix<6, 6>* cmat, const Core::LinAlg::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
@@ -347,7 +347,7 @@ void Discret::ELEMENTS::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* s
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::Material> material,
+double Discret::Elements::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::Material> material,
     Teuchos::ParameterList& params, const Core::LinAlg::SerialDenseVector& Ev, const int gp)
 {
   // switch material type
@@ -415,7 +415,7 @@ double Discret::ELEMENTS::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::M
 /*-----------------------------------------------------------------------------*
 | deliver kinetic energy                                            bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Wall1::energy_kinetic(
+double Discret::Elements::Wall1::energy_kinetic(
     const Core::LinAlg::SerialDenseMatrix& mass, const std::vector<double>& vel)
 {
   double kin = 0.0;

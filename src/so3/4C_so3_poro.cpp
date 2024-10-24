@@ -22,10 +22,10 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <class So3Ele, Core::FE::CellType distype>
-Discret::ELEMENTS::So3Poro<So3Ele, distype>::So3Poro(int id, int owner)
+Discret::Elements::So3Poro<So3Ele, distype>::So3Poro(int id, int owner)
     : So3Ele(id, owner),
-      intpoints_(Discret::ELEMENTS::create_gauss_integration<distype>(
-          Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
+      intpoints_(Discret::Elements::create_gauss_integration<distype>(
+          Discret::Elements::DisTypeToOptGaussRule<distype>::rule)),
       init_(false),
       isNurbs_(false),
       weights_(true),
@@ -44,14 +44,14 @@ Discret::ELEMENTS::So3Poro<So3Ele, distype>::So3Poro(int id, int owner)
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-Discret::ELEMENTS::So3Poro<So3Ele, distype>::So3Poro(
-    const Discret::ELEMENTS::So3Poro<So3Ele, distype>& old)
+Discret::Elements::So3Poro<So3Ele, distype>::So3Poro(
+    const Discret::Elements::So3Poro<So3Ele, distype>& old)
     : So3Ele(old),
       invJ_(old.invJ_),
       detJ_(old.detJ_),
       xsi_(old.xsi_),
-      intpoints_(Discret::ELEMENTS::create_gauss_integration<distype>(
-          Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
+      intpoints_(Discret::Elements::create_gauss_integration<distype>(
+          Discret::Elements::DisTypeToOptGaussRule<distype>::rule)),
       init_(old.init_),
       isNurbs_(old.isNurbs_),
       weights_(old.weights_),
@@ -66,14 +66,14 @@ Discret::ELEMENTS::So3Poro<So3Ele, distype>::So3Poro(
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3Poro<So3Ele, distype>::clone() const
+Core::Elements::Element* Discret::Elements::So3Poro<So3Ele, distype>::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::So3Poro<So3Ele, distype>(*this);
+  auto* newelement = new Discret::Elements::So3Poro<So3Ele, distype>(*this);
   return newelement;
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::So3Poro<So3Ele, distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -112,7 +112,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::pack(Core::Communication::Pack
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::So3Poro<So3Ele, distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -160,7 +160,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::unpack(Core::Communication::Un
 
 template <class So3Ele, Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::So3Poro<So3Ele, distype>::surfaces()
+Discret::Elements::So3Poro<So3Ele, distype>::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -168,14 +168,14 @@ Discret::ELEMENTS::So3Poro<So3Ele, distype>::surfaces()
 
 template <class So3Ele, Core::FE::CellType distype>
 std::vector<Teuchos::RCP<Core::Elements::Element>>
-Discret::ELEMENTS::So3Poro<So3Ele, distype>::lines()
+Discret::Elements::So3Poro<So3Ele, distype>::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::print(std::ostream& os) const
+void Discret::Elements::So3Poro<So3Ele, distype>::print(std::ostream& os) const
 {
   os << "So3_poro ";
   os << Core::FE::cell_type_to_string(distype).c_str() << " ";
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::print(std::ostream& os) const
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Poro<So3Ele, distype>::read_element(const std::string& eletype,
+bool Discret::Elements::So3Poro<So3Ele, distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element
@@ -201,7 +201,7 @@ bool Discret::ELEMENTS::So3Poro<So3Ele, distype>::read_element(const std::string
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::
+void Discret::Elements::So3Poro<So3Ele, distype>::
     read_anisotropic_permeability_directions_from_element_line_definition(
         const Core::IO::InputParameterContainer& container)
 {
@@ -215,7 +215,7 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::
+void Discret::Elements::So3Poro<So3Ele, distype>::
     read_anisotropic_permeability_nodal_coeffs_from_element_line_definition(
         const Core::IO::InputParameterContainer& container)
 {
@@ -229,20 +229,20 @@ void Discret::ELEMENTS::So3Poro<So3Ele, distype>::
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Poro<So3Ele, distype>::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::So3Poro<So3Ele, distype>::vis_names(std::map<std::string, int>& names)
 {
   So3Ele::vis_names(names);
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Poro<So3Ele, distype>::vis_data(
+bool Discret::Elements::So3Poro<So3Ele, distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   return So3Ele::vis_data(name, data);
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Poro<So3Ele, distype>::unique_par_object_id() const
+int Discret::Elements::So3Poro<So3Ele, distype>::unique_par_object_id() const
 {
   switch (distype)
   {
@@ -264,7 +264,7 @@ int Discret::ELEMENTS::So3Poro<So3Ele, distype>::unique_par_object_id() const
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::So3Poro<So3Ele, distype>::element_type() const
+Core::Elements::ElementType& Discret::Elements::So3Poro<So3Ele, distype>::element_type() const
 {
   switch (distype)
   {
@@ -284,20 +284,20 @@ Core::Elements::ElementType& Discret::ELEMENTS::So3Poro<So3Ele, distype>::elemen
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-inline Core::Nodes::Node** Discret::ELEMENTS::So3Poro<So3Ele, distype>::nodes()
+inline Core::Nodes::Node** Discret::Elements::So3Poro<So3Ele, distype>::nodes()
 {
   return So3Ele::nodes();
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-inline Teuchos::RCP<Core::Mat::Material> Discret::ELEMENTS::So3Poro<So3Ele, distype>::material()
+inline Teuchos::RCP<Core::Mat::Material> Discret::Elements::So3Poro<So3Ele, distype>::material()
     const
 {
   return So3Ele::material();
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-inline int Discret::ELEMENTS::So3Poro<So3Ele, distype>::id() const
+inline int Discret::Elements::So3Poro<So3Ele, distype>::id() const
 {
   return So3Ele::id();
 }

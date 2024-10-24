@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Interface base class for inter_acinar_dep_impl
     /*!
@@ -64,7 +64,7 @@ namespace Discret
           Teuchos::RCP<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for inter-acinar linker element
-      static RedInterAcinarDepImplInterface* impl(Discret::ELEMENTS::RedInterAcinarDep* acinus);
+      static RedInterAcinarDepImplInterface* impl(Discret::Elements::RedInterAcinarDep* acinus);
     };
 
 
@@ -165,7 +165,7 @@ namespace Discret
      private:
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

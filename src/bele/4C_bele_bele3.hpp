@@ -30,7 +30,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Bele3Type : public Core::Elements::ElementType
     {
@@ -307,7 +307,7 @@ namespace Discret
       \param lline: the local line number of this line w.r.t. the parent element
       */
       Bele3Line(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Bele3* parent, const int lline);
+          Discret::Elements::Bele3* parent, const int lline);
 
       /*!
       \brief Copy Constructor
@@ -406,7 +406,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

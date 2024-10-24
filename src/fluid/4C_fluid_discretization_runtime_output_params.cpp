@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidRuntimeOutputParams::init(
+void Discret::Elements::FluidRuntimeOutputParams::init(
     const Teuchos::ParameterList& IO_fluid_paramslist)
 {
   // We have to call setup() after init()
@@ -37,7 +37,7 @@ void Discret::ELEMENTS::FluidRuntimeOutputParams::init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidRuntimeOutputParams::setup()
+void Discret::Elements::FluidRuntimeOutputParams::setup()
 {
   if (not is_init()) FOUR_C_THROW("init() has not been called, yet!");
 
@@ -48,7 +48,7 @@ void Discret::ELEMENTS::FluidRuntimeOutputParams::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidRuntimeOutputParams::check_init_setup() const
+void Discret::Elements::FluidRuntimeOutputParams::check_init_setup() const
 {
   if (not is_init() or not is_setup()) FOUR_C_THROW("Call init() and setup() first!");
 }

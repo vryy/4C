@@ -531,7 +531,7 @@ void FLD::XFluidFluid::add_eos_pres_stab_to_emb_layer()
   for (int i = 0; i < numrowintfaces; ++i)
   {
     Core::Elements::Element* actface = xdiscret->l_row_face(i);
-    Discret::ELEMENTS::FluidIntFace* ele = dynamic_cast<Discret::ELEMENTS::FluidIntFace*>(actface);
+    Discret::Elements::FluidIntFace* ele = dynamic_cast<Discret::Elements::FluidIntFace*>(actface);
     if (ele == nullptr) FOUR_C_THROW("expect FluidIntFace element");
     edgestab_->evaluate_edge_stab_boundary_gp(faceparams, xdiscret,
         *mc_xff_->get_auxiliary_discretization(), ele, sysmat_linalg, residual_col);
@@ -837,7 +837,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
 
     Teuchos::RCP<Core::Mat::Material> mat = actele->material();
 
-    Discret::ELEMENTS::Fluid* ele = dynamic_cast<Discret::ELEMENTS::Fluid*>(actele);
+    Discret::Elements::Fluid* ele = dynamic_cast<Discret::Elements::Fluid*>(actele);
 
     Core::Elements::LocationArray la(1);
 
@@ -850,7 +850,7 @@ Teuchos::RCP<std::vector<double>> FLD::XFluidFluid::evaluate_error_compared_to_a
     Core::LinAlg::SerialDenseVector elevec3;
     params_->set<FLD::Action>("action", FLD::calc_fluid_error);
 
-    Discret::ELEMENTS::FluidFactory::provide_impl_xfem(actele->shape(), "xfem")
+    Discret::Elements::FluidFactory::provide_impl_xfem(actele->shape(), "xfem")
         ->evaluate_service(ele, *params_, mat, *mc_xff_->get_cond_dis(), la[0].lm_, elemat1,
             elemat2, ele_dom_norms_emb, elevec2, elevec3);
 

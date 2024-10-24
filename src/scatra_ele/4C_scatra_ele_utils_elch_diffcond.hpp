@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     template <int nsd, int nen>
@@ -76,7 +76,7 @@ namespace Discret
       );
 
     };  // class ScaTraEleUtilsElchDiffCond
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::impl(
-    Discret::ELEMENTS::Ale3* ele)
+Discret::Elements::Ale3ImplInterface* Discret::Elements::Ale3ImplInterface::impl(
+    Discret::Elements::Ale3* ele)
 {
   switch (ele->shape())
   {
@@ -73,14 +73,14 @@ Discret::ELEMENTS::Ale3ImplInterface* Discret::ELEMENTS::Ale3ImplInterface::impl
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::instance(
+Discret::Elements::Ale3Impl<distype>* Discret::Elements::Ale3Impl<distype>::instance(
     Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::Ale3Impl<distype>>(
-            new Discret::ELEMENTS::Ale3Impl<distype>());
+        return std::unique_ptr<Discret::Elements::Ale3Impl<distype>>(
+            new Discret::Elements::Ale3Impl<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -89,13 +89,13 @@ Discret::ELEMENTS::Ale3Impl<distype>* Discret::ELEMENTS::Ale3Impl<distype>::inst
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Ale3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::Ale3::ActionType act = Ale3::none;
+  Discret::Elements::Ale3::ActionType act = Ale3::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -240,7 +240,7 @@ int Discret::ELEMENTS::Ale3::evaluate(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -251,7 +251,7 @@ int Discret::ELEMENTS::Ale3::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::element_node_normal(
+inline void Discret::Elements::Ale3Impl<distype>::element_node_normal(
     Ale3* ele, Core::LinAlg::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
   if (distype == Core::FE::CellType::nurbs8 or distype == Core::FE::CellType::nurbs27)
@@ -325,7 +325,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::element_node_normal(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
+inline void Discret::Elements::Ale3Impl<distype>::ale3_edge_geometry(int i, int j,
     const Core::LinAlg::Matrix<3, iel>& xyze, double& length, double& dx, double& dy, double& dz)
 {
   /*---------------------------------------------- x-, y- and z-difference ---*/
@@ -342,7 +342,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_edge_geometry(int i, int 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q,
+void Discret::Elements::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, int node_q,
     int node_r, int node_s, const Core::LinAlg::Matrix<3, 1>& sq, const double len_sq,
     const Core::LinAlg::Matrix<3, 1>& rp, const double len_rp, const Core::LinAlg::Matrix<3, 1>& qp,
     const Core::LinAlg::Matrix<3, 1>& local_x, Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat)
@@ -651,7 +651,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tria_stiffness(int node_p, i
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
+void Discret::Elements::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, int tet_1, int tet_2,
     int tet_3, Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat,
     const Core::LinAlg::Matrix<3, iel>& xyze)
 {
@@ -721,7 +721,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::ale3_add_tetra_stiffness(int tet_0, i
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_tet4(
+inline void Discret::Elements::Ale3Impl<distype>::ale3_tors_spring_tet4(
     Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 2, 3, sys_mat, xyze);
@@ -730,7 +730,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_tet4(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
+inline void Discret::Elements::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
     Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(0, 1, 3, 4, sys_mat, xyze);
@@ -742,7 +742,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_pyramid5(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_wedge6(
+inline void Discret::Elements::Ale3Impl<distype>::ale3_tors_spring_wedge6(
     Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   ale3_add_tetra_stiffness(2, 0, 1, 3, sys_mat, xyze);
@@ -764,7 +764,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_wedge6(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_hex8(
+inline void Discret::Elements::Ale3Impl<distype>::ale3_tors_spring_hex8(
     Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   // Use 8 tetrahedra to prevent node-face-penetration
@@ -782,7 +782,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_hex8(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
+inline void Discret::Elements::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
     Core::LinAlg::Matrix<3 * iel, 3 * iel>& sys_mat, const Core::LinAlg::Matrix<3, iel>& xyze)
 {
   //                          v
@@ -912,7 +912,7 @@ inline void Discret::ELEMENTS::Ale3Impl<distype>::ale3_tors_spring_nurbs27(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
+void Discret::Elements::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
     Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
     Core::LinAlg::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
     const bool spatialconfiguration)
@@ -1347,7 +1347,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_spring(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
+void Discret::Elements::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
     Core::FE::Discretization& dis, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
     Core::LinAlg::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
@@ -1570,7 +1570,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_nonlinear(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
+void Discret::Elements::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
     Core::FE::Discretization& dis, Core::LinAlg::SerialDenseMatrix& sys_mat_epetra,
     Core::LinAlg::SerialDenseVector& residual, std::vector<double>& my_dispnp,
     Teuchos::RCP<Core::Mat::Material> material, const bool spatialconfiguration)
@@ -1722,7 +1722,7 @@ void Discret::ELEMENTS::Ale3Impl<distype>::static_ke_laplace(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-inline Core::FE::GaussRule3D Discret::ELEMENTS::Ale3Impl<distype>::get_optimal_gaussrule()
+inline Core::FE::GaussRule3D Discret::Elements::Ale3Impl<distype>::get_optimal_gaussrule()
 {
   switch (distype)
   {

@@ -51,7 +51,7 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTru
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
   if (linkele_ != Teuchos::null)
-    linkele_ = Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Truss3>(
+    linkele_ = Teuchos::rcp_dynamic_cast<Discret::Elements::Truss3>(
         Teuchos::RCP(old.linkele_->clone(), true));
   else
     linkele_ = Teuchos::null;
@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::make_rcp<Discret::ELEMENTS::Truss3>(-1, 0);
+  linkele_ = Teuchos::make_rcp<Discret::Elements::Truss3>(-1, 0);
 
   // set material
   linkele_->set_material(0, Mat::factory(matnum));
@@ -164,7 +164,7 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& b
     Core::Communication::UnpackBuffer elebuffer(dataele);
     Core::Communication::ParObject* object =
         Core::Communication::factory(elebuffer);  // Unpack is done here
-    Discret::ELEMENTS::Truss3* linkele = dynamic_cast<Discret::ELEMENTS::Truss3*>(object);
+    Discret::Elements::Truss3* linkele = dynamic_cast<Discret::Elements::Truss3*>(object);
     if (linkele == nullptr) FOUR_C_THROW("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = Teuchos::RCP(linkele);
   }

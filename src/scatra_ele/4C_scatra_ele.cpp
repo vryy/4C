@@ -29,42 +29,42 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::TransportType Discret::ELEMENTS::TransportType::instance_;
+Discret::Elements::TransportType Discret::Elements::TransportType::instance_;
 
-Discret::ELEMENTS::TransportType& Discret::ELEMENTS::TransportType::instance() { return instance_; }
+Discret::Elements::TransportType& Discret::Elements::TransportType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::TransportType::create(
+Core::Communication::ParObject* Discret::Elements::TransportType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Transport* object = new Discret::ELEMENTS::Transport(-1, -1);
+  Discret::Elements::Transport* object = new Discret::Elements::Transport(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::TransportType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSP" or eletype == "CONDIF2" or eletype == "CONDIF3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::Transport>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::Transport>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::TransportType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Transport>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Transport>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::TransportType::nodal_block_information(
+void Discret::Elements::TransportType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = dwele->num_dof_per_node(*(dwele->nodes()[0]));
@@ -81,13 +81,13 @@ void Discret::ELEMENTS::TransportType::nodal_block_information(
   }
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::TransportType::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::TransportType::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::compute_fluid_null_space(node, numdof, dimnsp);
 }
 
-void Discret::ELEMENTS::TransportType::setup_element_definition(
+void Discret::Elements::TransportType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["TRANSP"];
@@ -243,13 +243,13 @@ void Discret::ELEMENTS::TransportType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  init the element (public)                                           |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportType::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::TransportType::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    Discret::ELEMENTS::Transport* actele =
-        dynamic_cast<Discret::ELEMENTS::Transport*>(dis.l_col_element(i));
+    Discret::Elements::Transport* actele =
+        dynamic_cast<Discret::Elements::Transport*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to Transport element failed");
     actele->initialize();
   }
@@ -257,14 +257,14 @@ int Discret::ELEMENTS::TransportType::initialize(Core::FE::Discretization& dis)
 }
 
 
-Discret::ELEMENTS::TransportBoundaryType Discret::ELEMENTS::TransportBoundaryType::instance_;
+Discret::Elements::TransportBoundaryType Discret::Elements::TransportBoundaryType::instance_;
 
-Discret::ELEMENTS::TransportBoundaryType& Discret::ELEMENTS::TransportBoundaryType::instance()
+Discret::Elements::TransportBoundaryType& Discret::Elements::TransportBoundaryType::instance()
 {
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportBoundaryType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::TransportBoundaryType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new TransportBoundary( id, owner ) );
@@ -275,7 +275,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::TransportBoundaryType::
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             gjb 05/08 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Transport::Transport(int id, int owner)
+Discret::Elements::Transport::Transport(int id, int owner)
     : Core::Elements::Element(id, owner),
       distype_(Core::FE::CellType::dis_none),
       name_(),
@@ -288,7 +288,7 @@ Discret::ELEMENTS::Transport::Transport(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        gjb 05/08 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Transport::Transport(const Discret::ELEMENTS::Transport& old)
+Discret::Elements::Transport::Transport(const Discret::Elements::Transport& old)
     : Core::Elements::Element(old),
       distype_(old.distype_),
       name_(old.name_),
@@ -302,9 +302,9 @@ Discret::ELEMENTS::Transport::Transport(const Discret::ELEMENTS::Transport& old)
  |  Deep copy this instance of Transport and return pointer to it (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Transport::clone() const
+Core::Elements::Element* Discret::Elements::Transport::clone() const
 {
-  Discret::ELEMENTS::Transport* newelement = new Discret::ELEMENTS::Transport(*this);
+  Discret::Elements::Transport* newelement = new Discret::Elements::Transport(*this);
   return newelement;
 }
 
@@ -312,7 +312,7 @@ Core::Elements::Element* Discret::ELEMENTS::Transport::clone() const
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::set_material(
+void Discret::Elements::Transport::set_material(
     const int index, Teuchos::RCP<Core::Mat::Material> mat)
 {
   // the standard part:
@@ -523,7 +523,7 @@ void Discret::ELEMENTS::Transport::set_material(
 /*----------------------------------------------------------------------*
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::set_material(int matnum, Core::Elements::Element* oldele)
+void Discret::Elements::Transport::set_material(int matnum, Core::Elements::Element* oldele)
 {
   set_material(0, Mat::factory(matnum));
 
@@ -549,13 +549,13 @@ void Discret::ELEMENTS::Transport::set_material(int matnum, Core::Elements::Elem
  |  Return the shape of a Transport element                      (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Transport::shape() const { return distype_; }
+Core::FE::CellType Discret::Elements::Transport::shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Transport::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -579,7 +579,7 @@ void Discret::ELEMENTS::Transport::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Transport::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -602,7 +602,7 @@ void Discret::ELEMENTS::Transport::unpack(Core::Communication::UnpackBuffer& buf
 /*----------------------------------------------------------------------*
  |  Return number of lines of this element (public)           gjb 07/08 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::num_line() const
+int Discret::Elements::Transport::num_line() const
 {
   return Core::FE::get_number_of_element_lines(distype_);
 }
@@ -611,7 +611,7 @@ int Discret::ELEMENTS::Transport::num_line() const
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of this element (public)        gjb 07/08 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::num_surface() const
+int Discret::Elements::Transport::num_surface() const
 {
   return Core::FE::get_number_of_element_surfaces(distype_);
 }
@@ -620,7 +620,7 @@ int Discret::ELEMENTS::Transport::num_surface() const
 /*----------------------------------------------------------------------*
  | Return number of volumes of this element (public)          gjb 07/08 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::num_volume() const
+int Discret::Elements::Transport::num_volume() const
 {
   return Core::FE::get_number_of_element_volumes(distype_);
 }
@@ -630,7 +630,7 @@ int Discret::ELEMENTS::Transport::num_volume() const
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport::print(std::ostream& os) const
+void Discret::Elements::Transport::print(std::ostream& os) const
 {
   os << "Transport element";
   Element::print(os);
@@ -647,7 +647,7 @@ void Discret::ELEMENTS::Transport::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Transport::lines()
 {
   return Core::Communication::get_element_lines<TransportBoundary, Transport>(*this);
 }
@@ -656,7 +656,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport:
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Transport::surfaces()
 {
   return Core::Communication::get_element_surfaces<TransportBoundary, Transport>(*this);
 }
@@ -664,7 +664,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Transport:
 /*----------------------------------------------------------------------*
  | set implementation type                                   fang 02/15 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Transport ::set_impl_type(const Inpar::ScaTra::ImplType impltype)
+void Discret::Elements::Transport ::set_impl_type(const Inpar::ScaTra::ImplType impltype)
 {
   // set implementation type
   impltype_ = impltype;
@@ -673,7 +673,7 @@ void Discret::ELEMENTS::Transport ::set_impl_type(const Inpar::ScaTra::ImplType 
 /*----------------------------------------------------------------------*
  |  init the element                                        vuong08/16 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Transport::initialize()
+int Discret::Elements::Transport::initialize()
 {
   Teuchos::RCP<Core::Mat::Material> mat = material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
@@ -719,8 +719,8 @@ int Discret::ELEMENTS::Transport::initialize()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             gjb 01/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode,
-    const int* nodeids, Core::Nodes::Node** nodes, Discret::ELEMENTS::Transport* parent,
+Discret::Elements::TransportBoundary::TransportBoundary(int id, int owner, int nnode,
+    const int* nodeids, Core::Nodes::Node** nodes, Discret::Elements::Transport* parent,
     const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
@@ -733,8 +733,8 @@ Discret::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int n
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::TransportBoundary::TransportBoundary(
-    const Discret::ELEMENTS::TransportBoundary& old)
+Discret::Elements::TransportBoundary::TransportBoundary(
+    const Discret::Elements::TransportBoundary& old)
     : Core::Elements::FaceElement(old)
 {
   return;
@@ -743,17 +743,17 @@ Discret::ELEMENTS::TransportBoundary::TransportBoundary(
 /*----------------------------------------------------------------------*
  |  Deep copy this instance return pointer to it     (public) gjb 01/09 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::TransportBoundary::clone() const
+Core::Elements::Element* Discret::Elements::TransportBoundary::clone() const
 {
-  Discret::ELEMENTS::TransportBoundary* newelement =
-      new Discret::ELEMENTS::TransportBoundary(*this);
+  Discret::Elements::TransportBoundary* newelement =
+      new Discret::Elements::TransportBoundary(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  Return shape of this element                    (public)  gjb 01/09 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::TransportBoundary::shape() const
+Core::FE::CellType Discret::Elements::TransportBoundary::shape() const
 {
   return Core::FE::get_shape_of_boundary_element(num_node(), parent_element()->shape());
 }
@@ -761,7 +761,7 @@ Core::FE::CellType Discret::ELEMENTS::TransportBoundary::shape() const
 /*----------------------------------------------------------------------*
  |  Pack data (public)                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::TransportBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("This TransportBoundary element does not support communication");
 
@@ -771,7 +771,7 @@ void Discret::ELEMENTS::TransportBoundary::pack(Core::Communication::PackBuffer&
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                      gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::TransportBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("This TransportBoundary element does not support communication");
   return;
@@ -782,7 +782,7 @@ void Discret::ELEMENTS::TransportBoundary::unpack(Core::Communication::UnpackBuf
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
+void Discret::Elements::TransportBoundary::print(std::ostream& os) const
 {
   os << "TransportBoundary element";
   Element::print(os);
@@ -795,7 +795,7 @@ void Discret::ELEMENTS::TransportBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  | Return number of lines of boundary element (public)        gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::num_line() const
+int Discret::Elements::TransportBoundary::num_line() const
 {
   return Core::FE::get_number_of_element_lines(shape());
 }
@@ -803,7 +803,7 @@ int Discret::ELEMENTS::TransportBoundary::num_line() const
 /*----------------------------------------------------------------------*
  |  Return number of surfaces of boundary element (public)    gjb 01/09 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::TransportBoundary::num_surface() const
+int Discret::Elements::TransportBoundary::num_surface() const
 {
   return Core::FE::get_number_of_element_surfaces(shape());
 }
@@ -811,7 +811,7 @@ int Discret::ELEMENTS::TransportBoundary::num_surface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportBoundary::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::TransportBoundary::lines()
 {
   FOUR_C_THROW("Lines of TransportBoundary not implemented");
 }
@@ -819,7 +819,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportB
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::TransportBoundary::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::TransportBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of TransportBoundary not implemented");
 }

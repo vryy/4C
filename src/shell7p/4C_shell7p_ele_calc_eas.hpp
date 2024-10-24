@@ -26,14 +26,14 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   class ParamsInterface;
-}  // namespace Solid::ELEMENTS
+}  // namespace Solid::Elements
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A struct holding the iteration data used within the Enhanced Assumed Strain element
@@ -59,8 +59,8 @@ namespace Discret
 
       void setup(Core::Elements::Element& ele, Mat::So3Material& solid_material,
           const Core::IO::InputParameterContainer& container,
-          const Solid::ELEMENTS::ShellLockingTypes& locking_types,
-          const Solid::ELEMENTS::ShellData& shell_data) override;
+          const Solid::Elements::ShellLockingTypes& locking_types,
+          const Solid::Elements::ShellData& shell_data) override;
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
@@ -79,7 +79,7 @@ namespace Discret
 
       void recover(Core::Elements::Element& ele, const Core::FE::Discretization& discretization,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params,
-          Solid::ELEMENTS::ParamsInterface& interface_ptr) override;
+          Solid::Elements::ParamsInterface& interface_ptr) override;
 
       void calculate_stresses_strains(Core::Elements::Element& ele,
           Mat::So3Material& solid_material, const ShellStressIO& stressIO,
@@ -104,7 +104,7 @@ namespace Discret
 
      private:
       //! EAS matrices and vectors to be stored between iterations
-      Discret::ELEMENTS::ShellEASIterationData eas_iteration_data_ = {};
+      Discret::Elements::ShellEASIterationData eas_iteration_data_ = {};
 
       //! number of integration points in thickness direction (note: currently they are fixed to 2,
       //! otherwise the element would suffer from nonlinear poisson stiffening)
@@ -115,10 +115,10 @@ namespace Discret
       Core::FE::IntegrationPoints2D intpoints_midsurface_;
 
       //! shell data (thickness, SDC, number of ANS parameter)
-      Solid::ELEMENTS::ShellData shell_data_ = {};
+      Solid::Elements::ShellData shell_data_ = {};
 
       //! different Locking types that we want to alleviate
-      Solid::ELEMENTS::ShellLockingTypes locking_types_ = {};
+      Solid::Elements::ShellLockingTypes locking_types_ = {};
 
       //! old step length
       double old_step_length_;
@@ -127,7 +127,7 @@ namespace Discret
       std::vector<double> cur_thickness_;
 
     };  // class Shell7pEleCalcEas
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -464,7 +464,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
   Core::LinAlg::Matrix<dim, 1> d_cauchyndir_ddir{};
   Core::LinAlg::Matrix<dim, 1> d_cauchyndir_dxi{};
 
-  Discret::ELEMENTS::CauchyNDirLinearizations<dim> linearizations{};
+  Discret::Elements::CauchyNDirLinearizations<dim> linearizations{};
   linearizations.d_cauchyndir_dd = &d_cauchyndir_dd;
   linearizations.d2_cauchyndir_dd2 = &d2_cauchyndir_dd2;
   linearizations.d2_cauchyndir_dd_dn = &d2_cauchyndir_dd_dn;
@@ -478,7 +478,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
   const double cauchy_n_dir = std::invoke(
       [&]()
       {
-        if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(moEle.parent_element());
+        if (auto* solid_ele = dynamic_cast<Discret::Elements::SoBase*>(moEle.parent_element());
             solid_ele != nullptr)
         {
           // old solid element
@@ -492,7 +492,7 @@ void CONTACT::IntegratorNitsche::so_ele_cauchy(Mortar::Element& moEle, double* b
 
           return cauchy_n_dir;
         }
-        else if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::Solid*>(moEle.parent_element());
+        else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(moEle.parent_element());
                  solid_ele != nullptr)
         {
           // new solid element

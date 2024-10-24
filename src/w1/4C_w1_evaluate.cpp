@@ -35,7 +35,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Wall1::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -534,7 +534,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
           Core::Elements::get_minimal_jac_determinant_at_nodes<Core::FE::CellType::quad4>(xcurr);
 
       if (min_detj < 0.0)
-        error_handling(min_detj, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_analysis);
+        error_handling(min_detj, params, __LINE__, Solid::Elements::ele_error_determinant_analysis);
 
       break;
     }
@@ -576,7 +576,7 @@ int Discret::ELEMENTS::Wall1::evaluate(Teuchos::ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
-int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -725,7 +725,7 @@ int Discret::ELEMENTS::Wall1::evaluate_neumann(Teuchos::ParameterList& params,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
+void Discret::Elements::Wall1::w1_recover(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual)
 {
   // for eas
@@ -810,7 +810,7 @@ void Discret::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
+void Discret::Elements::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual,
     std::vector<Core::LinAlg::SerialDenseVector>& myknots,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
@@ -1191,7 +1191,7 @@ void Discret::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            popp 09/11|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
+void Discret::Elements::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     const std::vector<double>& disp, const std::vector<double>& residual,
     std::vector<Core::LinAlg::SerialDenseVector>& myknots,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
@@ -1375,7 +1375,7 @@ void Discret::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
 /*----------------------------------------------------------------------*
  |  jacobian matrix (private)                                  mgit 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_jacobianmatrix(const Core::LinAlg::SerialDenseMatrix& xrefe,
+void Discret::Elements::Wall1::w1_jacobianmatrix(const Core::LinAlg::SerialDenseMatrix& xrefe,
     const Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double* det,
     const int iel)
 {
@@ -1394,13 +1394,13 @@ void Discret::ELEMENTS::Wall1::w1_jacobianmatrix(const Core::LinAlg::SerialDense
 
   if (*det < 0.0) FOUR_C_THROW("NEGATIVE JACOBIAN DETERMINANT %8.5f in ELEMENT %d\n", *det, id());
   /*----------------------------------------------------------------------*/
-}  // Discret::ELEMENTS::Wall1::w1_jacobianmatrix
+}  // Discret::Elements::Wall1::w1_jacobianmatrix
 
 /*----------------------------------------------------------------------*
  |  Matrix boplin in reference configuration (private)         mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void Discret::ELEMENTS::Wall1::w1_boplin(Core::LinAlg::SerialDenseMatrix& boplin,
+void Discret::Elements::Wall1::w1_boplin(Core::LinAlg::SerialDenseMatrix& boplin,
     Core::LinAlg::SerialDenseMatrix& deriv, Core::LinAlg::SerialDenseMatrix& xjm, double& det,
     const int iel)
 {
@@ -1432,12 +1432,12 @@ void Discret::ELEMENTS::Wall1::w1_boplin(Core::LinAlg::SerialDenseMatrix& boplin
   } /* end of loop over nodes */
 }
 
-/* Discret::ELEMENTS::Wall1::w1_boplin */
+/* Discret::Elements::Wall1::w1_boplin */
 
 /*----------------------------------------------------------------------*
  | Deformation gradient F and Green-Langrange strain (private)  mgit 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_defgrad(Core::LinAlg::SerialDenseVector& F,
+void Discret::Elements::Wall1::w1_defgrad(Core::LinAlg::SerialDenseVector& F,
     Core::LinAlg::SerialDenseVector& strain, const Core::LinAlg::SerialDenseMatrix& xrefe,
     const Core::LinAlg::SerialDenseMatrix& xcure, Core::LinAlg::SerialDenseMatrix& boplin,
     const int iel)
@@ -1475,14 +1475,14 @@ void Discret::ELEMENTS::Wall1::w1_defgrad(Core::LinAlg::SerialDenseVector& F,
   // strain[1] = 0.5 * (F[1] + F[1]) - 1.0;
   // strain[2] = 0.5 * (F[2] + F[3]);
   // strain[3] = strain[2];
-} /* Discret::ELEMENTS::Wall1::w1_defgrad */
+} /* Discret::Elements::Wall1::w1_defgrad */
 
 /*----------------------------------------------------------------------*
  | Deformation gradient F in matrix notation and B in
  reference configuration (private)                             mgit 04/07|
  *----------------------------------------------------------------------*/
 
-void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b_cure,
+void Discret::Elements::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b_cure,
     const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseVector& F,
     const int numeps, const int nd)
 {
@@ -1516,7 +1516,7 @@ void Discret::ELEMENTS::Wall1::w1_boplin_cure(Core::LinAlg::SerialDenseMatrix& b
 /*----------------------------------------------------------------------*
 | geometric stiffness part (total lagrange)                   mgit 05/07|
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_kg(Core::LinAlg::SerialDenseMatrix& estif,
+void Discret::Elements::Wall1::w1_kg(Core::LinAlg::SerialDenseMatrix& estif,
     const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseMatrix& stress,
     const double fac, const int nd, const int numeps)
 {
@@ -1532,12 +1532,12 @@ void Discret::ELEMENTS::Wall1::w1_kg(Core::LinAlg::SerialDenseMatrix& estif,
       }
     }
   }
-}  // Discret::ELEMENTS::Wall1::w1_kg
+}  // Discret::Elements::Wall1::w1_kg
 
 /*----------------------------------------------------------------------*
 | elastic and initial displacement stiffness (total lagrange)  mgit 05/07
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_keu(Core::LinAlg::SerialDenseMatrix& estif,
+void Discret::Elements::Wall1::w1_keu(Core::LinAlg::SerialDenseMatrix& estif,
     const Core::LinAlg::SerialDenseMatrix& b_cure, const Core::LinAlg::SerialDenseMatrix& C,
     const double fac, const int nd, const int numeps)
 {
@@ -1555,13 +1555,13 @@ void Discret::ELEMENTS::Wall1::w1_keu(Core::LinAlg::SerialDenseMatrix& estif,
       }
     }
   }
-}  // Discret::ELEMENTS::Wall1::w1_keu
+}  // Discret::Elements::Wall1::w1_keu
 
 
 /*----------------------------------------------------------------------*
  | evaluate internal element forces for large def (total Lagr) mgit 05/07  |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_fint(const Core::LinAlg::SerialDenseMatrix& stress,
+void Discret::Elements::Wall1::w1_fint(const Core::LinAlg::SerialDenseMatrix& stress,
     const Core::LinAlg::SerialDenseMatrix& b_cure, Core::LinAlg::SerialDenseVector& intforce,
     const double fac, const int nd)
 
@@ -1581,13 +1581,13 @@ void Discret::ELEMENTS::Wall1::w1_fint(const Core::LinAlg::SerialDenseMatrix& st
       intforce[i] += b_cure(j, i) * st[j];
     }
   }
-}  // Discret::ELEMENTS::Wall1::w1_fint
+}  // Discret::Elements::Wall1::w1_fint
 
 
 /*-----------------------------------------------------------------------------*
 | lump mass matrix                                                  bborn 07/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_lumpmass(Core::LinAlg::SerialDenseMatrix* emass)
+void Discret::Elements::Wall1::w1_lumpmass(Core::LinAlg::SerialDenseMatrix* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -1609,7 +1609,7 @@ void Discret::ELEMENTS::Wall1::w1_lumpmass(Core::LinAlg::SerialDenseMatrix* emas
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::stress_cauchy(const int ip, const double& F11, const double& F22,
+void Discret::Elements::Wall1::stress_cauchy(const int ip, const double& F11, const double& F22,
     const double& F12, const double& F21, const Core::LinAlg::SerialDenseMatrix& stress,
     Core::LinAlg::SerialDenseMatrix* elestress)
 {
@@ -1648,7 +1648,7 @@ void Discret::ELEMENTS::Wall1::stress_cauchy(const int ip, const double& F11, co
 /*-----------------------------------------------------------------------------*
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::energy(Teuchos::ParameterList& params, const std::vector<int>& lm,
+void Discret::Elements::Wall1::energy(Teuchos::ParameterList& params, const std::vector<int>& lm,
     const std::vector<double>& dis, Core::LinAlg::SerialDenseVector* energies,
     Teuchos::RCP<const Core::Mat::Material> material)
 {

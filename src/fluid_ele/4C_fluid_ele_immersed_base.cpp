@@ -13,11 +13,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersedBase::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidTypeImmersedBase::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDIMMERSED")
-    return Teuchos::make_rcp<Discret::ELEMENTS::FluidImmersed>(id, owner);
+    return Teuchos::make_rcp<Discret::Elements::FluidImmersed>(id, owner);
 
   return Teuchos::null;
 }
@@ -27,13 +27,13 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidTypeImmersedBase::
  |  ctor (public)                                            rauch 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidImmersedBase::FluidImmersedBase(int id, int owner) : Fluid(id, owner) {}
+Discret::Elements::FluidImmersedBase::FluidImmersedBase(int id, int owner) : Fluid(id, owner) {}
 
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       rauch 03/15|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidImmersedBase::FluidImmersedBase(
-    const Discret::ELEMENTS::FluidImmersedBase& old)
+Discret::Elements::FluidImmersedBase::FluidImmersedBase(
+    const Discret::Elements::FluidImmersedBase& old)
     : Fluid(old)
 {
   return;

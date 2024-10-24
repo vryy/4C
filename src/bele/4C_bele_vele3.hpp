@@ -30,7 +30,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Vele3Type : public Core::Elements::ElementType
     {
@@ -333,7 +333,7 @@ namespace Discret
       \brief Standard Constructor
       */
       explicit Vele3Surface(int id, int owner, int nnode, const int* nodeids,
-          Core::Nodes::Node** nodes, Discret::ELEMENTS::Vele3* parent, const int lsurface);
+          Core::Nodes::Node** nodes, Discret::Elements::Vele3* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -571,7 +571,7 @@ namespace Discret
     };  // class Vele3Line
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

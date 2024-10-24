@@ -16,14 +16,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchNP : public ScaTraEleBoundaryCalcElch<distype, probdim>
     {
-      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
-      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim> myelch;
+      typedef Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim> myelch;
       using my::nen_;
 
      public:
@@ -82,7 +82,7 @@ namespace Discret
           const int k                                               //! species number
       ) const override;
     };  // class ScaTraEleBoundaryCalcElchNP
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

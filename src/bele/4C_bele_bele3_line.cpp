@@ -13,17 +13,17 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::Bele3LineType Discret::ELEMENTS::Bele3LineType::instance_;
+Discret::Elements::Bele3LineType Discret::Elements::Bele3LineType::instance_;
 
-Discret::ELEMENTS::Bele3LineType& Discret::ELEMENTS::Bele3LineType::instance() { return instance_; }
+Discret::Elements::Bele3LineType& Discret::Elements::Bele3LineType::instance() { return instance_; }
 
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int* nodeids,
-    Core::Nodes::Node** nodes, Discret::ELEMENTS::Bele3* parent, const int lline)
+Discret::Elements::Bele3Line::Bele3Line(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::Elements::Bele3* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
   set_node_ids(nnode, nodeids);
@@ -36,7 +36,7 @@ Discret::ELEMENTS::Bele3Line::Bele3Line(int id, int owner, int nnode, const int*
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Bele3Line::Bele3Line(const Discret::ELEMENTS::Bele3Line& old)
+Discret::Elements::Bele3Line::Bele3Line(const Discret::Elements::Bele3Line& old)
     : Core::Elements::FaceElement(old), numdofpernode_(old.numdofpernode_)
 {
   return;
@@ -46,9 +46,9 @@ Discret::ELEMENTS::Bele3Line::Bele3Line(const Discret::ELEMENTS::Bele3Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Bele3Line::clone() const
+Core::Elements::Element* Discret::Elements::Bele3Line::clone() const
 {
-  Discret::ELEMENTS::Bele3Line* newelement = new Discret::ELEMENTS::Bele3Line(*this);
+  Discret::Elements::Bele3Line* newelement = new Discret::Elements::Bele3Line(*this);
   return newelement;
 }
 
@@ -56,7 +56,7 @@ Core::Elements::Element* Discret::ELEMENTS::Bele3Line::clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Bele3Line::shape() const
+Core::FE::CellType Discret::Elements::Bele3Line::shape() const
 {
   switch (num_node())
   {
@@ -74,7 +74,7 @@ Core::FE::CellType Discret::ELEMENTS::Bele3Line::shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3Line::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Bele3Line::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Bele3Line element does not support communication");
 
@@ -85,7 +85,7 @@ void Discret::ELEMENTS::Bele3Line::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3Line::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Bele3Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Bele3Line element does not support communication");
   return;
@@ -96,7 +96,7 @@ void Discret::ELEMENTS::Bele3Line::unpack(Core::Communication::UnpackBuffer& buf
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3Line::print(std::ostream& os) const
+void Discret::Elements::Bele3Line::print(std::ostream& os) const
 {
   os << "Bele3_" << numdofpernode_ << "Line ";
   Element::print(os);

@@ -30,7 +30,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
 
@@ -323,7 +323,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

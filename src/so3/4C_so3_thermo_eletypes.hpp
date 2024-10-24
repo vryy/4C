@@ -27,7 +27,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*----------------------------------------------------------------------*
      * HEX8 element
@@ -234,7 +234,7 @@ namespace Discret
       std::string get_element_type_string() const { return "SONURBS27THERMO"; }
     };  // class So_hex20ThermoType
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

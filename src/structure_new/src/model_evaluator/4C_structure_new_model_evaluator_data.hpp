@@ -55,9 +55,9 @@ namespace Solid
     class GaussPointDataOutputManager;
 
 
-    /*! \brief Discrete implementation of the Solid::ELEMENTS::ParamsInterface
+    /*! \brief Discrete implementation of the Solid::Elements::ParamsInterface
      *
-     * This class represents an actual implementation of the Solid::ELEMENTS::ParamsInterface
+     * This class represents an actual implementation of the Solid::Elements::ParamsInterface
      * class and gives you all the functionality to interchange data between the elements and the
      * structural time integrators.
      *
@@ -76,7 +76,7 @@ namespace Solid
      *
      * \author hiermeier \date 03/2016
      */
-    class Data : public Solid::ELEMENTS::ParamsInterface
+    class Data : public Solid::Elements::ParamsInterface
     {
       typedef std::map<enum NOX::Nln::StatusTest::QuantityType,
           enum ::NOX::Abstract::Vector::NormType>
@@ -93,7 +93,7 @@ namespace Solid
       //! setup member variables
       void setup();
 
-      //! @name Derived Solid::ELEMENTS::ParamsInterface accessors
+      //! @name Derived Solid::Elements::ParamsInterface accessors
       //!@{
 
       //! get the desired action type [derived]
@@ -247,7 +247,7 @@ namespace Solid
       }
 
       //! get special parameter interface for beam elements [derived]
-      [[nodiscard]] inline Teuchos::RCP<Solid::ELEMENTS::BeamParamsInterface>
+      [[nodiscard]] inline Teuchos::RCP<Solid::Elements::BeamParamsInterface>
       get_beam_params_interface_ptr() const override
       {
         FOUR_C_ASSERT(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
@@ -286,7 +286,7 @@ namespace Solid
        *
        * @param[in] error_flag Error flag to be set
        */
-      inline void set_ele_eval_error_flag(const ELEMENTS::EvalErrorFlag& error_flag) override
+      inline void set_ele_eval_error_flag(const Elements::EvalErrorFlag& error_flag) override
       {
         ele_eval_error_flag_ = error_flag;
       }
@@ -439,7 +439,7 @@ namespace Solid
        *
        * @return Flag describing errors during element evaluation
        */
-      inline Solid::ELEMENTS::EvalErrorFlag get_ele_eval_error_flag() const override
+      inline Solid::Elements::EvalErrorFlag get_ele_eval_error_flag() const override
       {
         return ele_eval_error_flag_;
       }
@@ -853,7 +853,7 @@ namespace Solid
       enum Inpar::Solid::PredEnum predict_type_;
 
       //! element evaluation error flag
-      enum Solid::ELEMENTS::EvalErrorFlag ele_eval_error_flag_;
+      enum Solid::Elements::EvalErrorFlag ele_eval_error_flag_;
 
       //! tolerate errors flag
       bool is_tolerate_errors_;
@@ -1000,7 +1000,7 @@ namespace Solid
      *
      * \author Maximilian Grill
      * \date 08/16 */
-    class BeamData : public Solid::ELEMENTS::BeamParamsInterface
+    class BeamData : public Solid::Elements::BeamParamsInterface
     {
      public:
       //! constructor
@@ -1012,7 +1012,7 @@ namespace Solid
       //! setup member variables
       void setup();
 
-      //! @name Derived Solid::ELEMENTS::BeamParamsInterface accessors
+      //! @name Derived Solid::Elements::BeamParamsInterface accessors
       //!@{
 
       //! get the Lie group GenAlpha time integration parameters [derived]

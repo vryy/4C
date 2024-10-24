@@ -18,23 +18,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class IsotropicCylinderPrestressStrategy;
 
   namespace PAR
   {
-    class IsotropicCylinderPrestressStrategy : public MIXTURE::PAR::PrestressStrategy
+    class IsotropicCylinderPrestressStrategy : public Mixture::PAR::PrestressStrategy
     {
-      friend class MIXTURE::IsotropicCylinderPrestressStrategy;
+      friend class Mixture::IsotropicCylinderPrestressStrategy;
 
      public:
       /// constructor
       explicit IsotropicCylinderPrestressStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create prestress strategy instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::PrestressStrategy> create_prestress_strategy() override;
+      std::unique_ptr<Mixture::PrestressStrategy> create_prestress_strategy() override;
 
       /// @name parameters of the prestress strategy
       /// @{
@@ -59,9 +59,9 @@ namespace MIXTURE
    public:
     /// Constructor for the material given the material parameters
     explicit IsotropicCylinderPrestressStrategy(
-        MIXTURE::PAR::IsotropicCylinderPrestressStrategy* params);
+        Mixture::PAR::IsotropicCylinderPrestressStrategy* params);
 
-    void setup(MIXTURE::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
+    void setup(Mixture::MixtureConstituent& constituent, Teuchos::ParameterList& params, int gp,
         int eleGID) override;
 
     /*!
@@ -73,7 +73,7 @@ namespace MIXTURE
      */
     void evaluate_prestress(const MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
-        MIXTURE::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
+        Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
     /*!
@@ -90,18 +90,18 @@ namespace MIXTURE
      */
     double evaluate_mue_frac(MixtureRule& mixtureRule,
         const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
-        MIXTURE::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
+        Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const override;
 
     void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
-        MIXTURE::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
+        Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 
    private:
     /// Holder for internal parameters
     const PAR::IsotropicCylinderPrestressStrategy* params_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

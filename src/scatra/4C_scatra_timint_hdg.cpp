@@ -67,7 +67,7 @@ void ScaTra::TimIntHDG::setup()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
 
@@ -452,7 +452,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }
@@ -1120,8 +1120,8 @@ void ScaTra::TimIntHDG::adapt_degree()
 
     if (ele->owner() == discret_->get_comm().MyPID())
     {
-      Discret::ELEMENTS::ScaTraHDG *hdgele =
-          dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+      Discret::Elements::ScaTraHDG *hdgele =
+          dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
 
       // call routine on elements to calculate error on element
       ele->evaluate(
@@ -1189,8 +1189,8 @@ void ScaTra::TimIntHDG::adapt_degree()
   // store the number of dofs per element on vector
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    Discret::ELEMENTS::ScaTraHDG *hdgele =
-        dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    Discret::Elements::ScaTraHDG *hdgele =
+        dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
     // store the number of dofs for the element
     (*eledofs)[iele] = hdgele->num_dof_per_element_auxiliary();
   }

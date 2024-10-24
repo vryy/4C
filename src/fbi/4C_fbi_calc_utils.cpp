@@ -33,8 +33,8 @@ void FBI::Utils::get_fbi_element_centerline_dof_indices(Core::FE::Discretization
   ele->location_vector(discret, lmrow, dummy1, dummy2);
   num_dof = lmrow.size();
 
-  const Discret::ELEMENTS::Beam3Base* beamele =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+  const Discret::Elements::Beam3Base* beamele =
+      dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
   if (beamele != nullptr)
   {

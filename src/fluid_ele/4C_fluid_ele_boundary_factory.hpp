@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidBoundaryInterface;
 
@@ -38,7 +38,7 @@ namespace Discret
       static FluidBoundaryInterface* define_problem_type(std::string problem);
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

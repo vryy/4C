@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ScaTraEleDiffManagerElchElectrode;
@@ -53,7 +53,7 @@ namespace Discret
           const std::string& disname  ///< name of discretization
       );
     };  // class ScaTraEleUtilsElchElectrode
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

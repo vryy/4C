@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleDiffManagerElchElectrode;
@@ -170,7 +170,7 @@ namespace Discret
       Teuchos::RCP<ScaTraEleDiffManagerSTIElchElectrode> diffmanagerstielectrode_;
 
       //! utility class supporting element evaluation for electrodes
-      Discret::ELEMENTS::ScaTraEleUtilsElchElectrode<distype>* utils_;
+      Discret::Elements::ScaTraEleUtilsElchElectrode<distype>* utils_;
     };  // class ScaTraEleCalcSTIElectrode
 
 
@@ -195,9 +195,9 @@ namespace Discret
           const double& temperature)
       {
         const double faraday =
-            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+            Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
         const double gasconstant =
-            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->gas_constant();
+            Discret::Elements::ScaTraEleParameterElch::instance("scatra")->gas_constant();
         // factor F/RT
         const double frt = faraday / (gasconstant * temperature);
 
@@ -237,7 +237,7 @@ namespace Discret
       //! second derivative of half cell open circuit potential w.r.t. concentration
       double ocpderiv2_;
     };  // class ScaTraEleDiffManagerSTIElchElectrode
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

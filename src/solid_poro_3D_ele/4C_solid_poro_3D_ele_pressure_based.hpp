@@ -32,12 +32,12 @@ namespace Mat
   class FluidPoroMultiPhase;
 }  // namespace Mat
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   enum class EasType;
 }
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   class SolidPoroPressureBasedType : public Core::Elements::ElementType
@@ -156,7 +156,7 @@ namespace Discret::ELEMENTS
       return *interface_ptr_;
     }
 
-    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& get_solid_params_interface() const
+    [[nodiscard]] inline FourC::Solid::Elements::ParamsInterface& get_solid_params_interface() const
     {
       FOUR_C_THROW_UNLESS(solid_interface_ptr_.getRawPtr(),
           "The parameter interface pointer is not set or not a solid parameter interface.");
@@ -197,7 +197,7 @@ namespace Discret::ELEMENTS
     Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
 
     //! interface pointer for data exchange between the element and the solid time integrator.
-    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> solid_interface_ptr_;
+    Teuchos::RCP<FourC::Solid::Elements::ParamsInterface> solid_interface_ptr_;
 
     //! element calculation holding one of the implemented variants
     SolidCalcVariant solid_calc_variant_;
@@ -210,7 +210,7 @@ namespace Discret::ELEMENTS
 
   };  // class SolidPoro
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

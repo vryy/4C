@@ -16,7 +16,7 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 FOUR_C_NAMESPACE_OPEN
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief Compare two Gauss integration rules for equality
@@ -31,7 +31,7 @@ namespace Discret::ELEMENTS
   /*!
    * @brief Get the default Gauss integration rules for different Cell types.
    *
-   * @note It follows the rules defined in Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule,
+   * @note It follows the rules defined in Discret::Elements::DisTypeToOptGaussRule<celltype>::rule,
    * except for the stiffness matrix of tetrahedral elements.
    *
    */
@@ -40,13 +40,13 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype>
   constexpr auto get_gauss_rule_mass_matrix()
   {
-    return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
+    return Discret::Elements::DisTypeToOptGaussRule<celltype>::rule;
   }
 
   template <Core::FE::CellType celltype>
   constexpr auto get_gauss_rule_stiffness_matrix()
   {
-    return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
+    return Discret::Elements::DisTypeToOptGaussRule<celltype>::rule;
   }
 
   template <>
@@ -84,7 +84,7 @@ namespace Discret::ELEMENTS
     return Core::FE::GaussIntegration(gp);
   }
   /// @}
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

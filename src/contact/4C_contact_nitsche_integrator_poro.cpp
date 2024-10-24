@@ -178,17 +178,17 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
   if (!moEle.mo_data().parent_pf_pres().size())
   {
     // The element can be either an old so3 element or a new solid element
-    if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::SoBase*>(moEle.parent_element());
+    if (auto* solid_ele = dynamic_cast<Discret::Elements::SoBase*>(moEle.parent_element());
         solid_ele != nullptr)
     {
       solid_ele->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, moEle.mo_data().parent_disp(), normal,
           direction, sigma_nt, &dsntdd, nullptr, nullptr, nullptr, nullptr, &dsntdn, &dsntdt,
           &dsntdpxi, nullptr, nullptr, nullptr, nullptr, nullptr);
     }
-    else if (auto* solid_ele = dynamic_cast<Discret::ELEMENTS::Solid*>(moEle.parent_element());
+    else if (auto* solid_ele = dynamic_cast<Discret::Elements::Solid*>(moEle.parent_element());
              solid_ele != nullptr)
     {
-      Discret::ELEMENTS::CauchyNDirLinearizations<3> cauchy_linearizations{};
+      Discret::Elements::CauchyNDirLinearizations<3> cauchy_linearizations{};
       cauchy_linearizations.d_cauchyndir_dd = &dsntdd;
       cauchy_linearizations.d_cauchyndir_dn = &dsntdn;
       cauchy_linearizations.d_cauchyndir_ddir = &dsntdt;
@@ -204,7 +204,7 @@ void CONTACT::IntegratorNitschePoro::so_ele_cauchy(Mortar::Element& moEle, doubl
   }
   else
   {
-    dynamic_cast<Discret::ELEMENTS::So3Poro<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
+    dynamic_cast<Discret::Elements::So3Poro<Discret::Elements::SoHex8, Core::FE::CellType::hex8>*>(
         moEle.parent_element())
         ->get_cauchy_n_dir_and_derivatives_at_xi(pxsi, moEle.mo_data().parent_disp(),
             moEle.mo_data().parent_pf_pres(), normal, direction, sigma_nt, &dsntdd, &dsntdp,

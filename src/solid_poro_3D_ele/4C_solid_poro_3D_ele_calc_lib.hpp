@@ -28,7 +28,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS::Internal
+namespace Discret::Elements::Internal
 {
   template <Core::FE::CellType celltype>
   inline static constexpr int num_dof_per_node = num_dim<celltype>;
@@ -58,16 +58,16 @@ namespace Discret::ELEMENTS::Internal
     fstress.scale(integration_fac * viscosity * det_defgrd * porosity);
   }
 
-}  // namespace Discret::ELEMENTS::Internal
+}  // namespace Discret::Elements::Internal
 
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   template <Core::FE::CellType celltype>
   constexpr auto get_gauss_rule_stiffness_matrix_poro()
   {
-    return Discret::ELEMENTS::DisTypeToOptGaussRule<celltype>::rule;
+    return Discret::Elements::DisTypeToOptGaussRule<celltype>::rule;
   }
 
   //! extract element data from global vector
@@ -639,7 +639,7 @@ namespace Discret::ELEMENTS
   inline void update_internal_forcevector_with_structure_fluid_coupling_and_reactive_darcy_terms(
       const double detJ_w, Core::LinAlg::Matrix<Internal::num_nodes<celltype>, 1> shapefunctions,
       const Mat::FluidPoro& porofluidmat,
-      const Discret::ELEMENTS::AnisotropyProperties& anisotropy_properties,
+      const Discret::Elements::AnisotropyProperties& anisotropy_properties,
       const SpatialMaterialMapping<celltype>& spatial_material_mapping, const double porosity,
       const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& disp_velocity,
       const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& fluid_velocity,
@@ -1054,7 +1054,7 @@ namespace Discret::ELEMENTS
       const double detJ_w,
       const Core::LinAlg::Matrix<Internal::num_nodes<celltype>, 1>& shapefunctions,
       const Mat::FluidPoro& porofluidmat,
-      const Discret::ELEMENTS::AnisotropyProperties& anisotropy_properties,
+      const Discret::Elements::AnisotropyProperties& anisotropy_properties,
       const SpatialMaterialMapping<celltype>& spatial_material_mapping, const double porosity,
       const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& disp_velocity,
       const Core::LinAlg::Matrix<Internal::num_dim<celltype>, 1>& fluid_velocity,
@@ -1427,7 +1427,7 @@ namespace Discret::ELEMENTS
           force_vector)
   {
     Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>> CinvFvel;
-    Discret::ELEMENTS::Internal::calculate_viscous_stress<celltype>(integration_fac, viscosity,
+    Discret::Elements::Internal::calculate_viscous_stress<celltype>(integration_fac, viscosity,
         det_defgrd, porosity, fvelder, defgrd_inv, C_inv, fstress, CinvFvel);
     // B^T . C^-1
     static Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, 1> fstressb(true);
@@ -1476,7 +1476,7 @@ namespace Discret::ELEMENTS
           Internal::num_dim<celltype> * Internal::num_nodes<celltype>>& stiffness_matrix)
   {
     Core::LinAlg::Matrix<Internal::num_dim<celltype>, Internal::num_dim<celltype>> CinvFvel;
-    Discret::ELEMENTS::Internal::calculate_viscous_stress<celltype>(integration_fac, viscosity,
+    Discret::Elements::Internal::calculate_viscous_stress<celltype>(integration_fac, viscosity,
         det_defgrd, porosity, fvelder, defgrd_inv, C_inv, fstress, CinvFvel);
     // B^T . C^-1
     static Core::LinAlg::Matrix<Internal::num_dof_per_ele<celltype>, 1> fstressb(true);
@@ -1775,7 +1775,7 @@ namespace Discret::ELEMENTS
     CauchyGreenAndInverse<celltype> cauchygreen;
 
     cauchygreen.right_cauchy_green_ =
-        Discret::ELEMENTS::evaluate_cauchy_green(spatial_material_mapping);
+        Discret::Elements::evaluate_cauchy_green(spatial_material_mapping);
     cauchygreen.inverse_right_cauchy_green_.invert(cauchygreen.right_cauchy_green_);
 
     return cauchygreen;
@@ -1848,7 +1848,7 @@ namespace Discret::ELEMENTS
   }
 
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

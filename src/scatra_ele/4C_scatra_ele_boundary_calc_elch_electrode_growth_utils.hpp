@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 
 // forward declaration
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   class ScaTraEleParameterStd;
   class ScaTraEleParameterBoundary;
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief Calculate the exchange mass flux density of the growth kinetics
@@ -57,8 +57,8 @@ namespace Discret::ELEMENTS
    */
   double calculate_growth_mass_flux_density(double j0, double frt, double pot_ed, double pot_el,
       double epd, double resistance, double thickness, double faraday,
-      const Discret::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
-      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::Elements::ScaTraEleParameterStd* const scatraparameterstd,
+      const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
   /*!
    * \brief calculate the linearizations associated with Butler-Volmer mass flux density leading
@@ -87,7 +87,7 @@ namespace Discret::ELEMENTS
    */
   void calculate_s2_i_growth_elch_linearizations(double j0, double frt, double epdderiv, double eta,
       double resistance, double regfac, double emasterphiint, double eslavephiint, double cmax,
-      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
+      const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
       double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master);
 
   /*!
@@ -110,7 +110,7 @@ namespace Discret::ELEMENTS
   double calculate_s2_i_elch_growth_linearizations(double j0, double j, double frt,
       double resistivity, double resistance, double regfac, double regfacderiv, double expterm1,
       double expterm2,
-      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
   /*!
    * \brief compute regularization factor for lithium stripping
@@ -121,7 +121,7 @@ namespace Discret::ELEMENTS
    * @return  return the regularization factor if regularization is applied
    */
   double get_regularization_factor(const double thickness, const double eta,
-      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
 
   /*!
@@ -135,9 +135,9 @@ namespace Discret::ELEMENTS
    *          material if regularization is applied
    */
   double get_regularization_factor_derivative(const double thickness, const double eta,
-      const Discret::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
+      const Discret::Elements::ScaTraEleParameterBoundary* const scatraeleparamsboundary);
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

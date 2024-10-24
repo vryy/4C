@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Inpar
 {
-  namespace LUBRICATION
+  namespace Lubrication
   {
     /// compute error compared to analytical solution
     enum CalcError
@@ -66,19 +66,19 @@ namespace Inpar
     {
       switch (norm)
       {
-        case Inpar::LUBRICATION::norm_vague:
+        case Inpar::Lubrication::norm_vague:
           return "Vague";
           break;
-        case Inpar::LUBRICATION::norm_l1:
+        case Inpar::Lubrication::norm_l1:
           return "L1";
           break;
-        case Inpar::LUBRICATION::norm_l2:
+        case Inpar::Lubrication::norm_l2:
           return "L2";
           break;
-        case Inpar::LUBRICATION::norm_rms:
+        case Inpar::Lubrication::norm_rms:
           return "Rms";
           break;
-        case Inpar::LUBRICATION::norm_inf:
+        case Inpar::Lubrication::norm_inf:
           return "Inf";
           break;
         default:
@@ -90,7 +90,7 @@ namespace Inpar
     /// set the lubrication parameters
     void set_valid_parameters(Teuchos::ParameterList& list);
 
-  }  // namespace LUBRICATION
+  }  // namespace Lubrication
 }  // namespace Inpar
 
 FOUR_C_NAMESPACE_CLOSE

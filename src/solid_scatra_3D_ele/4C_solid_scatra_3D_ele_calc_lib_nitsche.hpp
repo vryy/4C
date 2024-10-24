@@ -16,7 +16,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   template <int dim>
@@ -32,13 +32,13 @@ namespace Discret::ELEMENTS
   template <Core::FE::CellType celltype, typename SolidFormulation>
   CauchyNDirLinearizationDependencies<celltype>
   get_initialized_cauchy_n_dir_linearization_dependencies(
-      const Discret::ELEMENTS::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
+      const Discret::Elements::ElementFormulationDerivativeEvaluator<celltype, SolidFormulation>&
           evaluator,
-      Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3>& linearizations)
+      Discret::Elements::SolidScatraCauchyNDirLinearizations<3>& linearizations)
   {
     // Get pure solid dependencies
     CauchyNDirLinearizationDependencies<celltype> linearization_dependencies =
-        Discret::ELEMENTS::get_initialized_cauchy_n_dir_linearization_dependencies(
+        Discret::Elements::get_initialized_cauchy_n_dir_linearization_dependencies(
             evaluator, linearizations.solid);
 
     // initialize dependencies for solid-scatra
@@ -128,7 +128,7 @@ namespace Discret::ELEMENTS
                           element, mat, disp, scalars, xi, n, dir, linearizations),
         variant);
   }
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

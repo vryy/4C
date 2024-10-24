@@ -229,11 +229,11 @@ void Immersed::ImmersedBase::evaluate_immersed(Teuchos::ParameterList& params,
     {
       ele = dis.g_element(*eleIter);
 
-      Discret::ELEMENTS::FluidImmersedBase* immersedelebase =
-          dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
+      Discret::Elements::FluidImmersedBase* immersedelebase =
+          dynamic_cast<Discret::Elements::FluidImmersedBase*>(ele);
       if (immersedelebase == nullptr)
         FOUR_C_THROW(
-            "dynamic cast from Core::Elements::Element* to Discret::ELEMENTS::FluidImmersedBase* "
+            "dynamic cast from Core::Elements::Element* to Discret::Elements::FluidImmersedBase* "
             "failed");
 
       // evaluate this element and fill vector with immersed dirichlets
@@ -286,11 +286,11 @@ void Immersed::ImmersedBase::evaluate_immersed_no_assembly(Teuchos::ParameterLis
     {
       ele = dis.g_element(*eleIter);
 
-      Discret::ELEMENTS::FluidImmersedBase* immersedelebase =
-          dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
+      Discret::Elements::FluidImmersedBase* immersedelebase =
+          dynamic_cast<Discret::Elements::FluidImmersedBase*>(ele);
       if (immersedelebase == nullptr)
         FOUR_C_THROW(
-            "dynamic cast from Core::Elements::Element* to Discret::ELEMENTS::FluidImmersedBase* "
+            "dynamic cast from Core::Elements::Element* to Discret::Elements::FluidImmersedBase* "
             "failed");
 
       // provide important objects to ParameterList
@@ -342,11 +342,11 @@ void Immersed::ImmersedBase::evaluate_scatra_with_internal_communication(
       ele = dis.g_element(*eleIter);
       iele = idis.g_element(*eleIter);
 
-      Discret::ELEMENTS::FluidImmersedBase* immersedelebase =
-          dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(iele);
+      Discret::Elements::FluidImmersedBase* immersedelebase =
+          dynamic_cast<Discret::Elements::FluidImmersedBase*>(iele);
       if (immersedelebase == nullptr)
         FOUR_C_THROW(
-            "dynamic cast from Core::Elements::Element* to Discret::ELEMENTS::FluidImmersedBase* "
+            "dynamic cast from Core::Elements::Element* to Discret::Elements::FluidImmersedBase* "
             "failed");
 
       // evaluate this element and fill vector with immersed dirichlets

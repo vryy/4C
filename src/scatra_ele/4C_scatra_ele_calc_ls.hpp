@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class ScaTraEleCalcLS : public ScaTraEleCalc<distype>
@@ -51,7 +51,7 @@ namespace Discret
       // smoothed heaviside function
       void smooth_heaviside_function(const double charelelength, const double phi, double& smoothH);
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

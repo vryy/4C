@@ -414,8 +414,8 @@ namespace
           FOUR_C_THROW(
               "Must have exactly two discretizations for scatra-thermo interaction problems!");
 
-        Discret::ELEMENTS::Transport* transport_element =
-            dynamic_cast<Discret::ELEMENTS::Transport*>(
+        Discret::Elements::Transport* transport_element =
+            dynamic_cast<Discret::Elements::Transport*>(
                 problem.get_discretization(0)->discretization()->l_row_element(0));
         if (transport_element == nullptr)
           FOUR_C_THROW("Elements of unknown type on scalar transport discretization!");

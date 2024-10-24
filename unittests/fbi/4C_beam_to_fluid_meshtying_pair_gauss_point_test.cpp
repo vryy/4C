@@ -67,10 +67,10 @@ namespace
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
       Teuchos::RCP<Core::Elements::Element> beam_element =
-          Teuchos::make_rcp<Discret::ELEMENTS::Beam3eb>(0, 0);
+          Teuchos::make_rcp<Discret::Elements::Beam3eb>(0, 0);
       beam_element->set_node_ids(2, dummy_node_ids);
-      Teuchos::RCP<Discret::ELEMENTS::Fluid> fluid_element =
-          Teuchos::make_rcp<Discret::ELEMENTS::Fluid>(1, 0);
+      Teuchos::RCP<Discret::Elements::Fluid> fluid_element =
+          Teuchos::make_rcp<Discret::Elements::Fluid>(1, 0);
       fluid_element->set_dis_type(Core::FE::CellType::hex8);
 
       // Set up the beam element.
@@ -83,8 +83,8 @@ namespace
         }
       }
       // Cast beam element and set the geometry.
-      Teuchos::RCP<Discret::ELEMENTS::Beam3eb> beam_element_cast =
-          Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::Beam3eb>(beam_element, true);
+      Teuchos::RCP<Discret::Elements::Beam3eb> beam_element_cast =
+          Teuchos::rcp_dynamic_cast<Discret::Elements::Beam3eb>(beam_element, true);
       beam_element_cast->set_up_reference_geometry(xrefe);
 
       Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> intersection_params =

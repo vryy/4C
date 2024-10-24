@@ -35,7 +35,7 @@ namespace Solid::ModelEvaluator
 {
   class GaussPointDataOutputManager;
 }
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   /*!
@@ -147,7 +147,7 @@ namespace Discret::ELEMENTS
     SolidFormulationHistory<ElementFormulation> history_data_{};
 
   };  // class SolidEleCalc
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

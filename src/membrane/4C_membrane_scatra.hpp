@@ -24,7 +24,7 @@ namespace Core::FE
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class MembraneScatra : public Membrane<distype>
@@ -238,7 +238,7 @@ namespace Discret
       MembraneScatra& operator=(const MembraneScatra& old);
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

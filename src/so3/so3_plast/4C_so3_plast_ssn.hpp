@@ -37,7 +37,7 @@ namespace Discret
     struct PlastSsnData;
   }
 
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
      * \brief EAS technology enhancement types of so_hex8
@@ -644,7 +644,7 @@ namespace Discret
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_last_timestep_;
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_delta_over_last_timestep_;
       Teuchos::RCP<Core::LinAlg::SerialDenseVector> alpha_eas_inc_;
-      Discret::ELEMENTS::So3PlastEasType eastype_;
+      Discret::Elements::So3PlastEasType eastype_;
       int neas_{};
 
       // TSI ******************************************************
@@ -1143,39 +1143,39 @@ namespace Discret
 
     };  // class So3Plast
 
-    template <Discret::ELEMENTS::So3PlastEasType eastype>
+    template <Discret::Elements::So3PlastEasType eastype>
     struct PlastEasTypeToNumEas
     {
     };
     template <>
-    struct PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>
+    struct PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>
     {
       static constexpr int neas = 9;
     };
     template <>
-    struct PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>
+    struct PlastEasTypeToNumEas<Discret::Elements::soh8p_easfull>
     {
       static constexpr int neas = 21;
     };
     template <>
-    struct PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>
+    struct PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>
     {
       static constexpr int neas = 7;
     };
     template <>
-    struct PlastEasTypeToNumEas<Discret::ELEMENTS::soh18p_eassosh18>
+    struct PlastEasTypeToNumEas<Discret::Elements::soh18p_eassosh18>
     {
       static constexpr int neas = 9;
     };
     template <>
-    struct PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easnone>
+    struct PlastEasTypeToNumEas<Discret::Elements::soh8p_easnone>
     {
       static constexpr int neas = 0;
     };
 
-    int plast_eas_type_to_num_eas_v(Discret::ELEMENTS::So3PlastEasType et);
+    int plast_eas_type_to_num_eas_v(Discret::Elements::So3PlastEasType et);
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 /*----------------------------------------------------------------------*/

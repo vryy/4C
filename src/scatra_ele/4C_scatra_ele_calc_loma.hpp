@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype>
     class ScaTraEleCalcLoma : public ScaTraEleCalc<distype>
@@ -181,7 +181,7 @@ namespace Discret
       std::vector<double> reatemprhs_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

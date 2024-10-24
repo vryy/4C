@@ -22,7 +22,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidBoundary;
 
@@ -55,7 +55,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     class FluidEleBoundaryCalcPoro : public FluidBoundaryImpl<distype>
     {
-      using Base = Discret::ELEMENTS::FluidBoundaryImpl<distype>;
+      using Base = Discret::Elements::FluidBoundaryImpl<distype>;
 
      protected:
       using Base::nsd_;
@@ -66,7 +66,7 @@ namespace Discret
           Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
       /// determines which boundary integral is to be evaluated
-      void evaluate_action(Discret::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
+      void evaluate_action(Discret::Elements::FluidBoundary* ele1, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -95,7 +95,7 @@ namespace Discret
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
-      void poro_boundary(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void poro_boundary(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -104,7 +104,7 @@ namespace Discret
       media problems (templated by discretization type of parent element)
       */
       template <Core::FE::CellType pdistype>
-      void poro_boundary(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void poro_boundary(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -121,7 +121,7 @@ namespace Discret
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
-      void pressure_coupling(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void pressure_coupling(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -139,7 +139,7 @@ namespace Discret
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
-      void fpsi_coupling(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void fpsi_coupling(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -148,7 +148,7 @@ namespace Discret
              (templated by discretization type of parent element)
       */
       template <Core::FE::CellType pdistype>
-      void fpsi_coupling(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void fpsi_coupling(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -182,7 +182,7 @@ namespace Discret
       \param elemat2 (out)      : matrix to be filled by element.
       \param elevec1 (out)      : vector to be filled by element.
       */
-      void no_penetration(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void no_penetration(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1);
@@ -203,7 +203,7 @@ namespace Discret
                                   where a constraint is to be applied will be marked with 1.0
                                   in this vector otherwise 0.0
       */
-      void no_penetration_i_ds(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_i_ds(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::LinAlg::SerialDenseVector& elevec1, std::vector<int>& lm);
 
@@ -217,7 +217,7 @@ namespace Discret
       \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       */
-      void compute_flow_rate(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void compute_flow_rate(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -227,7 +227,7 @@ namespace Discret
 
       */
       template <Core::FE::CellType pdistype>
-      void compute_flow_rate(Discret::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      void compute_flow_rate(Discret::Elements::FluidBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -244,7 +244,7 @@ namespace Discret
       \param rhs (out)      : vector to be filled by element. Residual of the
       constraint.
       */
-      void no_penetration_mat_and_rhs(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_and_rhs(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_fluid,
           Core::LinAlg::SerialDenseVector& rhs);
@@ -254,7 +254,7 @@ namespace Discret
              (templated by discretization type of parent element)
       */
       template <Core::FE::CellType pdistype>
-      void no_penetration_mat_and_rhs(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_and_rhs(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_fluid,
           Core::LinAlg::SerialDenseVector& rhs);
@@ -271,7 +271,7 @@ namespace Discret
       to structure dofs \param k_lambda (out)      : matrix to be filled by element. Linearization
       of constraint w.r.t to lagrange multiplier
       */
-      void no_penetration_mat_od(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_od(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_struct,
           Core::LinAlg::SerialDenseMatrix& k_lambda);
@@ -281,7 +281,7 @@ namespace Discret
              (templated by discretization type of parent element)
       */
       template <Core::FE::CellType pdistype>
-      void no_penetration_mat_od(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_od(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_struct,
           Core::LinAlg::SerialDenseMatrix& k_lambda);
@@ -297,7 +297,7 @@ namespace Discret
       \param k_pres (out)      : matrix to be filled by element. Linearization of constraint w.r.t
       pressure part ofporosity
       */
-      void no_penetration_mat_od_poro_pres(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_od_poro_pres(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_pres);
 
@@ -306,7 +306,7 @@ namespace Discret
              (templated by discretization type of parent element)
       */
       template <Core::FE::CellType pdistype>
-      void no_penetration_mat_od_poro_pres(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_od_poro_pres(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_pres);
 
@@ -321,7 +321,7 @@ namespace Discret
       \param k_disp (out)      : matrix to be filled by element. Linearization of constraint w.r.t
       displacement part ofporosity
       */
-      void no_penetration_mat_od_poro_disp(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_od_poro_disp(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_disp);
 
@@ -330,7 +330,7 @@ namespace Discret
              (templated by discretization type of parent element)
       */
       template <Core::FE::CellType pdistype>
-      void no_penetration_mat_od_poro_disp(Discret::ELEMENTS::FluidBoundary* ele,
+      void no_penetration_mat_od_poro_disp(Discret::Elements::FluidBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& k_disp);
 
@@ -344,7 +344,7 @@ namespace Discret
       \param mydispnp (in)       : nodal displacements
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
-      virtual bool compute_nodal_porosity(Discret::ELEMENTS::FluidBoundary* ele,
+      virtual bool compute_nodal_porosity(Discret::Elements::FluidBoundary* ele,
           const std::vector<double>& mydispnp, Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity)
       {
         return false;
@@ -368,7 +368,7 @@ namespace Discret
       \param save (in)           : flag whether the porosity is to be saved for later access
       */
       virtual void compute_porosity_at_gp(Teuchos::ParameterList& params,
-          Discret::ELEMENTS::FluidBoundary* ele,
+          Discret::Elements::FluidBoundary* ele,
           const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
           const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
@@ -386,7 +386,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     class FluidEleBoundaryCalcPoroP1 : public FluidEleBoundaryCalcPoro<distype>
     {
-      using Base = Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>;
+      using Base = Discret::Elements::FluidEleBoundaryCalcPoro<distype>;
       using Base::nsd_;
 
      public:
@@ -404,7 +404,7 @@ namespace Discret
       \param mydispnp (in)       : nodal displacements/porosities
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
-      bool compute_nodal_porosity(Discret::ELEMENTS::FluidBoundary* ele,
+      bool compute_nodal_porosity(Discret::Elements::FluidBoundary* ele,
           const std::vector<double>& mydispnp,
           Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity) override;
 
@@ -419,13 +419,13 @@ namespace Discret
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       void compute_porosity_at_gp(Teuchos::ParameterList& params,
-          Discret::ELEMENTS::FluidBoundary* ele,
+          Discret::Elements::FluidBoundary* ele,
           const Core::LinAlg::Matrix<Base::bdrynen_, 1>& funct,
           const Core::LinAlg::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
           double& porosity, double& dphi_dp, double& dphi_dJ, bool save) override;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

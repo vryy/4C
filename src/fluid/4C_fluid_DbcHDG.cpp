@@ -262,7 +262,7 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
 
             // get 1st element
             Core::Elements::Element* ele = discret.l_row_element(0);
-            Discret::ELEMENTS::Fluid* fluidele = dynamic_cast<Discret::ELEMENTS::Fluid*>(ele);
+            Discret::Elements::Fluid* fluidele = dynamic_cast<Discret::Elements::Fluid*>(ele);
 
             // get material
             Teuchos::RCP<Core::Mat::Material> mat = ele->material();
@@ -273,19 +273,19 @@ void FLD::Utils::DbcHdgFluid::do_dirichlet_condition(const Teuchos::ParameterLis
             // evaluate pressure average     //TODO als make it valid for every discretization type
             Core::LinAlg::SerialDenseVector elevec = Core::LinAlg::SerialDenseVector(1);
             if (distype == Core::FE::CellType::quad4)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad4>::instance()
+              Discret::Elements::FluidEleCalcHDG<Core::FE::CellType::quad4>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::quad8)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad8>::instance()
+              Discret::Elements::FluidEleCalcHDG<Core::FE::CellType::quad8>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::quad9)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::quad9>::instance()
+              Discret::Elements::FluidEleCalcHDG<Core::FE::CellType::quad9>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::tri3)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri3>::instance()
+              Discret::Elements::FluidEleCalcHDG<Core::FE::CellType::tri3>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else if (distype == Core::FE::CellType::tri6)
-              Discret::ELEMENTS::FluidEleCalcHDG<Core::FE::CellType::tri6>::instance()
+              Discret::Elements::FluidEleCalcHDG<Core::FE::CellType::tri6>::instance()
                   ->evaluate_pressure_average(fluidele, params, mat, elevec);
             else
               FOUR_C_THROW("Given distype currently not implemented.");

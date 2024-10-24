@@ -20,7 +20,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituent;
   template <typename T>
@@ -28,18 +28,18 @@ namespace MIXTURE
 
   namespace PAR
   {
-    class MixtureConstituentRemodelFiberImpl : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentRemodelFiberImpl : public Mixture::PAR::MixtureConstituent
     {
      public:
       explicit MixtureConstituentRemodelFiberImpl(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
+      std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) override;
 
       const int fiber_id_;
       const int init_;
 
       const int fiber_material_id_;
-      const MIXTURE::PAR::RemodelFiberMaterial<double>* fiber_material_;
+      const Mixture::PAR::RemodelFiberMaterial<double>* fiber_material_;
 
       const bool enable_growth_;
       const bool enable_basal_mass_production_;
@@ -54,11 +54,11 @@ namespace MIXTURE
   /*!
    * \brief Remodel fiber constituent with an implicit update rule
    */
-  class MixtureConstituentRemodelFiberImpl : public MIXTURE::MixtureConstituent
+  class MixtureConstituentRemodelFiberImpl : public Mixture::MixtureConstituent
   {
    public:
     explicit MixtureConstituentRemodelFiberImpl(
-        MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params, int id);
+        Mixture::PAR::MixtureConstituentRemodelFiberImpl* params, int id);
 
     /// Returns the material type enum
     [[nodiscard]] Core::Materials::MaterialType material_type() const override;
@@ -110,7 +110,7 @@ namespace MIXTURE
     void initialize();
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params_;
+    Mixture::PAR::MixtureConstituentRemodelFiberImpl* params_;
 
     /// An instance of the remodel fiber
     std::vector<RemodelFiber<2>> remodel_fiber_;
@@ -124,7 +124,7 @@ namespace MIXTURE
     std::vector<Core::LinAlg::Matrix<1, 6>> dlambdard_c_;
     /// @}
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

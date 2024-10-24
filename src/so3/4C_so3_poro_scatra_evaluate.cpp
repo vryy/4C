@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <class So3Ele, Core::FE::CellType distype>
-void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
+void Discret::Elements::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   if (la.size() > 2)
@@ -78,7 +78,7 @@ void Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::pre_evaluate(Teuchos::Pa
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-int Discret::ELEMENTS::So3PoroScatra<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::So3PoroScatra<So3Ele, distype>::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

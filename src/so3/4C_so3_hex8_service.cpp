@@ -12,7 +12,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Discret::ELEMENTS::SoHex8::soh8_element_center_refe_coords(
+void Discret::Elements::SoHex8::soh8_element_center_refe_coords(
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& centercoord,
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe) const
 {
@@ -23,7 +23,7 @@ void Discret::ELEMENTS::SoHex8::soh8_element_center_refe_coords(
 }
 
 
-void Discret::ELEMENTS::SoHex8::soh8_gauss_point_refe_coords(
+void Discret::Elements::SoHex8::soh8_gauss_point_refe_coords(
     Core::LinAlg::Matrix<NUMDIM_SOH8, 1>& gpcoord,
     Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> const& xrefe, int const gp) const
 {

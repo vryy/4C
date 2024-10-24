@@ -27,7 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoShw6::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -49,7 +49,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
   Core::LinAlg::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  Discret::ELEMENTS::SoWeg6::ActionType act = SoWeg6::none;
+  Discret::Elements::SoWeg6::ActionType act = SoWeg6::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -263,7 +263,7 @@ int Discret::ELEMENTS::SoShw6::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                             // current displacements
     std::vector<double>& residual,                                         // current residual displ
     Core::LinAlg::Matrix<NUMDOF_WEG6, NUMDOF_WEG6>* stiffmatrix,  // element stiffness matrix
@@ -815,7 +815,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // lo
 /*----------------------------------------------------------------------*
  |  setup of constant ANS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::soshw6_anssetup(
+void Discret::Elements::SoShw6::soshw6_anssetup(
     const Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe,  // material element coords
     const Core::LinAlg::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xcurr,  // current element coords
     std::vector<Core::LinAlg::Matrix<NUMDIM_WEG6, NUMNOD_WEG6>>**
@@ -923,7 +923,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_anssetup(
 /*----------------------------------------------------------------------*
  |  evaluate 'T'-transformation matrix )                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::soshw6_evaluate_t(
+void Discret::Elements::SoShw6::soshw6_evaluate_t(
     const Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& jac,
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>& TinvT)
 {
@@ -990,7 +990,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_evaluate_t(
 /*----------------------------------------------------------------------*
  |  initialize EAS data (private)                              maf 05/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::soshw6_easinit()
+void Discret::Elements::SoShw6::soshw6_easinit()
 {
   // EAS enhanced strain parameters at currently investigated load/time step
   Core::LinAlg::SerialDenseMatrix alpha(neas_, 1);
@@ -1017,7 +1017,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_easinit()
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::soshw6_eassetup(
+void Discret::Elements::SoShw6::soshw6_eassetup(
     std::vector<Core::LinAlg::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
     double& detJ0,                                        // det of Jacobian at origin
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D>&
@@ -1088,7 +1088,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_eassetup(
 /*----------------------------------------------------------------------*
  |  return Cauchy stress at gp                                 maf 06/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoShw6::soshw6_cauchy(
+void Discret::Elements::SoShw6::soshw6_cauchy(
     Core::LinAlg::Matrix<NUMGPT_WEG6, Mat::NUM_STRESS_3D>* elestress, const int gp,
     const Core::LinAlg::Matrix<NUMDIM_WEG6, NUMDIM_WEG6>& defgrd,
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& glstrain,
@@ -1164,7 +1164,7 @@ void Discret::ELEMENTS::SoShw6::soshw6_cauchy(
 /*----------------------------------------------------------------------*
  | find optimal map between material space and parameter space maf 11/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoShw6::soshw6_findoptparmap()
+int Discret::Elements::SoShw6::soshw6_findoptparmap()
 {
   // create edge vectors of lower triangle
   std::vector<std::vector<double>> edgevecs(3);
@@ -1214,12 +1214,12 @@ int Discret::ELEMENTS::SoShw6::soshw6_findoptparmap()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  maf 11/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoShw6Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoShw6Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoShw6*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoShw6*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_shw6* failed");
 
     // check whether we should align the material space optimally with the parameter space.
@@ -1279,14 +1279,14 @@ int Discret::ELEMENTS::SoShw6Type::initialize(Core::FE::Discretization& dis)
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoShw6*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoShw6*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_shw6* failed");
     actele->init_jacobian_mapping();
   }
   return 0;
 }
 
-void Discret::ELEMENTS::SoShw6::soshw6_recover(const std::vector<double>& residual)
+void Discret::Elements::SoShw6::soshw6_recover(const std::vector<double>& residual)
 {
   if (eastype_ == soshw6_easnone) return;
 

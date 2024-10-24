@@ -28,8 +28,8 @@ namespace
    * @tparam Enable : A dummy parameter for enabling a subset of switches.
    */
   template <Core::FE::CellType celltype, Inpar::Solid::KinemType kinem,
-      Discret::ELEMENTS::ElementTechnology ele_tech,
-      Discret::ELEMENTS::PrestressTechnology prestress_technology, typename Enable = void>
+      Discret::Elements::ElementTechnology ele_tech,
+      Discret::Elements::PrestressTechnology prestress_technology, typename Enable = void>
   struct SolidScatraCalculationFormulation
   {
   };
@@ -40,9 +40,9 @@ namespace
    */
   template <Core::FE::CellType celltype>
   struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
-      Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
+      Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::none>
   {
-    using type = Discret::ELEMENTS::Internal::DisplacementBasedSolidScatraIntegrator<celltype>;
+    using type = Discret::Elements::Internal::DisplacementBasedSolidScatraIntegrator<celltype>;
   };
 
   /*!
@@ -51,10 +51,10 @@ namespace
    */
   template <Core::FE::CellType celltype>
   struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::linear,
-      Discret::ELEMENTS::ElementTechnology::none, Discret::ELEMENTS::PrestressTechnology::none>
+      Discret::Elements::ElementTechnology::none, Discret::Elements::PrestressTechnology::none>
   {
     using type =
-        Discret::ELEMENTS::Internal::DisplacementBasedLinearKinematicsSolidScatraIntegrator<
+        Discret::Elements::Internal::DisplacementBasedLinearKinematicsSolidScatraIntegrator<
             celltype>;
   };
 
@@ -64,32 +64,32 @@ namespace
    */
   template <Core::FE::CellType celltype>
   struct SolidScatraCalculationFormulation<celltype, Inpar::Solid::KinemType::nonlinearTotLag,
-      Discret::ELEMENTS::ElementTechnology::fbar, Discret::ELEMENTS::PrestressTechnology::none,
+      Discret::Elements::ElementTechnology::fbar, Discret::Elements::PrestressTechnology::none,
       std::enable_if_t<celltype == Core::FE::CellType::hex8>>
   {
-    using type = Discret::ELEMENTS::Internal::FBarSolidScatraIntegrator<celltype>;
+    using type = Discret::Elements::Internal::FBarSolidScatraIntegrator<celltype>;
   };
 }  // namespace
 
-void Discret::ELEMENTS::add_to_pack(Core::Communication::PackBuffer& data,
-    const Discret::ELEMENTS::SolidScatraElementProperties& properties)
+void Discret::Elements::add_to_pack(Core::Communication::PackBuffer& data,
+    const Discret::Elements::SolidScatraElementProperties& properties)
 {
   add_to_pack(data, static_cast<int>(properties.impltype));
 
-  Discret::ELEMENTS::add_to_pack(data, properties.solid);
+  Discret::Elements::add_to_pack(data, properties.solid);
 }
 
-void Discret::ELEMENTS::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-    Discret::ELEMENTS::SolidScatraElementProperties& properties)
+void Discret::Elements::extract_from_pack(Core::Communication::UnpackBuffer& buffer,
+    Discret::Elements::SolidScatraElementProperties& properties)
 {
   properties.impltype = static_cast<Inpar::ScaTra::ImplType>(extract_int(buffer));
 
-  Discret::ELEMENTS::extract_from_pack(buffer, properties.solid);
+  Discret::Elements::extract_from_pack(buffer, properties.solid);
 }
 
-Discret::ELEMENTS::SolidScatraCalcVariant
-Discret::ELEMENTS::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
-    const Discret::ELEMENTS::SolidElementProperties& element_properties)
+Discret::Elements::SolidScatraCalcVariant
+Discret::Elements::create_solid_scatra_calculation_interface(Core::FE::CellType celltype,
+    const Discret::Elements::SolidElementProperties& element_properties)
 {
   // We have 4 different element properties and each combination results in a different element
   // formulation.

@@ -110,8 +110,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::post_partition_problem()
   for (unsigned int i = 0; i < numcolele; ++i)
   {
     // beam element i for which data will be collected
-    Discret::ELEMENTS::Beam3Base* beamele_i =
-        dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr()->l_col_element(i));
+    Discret::Elements::Beam3Base* beamele_i =
+        dynamic_cast<Discret::Elements::Beam3Base*>(discret_ptr()->l_col_element(i));
 
     // go to next element in case the current one is not a beam element
     if (beamele_i == nullptr) continue;
@@ -266,8 +266,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::set_filament_types()
 
     for (int i = 0; i < currnode->num_element(); ++i)
     {
-      Discret::ELEMENTS::Beam3Base* beamele =
-          dynamic_cast<Discret::ELEMENTS::Beam3Base*>(currnode->elements()[i]);
+      Discret::Elements::Beam3Base* beamele =
+          dynamic_cast<Discret::Elements::Beam3Base*>(currnode->elements()[i]);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
       if (beamele == nullptr)
@@ -324,7 +324,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
   my_bspot_linker.reserve(numbeams);
   for (unsigned int rowbeam_i = 0; rowbeam_i < numbeams; ++rowbeam_i)
   {
-    Discret::ELEMENTS::Beam3Base* beamele = dynamic_cast<Discret::ELEMENTS::Beam3Base*>(
+    Discret::Elements::Beam3Base* beamele = dynamic_cast<Discret::Elements::Beam3Base*>(
         discret().g_element(ele_type_map_extractor_ptr()->beam_map()->GID(rowbeam_i)));
 
     BEAMINTERACTION::Data::BeamData const* beamdata_i = beam_data_[beamele->lid()].get();
@@ -360,8 +360,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::get_all_possible_bspot_li
         // loop over all neighboring beam elements
         for (auto const& nb_ele_i : neighboring_beams)
         {
-          Discret::ELEMENTS::Beam3Base* nb_beamele =
-              dynamic_cast<Discret::ELEMENTS::Beam3Base*>(nb_ele_i);
+          Discret::Elements::Beam3Base* nb_beamele =
+              dynamic_cast<Discret::Elements::Beam3Base*>(nb_ele_i);
 
           BEAMINTERACTION::Data::BeamData const* nb_beamdata_i =
               beam_data_[nb_beamele->lid()].get();
@@ -850,7 +850,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force()
     // apply forces on binding spots to parent elements
     // and get their discrete element force vectors
     BEAMINTERACTION::Utils::apply_binding_spot_force_to_parent_elements<
-        Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
+        Discret::Elements::Beam3Base, Discret::Elements::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, eleforce);
 
@@ -903,7 +903,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_stiff()
 
     // apply linearizations to parent elements and get their discrete element stiffness matrices
     BEAMINTERACTION::Utils::apply_binding_spot_stiff_to_parent_elements<
-        Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
+        Discret::Elements::Beam3Base, Discret::Elements::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotstiff, elestiff);
 
@@ -961,7 +961,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::evaluate_force_stiff()
     // apply forces on binding spots and corresponding linearizations to parent elements
     // and get their discrete element force vectors and stiffness matrices
     BEAMINTERACTION::Utils::apply_binding_spot_force_stiff_to_parent_elements<
-        Discret::ELEMENTS::Beam3Base, Discret::ELEMENTS::Beam3Base>(discret(),
+        Discret::Elements::Beam3Base, Discret::Elements::Beam3Base>(discret(),
         *periodic_bounding_box_ptr(), *beam_interaction_data_state_ptr()->get_dis_col_np(),
         *elepairptr, bspotforce, bspotstiff, eleforce, elestiff);
 
@@ -1737,8 +1737,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
         // (as this is the result of a sum, you can not have a reference to that)
         const int elegid = cldata_i->get_b_spots()[occbspotid].first;
 
-        Discret::ELEMENTS::Beam3Base* ele =
-            dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr()->g_element(elegid));
+        Discret::Elements::Beam3Base* ele =
+            dynamic_cast<Discret::Elements::Beam3Base*>(discret_ptr()->g_element(elegid));
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         // safety check
@@ -1796,8 +1796,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
               cldata_i->get_number_of_bonds(), elegid, g_state().get_my_rank());
 #endif
 
-        Discret::ELEMENTS::Beam3Base* ele =
-            dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr()->g_element(elegid));
+        Discret::Elements::Beam3Base* ele =
+            dynamic_cast<Discret::Elements::Beam3Base*>(discret_ptr()->g_element(elegid));
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         // safety check
@@ -1834,7 +1834,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::diffuse_crosslinker()
               cldata_i->get_number_of_bonds(), elegid, g_state().get_my_rank());
 #endif
 
-        ele = dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr()->g_element(elegid));
+        ele = dynamic_cast<Discret::Elements::Beam3Base*>(discret_ptr()->g_element(elegid));
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         // safety check
@@ -2154,8 +2154,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::update_and_export_beam_da
         FOUR_C_THROW(" Element %i has moved too far between two redistributions.", elegid);
 
       // beam element i for which data will be collected
-      Discret::ELEMENTS::Beam3Base* beamele_i =
-          dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret().g_element(elegid));
+      Discret::Elements::Beam3Base* beamele_i =
+          dynamic_cast<Discret::Elements::Beam3Base*>(discret().g_element(elegid));
 
       // go to next element in case the current one is not a beam element
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -2547,7 +2547,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::check_bind_event_criteria
   // check compatibility of crosslinker type and filament type (some linker can only
   // bind to certain filament types)
   if (not check_linker_and_filament_type_compatibility(
-          linkertype, dynamic_cast<Discret::ELEMENTS::Beam3Base const* const>(potbeampartner)
+          linkertype, dynamic_cast<Discret::Elements::Beam3Base const* const>(potbeampartner)
                           ->get_filament_type()))
     return false;
 

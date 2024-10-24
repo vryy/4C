@@ -23,7 +23,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief a trait for the solid formulation determining whether the formulation has a gauss point
@@ -574,7 +574,7 @@ namespace Discret::ELEMENTS
   }
 
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -43,8 +43,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  * Constructor
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+Discret::Elements::FluidEleCalc<distype, enrtype>::FluidEleCalc()
     : rotsymmpbc_(nullptr),
       eid_(-1.0),
       is_higher_order_ele_(false),
@@ -191,9 +191,9 @@ Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
       Teuchos::make_rcp<FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>>();
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
+  fldparatimint_ = Discret::Elements::FluidEleParameterTimInt::instance();
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
+  fldpara_ = Discret::Elements::FluidEleParameterStd::instance();
 
   // Nurbs
   isNurbs_ = Core::FE::is_nurbs<distype>;
@@ -202,8 +202,8 @@ Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -217,8 +217,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -546,8 +546,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Discret::ELEMENT
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,
@@ -649,8 +649,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate(Teuchos::Paramet
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat(
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,
@@ -802,7 +802,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat(
   // get Gaussian integration points
   // const Core::FE::IntegrationPoints3D intpoints(ele->gaussrule_);
   // const Core::FE::IntPointsAndWeights<nsd_>
-  // intpoints(Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  // intpoints(Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -1391,8 +1391,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat(
 /*----------------------------------------------------------------------*
  |  compute body force at element nodes (protected)            vg 10/11 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elements::Fluid* ele,
     Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     Core::LinAlg::Matrix<nen_, 1>& escabofoaf)
 {
@@ -1405,8 +1405,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
 /*----------------------------------------------------------------------*
  |  compute body force at element nodes (public)               vg 10/11 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force(Discret::Elements::Fluid* ele,
     const double time, const Inpar::FLUID::PhysicalType physicaltype,
     Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf, Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     Core::LinAlg::Matrix<nen_, 1>& escabofoaf)
@@ -1448,7 +1448,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
 
       double num = (*onoff)[isd] * (*val)[isd];
 
-      if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+      if (enrtype == Discret::Elements::Fluid::xwall)
       {
         // for xwall, only the linear shape functions contribute to the bodyforce,
         // since the sum of all shape functions sum(N_j) != 1.0 if the enriched shape functions are
@@ -1566,9 +1566,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force(Discret::ELEM
 /*----------------------------------------------------------------------*
  |  compute correction term at element nodes                            |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correction_term(
-    Discret::ELEMENTS::Fluid* ele, Core::LinAlg::Matrix<1, nen_>& ecorrectionterm)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::correction_term(
+    Discret::Elements::Fluid* ele, Core::LinAlg::Matrix<1, nen_>& ecorrectionterm)
 {
   // fill the element correction term
   const Teuchos::ParameterList& fluidparams = Global::Problem::instance()->fluid_dynamic_params();
@@ -1585,8 +1585,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correction_term(
 /*----------------------------------------------------------------------*
  |  compute surface tension force                              mw 05/14 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::add_surface_tension_force(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::add_surface_tension_force(
     const Core::LinAlg::Matrix<nen_, 1>& escaaf, const Core::LinAlg::Matrix<nen_, 1>& escaam,
     const Core::LinAlg::Matrix<nsd_, 2 * nen_>& egradphitot,
     const Core::LinAlg::Matrix<nen_, 2 * 1>& ecurvaturetot)
@@ -1639,12 +1639,12 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::add_surface_tension_forc
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at element center  vg 09/09 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::eval_shape_func_and_derivs_at_ele_center()
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::eval_shape_func_and_derivs_at_ele_center()
 {
   // use one-point Gauss rule
   Core::FE::IntPointsAndWeights<nsd_> intpoints_stab(
-      Discret::ELEMENTS::DisTypeToStabGaussRule<distype>::rule);
+      Discret::Elements::DisTypeToStabGaussRule<distype>::rule);
 
   eval_shape_func_and_derivs_at_int_point(
       (intpoints_stab.ip().qxg)[0], intpoints_stab.ip().qwgt[0]);
@@ -1656,8 +1656,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::eval_shape_func_and_deri
 /*----------------------------------------------------------------------*
  | evaluate shape functions and derivatives at integr. point   vg 09/09 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::eval_shape_func_and_derivs_at_int_point(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::eval_shape_func_and_derivs_at_int_point(
     const double* gpcoord,  // actual integration point (coords)
     double gpweight         // actual integration point (weight)
 )
@@ -1735,8 +1735,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::eval_shape_func_and_deri
 /*---------------------------------------------------------------------------*
  | get ALE grid displacements and grid velocity for element     schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp, Core::LinAlg::Matrix<nsd_, nen_>& egridv)
 {
@@ -1763,8 +1763,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_ale(
 /*---------------------------------------------------------------------------*
  | get ALE grid displacements only for element                      bk 02/15 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_ale(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::get_grid_disp_ale(
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp)
 {
@@ -1777,8 +1777,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_ale(
 /*---------------------------------------------------------------------------*
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_convective_velint(const bool isale)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::set_convective_velint(const bool isale)
 {
   // get convective velocity at integration point
   switch (fldpara_->physical_type())
@@ -1825,9 +1825,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_convective_velint(co
 /*---------------------------------------------------------------------------*
  |  set element advective field for Oseen problems              schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
-    Discret::ELEMENTS::Fluid* ele)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
+    Discret::Elements::Fluid* ele)
 {
   // set element advective field for Oseen problems
   if (fldpara_->physical_type() == Inpar::FLUID::oseen)
@@ -1849,8 +1849,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_advective_vel_oseen(
 ///*----------------------------------------------------------------------*
 // |  compute material parameters                                vg 09/09 |
 // *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
     Teuchos::RCP<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
     const Core::LinAlg::Matrix<nen_, 1>& epream, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
@@ -1867,8 +1867,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
 /*----------------------------------------------------------------------*
  |  compute material parameters                                vg 09/09 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::get_material_params(
     Teuchos::RCP<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
     const Core::LinAlg::Matrix<nen_, 1>& epream, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
@@ -2320,17 +2320,17 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_material_params(
 /*----------------------------------------------------------------------*
  |  Get mk                                                     bk 09/14 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-double Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_mk()
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+double Discret::Elements::FluidEleCalc<distype, enrtype>::get_mk()
 {
-  return Discret::ELEMENTS::mk<distype>();
+  return Discret::Elements::mk<distype>();
 }
 
 /*----------------------------------------------------------------------*
  |  calculation of stabilization parameter                     vg 09/09 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_stab_parameter(const double vol)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_stab_parameter(const double vol)
 {
   //---------------------------------------------------------------------
   // preliminary definition of values which will already be computed for
@@ -3371,8 +3371,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_stab_parameter(cons
 /*----------------------------------------------------------------------*
  |  calculation of characteristic element length               vg 01/11 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
     const double vol, const double vel_norm, double& h_u, double& h_p)
 {
   // check for potential 1-D computations
@@ -3401,7 +3401,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
       static Core::LinAlg::Matrix<nen_, 1> tmp;
 
       // enriched dofs are not interpolatory with respect to geometry
-      if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+      if (enrtype == Discret::Elements::Fluid::xwall)
       {
         static Core::LinAlg::Matrix<nsd_, nen_> derxy_copy(derxy_);
         for (int inode = 1; inode < nen_; inode += 2)
@@ -3461,7 +3461,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
       // get streamlength using the normed velocity at element centre
       static Core::LinAlg::Matrix<nen_, 1> tmp;
       // enriched dofs are not interpolatory with respect to geometry
-      if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+      if (enrtype == Discret::Elements::Fluid::xwall)
       {
         static Core::LinAlg::Matrix<nsd_, nen_> derxy_copy(derxy_);
         for (int inode = 1; inode < nen_; inode += 2)
@@ -3502,8 +3502,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_char_ele_length(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_eps(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_div_eps(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -3679,8 +3679,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_eps(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_velocity(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_velocity(
     const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
@@ -3892,8 +3892,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u(
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -4002,8 +4002,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u(
 
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u_subscales(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u_subscales(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, Core::LinAlg::Matrix<nsd_, 1>& resM_Du,
     const double& timefacfac, const double& facMtau)
@@ -4176,8 +4176,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_u_subsca
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::stab_lin_gal_mom_res_u(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::stab_lin_gal_mom_res_u(
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -4295,8 +4295,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::stab_lin_gal_mom_res_u(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inertia_convection_reaction_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_reaction_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, Core::LinAlg::Matrix<nsd_, 1>& resM_Du,
@@ -4418,8 +4418,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inertia_convection_react
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::viscous_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::viscous_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, Core::LinAlg::Matrix<nsd_, nsd_>& viscstress,
     const double& timefacfac, const double& rhsfac)
@@ -4487,8 +4487,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::viscous_gal_part(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::cont_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::cont_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefac, const double& timefacfac,
     const double& timefacfacpre, const double& rhsfac)
@@ -4572,8 +4572,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::cont_stab(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::pressure_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& press)
@@ -4607,8 +4607,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_gal_part(
 
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::continuity_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::continuity_gal_part(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac)
 {
@@ -4644,8 +4644,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::continuity_gal_part(
 /*----------------------------------------------------------------------------*
  |  add integration point contribution to pressure matrices         nis Jan13 |
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_projection(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::pressure_projection(
     Core::LinAlg::Matrix<nen_, nen_>& ppmat)
 {
   // mass matrix of pressure basis functions - used as temp
@@ -4661,8 +4661,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_projection(
 /*----------------------------------------------------------------------------*
  |  finalize pressure projection and compute rhs-contribution       nis Jan13 |
  *----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_projection_finalize(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::pressure_projection_finalize(
     Core::LinAlg::Matrix<nen_, nen_>& ppmat, Core::LinAlg::Matrix<nen_, 1>& preforce,
     const Core::LinAlg::Matrix<nen_, 1>& epre)
 {
@@ -4686,8 +4686,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_projection_fina
   ppmat.scale(fldparatimint_->time_fac_pre());
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& rhsfac)
 {
   for (int idim = 0; idim < nsd_; ++idim)
@@ -4704,8 +4704,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::conservative_formulation(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::conservative_formulation(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
@@ -4834,8 +4834,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::conservative_formulation
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pspg(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::pspg(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, nen_>& ppmat,
     Core::LinAlg::Matrix<nen_, 1>& preforce, Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     const double& fac3, const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
@@ -4980,8 +4980,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pspg(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::supg(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::supg(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nen_, 1>& preforce, Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -5245,8 +5245,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::supg(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reac_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::reac_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5390,8 +5390,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reac_stab(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::visc_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::visc_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5510,8 +5510,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::visc_stab(
 
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::conv_div_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::conv_div_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
@@ -5558,8 +5558,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::conv_div_stab(
 
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::cross_stress_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::cross_stress_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5699,8 +5699,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::cross_stress_stab(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac,
@@ -5824,9 +5824,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reynolds_stress_stab(
 /*----------------------------------------------------------------------*
  * Evaluate supporting methods of the element
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_service(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_service(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -5975,9 +5975,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_service(
 /*----------------------------------------------------------------------*
  * Action type: Integrate shape function
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::integrate_shape_function(
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
   // integrations points and weights
@@ -5988,9 +5988,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
 /*----------------------------------------------------------------------*
  * Action type: Integrate shape function
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::integrate_shape_function(
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     const Core::FE::GaussIntegration& intpoints)
 {
@@ -6057,8 +6057,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::integrate_shape_function(
  | Action type: calc_divop                                             |
  | calculate integrated divergence operator              mayr.mt 04/12 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_op(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_div_op(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -6103,9 +6103,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_op(Discret::ELEM
  | Action type: velgradient_projection                                 |
  | project velocity gradient to nodal level                ghamm 06/14 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2)
 {
@@ -6177,9 +6177,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::vel_gradient_projection(
  | Action type: presgradient_projection                                |
  | project pressure gradient to nodal level               winter 09/15 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2)
 {
@@ -6251,8 +6251,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pres_gradient_projection(
 /*----------------------------------------------------------------------*
  * Action type: Compute Div u                                 ehrl 12/12|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_div_u(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::compute_div_u(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -6345,8 +6345,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_div_u(Discret::EL
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::compute_error(Discret::Elements::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
@@ -6362,8 +6362,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
 /*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::compute_error(Discret::Elements::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const Core::FE::GaussIntegration& intpoints)
@@ -6515,8 +6515,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_error(Discret::EL
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_solution_point(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::evaluate_analytic_solution_point(
     const Core::LinAlg::Matrix<nsd_, 1>& xyzint, const double t,
     const Inpar::FLUID::CalcError calcerr, const int calcerrfunctno,
     const Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::Matrix<nsd_, 1>& u, double& p,
@@ -7080,8 +7080,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::evaluate_analytic_soluti
 /*!
  * \brief fill elment matrix and vectors with the global values
  */
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_global_vector(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::extract_values_from_global_vector(
     const Core::FE::Discretization& discretization,  ///< discretization
     const std::vector<int>& lm,                      ///<
     FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, enrtype>& rotsymmpbc,  ///<
@@ -7122,8 +7122,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::extract_values_from_glob
  * additional output for turbulent channel flow                    rasthofer 12/10
  * -> dissipation
  *--------------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> mat)
 {
@@ -7864,7 +7864,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
     // streamlength based element size
     // The stream length is not correct for xwall as calculated here, because the virtual (enriched)
     // dofs don't have any geometric meaning
-    if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+    if (enrtype == Discret::Elements::Fluid::xwall)
       strle = 10000000;
     else
     {
@@ -8326,8 +8326,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_dissipation(Fluid* e
       \param l_tau            (i) viscous length scale, required for van driest
                                   damping function and defined on input (pass-through)
 */
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::f_dcheck(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::f_dcheck(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
     const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
@@ -8517,8 +8517,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::f_dcheck(
 /*-------------------------------------------------------------------------------*
  |find elements of inflow section                                rasthofer 10/12 |
  *-------------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(Core::Elements::Element* ele)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::inflow_element(Core::Elements::Element* ele)
 {
   is_inflow_ele_ = false;
 
@@ -8536,9 +8536,9 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inflow_element(Core::Ele
 /*-----------------------------------------------------------------------------*
  | Calculate element mass matrix                              la spina 06/2017 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
-    Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
+    Discret::Elements::Fluid* ele,
     //    Teuchos::ParameterList&              params,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra)
@@ -8693,9 +8693,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_matrix(
 /*-----------------------------------------------------------------------------*
  | Interpolate velocity gradient                                 rauch 05/2014 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_gradient_and_pressure(
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_gradient_and_pressure(
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
@@ -8904,9 +8904,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_grad
 /*-----------------------------------------------------------------------------*
  | Interpolate velocity                                          rauch 05/2014 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_node(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_node(
+    Teuchos::ParameterList& params, Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
@@ -8919,8 +8919,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
   //  structure
   //----------------------------------------------------------------------
 
-  Discret::ELEMENTS::FluidImmersedBase* immersedele =
-      dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
+  Discret::Elements::FluidImmersedBase* immersedele =
+      dynamic_cast<Discret::Elements::FluidImmersedBase*>(ele);
 
   Global::Problem* globalproblem = Global::Problem::instance();
 
@@ -9006,7 +9006,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
   std::map<int, std::set<int>> curr_subset_of_structdis;
 
   {
-    // TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::interpolate_velocity_to_node() - search in
+    // TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::interpolate_velocity_to_node() - search in
     // searchtree");
     // search radius (diagonal length of targetele (current fluid ele) )
     double radius = 0.0;
@@ -9225,17 +9225,17 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_n
 /*-----------------------------------------------------------------------------*
  | Correct Immersed Boundary Velocities                          rauch 07/2015 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_velocities(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::correct_immersed_bound_velocities(
+    Teuchos::ParameterList& params, Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization,  // fluid
     const std::vector<int>& lm, Core::Mat::Material& mat,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,  // vectofill
     Core::LinAlg::SerialDenseVector& elevec2_epetra)
 {
   // cast fluid element to immersed element to get/store immersed information
-  Discret::ELEMENTS::FluidImmersedBase* immersedele =
-      dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
+  Discret::Elements::FluidImmersedBase* immersedele =
+      dynamic_cast<Discret::Elements::FluidImmersedBase*>(ele);
 
   // do only if immersed ele is cut by boundary
   if (immersedele->is_boundary_immersed())
@@ -9441,9 +9441,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::correct_immersed_bound_ve
  | Action type: interpolate_velocity_to_given_point                    |
  | calculate velocity at given point                       ghamm 12/15 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_point(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_point(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -9495,9 +9495,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_velocity_to_p
  | Action type: interpolate_pressure_to_given_point                    |
  | calculate pressure at given point                       ghamm 06/15 |
  *---------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_pressure_to_point(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::interpolate_pressure_to_point(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -9555,9 +9555,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::interpolate_pressure_to_p
 /*-----------------------------------------------------------------------------*
  | Calculate channel statistics                                     bk 05/2014 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material>& mat)
 {
@@ -9719,7 +9719,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 
   // we have to fill the virtual nodes of the xyze_ matrix, since we only get
   // coordinates of the real nodes
-  if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+  if (enrtype == Discret::Elements::Fluid::xwall)
   {
     for (int inode = 0; inode < nen_ / 2; inode++)
     {
@@ -9955,7 +9955,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
           x[2] = 0;
           for (int inode = 0; inode < nen_; inode++)
           {
-            if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+            if (enrtype == Discret::Elements::Fluid::xwall)
             {
               if (inode < nen_ / 2)
               {  // funct and xyze not in the same order
@@ -10259,8 +10259,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_channel_statistics(
 /*-----------------------------------------------------------------------------*
  | Calculate properties for adaptive time step based on CFL number  bk 08/2014 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_time_step(Discret::ELEMENTS::Fluid* ele,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_time_step(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -10310,7 +10310,7 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_time_step(Discret::E
     // get streamlength using the normed velocity at element centre
     Core::LinAlg::Matrix<nen_, 1> tmp;
     // enriched dofs are not interpolatory with respect to geometry
-    if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+    if (enrtype == Discret::Elements::Fluid::xwall)
     {
       Core::LinAlg::Matrix<nsd_, nen_> derxy_copy(derxy_);
       for (int inode = 1; inode < nen_; inode += 2)
@@ -10336,9 +10336,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_time_step(Discret::E
 /*-----------------------------------------------------------------------------*
  | Calculate properties for adaptive forcing of periodic hill       bk 12/2014 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_hill(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_hill(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Teuchos::RCP<Core::Mat::Material>& mat)
 {
@@ -10403,12 +10403,12 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_mass_flow_periodic_h
 /*-----------------------------------------------------------------------------*
  | Reset Immersed Ele                                            rauch 05/2014 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reset_immersed_ele(
-    Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::reset_immersed_ele(
+    Discret::Elements::Fluid* ele, Teuchos::ParameterList& params)
 {
-  Discret::ELEMENTS::FluidImmersedBase* immersedele =
-      dynamic_cast<Discret::ELEMENTS::FluidImmersedBase*>(ele);
+  Discret::Elements::FluidImmersedBase* immersedele =
+      dynamic_cast<Discret::Elements::FluidImmersedBase*>(ele);
 
   // reset element information
   immersedele->set_is_immersed(0);
@@ -10433,9 +10433,9 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::reset_immersed_ele(
 /*-----------------------------------------------------------------------------*
  | Calculate coordinates and velocities and element center          bk 01/2015 |
  *-----------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_center(
-    Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+int Discret::Elements::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_center(
+    Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -10488,8 +10488,8 @@ int Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_vel_gradient_ele_cen
   return 0;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2d(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2d(
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -10593,8 +10593,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_2d(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_3d(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_mesh_motion_3d(
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double& press, const double& timefac,
     const double& timefacfac)
@@ -11303,8 +11303,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_mesh_motion_3d(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq(
     const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
     const Core::LinAlg::Matrix<nen_, 1>& escaam, const Core::LinAlg::Matrix<nen_, 1>& escadtam,
     bool isale)
@@ -11389,8 +11389,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_weak_comp(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_weak_comp(
     const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epredtam,
     bool isale)
 {
@@ -11474,8 +11474,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_art_comp(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_art_comp(
     const Core::LinAlg::Matrix<nen_, 1>& epreaf, const Core::LinAlg::Matrix<nen_, 1>& epren,
     const Core::LinAlg::Matrix<nen_, 1>& escadtam)
 {
@@ -11525,8 +11525,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_gal_rhs_cont_eq_
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_scalar(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_scalar(
     const Core::LinAlg::Matrix<nen_, 1>& escaaf, const Core::LinAlg::Matrix<nen_, 1>& escaam)
 {
   //----------------------------------------------------------------------
@@ -11590,8 +11590,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_sc
 /*----------------------------------------------------------------------*
  |  update material parameters including s.-s. part of scalar  vg 10/11 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::update_material_params(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::update_material_params(
     Teuchos::RCP<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nen_, 1>& epreaf,
     const Core::LinAlg::Matrix<nen_, 1>& epream, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
@@ -11751,8 +11751,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::update_material_params(
 
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype,
     enrtype>::recompute_gal_and_compute_cross_rhs_cont_eq()
 {
   //----------------------------------------------------------------------
@@ -11822,8 +11822,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype,
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::loma_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::loma_gal_part(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& rhsfac)
 {
@@ -11912,8 +11912,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::loma_gal_part(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::
     art_comp_pressure_inertia_gal_partand_cont_stab(
         Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nen_, nen_>& ppmat)
 {
@@ -11964,8 +11964,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::weak_comp_pressure_inertia_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::weak_comp_pressure_inertia_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nen_, nen_>& ppmat)
 {
   /* pressure inertia term for instationary fluids */
@@ -12026,8 +12026,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::weak_comp_pressure_inert
 /*----------------------------------------------------------------------*
  |  calculate element matrix and right hand side (private)   g.bau 03/07|
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofon,
@@ -12182,7 +12182,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
   // get Gaussian integration points
   // const Core::FE::IntegrationPoints3D intpoints(ele->gaussrule_);
   // const Core::FE::IntPointsAndWeights<nsd_>
-  // intpoints(Discret::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+  // intpoints(Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -12789,8 +12789,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::sysmat_ost_new(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_eps(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_div_eps(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& eveln)
 {
   /*--- viscous term: div(epsilon(u)) --------------------------------*/
@@ -13023,8 +13023,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_div_eps(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_velocity_ost_new(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_velocity_ost_new(
     const Core::LinAlg::Matrix<nsd_, nen_>& eaccam, double& fac1, double& fac2, double& fac3,
     double& facMtau, int iquad, double* saccn, double* sveln, double* svelnp)
 {
@@ -13290,8 +13290,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::compute_subgrid_scale_ve
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_uost_new(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_uost_new(
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, const double& timefacfac)
 {
   /*
@@ -13404,8 +13404,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::lin_gal_mom_res_uost_new
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inertia_convection_reaction_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::inertia_convection_reaction_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du, Core::LinAlg::Matrix<nsd_, 1>& resM_Du,
@@ -13555,8 +13555,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::inertia_convection_react
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::viscous_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::viscous_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, Core::LinAlg::Matrix<nsd_, nsd_>& viscstress,
     const double& timefacfac, const double& rhsfac, const double& rhsfacn)
@@ -13638,8 +13638,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::viscous_gal_part(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::cont_stab(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::cont_stab(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefac, const double& timefacfac,
     const double& timefacfacpre, const double& rhsfac, const double& rhsfacn)
@@ -13737,8 +13737,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::cont_stab(
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::pressure_gal_part(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& rhsfacn, const double& press, const double& pressn)
@@ -13792,8 +13792,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pressure_gal_part(
 
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::continuity_gal_part(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::continuity_gal_part(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, 1>& preforce,
     const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
     const double& rhsfacn)
@@ -13847,8 +13847,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::continuity_gal_part(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& rhsfac, const double rhsfacn)
 {
   for (int idim = 0; idim < nsd_; ++idim)
@@ -13881,8 +13881,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::body_force_rhs_term(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pspgost_new(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::pspgost_new(
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, nen_>& ppmat,
     Core::LinAlg::Matrix<nen_, 1>& preforce, Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
     const double& fac3, const double& timefacfac, const double& timefacfacpre, const double& rhsfac,
@@ -14032,8 +14032,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::pspgost_new(
   return;
 }
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::supgost_new(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::supgost_new(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
     Core::LinAlg::Matrix<nen_, 1>& preforce, Core::LinAlg::Matrix<nsd_ * nsd_, nen_>& lin_resM_Du,
@@ -14308,8 +14308,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::supgost_new(
 /*---------------------------------------------------------------------------*
  | get ALE grid displacements and grid velocity for element     schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_aleost_new(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_aleost_new(
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Core::LinAlg::Matrix<nsd_, nen_>& edispnp, Core::LinAlg::Matrix<nsd_, nen_>& egridvnp,
     Core::LinAlg::Matrix<nsd_, nen_>& egridvn)
@@ -14339,8 +14339,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_grid_disp_vel_aleost
 /*---------------------------------------------------------------------------*
  |  set the (relative) convective velocity at integration point schott 11/14 |
  *---------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_convective_velint_n(const bool isale)
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::set_convective_velint_n(const bool isale)
 {
   // get convective velocity at integration point
   switch (fldpara_->physical_type())
@@ -14385,8 +14385,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::set_convective_velint_n(
 /*----------------------------------------------------------------------*
  |  compute turbulence parameters                       rasthofer 10/11 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_turbulence_params(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::get_turbulence_params(
     Teuchos::ParameterList& turbmodelparams, double& Cs_delta_sq, double& Ci_delta_sq, int& nlayer,
     double CsDeltaSq, double CiDeltaSq)
 {
@@ -14603,8 +14603,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::get_turbulence_params(
 /*----------------------------------------------------------------------*
  |  calculation of (all-scale) subgrid viscosity               vg 09/09 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const double vol, double& Cs_delta_sq,
     double& Ci_delta_sq)
 {
@@ -14905,8 +14905,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_subgr_visc(
 /*----------------------------------------------------------------------*
  |  calculation of fine-scale subgrid viscosity                vg 09/09 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_visc(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_visc(
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf, const double vol)
 {
@@ -14968,8 +14968,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_fine_scale_subgr_vi
 /*----------------------------------------------------------------------*
  |  compute multifractal subgrid scales parameters    rasthofer 04/2011 |
  *----------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::prepare_multifractal_subgr_scales(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::prepare_multifractal_subgr_scales(
     Core::LinAlg::Matrix<nsd_, 1>& B_mfs, double& D_mfs,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& fsevelaf, const double vol)
@@ -15019,7 +15019,7 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
         }
         Core::LinAlg::Matrix<nen_, 1> tmp;
         // enriched dofs are not interpolatory with respect to geometry
-        if (enrtype == Discret::ELEMENTS::Fluid::xwall)
+        if (enrtype == Discret::Elements::Fluid::xwall)
         {
           Core::LinAlg::Matrix<nsd_, nen_> derxy_copy(derxy_);
           for (int inode = 1; inode < nen_; inode += 2)
@@ -15380,8 +15380,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::prepare_multifractal_sub
 /*-------------------------------------------------------------------------------*
  |calculation parameter for multifractal subgrid scale modeling  rasthofer 03/11 |
  *-------------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_vel_coef(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_vel_coef(
     const double Csgs, const double alpha, const std::vector<double> Nvel,
     Core::LinAlg::Matrix<nsd_, 1>& B_mfs)
 {
@@ -15417,8 +15417,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_
  |calculation parameter for multifractal subgrid scale modeling  rasthofer 02/12 |
  |subgrid-scale scalar for loma                                                  |
  *-------------------------------------------------------------------------------*/
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_sca_coef(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_sca_coef(
     const double Csgs, const double alpha, const double Pr, const double Pr_limit,
     const std::vector<double> Nvel, double Nphi, double& D_mfs)
 {
@@ -15489,8 +15489,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::calc_multi_frac_subgrid_
 }
 
 
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::fine_scale_sub_grid_viscosity_term(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::fine_scale_sub_grid_viscosity_term(
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& fssgviscfac)
 {
   if (nsd_ == 2)
@@ -15549,8 +15549,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::fine_scale_sub_grid_visc
 //----------------------------------------------------------------------
 // Cross-stress terms: multifractal subgrid-scales       rasthofer 06/11
 //----------------------------------------------------------------------
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales_cross(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales_cross(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
@@ -15704,8 +15704,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales
 //----------------------------------------------------------------------
 // Reynolds-stress terms: multifractal subgrid-scales    rasthofer 06/11
 //----------------------------------------------------------------------
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales_reynolds(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales_reynolds(
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& estif_u,
     Core::LinAlg::Matrix<nsd_, nen_>& velforce, const double& timefacfac, const double& rhsfac)
 {
@@ -15774,8 +15774,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::multfrac_sub_grid_scales
 //----------------------------------------------------------------------
 // concistency terms for residual-based stabilization           bk 10/14
 //----------------------------------------------------------------------
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype,
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype,
     enrtype>::multfrac_sub_grid_scales_consistent_residual()
 {
   if (fldpara_->turb_mod_action() == Inpar::FLUID::multifractal_subgrid_scales &&
@@ -15839,8 +15839,8 @@ void Discret::ELEMENTS::FluidEleCalc<distype,
 //----------------------------------------------------------------------
 // outpu for statistics of dynamic Smagorinsky           rasthofer 09/12
 //----------------------------------------------------------------------
-template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
-void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::store_model_parameters_for_output(
+template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
+void Discret::Elements::FluidEleCalc<distype, enrtype>::store_model_parameters_for_output(
     const double Cs_delta_sq, const double Ci_delta_sq, const int nlayer, const bool isowned,
     Teuchos::ParameterList& turbmodelparams)
 {
@@ -15896,39 +15896,39 @@ void Discret::ELEMENTS::FluidEleCalc<distype, enrtype>::store_model_parameters_f
 }
 
 // template classes
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::hex8,
-    Discret::ELEMENTS::Fluid::xwall>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::tet4,
-    Discret::ELEMENTS::Fluid::xwall>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::hex20,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::hex27,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::tet4,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::tet10,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::wedge6,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::wedge15,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::pyramid5,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::quad4,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::quad8,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::quad9,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::tri3,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::tri6,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::nurbs9,
-    Discret::ELEMENTS::Fluid::none>;
-template class Discret::ELEMENTS::FluidEleCalc<Core::FE::CellType::nurbs27,
-    Discret::ELEMENTS::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::hex8,
+    Discret::Elements::Fluid::xwall>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::tet4,
+    Discret::Elements::Fluid::xwall>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::hex20,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::hex27,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::tet4,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::tet10,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::wedge6,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::wedge15,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::pyramid5,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::quad4,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::quad8,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::quad9,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::tri3,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::tri6,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::nurbs9,
+    Discret::Elements::Fluid::none>;
+template class Discret::Elements::FluidEleCalc<Core::FE::CellType::nurbs27,
+    Discret::Elements::Fluid::none>;
 
 FOUR_C_NAMESPACE_CLOSE

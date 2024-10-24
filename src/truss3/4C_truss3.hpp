@@ -22,7 +22,7 @@ using FAD = Sacado::Fad::DFad<double>;
 
 namespace Solid
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ParamsInterface;
   }
@@ -30,7 +30,7 @@ namespace Solid
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Truss3Type : public Core::Elements::ElementType
     {
@@ -219,7 +219,7 @@ namespace Discret
       };
 
       //! get access to the parameter interface
-      inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface()
+      inline FourC::Solid::Elements::ParamsInterface& params_interface()
       {
         if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
         return *interface_ptr_;
@@ -308,7 +308,7 @@ namespace Discret
       Core::LinAlg::Matrix<1, 3> diff_disp_ref_;
 
       //!  data exchange between the element and the time integrator.
-      Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+      Teuchos::RCP<FourC::Solid::Elements::ParamsInterface> interface_ptr_;
 
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;
@@ -335,7 +335,7 @@ namespace Discret
     // << operator
     std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

@@ -71,7 +71,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
       // loop over all elements of scatra discretization to check if impltype is correct or not
       for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
       {
-        if ((dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i)))
+        if ((dynamic_cast<Discret::Elements::Transport*>(scatradis->l_col_element(i)))
                 ->impl_type() != Inpar::ScaTra::impltype_refconcreac)
         {
           FOUR_C_THROW(

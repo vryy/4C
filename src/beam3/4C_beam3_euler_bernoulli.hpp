@@ -72,7 +72,7 @@ FOUR_C_THROW(Flag INEXTENSIBLE only possible in combination with flag ANS_BEAM3E
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   class Beam3ebType : public Core::Elements::ElementType
   {
@@ -589,7 +589,7 @@ namespace Discret::ELEMENTS
   // << operator
   std::ostream& operator<<(std::ostream& os, const Core::Elements::Element& ele);
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -37,8 +37,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::instance(
+Discret::Elements::ScaTraEleCalcChemo<distype, probdim>*
+Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -57,7 +57,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::instance(
  *  constructor---------------------------                              |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
+Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
     const int numdofpernode, const int numscal, const std::string& disname)
     : my::ScaTraEleCalc(numdofpernode, numscal, disname),
       numcondchemo_(-1),
@@ -70,7 +70,7 @@ Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::ScaTraEleCalcChemo(
  |  calculation of chemotactic element matrix                     thon 06/ 15 |
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
+void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double densnp, const double scatrares,
     const Core::LinAlg::Matrix<nen_, 1>& sgconv, const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -138,7 +138,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
  |  calculation of chemotactic RHS                                thon 06/ 15 |
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
+void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double scatrares, const double densnp)
 {
@@ -184,7 +184,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
  |  get the attractant id                                   thon 06/ 15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_partner(
+int Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_partner(
     const std::vector<int> pair)
 {
   int partner = 0;
@@ -206,7 +206,7 @@ int Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_partner(
  |  get the material constants  (private)                   thon 06/ 15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_material_params(
+void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_material_params(
     const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
@@ -265,7 +265,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_material_param
  |  Clear all chemotaxtis related class variable (i.e. set them to zero)  thon 06/15 |
  *-----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::clear_chemotaxis_terms()
+void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::clear_chemotaxis_terms()
 {
   numcondchemo_ = 0;
 
@@ -278,7 +278,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::clear_chemotaxis_t
  |  get numcond, pairing list, chemotaxis coefficient from material            thon 06/ 15 |
  *-----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coefficients(
+void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coefficients(
     const Teuchos::RCP<const Core::Mat::Material> material  //!< pointer to current material
 )
 {
@@ -308,7 +308,7 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coe
  | (depending on respective stationary or time-integration scheme)   thon 06/ 15 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residual(
+void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residual(
     const int k,           //!< index of current scalar
     double& scatrares,     //!< residual of convection-diffusion-reaction eq
     const double densam,   //!< density at t_(n+am)
@@ -363,29 +363,29 @@ void Discret::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residu
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::line2, 1>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::line3, 1>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::line2, 1>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::tri3, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::tri6, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::quad4, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::quad4, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::quad9, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::nurbs9, 2>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::tri3, 2>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::tri6, 2>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::quad4, 2>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::quad4, 3>;
+// template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::quad9, 2>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::hex8, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::hex27, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::tet4, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::tet10, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::pyramid5, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcChemo<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::hex8, 3>;
+// template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::hex27, 3>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::tet4, 3>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::tet10, 3>;
+// template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::Elements::ScaTraEleCalcChemo<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

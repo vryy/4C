@@ -16,21 +16,21 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Vele3Line::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Vele3Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   return 0;
-}  // Discret::ELEMENTS::Vele3Line::Evaluate
+}  // Discret::Elements::Vele3Line::Evaluate
 
 
 
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Vele3Line::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Vele3Line::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -43,7 +43,7 @@ int Discret::ELEMENTS::Vele3Line::evaluate_neumann(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  |  Optimal Gauss rule (public)                              u.may 04/09|
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule1D Discret::ELEMENTS::Vele3Line::get_optimal_gaussrule(
+Core::FE::GaussRule1D Discret::Elements::Vele3Line::get_optimal_gaussrule(
     const Core::FE::CellType& distype)
 {
   Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;

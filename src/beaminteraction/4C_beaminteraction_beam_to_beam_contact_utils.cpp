@@ -58,10 +58,10 @@ double BEAMINTERACTION::calc_ele_radius(const Core::Elements::Element* ele)
 {
   double eleradius = 0.0;
 
-  const Discret::ELEMENTS::Beam3Base* beamele =
-      dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
-  const Discret::ELEMENTS::Rigidsphere* thissphere =
-      dynamic_cast<const Discret::ELEMENTS::Rigidsphere*>(ele);
+  const Discret::Elements::Beam3Base* beamele =
+      dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
+  const Discret::Elements::Rigidsphere* thissphere =
+      dynamic_cast<const Discret::Elements::Rigidsphere*>(ele);
 
   if (beamele != nullptr)
     eleradius = MANIPULATERADIUS * beamele->get_circular_cross_section_radius_for_interactions();

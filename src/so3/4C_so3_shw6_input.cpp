@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoShw6::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::SoShw6::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   // read number of material model

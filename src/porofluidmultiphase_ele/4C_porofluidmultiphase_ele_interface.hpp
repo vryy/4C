@@ -33,7 +33,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Interface base class for PoroFluidMultiPhaseEleCalc
     /*!
@@ -59,7 +59,7 @@ namespace Discret
           std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
           std::vector<Core::LinAlg::SerialDenseVector*>& elevec) = 0;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

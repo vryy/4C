@@ -73,9 +73,9 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::setu
   }
 
   // get initial length of beam elements
-  beam_element1_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element1());
+  beam_element1_ = dynamic_cast<const Discret::Elements::Beam3Base*>(element1());
   ele1length_ = beam_element1()->ref_length();
-  beam_element2_ = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(element2());
+  beam_element2_ = dynamic_cast<const Discret::Elements::Beam3Base*>(element2());
   ele2length_ = beam_element2()->ref_length();
 
   radius1_ = beam_element1()->get_circular_cross_section_radius_for_interactions();

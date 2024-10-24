@@ -27,14 +27,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            gammi 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
   // start with "none"
-  Discret::ELEMENTS::Bele3::ActionType act = Bele3::none;
+  Discret::Elements::Bele3::ActionType act = Bele3::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -167,7 +167,7 @@ int Discret::ELEMENTS::Bele3::evaluate(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Bele3::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Bele3::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -179,7 +179,7 @@ int Discret::ELEMENTS::Bele3::evaluate_neumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  * Compute Volume enclosed by surface.                          tk 10/07*
  * ---------------------------------------------------------------------*/
-double Discret::ELEMENTS::Bele3::compute_constr_vols(
+double Discret::Elements::Bele3::compute_constr_vols(
     const Core::LinAlg::SerialDenseMatrix& xc, const int numnode)
 {
   double V = 0.0;
@@ -243,7 +243,7 @@ double Discret::ELEMENTS::Bele3::compute_constr_vols(
  * Compute volume and its first and second derivatives          tk 02/09*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDenseMatrix& xc,
+void Discret::Elements::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDenseMatrix& xc,
     const int numnode, const int ndof, double& V, Core::LinAlg::SerialDenseVector& Vdiff1,
     Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
 {

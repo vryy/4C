@@ -18,7 +18,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * @brief A container holding the linearization of the displacement based linear kinematics solid
@@ -57,7 +57,7 @@ namespace Discret::ELEMENTS
         const JacobianMapping<celltype>& jacobian_mapping, Evaluator evaluator)
     {
       const DisplacementBasedLinearKinematicsLinearizationContainer<celltype> linearization{
-          Discret::ELEMENTS::evaluate_linear_strain_gradient(jacobian_mapping)};
+          Discret::Elements::evaluate_linear_strain_gradient(jacobian_mapping)};
 
       Core::LinAlg::Matrix<Internal::num_str<celltype>, 1> gl_strain =
           evaluate_linear_gl_strain(nodal_coordinates, linearization.linear_b_operator_);
@@ -122,7 +122,7 @@ namespace Discret::ELEMENTS
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>, 1>&
             force_vector)
     {
-      Discret::ELEMENTS::add_internal_force_vector(
+      Discret::Elements::add_internal_force_vector(
           linearization.linear_b_operator_, stress, integration_factor, force_vector);
     }
 
@@ -134,7 +134,7 @@ namespace Discret::ELEMENTS
         Core::LinAlg::Matrix<Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>,
             Core::FE::num_nodes<celltype> * Core::FE::dim<celltype>>& stiffness_matrix)
     {
-      Discret::ELEMENTS::add_elastic_stiffness_matrix(
+      Discret::Elements::add_elastic_stiffness_matrix(
           linearization.linear_b_operator_, stress, integration_factor, stiffness_matrix);
     }
   };
@@ -144,7 +144,7 @@ namespace Discret::ELEMENTS
       SolidEleCalc<celltype, DisplacementBasedLinearKinematicsFormulation<celltype>>;
 
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 #endif

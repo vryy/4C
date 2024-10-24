@@ -185,7 +185,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::pack_material()
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
     hdgele->pack_material(buffer);
   }
 
@@ -203,7 +203,7 @@ void ScaTra::TimIntCardiacMonodomainHDG::unpack_material()
   Core::Communication::UnpackBuffer buffer(*data_);
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
   {
-    auto *hdgele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG *>(discret_->l_col_element(iele));
+    auto *hdgele = dynamic_cast<Discret::Elements::ScaTraHDG *>(discret_->l_col_element(iele));
     extract_from_pack(buffer, data);
     Core::Communication::UnpackBuffer buffer_mat(data);
     hdgele->unpack_material(buffer_mat);

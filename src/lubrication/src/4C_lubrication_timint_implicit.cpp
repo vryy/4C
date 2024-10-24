@@ -33,7 +33,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                     (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
-LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
+Lubrication::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
     Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<Teuchos::ParameterList> extraparams,
     Teuchos::RCP<Core::IO::DiscretizationWriter> output)
@@ -87,7 +87,7 @@ LUBRICATION::TimIntImpl::TimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdi
 /*------------------------------------------------------------------------*
  | initialize time integration                                wirtz 11/15 |
  *------------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::init()
+void Lubrication::TimIntImpl::init()
 {
   // -------------------------------------------------------------------
   // always nonlinear solver
@@ -168,11 +168,11 @@ void LUBRICATION::TimIntImpl::init()
 /*----------------------------------------------------------------------*
  | set all general parameters for element                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_element_general_parameters() const
+void Lubrication::TimIntImpl::set_element_general_parameters() const
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::set_general_lubrication_parameter);
+  eleparams.set<Lubrication::Action>("action", Lubrication::set_general_lubrication_parameter);
 
   eleparams.set<bool>("isale", isale_);
 
@@ -201,7 +201,7 @@ void LUBRICATION::TimIntImpl::set_element_general_parameters() const
 /*----------------------------------------------------------------------*
  | prepare time loop                                        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::prepare_time_loop()
+void Lubrication::TimIntImpl::prepare_time_loop()
 {
   // provide information about initial field (do not do for restarts!)
   if (step_ == 0)
@@ -214,13 +214,13 @@ void LUBRICATION::TimIntImpl::prepare_time_loop()
   }
 
   return;
-}  // LUBRICATION::TimIntImpl::prepare_time_loop
+}  // Lubrication::TimIntImpl::prepare_time_loop
 
 
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step(predictor)  (public) wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::prepare_time_step()
+void Lubrication::TimIntImpl::prepare_time_step()
 {
   // time measurement: prepare time step
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:    + prepare time step");
@@ -259,16 +259,16 @@ void LUBRICATION::TimIntImpl::prepare_time_step()
 /*------------------------------------------------------------------------------*
  | initialization procedure prior to evaluation of first time step  wirtz 11/15 |
  *------------------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::prepare_first_time_step()
+void Lubrication::TimIntImpl::prepare_first_time_step()
 {
   return;
-}  // LUBRICATION::TimIntImpl::prepare_first_time_step
+}  // Lubrication::TimIntImpl::prepare_first_time_step
 
 
 /*----------------------------------------------------------------------*
  | update the height field by function                    faraji        |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
+void Lubrication::TimIntImpl::set_height_field_pure_lub(const int nds)
 {
   // create the parameters for the time
   Teuchos::ParameterList eleparams;
@@ -308,12 +308,12 @@ void LUBRICATION::TimIntImpl::set_height_field_pure_lub(const int nds)
   // provide lubrication discretization with height
   discret_->set_state(nds, "height", height);
 
-}  // LUBRICATION::TimIntImpl::set_height_field_pure_lub
+}  // Lubrication::TimIntImpl::set_height_field_pure_lub
 
 /*----------------------------------------------------------------------*
  | update the velocity field by function                  faraji       |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
+void Lubrication::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
 {
   // create the parameters for the time
   Teuchos::ParameterList eleparams;
@@ -352,11 +352,11 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub(const int nds)
   // provide lubrication discretization with velocity
   discret_->set_state(nds, "av_tang_vel", vel);
 
-}  // LUBRICATION::TimIntImpl::set_average_velocity_field_pure_lub
+}  // Lubrication::TimIntImpl::set_average_velocity_field_pure_lub
 /*----------------------------------------------------------------------*
  | contains the time loop                                   wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::time_loop()
+void Lubrication::TimIntImpl::time_loop()
 {
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:  + time loop");
@@ -413,7 +413,7 @@ void LUBRICATION::TimIntImpl::time_loop()
 /*----------------------------------------------------------------------*
  | contains the call of linear/nonlinear solver             wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::solve()
+void Lubrication::TimIntImpl::solve()
 {
   // -----------------------------------------------------------------
   //                    always solve nonlinear equation
@@ -428,7 +428,7 @@ void LUBRICATION::TimIntImpl::solve()
 /*----------------------------------------------------------------------*
  | apply moving mesh data                                     gjb 05/09 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::apply_mesh_movement(
+void Lubrication::TimIntImpl::apply_mesh_movement(
     Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, int nds)
 {
   //---------------------------------------------------------------------------
@@ -455,18 +455,18 @@ void LUBRICATION::TimIntImpl::apply_mesh_movement(
 /*----------------------------------------------------------------------*
  |  print information about current time step to screen     wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::print_time_step_info()
+inline void Lubrication::TimIntImpl::print_time_step_info()
 {
   if (myrank_ == 0)
     printf("TIME: %11.4E/%11.4E  DT = %11.4E  Stationary  STEP = %4d/%4d \n", time_, maxtime_, dta_,
         step_, stepmax_);
-}  // LUBRICATION::TimIntImpl::print_time_step_info
+}  // Lubrication::TimIntImpl::print_time_step_info
 
 
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                       wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::output(const int num)
+void Lubrication::TimIntImpl::output(const int num)
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:    + output of solution");
@@ -517,7 +517,7 @@ void LUBRICATION::TimIntImpl::output(const int num)
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet boundary conditions at t_{n+1}        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::apply_dirichlet_bc(const double time,
+void Lubrication::TimIntImpl::apply_dirichlet_bc(const double time,
     Teuchos::RCP<Core::LinAlg::Vector<double>> prenp,
     Teuchos::RCP<Core::LinAlg::Vector<double>> predt)
 {
@@ -538,14 +538,14 @@ void LUBRICATION::TimIntImpl::apply_dirichlet_bc(const double time,
   discret_->clear_state();
 
   return;
-}  // LUBRICATION::TimIntImpl::apply_dirichlet_bc
+}  // Lubrication::TimIntImpl::apply_dirichlet_bc
 
 
 /*----------------------------------------------------------------------*
  | contains the residual scaling and addition of Neumann terms          |
  |                                                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::scaling_and_neumann()
+void Lubrication::TimIntImpl::scaling_and_neumann()
 {
   // scaling to get true residual vector for all time integration schemes
   // in incremental case: boundary flux values can be computed from trueresidual
@@ -561,7 +561,7 @@ void LUBRICATION::TimIntImpl::scaling_and_neumann()
 /*----------------------------------------------------------------------*
  | evaluate Neumann boundary conditions                     wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::apply_neumann_bc(
+void Lubrication::TimIntImpl::apply_neumann_bc(
     Core::LinAlg::Vector<double>& neumann_loads  //!< Neumann loads
 )
 {
@@ -572,7 +572,7 @@ void LUBRICATION::TimIntImpl::apply_neumann_bc(
   Teuchos::ParameterList condparams;
 
   // action for elements
-  condparams.set<LUBRICATION::BoundaryAction>("action", LUBRICATION::bd_calc_Neumann);
+  condparams.set<Lubrication::BoundaryAction>("action", Lubrication::bd_calc_Neumann);
 
   // set time for evaluation of point Neumann conditions as parameter depending on time integration
   // scheme line/surface/volume Neumann conditions use the time stored in the time parameter class
@@ -587,12 +587,12 @@ void LUBRICATION::TimIntImpl::apply_neumann_bc(
   discret_->clear_state();
 
   return;
-}  // LUBRICATION::TimIntImpl::apply_neumann_bc
+}  // Lubrication::TimIntImpl::apply_neumann_bc
 
 /*----------------------------------------------------------------------*
  | add cavitation penalty contribution to matrix and rhs    seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::add_cavitation_penalty()
+void Lubrication::TimIntImpl::add_cavitation_penalty()
 {
   const double penalty_param = params_->get<double>("PENALTY_CAVITATION");
   for (int i = 0; i < dof_row_map()->NumMyElements(); ++i)
@@ -611,7 +611,7 @@ void LUBRICATION::TimIntImpl::add_cavitation_penalty()
  | contains the assembly process for matrix and rhs
   for elements                                              wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
+void Lubrication::TimIntImpl::assemble_mat_and_rhs()
 {
   // time measurement: element calls
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:       + element calls");
@@ -629,7 +629,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
   Teuchos::ParameterList eleparams;
 
   // action for elements
-  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::calc_mat_and_rhs);
+  eleparams.set<Lubrication::Action>("action", Lubrication::calc_mat_and_rhs);
 
   // time step set up
   eleparams.set<double>("delta time", dta_);
@@ -669,7 +669,7 @@ void LUBRICATION::TimIntImpl::assemble_mat_and_rhs()
 /*----------------------------------------------------------------------*
  | contains the nonlinear iteration loop                    wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::nonlinear_solve()
+void Lubrication::TimIntImpl::nonlinear_solve()
 {
   // time measurement: nonlinear iteration
   TEUCHOS_FUNC_TIME_MONITOR("LUBRICATION:   + nonlin. iteration/lin. solve");
@@ -763,7 +763,7 @@ void LUBRICATION::TimIntImpl::nonlinear_solve()
 /*----------------------------------------------------------------------*
  | check if to stop the nonlinear iteration                 wirtz 11/15 |
  *----------------------------------------------------------------------*/
-bool LUBRICATION::TimIntImpl::abort_nonlin_iter(const int itnum, const int itemax,
+bool Lubrication::TimIntImpl::abort_nonlin_iter(const int itnum, const int itemax,
     const double ittol, const double abstolres, double& actresidual)
 {
   //----------------------------------------------------- compute norms
@@ -850,7 +850,7 @@ bool LUBRICATION::TimIntImpl::abort_nonlin_iter(const int itnum, const int itema
 /*----------------------------------------------------------------------*
  | Set the nodal film height at time n+1                    Seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_height_field(
+void Lubrication::TimIntImpl::set_height_field(
     const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> gap)
 {
   if (gap == Teuchos::null) FOUR_C_THROW("Gap vector is empty.");
@@ -863,7 +863,7 @@ void LUBRICATION::TimIntImpl::set_height_field(
  | Set nodal value of film height time derivative(hdot)    Faraji 03/18 |
    at time n+1
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_height_dot_field(
+void Lubrication::TimIntImpl::set_height_dot_field(
     const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> heightdot)
 {
   if (heightdot == Teuchos::null) FOUR_C_THROW("hdot vector is empty.");
@@ -875,7 +875,7 @@ void LUBRICATION::TimIntImpl::set_height_dot_field(
 /*----------------------------------------------------------------------*
  | Set nodal value of Relative Velocity at time n+1        Faraji 02/19 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_relative_velocity_field(
+void Lubrication::TimIntImpl::set_relative_velocity_field(
     const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> rel_vel)
 {
   if (nds >= discret_->num_dof_sets())
@@ -887,7 +887,7 @@ void LUBRICATION::TimIntImpl::set_relative_velocity_field(
 /*----------------------------------------------------------------------*
  | Set the nodal average tangential velocity at time n+1    Seitz 12/17 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::set_average_velocity_field(
+void Lubrication::TimIntImpl::set_average_velocity_field(
     const int nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> av_vel)
 {
   if (nds >= discret_->num_dof_sets())
@@ -900,7 +900,7 @@ void LUBRICATION::TimIntImpl::set_average_velocity_field(
 /*----------------------------------------------------------------------*
  | Calculate problem specific norm                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::calc_problem_specific_norm(
+void Lubrication::TimIntImpl::calc_problem_specific_norm(
     double& preresnorm, double& incprenorm_L2, double& prenorm_L2, double& preresnorminf)
 {
   residual_->Norm2(&preresnorm);
@@ -915,7 +915,7 @@ void LUBRICATION::TimIntImpl::calc_problem_specific_norm(
 /*----------------------------------------------------------------------*
  | print header of convergence table to screen              wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::print_convergence_header()
+inline void Lubrication::TimIntImpl::print_convergence_header()
 {
   if (myrank_ == 0)
     std::cout
@@ -924,13 +924,13 @@ inline void LUBRICATION::TimIntImpl::print_convergence_header()
         << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::print_convergence_header
+}  // Lubrication::TimIntImpl::print_convergence_header
 
 
 /*----------------------------------------------------------------------*
  | print first line of convergence table to screen          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::print_convergence_values_first_iter(
+inline void Lubrication::TimIntImpl::print_convergence_values_first_iter(
     const int& itnum,            //!< current Newton-Raphson iteration step
     const int& itemax,           //!< maximum number of Newton-Raphson iteration steps
     const double& ittol,         //!< relative tolerance for Newton-Raphson scheme
@@ -947,13 +947,13 @@ inline void LUBRICATION::TimIntImpl::print_convergence_values_first_iter(
               << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::print_convergence_values_first_iter
+}  // Lubrication::TimIntImpl::print_convergence_values_first_iter
 
 
 /*----------------------------------------------------------------------*
  | print current line of convergence table to screen        wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::print_convergence_values(
+inline void Lubrication::TimIntImpl::print_convergence_values(
     const int& itnum,             //!< current Newton-Raphson iteration step
     const int& itemax,            //!< maximum number of Newton-Raphson iteration steps
     const double& ittol,          //!< relative tolerance for Newton-Raphson scheme
@@ -974,13 +974,13 @@ inline void LUBRICATION::TimIntImpl::print_convergence_values(
               << std::setprecision(3) << std::scientific << dtele_ << ")" << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::print_convergence_values
+}  // Lubrication::TimIntImpl::print_convergence_values
 
 
 /*----------------------------------------------------------------------*
  | print finish line of convergence table to screen         wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::print_convergence_finish_line()
+inline void Lubrication::TimIntImpl::print_convergence_finish_line()
 {
   if (myrank_ == 0)
     std::cout
@@ -989,13 +989,13 @@ inline void LUBRICATION::TimIntImpl::print_convergence_finish_line()
         << std::endl;
 
   return;
-}  // LUBRICATION::TimIntImpl::print_convergence_finish_line
+}  // Lubrication::TimIntImpl::print_convergence_finish_line
 
 
 /*----------------------------------------------------------------------*
  |  write current state to BINIO                            wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::output_state()
+void Lubrication::TimIntImpl::output_state()
 {
   // solution
   output_->write_vector("prenp", prenp_);
@@ -1028,7 +1028,7 @@ void LUBRICATION::TimIntImpl::output_state()
 /*----------------------------------------------------------------------*
  | increment time and step for next iteration               wirtz 11/15 |
  *----------------------------------------------------------------------*/
-inline void LUBRICATION::TimIntImpl::increment_time_and_step()
+inline void Lubrication::TimIntImpl::increment_time_and_step()
 {
   step_ += 1;
   time_ += dta_;
@@ -1038,23 +1038,23 @@ inline void LUBRICATION::TimIntImpl::increment_time_and_step()
 /*----------------------------------------------------------------------*
  |  calculate error compared to analytical solution         wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
+void Lubrication::TimIntImpl::evaluate_error_compared_to_analytical_sol()
 {
   const auto calcerr =
-      Teuchos::getIntegralValue<Inpar::LUBRICATION::CalcError>(*params_, "CALCERROR");
+      Teuchos::getIntegralValue<Inpar::Lubrication::CalcError>(*params_, "CALCERROR");
 
-  if (calcerr == Inpar::LUBRICATION::calcerror_no)  // do nothing (the usual case))
+  if (calcerr == Inpar::Lubrication::calcerror_no)  // do nothing (the usual case))
     return;
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
-  eleparams.set<LUBRICATION::Action>("action", LUBRICATION::calc_error);
+  eleparams.set<Lubrication::Action>("action", Lubrication::calc_error);
   eleparams.set("total time", time_);
-  eleparams.set<Inpar::LUBRICATION::CalcError>("calcerrorflag", calcerr);
+  eleparams.set<Inpar::Lubrication::CalcError>("calcerrorflag", calcerr);
 
   switch (calcerr)
   {
-    case Inpar::LUBRICATION::calcerror_byfunction:
+    case Inpar::Lubrication::calcerror_byfunction:
     {
       const int errorfunctnumber = params_->get<int>("CALCERRORNO");
       if (errorfunctnumber < 1)
@@ -1127,12 +1127,12 @@ void LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol()
     }
   }
 
-}  // LUBRICATION::TimIntImpl::evaluate_error_compared_to_analytical_sol
+}  // Lubrication::TimIntImpl::evaluate_error_compared_to_analytical_sol
 
 /*----------------------------------------------------------------------*
  | write state vectors to Gmsh postprocessing files         wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) const
+void Lubrication::TimIntImpl::output_to_gmsh(const int step, const double time) const
 {
   // turn on/off screen output for writing process of Gmsh postprocessing file
   const bool screen_out = true;
@@ -1159,7 +1159,7 @@ void LUBRICATION::TimIntImpl::output_to_gmsh(const int step, const double time) 
 /*----------------------------------------------------------------------*
  | output mean values of pressure(s)                          wirtz 11/15 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::output_mean_pressures(const int num)
+void Lubrication::TimIntImpl::output_mean_pressures(const int num)
 {
   if (outmean_)
   {
@@ -1168,7 +1168,7 @@ void LUBRICATION::TimIntImpl::output_mean_pressures(const int num)
     discret_->set_state("prenp", prenp_);
     // set action for elements
     Teuchos::ParameterList eleparams;
-    eleparams.set<LUBRICATION::Action>("action", LUBRICATION::calc_mean_pressures);
+    eleparams.set<Lubrication::Action>("action", Lubrication::calc_mean_pressures);
     eleparams.set("inverting", false);
 
     // provide displacement field in case of ALE
@@ -1221,12 +1221,12 @@ void LUBRICATION::TimIntImpl::output_mean_pressures(const int num)
 
   }  // if(outmean_)
 
-}  // LUBRICATION::TimIntImpl::OutputMeanPressures
+}  // Lubrication::TimIntImpl::OutputMeanPressures
 
 /*----------------------------------------------------------------------*
  | return system matrix downcasted as sparse matrix         wirtz 01/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::system_matrix()
+Teuchos::RCP<Core::LinAlg::SparseMatrix> Lubrication::TimIntImpl::system_matrix()
 {
   return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
 }
@@ -1236,7 +1236,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> LUBRICATION::TimIntImpl::system_matrix(
  | build linear system tangent matrix, rhs/force residual   wirtz 01/16 |
  | Monolithic EHL accesses the linearised lubrication problem           |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::evaluate()
+void Lubrication::TimIntImpl::evaluate()
 {
   // put zero pressure value, where no gap is defined
   if (inf_gap_toggle_lub_ != Teuchos::null)
@@ -1261,7 +1261,7 @@ void LUBRICATION::TimIntImpl::evaluate()
  | Update iteration incrementally with prescribed           wirtz 01/16 |
  | residual pressures                                                   |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::update_iter_incrementally(
+void Lubrication::TimIntImpl::update_iter_incrementally(
     const Teuchos::RCP<const Core::LinAlg::Vector<double>> prei  //!< input residual pressures
 )
 {
@@ -1282,7 +1282,7 @@ void LUBRICATION::TimIntImpl::update_iter_incrementally(
 /*----------------------------------------------------------------------*
  | update Newton step                                       wirtz 01/16 |
  *----------------------------------------------------------------------*/
-void LUBRICATION::TimIntImpl::update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> prei)
+void Lubrication::TimIntImpl::update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> prei)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And

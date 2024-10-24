@@ -25,39 +25,39 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::SoHex18Type Discret::ELEMENTS::SoHex18Type::instance_;
+Discret::Elements::SoHex18Type Discret::Elements::SoHex18Type::instance_;
 
-Discret::ELEMENTS::SoHex18Type& Discret::ELEMENTS::SoHex18Type::instance() { return instance_; }
+Discret::Elements::SoHex18Type& Discret::Elements::SoHex18Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::SoHex18Type::create(
+Core::Communication::ParObject* Discret::Elements::SoHex18Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::SoHex18(-1, -1);
+  auto* object = new Discret::Elements::SoHex18(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::SoHex18>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::SoHex18>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::SoHex18Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::SoHex18Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::SoHex18>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::SoHex18>(id, owner);
   return ele;
 }
 
-void Discret::ELEMENTS::SoHex18Type::nodal_block_information(
+void Discret::Elements::SoHex18Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -65,13 +65,13 @@ void Discret::ELEMENTS::SoHex18Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::SoHex18Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::SoHex18Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::SoHex18Type::setup_element_definition(
+void Discret::Elements::SoHex18Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions[get_element_type_string()];
@@ -94,7 +94,7 @@ void Discret::ELEMENTS::SoHex18Type::setup_element_definition(
  |  ctor (public)                                                       |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
+Discret::Elements::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
 {
   invJ_.resize(NUMGPT_SOH18, Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18>(true));
   detJ_.resize(NUMGPT_SOH18, 0.0);
@@ -104,7 +104,7 @@ Discret::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
       Global::Problem::instance()->get_parameter_list();
   if (params != Teuchos::null)
   {
-    Discret::ELEMENTS::Utils::throw_error_fd_material_tangent(
+    Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
   }
 
@@ -115,7 +115,7 @@ Discret::ELEMENTS::SoHex18::SoHex18(int id, int owner) : SoBase(id, owner)
  |  copy-ctor (public)                                                  |
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoHex18::SoHex18(const Discret::ELEMENTS::SoHex18& old)
+Discret::Elements::SoHex18::SoHex18(const Discret::Elements::SoHex18& old)
     : SoBase(old), detJ_(old.detJ_)
 {
   invJ_.resize(old.invJ_.size());
@@ -129,16 +129,16 @@ Discret::ELEMENTS::SoHex18::SoHex18(const Discret::ELEMENTS::SoHex18& old)
 /*----------------------------------------------------------------------*
  |  Deep copy this instance of Solid3 and return pointer to it (public) |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::SoHex18::clone() const
+Core::Elements::Element* Discret::Elements::SoHex18::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::SoHex18(*this);
+  auto* newelement = new Discret::Elements::SoHex18(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoHex18::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -162,7 +162,7 @@ void Discret::ELEMENTS::SoHex18::pack(Core::Communication::PackBuffer& data) con
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoHex18::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -187,7 +187,7 @@ void Discret::ELEMENTS::SoHex18::unpack(Core::Communication::UnpackBuffer& buffe
 /*----------------------------------------------------------------------*
  |  print this element (public)                                         |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::print(std::ostream& os) const
+void Discret::Elements::SoHex18::print(std::ostream& os) const
 {
   os << "So_hex18 ";
   Element::print(os);
@@ -199,7 +199,7 @@ void Discret::ELEMENTS::SoHex18::print(std::ostream& os) const
 |  get vector of surfaces (public)                          seitz 11/14 |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex18::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -208,7 +208,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::s
 /*----------------------------------------------------------------------*
 |  get vector of lines (public)                            seitz 11/14 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SoHex18::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -217,7 +217,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::SoHex18::l
 /*----------------------------------------------------------------------*
 |  Return names of visualization data (public)             seitz 11/14 |
 *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::SoHex18::vis_names(std::map<std::string, int>& names)
 {
   solid_material()->vis_names(names);
 
@@ -227,7 +227,7 @@ void Discret::ELEMENTS::SoHex18::vis_names(std::map<std::string, int>& names)
 /*----------------------------------------------------------------------*
 |  Return visualization data (public)                      seitz 11/14 |
 *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex18::vis_data(const std::string& name, std::vector<double>& data)
+bool Discret::Elements::SoHex18::vis_data(const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if (Core::Elements::Element::vis_data(name, data)) return true;
@@ -238,7 +238,7 @@ bool Discret::ELEMENTS::SoHex18::vis_data(const std::string& name, std::vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::SoHex18::read_element(const std::string& eletype,
+bool Discret::Elements::SoHex18::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
@@ -277,7 +277,7 @@ bool Discret::ELEMENTS::SoHex18::read_element(const std::string& eletype,
   return true;
 }
 
-void Discret::ELEMENTS::SoHex18::init_gp()
+void Discret::Elements::SoHex18::init_gp()
 {
   xsi_.resize(NUMGPT_SOH18, Core::LinAlg::Matrix<NUMDIM_SOH18, 1>(true));
   wgt_.resize(NUMGPT_SOH18, 0.);
@@ -293,7 +293,7 @@ void Discret::ELEMENTS::SoHex18::init_gp()
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex18::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -312,7 +312,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
   Core::LinAlg::Matrix<NUMDOF_SOH18, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
-  Discret::ELEMENTS::SoHex18::ActionType act = SoHex18::none;
+  Discret::Elements::SoHex18::ActionType act = SoHex18::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -517,7 +517,7 @@ int Discret::ELEMENTS::SoHex18::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)  seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -626,9 +626,9 @@ int Discret::ELEMENTS::SoHex18::evaluate_neumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // Discret::ELEMENTS::So_hex18::evaluate_neumann
+}  // Discret::Elements::So_hex18::evaluate_neumann
 
-int Discret::ELEMENTS::SoHex18::init_jacobian_mapping()
+int Discret::Elements::SoHex18::init_jacobian_mapping()
 {
   Core::LinAlg::Matrix<NUMNOD_SOH18, NUMDIM_SOH18> xrefe;
   for (int i = 0; i < NUMNOD_SOH18; ++i)
@@ -662,7 +662,7 @@ int Discret::ELEMENTS::SoHex18::init_jacobian_mapping()
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                          seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< location matrix
+void Discret::Elements::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< location matrix
     std::vector<double>& disp,                                       ///< current displacements
     std::vector<double>& residual,                                   ///< current residual displ
     Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* stiffmatrix,   ///< element stiffness matrix
@@ -822,7 +822,7 @@ void Discret::ELEMENTS::SoHex18::nlnstiffmass(std::vector<int>& lm,  ///< locati
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                              seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
+void Discret::Elements::SoHex18::lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUMDOF_SOH18>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -844,14 +844,14 @@ void Discret::ELEMENTS::SoHex18::lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH18, NUM
 /*----------------------------------------------------------------------*
  |  init the element (public)                               seitz 11/14 |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex18Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex18Type::initialize(Core::FE::Discretization& dis)
 {
   // here we order the nodes such that we have a positive definite jacobian
   //       maybe the python script generating the hex18 elements would be a better place for this.
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex18*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoHex18*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->init_jacobian_mapping() == 1) actele->flip_t();
   }
@@ -860,7 +860,7 @@ int Discret::ELEMENTS::SoHex18Type::initialize(Core::FE::Discretization& dis)
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex18*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoHex18*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex18* failed");
     if (actele->init_jacobian_mapping() == 1) FOUR_C_THROW("why");
   }
@@ -870,7 +870,7 @@ int Discret::ELEMENTS::SoHex18Type::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  revert the 3rd parameter direction                      seitz 11/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex18::flip_t()
+void Discret::Elements::SoHex18::flip_t()
 {
   if (node_ids() == nullptr) FOUR_C_THROW("couldn't get node ids");
   // reorder nodes
@@ -899,7 +899,7 @@ void Discret::ELEMENTS::SoHex18::flip_t()
   return;
 }
 
-Core::LinAlg::Matrix<18, 3> Discret::ELEMENTS::SoHex18::node_param_coord()
+Core::LinAlg::Matrix<18, 3> Discret::Elements::SoHex18::node_param_coord()
 {
   Core::LinAlg::Matrix<18, 3> coord;
   for (int node = 0; node < NUMNOD_SOH18; ++node)
@@ -910,7 +910,7 @@ Core::LinAlg::Matrix<18, 3> Discret::ELEMENTS::SoHex18::node_param_coord()
   return coord;
 }
 
-Core::LinAlg::Matrix<3, 1> Discret::ELEMENTS::SoHex18::node_param_coord(const int node)
+Core::LinAlg::Matrix<3, 1> Discret::Elements::SoHex18::node_param_coord(const int node)
 {
   Core::LinAlg::Matrix<3, 1> coord;
 

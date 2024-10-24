@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LUBRICATION
+namespace Lubrication
 {
   class TimIntStationary : public TimIntImpl
   {
@@ -70,7 +70,7 @@ namespace LUBRICATION
 
   };  // class TimIntStationary
 
-}  // namespace LUBRICATION
+}  // namespace Lubrication
 
 FOUR_C_NAMESPACE_CLOSE
 

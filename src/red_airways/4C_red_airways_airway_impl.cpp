@@ -32,7 +32,7 @@ namespace
   |                                                                      |
   *----------------------------------------------------------------------*/
   template <Core::FE::CellType distype>
-  double get_element_length(Discret::ELEMENTS::RedAirway* ele)
+  double get_element_length(Discret::Elements::RedAirway* ele)
   {
     double length = 0.0;
     // get node coordinates and number of elements per node
@@ -146,7 +146,7 @@ namespace
   \param compute_awacinter(i) computing airway-acinus interdependency
   */
   template <Core::FE::CellType distype>
-  void sysmat(Discret::ELEMENTS::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
+  void sysmat(Discret::Elements::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
       Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
       Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
       Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
@@ -544,8 +544,8 @@ namespace
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInterface::impl(
-    Discret::ELEMENTS::RedAirway* red_airway)
+Discret::Elements::RedAirwayImplInterface* Discret::Elements::RedAirwayImplInterface::impl(
+    Discret::Elements::RedAirway* red_airway)
 {
   switch (red_airway->shape())
   {
@@ -571,7 +571,7 @@ Discret::ELEMENTS::RedAirwayImplInterface* Discret::ELEMENTS::RedAirwayImplInter
  | evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::ParameterList& params,
+int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -689,7 +689,7 @@ int Discret::ELEMENTS::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
  |  calculate element matrix and right hand side (private)  ismail 01/10|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::ParameterList& params,
+void Discret::Elements::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
     Teuchos::RCP<const Core::Mat::Material> material)
@@ -764,7 +764,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::Pa
  |                                                         roth 12/2015 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_collapse(
+void Discret::Elements::AirwayImpl<distype>::evaluate_collapse(
     RedAirway* ele, Core::LinAlg::SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
 {
   Discret::ReducedLung::EvaluationData& evaluation_data =
@@ -824,7 +824,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_collapse(
  |                                                         roth 02/2016 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::compute_pext(RedAirway* ele,
+void Discret::Elements::AirwayImpl<distype>::compute_pext(RedAirway* ele,
     const Core::LinAlg::Vector<double>& pn, const Core::LinAlg::Vector<double>& pnp,
     Teuchos::ParameterList& params)
 {
@@ -849,7 +849,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::compute_pext(RedAirway* ele,
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele,
+void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1269,7 +1269,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
+void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1385,7 +1385,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
  |  rates.                                                              |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
+void Discret::Elements::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {
@@ -1448,7 +1448,7 @@ void Discret::ELEMENTS::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
+void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Teuchos::RCP<Core::Mat::Material> material)
 {

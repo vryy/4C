@@ -23,7 +23,7 @@ namespace Core::FE
 }  // namespace Core::FE
 
 
-namespace Discret::ELEMENTS::Shell
+namespace Discret::Elements::Shell
 {
   /*!
    * \brief Preevaluate anything that needs to be done before the standard Evaluate
@@ -53,7 +53,7 @@ namespace Discret::ELEMENTS::Shell
   void pre_evaluate_scatra(Core::Elements::Element& ele, Teuchos::ParameterList& params,
       Core::FE::Discretization& discretization, Core::Elements::LocationArray& dof_index_array);
 
-}  // namespace Discret::ELEMENTS::Shell
+}  // namespace Discret::Elements::Shell
 
 FOUR_C_NAMESPACE_CLOSE
 

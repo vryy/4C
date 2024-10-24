@@ -17,18 +17,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituentSolidMaterial;
 
   namespace PAR
   {
-    class MixtureConstituentSolidMaterial : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentSolidMaterial : public Mixture::PAR::MixtureConstituent
     {
      public:
       explicit MixtureConstituentSolidMaterial(const Core::Mat::PAR::Parameter::Data& matdata);
       /// create material instance of matching type with my parameters
-      std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) override;
+      std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) override;
 
       /// @name material parameters
       /// @{
@@ -42,14 +42,14 @@ namespace MIXTURE
    * \brief Constituent for any solid material
    *
    * This constituent represents any solid material from the material toolbox. It has to
-   * be paired with the Mat::Mixture and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture and a Mixture::MixtureRule.
    */
-  class MixtureConstituentSolidMaterial : public MIXTURE::MixtureConstituent
+  class MixtureConstituentSolidMaterial : public Mixture::MixtureConstituent
   {
    public:
     /// Constructor for the material given the material parameters
     explicit MixtureConstituentSolidMaterial(
-        MIXTURE::PAR::MixtureConstituentSolidMaterial* params, int id);
+        Mixture::PAR::MixtureConstituentSolidMaterial* params, int id);
 
     void pack_constituent(Core::Communication::PackBuffer& data) const override;
 
@@ -74,13 +74,13 @@ namespace MIXTURE
 
    private:
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentSolidMaterial* params_;
+    Mixture::PAR::MixtureConstituentSolidMaterial* params_;
 
     // reference to the so3 material
     Teuchos::RCP<Mat::So3Material> material_;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Scatra HDG element implementation
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype>>
@@ -140,7 +140,7 @@ namespace Discret
       Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

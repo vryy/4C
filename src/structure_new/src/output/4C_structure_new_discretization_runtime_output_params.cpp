@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Discret::ELEMENTS::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
+Discret::Elements::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
     : isinit_(false),
       issetup_(false),
       output_displacement_state_(false),
@@ -33,7 +33,7 @@ Discret::ELEMENTS::StructureRuntimeOutputParams::StructureRuntimeOutputParams()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
+void Discret::Elements::StructureRuntimeOutputParams::init(
     const Teuchos::ParameterList& IO_vtk_structure_structure_paramslist)
 {
   // We have to call setup() after init()
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::init(
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructureRuntimeOutputParams::setup()
+void Discret::Elements::StructureRuntimeOutputParams::setup()
 {
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::StructureRuntimeOutputParams::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructureRuntimeOutputParams::check_init_setup() const
+void Discret::Elements::StructureRuntimeOutputParams::check_init_setup() const
 {
   FOUR_C_ASSERT(is_init() and is_setup(), "Call init() and setup() first!");
 }

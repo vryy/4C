@@ -26,9 +26,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::RedInterAcinarDepImplInterface*
-Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(
-    Discret::ELEMENTS::RedInterAcinarDep* red_acinus)
+Discret::Elements::RedInterAcinarDepImplInterface*
+Discret::Elements::RedInterAcinarDepImplInterface::impl(
+    Discret::Elements::RedInterAcinarDep* red_acinus)
 {
   switch (red_acinus->shape())
   {
@@ -54,7 +54,7 @@ Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(
  | Constructor (public)                                    ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
+Discret::Elements::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 {
 }
 
@@ -63,7 +63,7 @@ Discret::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
  | Evaluate (public)                                       ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* ele,
+int Discret::Elements::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -93,7 +93,7 @@ int Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate(RedInterAcinarDep* 
  |                                              (private)  ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* ele,
+void Discret::Elements::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -121,7 +121,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::initial(RedInterAcinarDep* 
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>& ial,
+void Discret::Elements::InterAcinarDepImpl<distype>::sysmat(std::vector<double>& ial,
     Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs)
 {
   // Get the number of inter_acinar linkers on the 1st node (N0)
@@ -147,7 +147,7 @@ void Discret::ELEMENTS::InterAcinarDepImpl<distype>::sysmat(std::vector<double>&
  |  at terminal nodes.                                                  |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInterAcinarDep* ele,
+void Discret::Elements::InterAcinarDepImpl<distype>::evaluate_terminal_bc(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
 {

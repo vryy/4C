@@ -2286,7 +2286,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           Core::LinAlg::Vector<int> impltypes_row(*interface.slave_row_elements());
           for (int iele = 0; iele < interface.slave_row_elements()->NumMyElements(); ++iele)
           {
-            impltypes_row[iele] = dynamic_cast<const Discret::ELEMENTS::Transport*>(
+            impltypes_row[iele] = dynamic_cast<const Discret::Elements::Transport*>(
                 Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(
                     kinetics_slave_cond.second
                         ->geometry()[interface.slave_row_elements()->GID(iele)])
@@ -2433,7 +2433,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
 
             // determine physical implementation type of slave-side node based on first associated
             // element
-            (*islavenodesimpltypes)[inode] = dynamic_cast<Discret::ELEMENTS::Transport*>(
+            (*islavenodesimpltypes)[inode] = dynamic_cast<Discret::Elements::Transport*>(
                 Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
                     kinetics_slave_cond.second->geometry()[slavenode->elements()[0]->id()])
                     ->parent_element())
@@ -2451,7 +2451,7 @@ void ScaTra::MeshtyingStrategyS2I::setup_meshtying()
           for (int ielement = 0; ielement < elecolmap_slave.NumMyElements(); ++ielement)
           {
             // determine physical implementation type of current slave-side element
-            islaveelementsimpltypes[ielement] = dynamic_cast<Discret::ELEMENTS::Transport*>(
+            islaveelementsimpltypes[ielement] = dynamic_cast<Discret::Elements::Transport*>(
                 Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
                     kinetics_slave_cond.second->geometry()[elecolmap_slave.GID(ielement)])
                     ->parent_element())
@@ -4300,7 +4300,7 @@ ScaTra::MortarCellCalc<distype_s, distype_m>::MortarCellCalc(
     const Inpar::S2I::CouplingType& couplingtype, const Inpar::S2I::InterfaceSides& lmside,
     const int& numdofpernode_slave, const int& numdofpernode_master)
     : MortarCellInterface(couplingtype, lmside, numdofpernode_slave, numdofpernode_master),
-      scatraparamsboundary_(Discret::ELEMENTS::ScaTraEleParameterBoundary::instance("scatra")),
+      scatraparamsboundary_(Discret::Elements::ScaTraEleParameterBoundary::instance("scatra")),
       ephinp_slave_(numdofpernode_slave, Core::LinAlg::Matrix<nen_slave_, 1>(true)),
       ephinp_master_(numdofpernode_master, Core::LinAlg::Matrix<nen_master_, 1>(true)),
       funct_slave_(true),
@@ -4701,12 +4701,12 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_condition(
 
     // overall integration factors
     const double timefacfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * fac;
     const double timefacrhsfac =
-        Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * fac;
+        Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * fac;
     if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
-    Discret::ELEMENTS::ScaTraEleBoundaryCalc<
+    Discret::Elements::ScaTraEleBoundaryCalc<
         distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(ephinp_slave_,
         ephinp_master_, pseudo_contact_fac, funct_slave_, funct_master_, test_lm_slave_,
         test_lm_master_, numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac,
@@ -4742,12 +4742,12 @@ void ScaTra::MortarCellCalc<distype_s, distype_m>::evaluate_condition_nts(
 
   // overall integration factors
   const double timefacfac =
-      Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * lumpedarea;
+      Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac() * lumpedarea;
   const double timefacrhsfac =
-      Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * lumpedarea;
+      Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")->time_fac_rhs() * lumpedarea;
   if (timefacfac < 0. or timefacrhsfac < 0.) FOUR_C_THROW("Integration factor is negative!");
 
-  Discret::ELEMENTS::ScaTraEleBoundaryCalc<
+  Discret::Elements::ScaTraEleBoundaryCalc<
       distype_s>::template evaluate_s2_i_coupling_at_integration_point<distype_m>(ephinp_slave,
       ephinp_master, pseudo_contact_fac, funct_slave_, funct_master_, funct_slave_, funct_master_,
       numdofpernode_slave_, scatraparamsboundary_, timefacfac, timefacrhsfac, k_ss, k_sm, k_ms,

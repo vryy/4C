@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcLS<distype>* Discret::ELEMENTS::ScaTraEleCalcLS<distype>::instance(
+Discret::Elements::ScaTraEleCalcLS<distype>* Discret::Elements::ScaTraEleCalcLS<distype>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -34,9 +34,9 @@ Discret::ELEMENTS::ScaTraEleCalcLS<distype>* Discret::ELEMENTS::ScaTraEleCalcLS<
  | private constructor for singletons                        fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
+Discret::Elements::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname)
+    : Discret::Elements::ScaTraEleCalc<distype>::ScaTraEleCalc(numdofpernode, numscal, disname)
 {
   // safety check
   if (my::scatrapara_->rb_sub_gr_vel())
@@ -49,25 +49,25 @@ Discret::ELEMENTS::ScaTraEleCalcLS<distype>::ScaTraEleCalcLS(
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLS<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleCalcLS<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

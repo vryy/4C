@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Internal artery implementation
     /*!
@@ -93,7 +93,7 @@ namespace Discret
       Core::LinAlg::Matrix<2, iel_> derxy_;
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

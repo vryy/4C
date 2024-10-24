@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     class ScaTraEleParameterBoundary : public ScaTraEleParameterBase
@@ -157,7 +157,7 @@ namespace Discret
       /// constant permeability for heat at interface
       double thermoperm_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

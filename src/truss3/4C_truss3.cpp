@@ -17,42 +17,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Truss3Type Discret::ELEMENTS::Truss3Type::instance_;
+Discret::Elements::Truss3Type Discret::Elements::Truss3Type::instance_;
 
-Discret::ELEMENTS::Truss3Type& Discret::ELEMENTS::Truss3Type::instance() { return instance_; }
+Discret::Elements::Truss3Type& Discret::Elements::Truss3Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Truss3Type::create(
+Core::Communication::ParObject* Discret::Elements::Truss3Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::Truss3(-1, -1);
+  auto* object = new Discret::Elements::Truss3(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::Truss3>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::Truss3>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Truss3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Truss3>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Truss3>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::Truss3Type::nodal_block_information(
+void Discret::Elements::Truss3Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -60,13 +60,13 @@ void Discret::ELEMENTS::Truss3Type::nodal_block_information(
   nv = 3;
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Truss3Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Truss3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
 }
 
-void Discret::ELEMENTS::Truss3Type::setup_element_definition(
+void Discret::Elements::Truss3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["TRUSS3"];
@@ -83,7 +83,7 @@ void Discret::ELEMENTS::Truss3Type::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            cyron 08/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3::Truss3(int id, int owner)
+Discret::Elements::Truss3::Truss3(int id, int owner)
     : Core::Elements::Element(id, owner),
       crosssec_(0.0),
       eint_(0.0),
@@ -102,7 +102,7 @@ Discret::ELEMENTS::Truss3::Truss3(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       cyron 08/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Truss3::Truss3(const Discret::ELEMENTS::Truss3& old)
+Discret::Elements::Truss3::Truss3(const Discret::Elements::Truss3& old)
     : Core::Elements::Element(old),
       crosssec_(old.crosssec_),
       eint_(old.eint_),
@@ -123,23 +123,23 @@ Discret::ELEMENTS::Truss3::Truss3(const Discret::ELEMENTS::Truss3& old)
  |  Deep copy this instance of Truss3 and return pointer to it (public) |
  |                                                            cyron 08/08|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Truss3::clone() const
+Core::Elements::Element* Discret::Elements::Truss3::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::Truss3(*this);
+  auto* newelement = new Discret::Elements::Truss3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 08/08|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Truss3::shape() const { return Core::FE::CellType::line2; }
+Core::FE::CellType Discret::Elements::Truss3::shape() const { return Core::FE::CellType::line2; }
 
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Truss3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -165,7 +165,7 @@ void Discret::ELEMENTS::Truss3::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           cyron 08/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Truss3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -192,7 +192,7 @@ void Discret::ELEMENTS::Truss3::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              cyron 08/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Truss3::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Truss3::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -201,7 +201,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Truss3::li
  |determine Gauss rule from required type of integration                |
  |                                                   (public)cyron 09/09|
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule1D Discret::ELEMENTS::Truss3::my_gauss_rule(
+Core::FE::GaussRule1D Discret::Elements::Truss3::my_gauss_rule(
     int nnode, IntegrationType integrationtype)
 {
   Core::FE::GaussRule1D gaussrule = Core::FE::GaussRule1D::undefined;
@@ -303,7 +303,7 @@ Core::FE::GaussRule1D Discret::ELEMENTS::Truss3::my_gauss_rule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::set_up_reference_geometry(const std::vector<double>& xrefe)
+void Discret::Elements::Truss3::set_up_reference_geometry(const std::vector<double>& xrefe)
 {
   if (!isinit_)
   {
@@ -328,7 +328,7 @@ void Discret::ELEMENTS::Truss3::set_up_reference_geometry(const std::vector<doub
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::scale_reference_length(double scalefac)
+void Discret::Elements::Truss3::scale_reference_length(double scalefac)
 {
   // scale length in reference configuration
   x_(3) = x_(0) + (scalefac * (x_(3) - x_(0)));
@@ -349,7 +349,7 @@ void Discret::ELEMENTS::Truss3::scale_reference_length(double scalefac)
  *----------------------------------------------------------------------*/
 // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
 // inherently handle (3)...
-void Discret::ELEMENTS::Truss3::location_vector(
+void Discret::Elements::Truss3::location_vector(
     const Core::FE::Discretization& dis, Core::Elements::LocationArray& la, bool doDirichlet) const
 {
   const int numnode = num_node();
@@ -444,7 +444,7 @@ void Discret::ELEMENTS::Truss3::location_vector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Truss3Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::Truss3Type::initialize(Core::FE::Discretization& dis)
 {
   // reference node positions
   std::vector<double> xrefe;
@@ -462,7 +462,7 @@ int Discret::ELEMENTS::Truss3Type::initialize(Core::FE::Discretization& dis)
     if (dis.l_col_element(i)->element_type() != *this) continue;
 
     // if we get so far current element is a truss3 element and  we get a pointer at it
-    auto* currele = dynamic_cast<Discret::ELEMENTS::Truss3*>(dis.l_col_element(i));
+    auto* currele = dynamic_cast<Discret::Elements::Truss3*>(dis.l_col_element(i));
     if (!currele) FOUR_C_THROW("cast to Truss3* failed");
 
     // getting element's nodal coordinates and treating them as reference configuration
@@ -483,11 +483,11 @@ int Discret::ELEMENTS::Truss3Type::initialize(Core::FE::Discretization& dis)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::Elements::Truss3::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(
+    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
         p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
   }
   else
@@ -496,7 +496,7 @@ void Discret::ELEMENTS::Truss3::set_params_interface_ptr(const Teuchos::Paramete
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::Truss3::params_interface_ptr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::Truss3::params_interface_ptr()
 {
   return interface_ptr_;
 }

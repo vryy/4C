@@ -28,7 +28,7 @@ using FAD = Sacado::Fad::DFad<double>;
 
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Beam3eb::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -229,7 +229,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -587,7 +587,7 @@ int Discret::ELEMENTS::Beam3eb::evaluate_neumann(Teuchos::ParameterList& params,
 
 /*------------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
+void Discret::Elements::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
     Teuchos::ParameterList& params, std::vector<double>& vel, std::vector<double>& disp,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix, Core::LinAlg::SerialDenseMatrix* massmatrix,
     Core::LinAlg::SerialDenseVector* force)
@@ -1836,7 +1836,7 @@ void Discret::ELEMENTS::Beam3eb::calc_internal_and_inertia_forces_and_stiff(
 /*-----------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int dofpn>
-void Discret::ELEMENTS::Beam3eb::update_disp_totlag(
+void Discret::Elements::Beam3eb::update_disp_totlag(
     const std::vector<double>& disp, Core::LinAlg::Matrix<dofpn * nnode, 1>& disp_totlag) const
 {
 #ifndef INEXTENSIBLE
@@ -1889,7 +1889,7 @@ void Discret::ELEMENTS::Beam3eb::update_disp_totlag(
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <int nnode>
-void Discret::ELEMENTS::Beam3eb::evaluate_ptc(
+void Discret::Elements::Beam3eb::evaluate_ptc(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseMatrix& elemat1)
 {
   if (nnode > 2) FOUR_C_THROW("PTC implemented for 2-noded elements only");
@@ -1946,14 +1946,14 @@ void Discret::ELEMENTS::Beam3eb::evaluate_ptc(
 
 /*------------------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Beam3eb::lumpmass(Core::LinAlg::SerialDenseMatrix* emass)
+void Discret::Elements::Beam3eb::lumpmass(Core::LinAlg::SerialDenseMatrix* emass)
 {
   std::cout << "\n\nWarning: Massmatrix not implemented yet!";
 }
 
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-int Discret::ELEMENTS::Beam3eb::how_many_random_numbers_i_need() const
+int Discret::Elements::Beam3eb::how_many_random_numbers_i_need() const
 {
   // get Gauss points and weights for evaluation of damping matrix
   Core::FE::IntegrationPoints1D gausspoints = Core::FE::IntegrationPoints1D(mygaussruleeb);
@@ -1969,7 +1969,7 @@ int Discret::ELEMENTS::Beam3eb::how_many_random_numbers_i_need() const
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, int ndim>
-void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
+void Discret::Elements::Beam3eb::evaluate_translational_damping(
     Teuchos::ParameterList& params,  //!< parameter list
     const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1>& vel,
     const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
@@ -2086,7 +2086,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping(
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, unsigned int ndim, unsigned int randompergauss>
-void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
+void Discret::Elements::Beam3eb::evaluate_stochastic_forces(
     Teuchos::ParameterList& params,  //!< parameter list
     const Core::LinAlg::Matrix<ndim * vpernode * nnode, 1>& disp_totlag,
     Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -2185,7 +2185,7 @@ void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces(
 /*-----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 template <unsigned int nnode, unsigned int vpernode, unsigned int ndim>
-void Discret::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
+void Discret::Elements::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::ParameterList& params,
     std::vector<double>& vel,                      //!< element velocity vector
     std::vector<double>& disp,                     //!< element displacement vector
     Core::LinAlg::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
@@ -2215,7 +2215,7 @@ void Discret::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff(Teuchos::Paramet
 
 /*----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
-double Discret::ELEMENTS::Beam3eb::get_axial_strain(
+double Discret::Elements::Beam3eb::get_axial_strain(
     double& xi, const Core::LinAlg::Matrix<12, 1>& disp_totlag) const
 {
   // Todo implement and call more general method from Beam3Base
@@ -2256,22 +2256,22 @@ double Discret::ELEMENTS::Beam3eb::get_axial_strain(
 /*----------------------------------------------------------------------------------------------------------*
  *----------------------------------------------------------------------------------------------------------*/
 // explicit template instantations
-template void Discret::ELEMENTS::Beam3eb::evaluate_ptc<2>(
+template void Discret::Elements::Beam3eb::evaluate_ptc<2>(
     Teuchos::ParameterList&, Core::LinAlg::SerialDenseMatrix&);
 
-template void Discret::ELEMENTS::Beam3eb::evaluate_translational_damping<2, 2, 3>(
+template void Discret::Elements::Beam3eb::evaluate_translational_damping<2, 2, 3>(
     Teuchos::ParameterList&, const Core::LinAlg::Matrix<12, 1>&, const Core::LinAlg::Matrix<12, 1>&,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::SerialDenseVector*);
 
-template void Discret::ELEMENTS::Beam3eb::evaluate_stochastic_forces<2, 2, 3, 3>(
+template void Discret::Elements::Beam3eb::evaluate_stochastic_forces<2, 2, 3, 3>(
     Teuchos::ParameterList&, const Core::LinAlg::Matrix<12, 1>&, Core::LinAlg::SerialDenseMatrix*,
     Core::LinAlg::SerialDenseVector*);
 
-template void Discret::ELEMENTS::Beam3eb::calc_brownian_forces_and_stiff<2, 2, 3>(
+template void Discret::Elements::Beam3eb::calc_brownian_forces_and_stiff<2, 2, 3>(
     Teuchos::ParameterList&, std::vector<double>&, std::vector<double>&,
     Core::LinAlg::SerialDenseMatrix*, Core::LinAlg::SerialDenseVector*);
 
-template void Discret::ELEMENTS::Beam3eb::update_disp_totlag<2, 6>(
+template void Discret::Elements::Beam3eb::update_disp_totlag<2, 6>(
     const std::vector<double>&, Core::LinAlg::Matrix<12, 1>&) const;
 
 FOUR_C_NAMESPACE_CLOSE

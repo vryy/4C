@@ -32,7 +32,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! A C++ version of a 3 dimensional solid element with modifications for
     //! thermomechanics
@@ -387,7 +387,7 @@ namespace Discret
 
     };  // class So3_Thermo
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

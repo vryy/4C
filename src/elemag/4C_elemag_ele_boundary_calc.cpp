@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::ElemagBoundaryImplInterface*
-Discret::ELEMENTS::ElemagBoundaryImplInterface::impl(const Core::Elements::Element* ele)
+Discret::Elements::ElemagBoundaryImplInterface*
+Discret::Elements::ElemagBoundaryImplInterface::impl(const Core::Elements::Element* ele)
 {
   switch (ele->shape())
   {
@@ -75,14 +75,14 @@ Discret::ELEMENTS::ElemagBoundaryImplInterface::impl(const Core::Elements::Eleme
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagBoundaryImpl<distype>*
-Discret::ELEMENTS::ElemagBoundaryImpl<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::ElemagBoundaryImpl<distype>*
+Discret::Elements::ElemagBoundaryImpl<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::ElemagBoundaryImpl<distype>>(
-            new Discret::ELEMENTS::ElemagBoundaryImpl<distype>());
+        return std::unique_ptr<Discret::Elements::ElemagBoundaryImpl<distype>>(
+            new Discret::Elements::ElemagBoundaryImpl<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -92,7 +92,7 @@ Discret::ELEMENTS::ElemagBoundaryImpl<distype>::instance(Core::Utils::SingletonA
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
+Discret::Elements::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
     : xyze_(true),
       funct_(true),
       deriv_(true),
@@ -109,8 +109,8 @@ Discret::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
-    Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ElemagBoundaryImpl<distype>::evaluate_neumann(
+    Discret::Elements::ElemagBoundary* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseMatrix* elemat1_epetra)
@@ -121,7 +121,7 @@ int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate_neumann(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagBoundaryImpl<distype>::evaluate(Discret::ELEMENTS::ElemagBoundary* ele,
+int Discret::Elements::ElemagBoundaryImpl<distype>::evaluate(Discret::Elements::ElemagBoundary* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,

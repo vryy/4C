@@ -23,8 +23,8 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::IntegratorNitscheSsi::IntegratorNitscheSsi(
     Teuchos::ParameterList& params, Core::FE::CellType eletype, const Epetra_Comm& comm)
     : IntegratorNitsche(params, eletype, comm),
-      scatraparamstimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance("scatra")),
-      scatraparamsboundary_(Discret::ELEMENTS::ScaTraEleParameterBoundary::instance("scatra"))
+      scatraparamstimint_(Discret::Elements::ScaTraEleParameterTimInt::instance("scatra")),
+      scatraparamsboundary_(Discret::Elements::ScaTraEleParameterBoundary::instance("scatra"))
 {
   if (std::abs(theta_) > 1.0e-16) FOUR_C_THROW("SSI Contact just implemented Adjoint free ...");
 }
@@ -199,7 +199,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
   static Core::LinAlg::Matrix<dim, 1> d_sigma_nt_dn(true), d_sigma_nt_dt(true),
       d_sigma_nt_dxi(true);
 
-  Discret::ELEMENTS::SolidScatraCauchyNDirLinearizations<3> linearizations{};
+  Discret::Elements::SolidScatraCauchyNDirLinearizations<3> linearizations{};
   linearizations.solid.d_cauchyndir_dd = &d_sigma_nt_dd;
   linearizations.solid.d_cauchyndir_dn = &d_sigma_nt_dn;
   linearizations.solid.d_cauchyndir_ddir = &d_sigma_nt_dt;
@@ -213,7 +213,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
         [&]()
         {
           auto* solid_scatra_ele =
-              dynamic_cast<Discret::ELEMENTS::SolidScatra*>(mortar_ele.parent_element());
+              dynamic_cast<Discret::Elements::SolidScatra*>(mortar_ele.parent_element());
 
           FOUR_C_THROW_UNLESS(solid_scatra_ele,
               "Nitsche contact is not implemented for this element (expecting SOLIDSCATRA "
@@ -234,7 +234,7 @@ void CONTACT::IntegratorNitscheSsi::so_ele_cauchy_struct(Mortar::Element& mortar
         [&]()
         {
           auto* solid_scatra_ele =
-              dynamic_cast<Discret::ELEMENTS::SolidScatra*>(mortar_ele.parent_element());
+              dynamic_cast<Discret::Elements::SolidScatra*>(mortar_ele.parent_element());
 
           FOUR_C_THROW_UNLESS(solid_scatra_ele,
               "Nitsche contact is not implemented for this element (expecting SOLIDSCATRA "

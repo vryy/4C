@@ -304,8 +304,8 @@ void FLD::XWall::init_x_wall_maps()
       Core::Elements::Element** surrele = xwallnode->elements();
       for (int k = 0; k < xwallnode->num_element(); ++k)
       {
-        Discret::ELEMENTS::FluidXWall* xwallele =
-            dynamic_cast<Discret::ELEMENTS::FluidXWall*>(surrele[k]);
+        Discret::Elements::FluidXWall* xwallele =
+            dynamic_cast<Discret::Elements::FluidXWall*>(surrele[k]);
 
         if (xwallele) enriched = true;
       }
@@ -415,8 +415,8 @@ void FLD::XWall::init_wall_dist()
     Core::Elements::Element** surrele = xwallnode->elements();
     for (int k = 0; k < xwallnode->num_element(); ++k)
     {
-      Discret::ELEMENTS::FluidXWall* xwallele =
-          dynamic_cast<Discret::ELEMENTS::FluidXWall*>(surrele[k]);
+      Discret::Elements::FluidXWall* xwallele =
+          dynamic_cast<Discret::Elements::FluidXWall*>(surrele[k]);
 
       if (xwallele) enriched = 1;
     }
@@ -529,8 +529,8 @@ void FLD::XWall::init_toggle_vector()
       Core::Elements::Element** surrele = xwallnode->elements();
       for (int k = 0; k < xwallnode->num_element(); ++k)
       {
-        Discret::ELEMENTS::FluidXWall* xwallele =
-            dynamic_cast<Discret::ELEMENTS::FluidXWall*>(surrele[k]);
+        Discret::Elements::FluidXWall* xwallele =
+            dynamic_cast<Discret::Elements::FluidXWall*>(surrele[k]);
 
         if (!xwallele) fullyenriched = false;
       }
@@ -595,7 +595,7 @@ void FLD::XWall::setup_x_wall_dis()
     Core::Elements::Element* ele = discret_->l_col_element(i);
     if (!ele) FOUR_C_THROW("Cannot find ele with lid %", i);
 
-    Discret::ELEMENTS::FluidXWall* xwallele = dynamic_cast<Discret::ELEMENTS::FluidXWall*>(ele);
+    Discret::Elements::FluidXWall* xwallele = dynamic_cast<Discret::Elements::FluidXWall*>(ele);
 
     if (!xwallele) continue;
 

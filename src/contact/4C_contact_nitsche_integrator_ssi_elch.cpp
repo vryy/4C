@@ -201,7 +201,7 @@ double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
   {
     case Core::FE::CellType::hex8:
     {
-      Discret::ELEMENTS::Utils::compute_deformation_gradient<Core::FE::CellType::hex8, dim>(defgrd,
+      Discret::Elements::Utils::compute_deformation_gradient<Core::FE::CellType::hex8, dim>(defgrd,
           electrode_ele->parent_element()->nodes(), xi_parent,
           electrode_ele->mo_data().parent_disp());
 
@@ -209,7 +209,7 @@ double CONTACT::IntegratorNitscheSsiElch::calculate_det_f_of_parent_element(
     }
     case Core::FE::CellType::tet4:
     {
-      Discret::ELEMENTS::Utils::compute_deformation_gradient<Core::FE::CellType::tet4, dim>(defgrd,
+      Discret::Elements::Utils::compute_deformation_gradient<Core::FE::CellType::tet4, dim>(defgrd,
           electrode_ele->parent_element()->nodes(), xi_parent,
           electrode_ele->mo_data().parent_disp());
 
@@ -271,7 +271,7 @@ void CONTACT::IntegratorNitscheSsiElch::calculate_spatial_derivative_of_det_f(co
       "Number of nodes is not matching discretization type");
 
   static Core::LinAlg::Matrix<num_ele_nodes, dim> xyze;
-  Discret::ELEMENTS::Utils::evaluate_nodal_coordinates<distype, dim>(electrode_ele->nodes(), xyze);
+  Discret::Elements::Utils::evaluate_nodal_coordinates<distype, dim>(electrode_ele->nodes(), xyze);
 
   static Core::LinAlg::Matrix<ele_dim, num_ele_nodes> deriv;
   for (auto i = 0; i < num_ele_nodes; ++i)
@@ -339,8 +339,8 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
 
       // get the relevant parameter
       const double faraday =
-          Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
-      const double frt = Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->frt();
+          Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
+      const double frt = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->frt();
       const double kr = get_scatra_ele_parameter_boundary()->charge_transfer_constant();
       const double alphaa = get_scatra_ele_parameter_boundary()->alphadata();
       const double alphac = get_scatra_ele_parameter_boundary()->alpha_c();
@@ -407,7 +407,7 @@ void CONTACT::IntegratorNitscheSsiElch::integrate_ssi_interface_condition(
         double dj_dc_electrode(0.0), dj_dc_electrolyte(0.0), dj_dpot_electrode(0.0),
             dj_dpot_electrolyte(0.0);
         // calculate flux linearizations
-        Discret::ELEMENTS::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
+        Discret::Elements::calculate_butler_volmer_elch_linearizations(kinetic_model, j0, frt,
             d_epd_dc, alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday,
             electrolyte_conc, electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte,
             dj_dpot_electrode, dj_dpot_electrolyte);

@@ -27,12 +27,12 @@ FOUR_C_NAMESPACE_OPEN
  | protected constructor for singletons                      vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
+Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
     const int numdofpernode, const std::string& disname)
     : ele_(nullptr),
       totalnumdofpernode_(numdofpernode),
       numfluidphases_(0),
-      para_(Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(
+      para_(Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(
           disname)),  // standard parameter list
       xsi_(true),
       xyze0_(true),
@@ -54,8 +54,8 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCa
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>*
-Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::instance(
+Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>*
+Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::pair<std::string, int>>(
@@ -74,7 +74,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::instance(
  | evaluate  routine                                         vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Elements::Element* ele,
+int Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec)
@@ -98,7 +98,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate(Core::Eleme
  | evaluate action                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_action(
+int Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action,
     Core::Elements::LocationArray& la, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
@@ -173,7 +173,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_action(
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
     Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -193,7 +193,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_average(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_average(
     Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -217,7 +217,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_av
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
     Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -239,7 +239,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
 | calculate off-diagonal fluid-scatra-coupling matrix  kremheller 06/17 |
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
     Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -261,7 +261,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point_loop(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point_loop(
     Core::Elements::Element* ele)
 {
   return;
@@ -271,7 +271,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::prepare_gauss_point
 |  calculate system matrix and rhs (public)                 vuong 08/16|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
     const Core::FE::IntPointsAndWeights<nsd_>& intpoints, Core::Elements::Element* ele,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
@@ -318,7 +318,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop(
 | calculate off-diagonal fluid-struct-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_struct(
     const Core::FE::IntPointsAndWeights<nsd_>& intpoints, Core::Elements::Element* ele,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
@@ -356,7 +356,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
 | calculate off-diagonal fluid-scatra-coupling matrix  kremheller 03/17 |
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od_scatra(
     const Core::FE::IntPointsAndWeights<nsd_>& intpoints, Core::Elements::Element* ele,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::gauss_point_loop_od
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(Core::Elements::Element* ele,
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::node_loop(Core::Elements::Element* ele,
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, const bool jacobian_needed)
@@ -448,7 +448,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::node_loop(Core::Ele
  | loop over nodes for evaluation                                  vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_element(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_element(
     Core::Elements::Element* ele, std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la)
@@ -479,7 +479,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::evaluate_only_eleme
  | setup element evaluation                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Elements::Element* ele,
+int Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Elements::Element* ele,
     Core::FE::Discretization& discretization, const POROFLUIDMULTIPHASE::Action& action)
 {
   // get element coordinates
@@ -512,18 +512,18 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
   // could be adapted to have static members, which are only built once.
 
   // build the phase manager
-  phasemanager_ = Discret::ELEMENTS::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
+  phasemanager_ = Discret::Elements::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
       *para_, nsd_, ele->material()->material_type(), action, totalnumdofpernode_, numfluidphases_);
   // setup the manager
   phasemanager_->setup(ele);
 
   // rebuild the phase manager
-  variablemanager_ = Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd_,
+  variablemanager_ = Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd_,
       nen_>::create_variable_manager(*para_, action, actmat, totalnumdofpernode_, numfluidphases_);
 
   // build the evaluator
   evaluator_ =
-      Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>::create_evaluator(
+      Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd_, nen_>::create_evaluator(
           *para_, action, totalnumdofpernode_, numfluidphases_, *phasemanager_);
 
   return 0;
@@ -533,7 +533,7 @@ int Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::setup_calc(Core::Ele
  | extract element based or nodal values                     vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::extract_element_and_node_values(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -547,7 +547,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::extract_element_and
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 double
-Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_derivs_at_int_point(
+Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_derivs_at_int_point(
     const Core::FE::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
     const int iquad                                        ///< id of current Gauss point
 )
@@ -598,7 +598,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::eval_shape_func_and_deri
  | evaluate shape functions and derivatives in parameter space   vuong 08/16 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<
+double Discret::Elements::PoroFluidMultiPhaseEleCalc<
     distype>::eval_shape_func_and_derivs_in_parameter_space()
 {
   double det = 0.0;
@@ -640,7 +640,7 @@ double Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<
  | Compute Jacobian at node 'inode'                        kremheller 04/17 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at_node(
+void Discret::Elements::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at_node(
     const int inode)
 {
   // get parameter space coordinates of current node
@@ -674,37 +674,37 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::compute_jacobian_at
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line2>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line2>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line2,2>; template
-// class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line2,3>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line3>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line2,2>; template
+// class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line2,3>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line3>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line3,2>; template
-// class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line3,3>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line3,2>; template
+// class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::line3,3>;
 
 // 2D elements
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tri3>;
-// template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad4>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tri3>;
+// template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tri6>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad4>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad9>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad8>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad9>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad9,3>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::nurbs9>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::quad9,3>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::hex8>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::hex8>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tet10>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::hex20>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::hex27>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tet4>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::tet10>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::pyramid5>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::wedge6>;
+template class Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::pyramid5>;
 // template class
-// Discret::ELEMENTS::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::nurbs27>;
+// Discret::Elements::PoroFluidMultiPhaseEleCalc<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

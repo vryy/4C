@@ -16,16 +16,16 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcElchElectrodeGrowth
         : public ScaTraEleBoundaryCalcElchElectrode<distype, probdim>
     {
-      using my = Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>;
-      using myelch = Discret::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>;
-      using myelectrode = Discret::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
+      using my = Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>;
+      using myelch = Discret::Elements::ScaTraEleBoundaryCalcElch<distype, probdim>;
+      using myelectrode = Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>;
       using my::nen_;
       using my::nsd_;
       using my::nsd_ele_;
@@ -147,7 +147,7 @@ namespace Discret
       //! nodal growth variables
       Core::LinAlg::Matrix<nen_, 1> egrowth_;
     };  // class ScaTraEleBoundaryCalcElchElectrodeGrowth
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

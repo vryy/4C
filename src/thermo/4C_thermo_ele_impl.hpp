@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! Interface base class for TemperImpl
     //!
@@ -514,7 +514,7 @@ namespace Discret
 
     };  // class TemperImpl
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

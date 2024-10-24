@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidTypeImmersed : public FluidTypeImmersedBase
     {
@@ -282,7 +282,7 @@ namespace Discret
       Teuchos::RCP<std::vector<double>>
           stored_projected_intpoint_divergence_;  //!< 1000 max number of gp
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

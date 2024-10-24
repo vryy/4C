@@ -19,7 +19,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 // Constructor for the parameter class
-MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
+Mixture::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
       matid_prestress_strategy_(matdata.parameters.get<int>("PRESTRESS_STRATEGY")),
@@ -37,8 +37,8 @@ MIXTURE::PAR::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase
 }
 
 // Constructor of the constituent holding the material parameters
-MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
-    MIXTURE::PAR::MixtureConstituentElastHyperBase* params, int id)
+Mixture::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
+    Mixture::PAR::MixtureConstituentElastHyperBase* params, int id)
     : MixtureConstituent(params, id),
       summand_properties_(),
       params_(params),
@@ -57,13 +57,13 @@ MIXTURE::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   if (params->get_prestressing_mat_id() > 0)
   {
     prestress_strategy_ =
-        MIXTURE::PAR::PrestressStrategy::factory(params->get_prestressing_mat_id())
+        Mixture::PAR::PrestressStrategy::factory(params->get_prestressing_mat_id())
             ->create_prestress_strategy();
   }
 }
 
 // Pack the constituent
-void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
+void Mixture::MixtureConstituentElastHyperBase::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
   MixtureConstituent::pack_constituent(data);
@@ -88,7 +88,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pack_constituent(
 }
 
 // Unpack the constituent
-void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
+void Mixture::MixtureConstituentElastHyperBase::unpack_constituent(
     Core::Communication::UnpackBuffer& buffer)
 {
   MixtureConstituent::unpack_constituent(buffer);
@@ -111,7 +111,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
           Global::Problem::instance(probinst)->materials()->parameter_by_id(matid);
       if (mat->type() == material_type())
       {
-        params_ = dynamic_cast<MIXTURE::PAR::MixtureConstituentElastHyperBase*>(mat);
+        params_ = dynamic_cast<Mixture::PAR::MixtureConstituentElastHyperBase*>(mat);
       }
       else
       {
@@ -132,7 +132,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
     if (params_->get_prestressing_mat_id() > 0)
     {
       prestress_strategy_ =
-          MIXTURE::PAR::PrestressStrategy::factory(params_->get_prestressing_mat_id())
+          Mixture::PAR::PrestressStrategy::factory(params_->get_prestressing_mat_id())
               ->create_prestress_strategy();
 
       prestress_strategy_->unpack(buffer);
@@ -153,7 +153,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::unpack_constituent(
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
+void Mixture::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
     Mat::Anisotropy& anisotropy)
 {
   // Setup summands
@@ -163,7 +163,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_anisotropy_extensions(
 }
 
 // Reads the element from the input file
-void MIXTURE::MixtureConstituentElastHyperBase::read_element(
+void Mixture::MixtureConstituentElastHyperBase::read_element(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   MixtureConstituent::read_element(numgp, container);
@@ -181,7 +181,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::read_element(
 }
 
 // Updates all summands
-void MIXTURE::MixtureConstituentElastHyperBase::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
+void Mixture::MixtureConstituentElastHyperBase::update(Core::LinAlg::Matrix<3, 3> const& defgrd,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   MixtureConstituent::update(defgrd, params, gp, eleGID);
@@ -197,7 +197,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::update(Core::LinAlg::Matrix<3, 3
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::setup(
+void Mixture::MixtureConstituentElastHyperBase::setup(
     Teuchos::ParameterList& params, const int eleGID)
 {
   MixtureConstituent::setup(params, eleGID);
@@ -209,7 +209,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::setup(
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::pre_evaluate(
+void Mixture::MixtureConstituentElastHyperBase::pre_evaluate(
     MixtureRule& mixtureRule, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // do nothing in the default case
@@ -221,7 +221,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::pre_evaluate(
   }
 }
 
-void MIXTURE::MixtureConstituentElastHyperBase::register_output_data_names(
+void Mixture::MixtureConstituentElastHyperBase::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   if (prestress_strategy_ != nullptr)
@@ -230,7 +230,7 @@ void MIXTURE::MixtureConstituentElastHyperBase::register_output_data_names(
   }
 }
 
-bool MIXTURE::MixtureConstituentElastHyperBase::evaluate_output_data(
+bool Mixture::MixtureConstituentElastHyperBase::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (prestress_strategy_ != nullptr &&

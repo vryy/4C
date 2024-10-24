@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     namespace Nurbs
     {
@@ -49,7 +49,7 @@ namespace Discret
       };
 
 
-      class Wall1Nurbs : public Discret::ELEMENTS::Wall1
+      class Wall1Nurbs : public Discret::Elements::Wall1
       {
        public:
         /*!
@@ -140,7 +140,7 @@ namespace Discret
       };
 
     }  // namespace Nurbs
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 

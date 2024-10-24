@@ -36,7 +36,7 @@ namespace
       for (int lid = 0; lid < 2; ++lid)
         testdis_->add_node(Teuchos::make_rcp<Core::Nodes::Node>(lid, xrefe[lid], 0));
 
-      testele_ = Teuchos::make_rcp<Discret::ELEMENTS::Beam3eb>(0, 0);
+      testele_ = Teuchos::make_rcp<Discret::Elements::Beam3eb>(0, 0);
       std::array<int, 2> node_ids{0, 1};
       testele_->set_node_ids(2, node_ids.data());
 
@@ -51,7 +51,7 @@ namespace
     //! dummy discretization for holding element and node pointers
     Teuchos::RCP<Core::FE::Discretization> testdis_;
     //! the beam3eb element to be tested
-    Teuchos::RCP<Discret::ELEMENTS::Beam3eb> testele_;
+    Teuchos::RCP<Discret::Elements::Beam3eb> testele_;
   };
 
   /**

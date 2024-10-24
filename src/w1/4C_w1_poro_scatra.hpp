@@ -23,7 +23,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
@@ -32,7 +32,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     class Wall1PoroScatra : public Wall1Poro<distype>
     {
-      typedef Discret::ELEMENTS::Wall1Poro<distype> my;
+      typedef Discret::Elements::Wall1Poro<distype> my;
 
      public:
       //@}
@@ -78,31 +78,31 @@ namespace Discret
           case Core::FE::CellType::tri3:
           {
             parobjectid =
-                Discret::ELEMENTS::WallTri3PoroScatraType::instance().unique_par_object_id();
+                Discret::Elements::WallTri3PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::quad4:
           {
             parobjectid =
-                Discret::ELEMENTS::WallQuad4PoroScatraType::instance().unique_par_object_id();
+                Discret::Elements::WallQuad4PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::quad9:
           {
             parobjectid =
-                Discret::ELEMENTS::WallQuad9PoroScatraType::instance().unique_par_object_id();
+                Discret::Elements::WallQuad9PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::nurbs4:
           {
             parobjectid =
-                Discret::ELEMENTS::WallNurbs4PoroScatraType::instance().unique_par_object_id();
+                Discret::Elements::WallNurbs4PoroScatraType::instance().unique_par_object_id();
             break;
           }
           case Core::FE::CellType::nurbs9:
           {
             parobjectid =
-                Discret::ELEMENTS::WallNurbs9PoroScatraType::instance().unique_par_object_id();
+                Discret::Elements::WallNurbs9PoroScatraType::instance().unique_par_object_id();
             break;
           }
           default:
@@ -143,25 +143,25 @@ namespace Discret
         switch (distype)
         {
           case Core::FE::CellType::tri3:
-            return Discret::ELEMENTS::WallTri3PoroScatraType::instance();
+            return Discret::Elements::WallTri3PoroScatraType::instance();
             break;
           case Core::FE::CellType::quad4:
-            return Discret::ELEMENTS::WallQuad4PoroScatraType::instance();
+            return Discret::Elements::WallQuad4PoroScatraType::instance();
             break;
           case Core::FE::CellType::quad9:
-            return Discret::ELEMENTS::WallQuad9PoroScatraType::instance();
+            return Discret::Elements::WallQuad9PoroScatraType::instance();
             break;
           case Core::FE::CellType::nurbs4:
-            return Discret::ELEMENTS::WallNurbs4PoroScatraType::instance();
+            return Discret::Elements::WallNurbs4PoroScatraType::instance();
             break;
           case Core::FE::CellType::nurbs9:
-            return Discret::ELEMENTS::WallNurbs9PoroScatraType::instance();
+            return Discret::Elements::WallNurbs9PoroScatraType::instance();
             break;
           default:
             FOUR_C_THROW("unknown element type");
             break;
         }
-        return Discret::ELEMENTS::WallQuad4PoroScatraType::instance();
+        return Discret::Elements::WallQuad4PoroScatraType::instance();
       };
 
       //@}
@@ -193,7 +193,7 @@ namespace Discret
 
     };  // class Wall1_Poro_Scatra
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

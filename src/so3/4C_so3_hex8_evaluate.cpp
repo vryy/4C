@@ -54,7 +54,7 @@ using VoigtMapping = Core::LinAlg::Voigt::IndexMappings;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex8::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -251,7 +251,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (min_detJ_curr <= 0.0)
       {
         soh8_error_handling(
-            min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
+            min_detJ_curr, params, __LINE__, Solid::Elements::ele_error_determinant_at_corner);
         elevec1_epetra(0) = 0.0;
         return 1;
       }
@@ -356,7 +356,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       Teuchos::RCP<SoHex8DeterminantAnalysis> det_analyser = SoHex8DeterminantAnalysis::create();
       if (not det_analyser->is_valid(xcurr))
         soh8_error_handling(
-            -1.0, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_analysis);
+            -1.0, params, __LINE__, Solid::Elements::ele_error_determinant_analysis);
 
       break;
     }
@@ -525,7 +525,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
                   Core::FE::num_gauss_points_to_gauss_rule<Core::FE::CellType::hex8>(NUMGPT_SOH8));
               Core::FE::extrapolate_gp_quantity_to_nodes_and_assemble<Core::FE::CellType::hex8>(
                   *this, gp_data, *global_data, false, gauss_integration);
-              Discret::ELEMENTS::assemble_nodal_element_count(global_nodal_element_count, *this);
+              Discret::Elements::assemble_nodal_element_count(global_nodal_element_count, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
@@ -535,7 +535,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()
                       .at(quantity_name);
-              Discret::ELEMENTS::assemble_gauss_point_values(global_data, gp_data, *this);
+              Discret::Elements::assemble_gauss_point_values(global_data, gp_data, *this);
               break;
             }
             case Inpar::Solid::GaussPointDataOutputType::none:
@@ -646,7 +646,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
       if (min_detJ_curr <= 0.0)
       {
         soh8_error_handling(
-            min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
+            min_detJ_curr, params, __LINE__, Solid::Elements::ele_error_determinant_at_corner);
         elevec1_epetra(0) = 0.0;
         return 0;
       }
@@ -787,28 +787,28 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
           // add enhanced strains = M . alpha to GL strains to "unlock" element
           switch (eastype_)
           {
-            case Discret::ELEMENTS::SoHex8::soh8_easfull:
+            case Discret::Elements::SoHex8::soh8_easfull:
               Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                   soh8_easfull>(
                   M.values(), detJ0 / detJ_[gp], T0invT.data(), (M_GP->at(gp)).values());
               Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_easfull, 1>(
                   1.0, glstrain.data(), 1.0, M.values(), alpha->values());
               break;
-            case Discret::ELEMENTS::SoHex8::soh8_easmild:
+            case Discret::Elements::SoHex8::soh8_easmild:
               Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                   soh8_easmild>(
                   M.values(), detJ0 / detJ_[gp], T0invT.data(), (M_GP->at(gp)).values());
               Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_easmild, 1>(
                   1.0, glstrain.data(), 1.0, M.values(), alpha->values());
               break;
-            case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+            case Discret::Elements::SoHex8::soh8_eassosh8:
               Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                   soh8_eassosh8>(
                   M.values(), detJ0 / detJ_[gp], T0invT.data(), (M_GP->at(gp)).values());
               Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
                   1.0, glstrain.data(), 1.0, M.values(), alpha->values());
               break;
-            case Discret::ELEMENTS::SoHex8::soh8_easnone:
+            case Discret::Elements::SoHex8::soh8_easnone:
               break;
             default:
               FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -821,7 +821,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
           if (is_params_interface() and str_params_interface().is_tolerate_errors())
           {
             str_params_interface().set_ele_eval_error_flag(
-                Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+                Solid::Elements::ele_error_negative_det_of_def_gradient);
             return 0;
           }
           else
@@ -1199,7 +1199,7 @@ int Discret::ELEMENTS::SoHex8::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -1300,11 +1300,11 @@ int Discret::ELEMENTS::SoHex8::evaluate_neumann(Teuchos::ParameterList& params,
   } /* ==================================================== end of Loop over GP */
 
   return 0;
-}  // Discret::ELEMENTS::So_hex8::evaluate_neumann
+}  // Discret::Elements::So_hex8::evaluate_neumann
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const double* Discret::ELEMENTS::SoHex8::soh8_get_coordinate_of_gausspoints(
+const double* Discret::Elements::SoHex8::soh8_get_coordinate_of_gausspoints(
     const unsigned dim) const
 {
   static Core::LinAlg::Matrix<NUMGPT_SOH8, NUMDIM_SOH8> coordinates_of_gps(false);
@@ -1330,7 +1330,7 @@ const double* Discret::ELEMENTS::SoHex8::soh8_get_coordinate_of_gausspoints(
 /*----------------------------------------------------------------------*
  |  init the element jacobian mapping (protected)              gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::init_jacobian_mapping()
+void Discret::Elements::SoHex8::init_jacobian_mapping()
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
@@ -1362,7 +1362,7 @@ void Discret::ELEMENTS::SoHex8::init_jacobian_mapping()
  |  init the element jacobian mapping with respect to the    farah 06/13|
  |  material configuration.                                             |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8::init_jacobian_mapping(std::vector<double>& dispmat)
+int Discret::Elements::SoHex8::init_jacobian_mapping(std::vector<double>& dispmat)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xmat;
@@ -1388,7 +1388,7 @@ int Discret::ELEMENTS::SoHex8::init_jacobian_mapping(std::vector<double>& dispma
       if (is_params_interface() and str_params_interface().is_tolerate_errors())
       {
         str_params_interface().set_ele_eval_error_flag(
-            Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+            Solid::Elements::ele_error_negative_det_of_def_gradient);
         return 1;
       }
       else
@@ -1401,7 +1401,7 @@ int Discret::ELEMENTS::SoHex8::init_jacobian_mapping(std::vector<double>& dispma
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Discret::ELEMENTS::SoHex8::soh8_get_min_det_jac_at_corners(
+double Discret::Elements::SoHex8::soh8_get_min_det_jac_at_corners(
     const Core::LinAlg::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xcurr) const
 {
   Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> xcurr_t(false);
@@ -1411,15 +1411,15 @@ double Discret::ELEMENTS::SoHex8::soh8_get_min_det_jac_at_corners(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_error_handling(const double& det_curr,
-    Teuchos::ParameterList& params, const int line_id, const Solid::ELEMENTS::EvalErrorFlag flag)
+void Discret::Elements::SoHex8::soh8_error_handling(const double& det_curr,
+    Teuchos::ParameterList& params, const int line_id, const Solid::Elements::EvalErrorFlag flag)
 {
   error_handling(det_curr, params, line_id, flag);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_compute_eas_inc(
+void Discret::Elements::SoHex8::soh8_compute_eas_inc(
     const std::vector<double>& residual, Core::LinAlg::SerialDenseMatrix* const eas_inc)
 {
   auto* oldKaainv = &easdata_.invKaa;
@@ -1443,7 +1443,7 @@ void Discret::ELEMENTS::SoHex8::soh8_compute_eas_inc(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_recover(
+void Discret::Elements::SoHex8::soh8_recover(
     const std::vector<int>& lm, const std::vector<double>& residual)
 {
   // for eas
@@ -1527,7 +1527,7 @@ void Discret::ELEMENTS::SoHex8::soh8_recover(
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location matrix
+void Discret::Elements::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location matrix
     std::vector<double>& disp,                                      // current displacements
     std::vector<double>* vel,                                       // current velocities
     std::vector<double>* acc,                                       // current accelerations
@@ -1571,7 +1571,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
   if (min_detJ_curr <= 0.0)
   {
     soh8_error_handling(
-        min_detJ_curr, params, __LINE__, Solid::ELEMENTS::ele_error_determinant_at_corner);
+        min_detJ_curr, params, __LINE__, Solid::Elements::ele_error_determinant_at_corner);
     return;
   }
 
@@ -1650,7 +1650,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       {
         switch (eastype_)
         {
-          case Discret::ELEMENTS::SoHex8::soh8_easfull:
+          case Discret::Elements::SoHex8::soh8_easfull:
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easfull, NUMDOF_SOH8, 1>(
                 1.0, oldfeas->values(), 1.0, oldKda->values(), res_d_eas.values());
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easfull, soh8_easfull, 1>(
@@ -1658,7 +1658,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::update<double, soh8_easfull, 1>(
                 1., alpha->values(), 1., eas_inc->values());
             break;
-          case Discret::ELEMENTS::SoHex8::soh8_easmild:
+          case Discret::Elements::SoHex8::soh8_easmild:
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easmild, NUMDOF_SOH8, 1>(
                 1.0, oldfeas->values(), 1.0, oldKda->values(), res_d_eas.values());
             Core::LinAlg::DenseFunctions::multiply<double, soh8_easmild, soh8_easmild, 1>(
@@ -1666,7 +1666,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::update<double, soh8_easmild, 1>(
                 1., alpha->values(), 1., eas_inc->values());
             break;
-          case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+          case Discret::Elements::SoHex8::soh8_eassosh8:
             Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, NUMDOF_SOH8, 1>(
                 1.0, oldfeas->values(), 1.0, oldKda->values(), res_d_eas.values());
             Core::LinAlg::DenseFunctions::multiply<double, soh8_eassosh8, soh8_eassosh8, 1>(
@@ -1674,7 +1674,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::update<double, soh8_eassosh8, 1>(
                 1., alpha->values(), 1., eas_inc->values());
             break;
-          case Discret::ELEMENTS::SoHex8::soh8_easnone:
+          case Discret::Elements::SoHex8::soh8_easnone:
             break;
           default:
             FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -1773,7 +1773,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         if (str_params_interface().is_tolerate_errors())
         {
           str_params_interface().set_ele_eval_error_flag(
-              Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+              Solid::Elements::ele_error_negative_det_of_def_gradient);
           stiffmatrix->clear();
           force->clear();
           return;
@@ -1864,25 +1864,25 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       switch (eastype_)
       {
-        case Discret::ELEMENTS::SoHex8::soh8_easfull:
+        case Discret::Elements::SoHex8::soh8_easfull:
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
               soh8_easfull>(M.values(), detJ0 / detJ, T0invT.data(), (M_GP->at(gp)).values());
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_easfull, 1>(
               1.0, glstrain.data(), 1.0, M.values(), alpha->values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_easmild:
+        case Discret::Elements::SoHex8::soh8_easmild:
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
               soh8_easmild>(M.values(), detJ0 / detJ, T0invT.data(), (M_GP->at(gp)).values());
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_easmild, 1>(
               1.0, glstrain.data(), 1.0, M.values(), alpha->values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+        case Discret::Elements::SoHex8::soh8_eassosh8:
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
               soh8_eassosh8>(M.values(), detJ0 / detJ, T0invT.data(), (M_GP->at(gp)).values());
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
               1.0, glstrain.data(), 1.0, M.values(), alpha->values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_easnone:
+        case Discret::Elements::SoHex8::soh8_easnone:
           break;
         default:
           FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -1897,7 +1897,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       if (det_defgrd_mod <= 0.0)
       {
         soh8_error_handling(det_defgrd_mod, params, __LINE__,
-            Solid::ELEMENTS::ele_error_negative_det_of_def_gradient);
+            Solid::Elements::ele_error_negative_det_of_def_gradient);
         return;
       }
     }  // ------------------------------------------------------------------ EAS
@@ -2093,7 +2093,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
 
     // stop if the material evaluation fails
     if (is_params_interface() and str_params_interface().is_tolerate_errors())
-      if (str_params_interface().get_ele_eval_error_flag() != Solid::ELEMENTS::ele_error_none)
+      if (str_params_interface().get_ele_eval_error_flag() != Solid::Elements::ele_error_none)
         return;
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
@@ -2259,7 +2259,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
         Core::LinAlg::SerialDenseMatrix cM(Mat::NUM_STRESS_3D, neas_);  // temporary c . M
         switch (eastype_)
         {
-          case Discret::ELEMENTS::SoHex8::soh8_easfull:
+          case Discret::Elements::SoHex8::soh8_easfull:
             Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                 soh8_easfull>(cM.values(), cmat.data(), M.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easfull, Mat::NUM_STRESS_3D,
@@ -2269,7 +2269,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easfull, Mat::NUM_STRESS_3D, 1>(
                 1.0, feas.values(), detJ_w, M.values(), stress.data());
             break;
-          case Discret::ELEMENTS::SoHex8::soh8_easmild:
+          case Discret::Elements::SoHex8::soh8_easmild:
             Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                 soh8_easmild>(cM.values(), cmat.data(), M.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easmild, Mat::NUM_STRESS_3D,
@@ -2279,7 +2279,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_easmild, Mat::NUM_STRESS_3D, 1>(
                 1.0, feas.values(), detJ_w, M.values(), stress.data());
             break;
-          case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+          case Discret::Elements::SoHex8::soh8_eassosh8:
             Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
                 soh8_eassosh8>(cM.values(), cmat.data(), M.values());
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D,
@@ -2289,7 +2289,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
             Core::LinAlg::DenseFunctions::multiply_tn<double, soh8_eassosh8, Mat::NUM_STRESS_3D, 1>(
                 1.0, feas.values(), detJ_w, M.values(), stress.data());
             break;
-          case Discret::ELEMENTS::SoHex8::soh8_easnone:
+          case Discret::Elements::SoHex8::soh8_easnone:
             break;
           default:
             FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -2432,7 +2432,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
       Core::LinAlg::SerialDenseMatrix KdaKaa(NUMDOF_SOH8, neas_);  // temporary Kda.Kaa^{-1}
       switch (eastype_)
       {
-        case Discret::ELEMENTS::SoHex8::soh8_easfull:
+        case Discret::Elements::SoHex8::soh8_easfull:
           Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_easfull,
               soh8_easfull>(KdaKaa.values(), Kda.values(), Kaa.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easfull, NUMDOF_SOH8>(
@@ -2440,7 +2440,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easfull, 1>(
               1.0, force->data(), -1.0, KdaKaa.values(), feas.values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_easmild:
+        case Discret::Elements::SoHex8::soh8_easmild:
           Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_easmild,
               soh8_easmild>(KdaKaa.values(), Kda.values(), Kaa.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easmild, NUMDOF_SOH8>(
@@ -2448,7 +2448,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_easmild, 1>(
               1.0, force->data(), -1.0, KdaKaa.values(), feas.values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+        case Discret::Elements::SoHex8::soh8_eassosh8:
           Core::LinAlg::DenseFunctions::multiply_tn<double, NUMDOF_SOH8, soh8_eassosh8,
               soh8_eassosh8>(KdaKaa.values(), Kda.values(), Kaa.values());
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
@@ -2456,7 +2456,7 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
           Core::LinAlg::DenseFunctions::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(
               1.0, force->data(), -1.0, KdaKaa.values(), feas.values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_easnone:
+        case Discret::Elements::SoHex8::soh8_easnone:
           break;
         default:
           FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -2473,13 +2473,13 @@ void Discret::ELEMENTS::SoHex8::nlnstiffmass(std::vector<int>& lm,  // location 
     }  // -------------------------------------------------------------------- EAS
   }
   return;
-}  // Discret::ELEMENTS::So_hex8::nlnstiffmass
+}  // Discret::Elements::So_hex8::nlnstiffmass
 
 
 /*----------------------------------------------------------------------*
  |  lump mass matrix (private)                               bborn 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass)
+void Discret::Elements::SoHex8::soh8_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* emass)
 {
   // lump mass matrix
   if (emass != nullptr)
@@ -2501,7 +2501,7 @@ void Discret::ELEMENTS::SoHex8::soh8_lumpmass(Core::LinAlg::Matrix<NUMDOF_SOH8, 
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> Discret::ELEMENTS::SoHex8::soh8_shapefcts() const
+std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> Discret::Elements::SoHex8::soh8_shapefcts() const
 {
   std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> shapefcts(NUMGPT_SOH8);
 
@@ -2519,7 +2519,7 @@ std::vector<Core::LinAlg::Matrix<NUMNOD_SOH8, 1>> Discret::ELEMENTS::SoHex8::soh
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> Discret::ELEMENTS::SoHex8::soh8_derivs()
+std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> Discret::Elements::SoHex8::soh8_derivs()
     const
 {
   std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs(NUMGPT_SOH8);
@@ -2533,7 +2533,7 @@ std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> Discret::ELEMENTS::S
 }
 
 // Evaluate the derivatives of the shape functions for a specific Gauss point
-void Discret::ELEMENTS::SoHex8::soh8_derivs(
+void Discret::Elements::SoHex8::soh8_derivs(
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& derivs, const int gp) const
 {
   const Core::LinAlg::Matrix<NUMDIM_SOH8, 1> rst_gp(gp_rule_.point(gp), true);
@@ -2543,7 +2543,7 @@ void Discret::ELEMENTS::SoHex8::soh8_derivs(
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
  *----------------------------------------------------------------------*/
-std::vector<double> Discret::ELEMENTS::SoHex8::soh8_weights() const
+std::vector<double> Discret::Elements::SoHex8::soh8_weights() const
 {
   std::vector<double> weights(NUMGPT_SOH8);
   for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp) weights[gp] = gp_rule_.weight(gp);
@@ -2553,7 +2553,7 @@ std::vector<double> Discret::ELEMENTS::SoHex8::soh8_weights() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_create_eas_backup_state(const std::vector<double>& displ_incr)
+void Discret::Elements::SoHex8::soh8_create_eas_backup_state(const std::vector<double>& displ_incr)
 {
   if (eastype_ == soh8_easnone) return;
 
@@ -2585,7 +2585,7 @@ void Discret::ELEMENTS::SoHex8::soh8_create_eas_backup_state(const std::vector<d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
+void Discret::Elements::SoHex8::soh8_recover_from_eas_backup_state()
 {
   if (eastype_ == soh8_easnone) return;
 
@@ -2630,12 +2630,12 @@ void Discret::ELEMENTS::SoHex8::soh8_recover_from_eas_backup_state()
 /*----------------------------------------------------------------------*
  |  init the element (public)                                  gee 04/08|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::SoHex8Type::initialize(Core::FE::Discretization& dis)
+int Discret::Elements::SoHex8Type::initialize(Core::FE::Discretization& dis)
 {
   for (int i = 0; i < dis.num_my_col_elements(); ++i)
   {
     if (dis.l_col_element(i)->element_type() != *this) continue;
-    auto* actele = dynamic_cast<Discret::ELEMENTS::SoHex8*>(dis.l_col_element(i));
+    auto* actele = dynamic_cast<Discret::Elements::SoHex8*>(dis.l_col_element(i));
     if (!actele) FOUR_C_THROW("cast to So_hex8* failed");
     actele->init_jacobian_mapping();
   }
@@ -2645,8 +2645,8 @@ int Discret::ELEMENTS::SoHex8Type::initialize(Core::FE::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::def_gradient(const std::vector<double>& disp,
-    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoHex8::def_gradient(const std::vector<double>& disp,
+    Core::LinAlg::SerialDenseMatrix& gpdefgrd, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
@@ -2682,8 +2682,8 @@ void Discret::ELEMENTS::SoHex8::def_gradient(const std::vector<double>& disp,
 /*----------------------------------------------------------------------*
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::update_jacobian_mapping(
-    const std::vector<double>& disp, Discret::ELEMENTS::PreStress& prestress)
+void Discret::Elements::SoHex8::update_jacobian_mapping(
+    const std::vector<double>& disp, Discret::Elements::PreStress& prestress)
 {
   const static std::vector<Core::LinAlg::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
 
@@ -2723,7 +2723,7 @@ void Discret::ELEMENTS::SoHex8::update_jacobian_mapping(
 /*---------------------------------------------------------------------------------------------*
  |  Update history variables (e.g. remodeling of fiber directions) (protected)      braeu 07/16|
  *---------------------------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::update_element(
+void Discret::Elements::SoHex8::update_element(
     std::vector<double>& disp, Teuchos::ParameterList& params, Core::Mat::Material& mat)
 {
   // Calculate current deformation gradient
@@ -2796,7 +2796,7 @@ void Discret::ELEMENTS::SoHex8::update_element(
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses              dano 11/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::g_lto_ea(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>* glstrain,
+void Discret::Elements::SoHex8::g_lto_ea(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>* glstrain,
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* euler_almansi)
 {
@@ -2829,7 +2829,7 @@ void Discret::ELEMENTS::SoHex8::g_lto_ea(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D
 /*----------------------------------------------------------------------*
  | push forward of material to spatial stresses              dano 11/12 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::p_k2to_cauchy(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>* stress,
+void Discret::Elements::SoHex8::p_k2to_cauchy(Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>* stress,
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* defgrd,
     Core::LinAlg::Matrix<NUMDIM_SOH8, NUMDIM_SOH8>* cauchystress)
 {
@@ -2857,7 +2857,7 @@ void Discret::ELEMENTS::SoHex8::p_k2to_cauchy(Core::LinAlg::Matrix<Mat::NUM_STRE
 /*----------------------------------------------------------------------*
  |  Calculate consistent deformation gradient               seitz 04/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::calc_consistent_defgrd(
+void Discret::Elements::SoHex8::calc_consistent_defgrd(
     const Core::LinAlg::Matrix<3, 3>& defgrd_disp, Core::LinAlg::Matrix<6, 1> glstrain_mod,
     Core::LinAlg::Matrix<3, 3>& defgrd_mod) const
 {
@@ -2913,7 +2913,7 @@ void Discret::ELEMENTS::SoHex8::calc_consistent_defgrd(
  | check the constitutive tensor and/or use the approximation as        |
  | elastic stiffness matrix                                  rauch 07/13|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
+void Discret::Elements::SoHex8::evaluate_finite_difference_material_tangent(
     Core::LinAlg::Matrix<NUMDOF_SOH8, NUMDOF_SOH8>* stiffmatrix,
     const Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1>& stress, std::vector<double>& disp,
     const double detJ_w, const double detJ, const double detJ0, const double charelelength,
@@ -3016,25 +3016,25 @@ void Discret::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       switch (eastype_)
       {
-        case Discret::ELEMENTS::SoHex8::soh8_easfull:
+        case Discret::Elements::SoHex8::soh8_easfull:
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
               soh8_easfull>(M.values(), detJ0 / detJ, T0invT.data(), (M_GP->at(gp)).values());
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_easfull, 1>(
               1.0, glstrain_fd.data(), 1.0, M.values(), alpha->values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_easmild:
+        case Discret::Elements::SoHex8::soh8_easmild:
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
               soh8_easmild>(M.values(), detJ0 / detJ, T0invT.data(), (M_GP->at(gp)).values());
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_easmild, 1>(
               1.0, glstrain_fd.data(), 1.0, M.values(), alpha->values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_eassosh8:
+        case Discret::Elements::SoHex8::soh8_eassosh8:
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D,
               soh8_eassosh8>(M.values(), detJ0 / detJ, T0invT.data(), (M_GP->at(gp)).values());
           Core::LinAlg::DenseFunctions::multiply<double, Mat::NUM_STRESS_3D, soh8_eassosh8, 1>(
               1.0, glstrain_fd.data(), 1.0, M.values(), alpha->values());
           break;
-        case Discret::ELEMENTS::SoHex8::soh8_easnone:
+        case Discret::Elements::SoHex8::soh8_easnone:
           break;
         default:
           FOUR_C_THROW("Don't know what to do with EAS type %d", eastype_);
@@ -3128,7 +3128,7 @@ void Discret::ELEMENTS::SoHex8::evaluate_finite_difference_material_tangent(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
+void Discret::Elements::SoHex8::get_cauchy_n_dir_and_derivatives_at_xi(
     const Core::LinAlg::Matrix<3, 1>& xi, const std::vector<double>& disp,
     const Core::LinAlg::Matrix<3, 1>& n, const Core::LinAlg::Matrix<3, 1>& dir,
     double& cauchy_n_dir, Core::LinAlg::SerialDenseMatrix* d_cauchyndir_dd,

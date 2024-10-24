@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Integrate a Line Neumann boundary condition (public)      popp 06/13|
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Wall1Line::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -420,7 +420,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate_neumann(Teuchos::ParameterList& param
   return 0;
 }
 
-Core::FE::GaussRule1D Discret::ELEMENTS::Wall1Line::get_optimal_gaussrule(
+Core::FE::GaussRule1D Discret::Elements::Wall1Line::get_optimal_gaussrule(
     const Core::FE::CellType& distype)
 {
   Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
@@ -447,7 +447,7 @@ Core::FE::GaussRule1D Discret::ELEMENTS::Wall1Line::get_optimal_gaussrule(
 
 // determinant of jacobian matrix
 
-double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialDenseMatrix& xyze,
+double Discret::Elements::Wall1Line::w1_substitution(const Core::LinAlg::SerialDenseMatrix& xyze,
     const Core::LinAlg::SerialDenseMatrix& deriv,
     std::vector<double>* unrm,  // unit normal
     const int iel)
@@ -489,7 +489,7 @@ double Discret::ELEMENTS::Wall1Line::w1_substitution(const Core::LinAlg::SerialD
 }
 
 /*======================================================================*/
-int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Wall1Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -501,7 +501,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
   const int noddof = num_dof_per_node(*nodes()[0]);
 
   // start with "none"
-  Discret::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
+  Discret::Elements::Wall1Line::ActionType act = Wall1Line::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -668,7 +668,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------*
  * Evaluate method on mutliple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
-int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Wall1Line::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elematrix1, Core::LinAlg::SerialDenseMatrix& elematrix2,
     Core::LinAlg::SerialDenseVector& elevector1, Core::LinAlg::SerialDenseVector& elevector2,
@@ -684,7 +684,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
   const Core::FE::CellType distype = shape();
 
   // start with "none"
-  Discret::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
+  Discret::Elements::Wall1Line::ActionType act = Wall1Line::none;
 
   // get the required action
   std::string action = params.get<std::string>("action", "none");
@@ -819,7 +819,7 @@ int Discret::ELEMENTS::Wall1Line::evaluate(Teuchos::ParameterList& params,
  * Compute first derivatives of area                            tk 10/07*
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::compute_area_constr_deriv(
+void Discret::Elements::Wall1Line::compute_area_constr_deriv(
     Core::LinAlg::SerialDenseMatrix xscurr, Core::LinAlg::SerialDenseVector& elevector)
 {
   if (elevector.length() != 4)
@@ -840,7 +840,7 @@ void Discret::ELEMENTS::Wall1Line::compute_area_constr_deriv(
  * Compute influence of area constraint on stiffness matrix.    tk 10/07*
  * Second derivatives of areas with respect to the displacements        *
  * ---------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::compute_area_constr_stiff(
+void Discret::Elements::Wall1Line::compute_area_constr_stiff(
     Core::LinAlg::SerialDenseMatrix xscurr, Core::LinAlg::SerialDenseMatrix& elematrix)
 {
   elematrix(0, 0) = 0.0;

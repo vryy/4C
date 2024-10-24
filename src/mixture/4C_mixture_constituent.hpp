@@ -34,7 +34,7 @@ namespace Mat
  * deformation and the stress response is a mass fraction weighted
  * average of the stresses of each constituent.
  */
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class MixtureConstituent;
@@ -48,12 +48,12 @@ namespace MIXTURE
       explicit MixtureConstituent(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      virtual std::unique_ptr<MIXTURE::MixtureConstituent> create_constituent(int id) = 0;
+      virtual std::unique_ptr<Mixture::MixtureConstituent> create_constituent(int id) = 0;
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<Core::Mat::Material> create_material() final;
 
-      static MIXTURE::PAR::MixtureConstituent* factory(int matnum);
+      static Mixture::PAR::MixtureConstituent* factory(int matnum);
     };
   }  // namespace PAR
 
@@ -62,7 +62,7 @@ namespace MIXTURE
    * holder class
    *
    * This abstract class defines the interface that a constituents needs to implement. It has to be
-   * paired with Mat::Mixture and MIXTURE::MixtureRule.
+   * paired with Mat::Mixture and Mixture::MixtureRule.
    *
    * Example input lines:
    * MAT 1 MAT_Mixture NUMCONST 2 MATIDSCONST 11 12 MASSFRAC 0.4 0.6 MATIDMIXTURERULE 10
@@ -79,7 +79,7 @@ namespace MIXTURE
   class MixtureConstituent
   {
    public:
-    MixtureConstituent(MIXTURE::PAR::MixtureConstituent* params, int id);
+    MixtureConstituent(Mixture::PAR::MixtureConstituent* params, int id);
 
     virtual ~MixtureConstituent() = default;
 
@@ -321,7 +321,7 @@ namespace MIXTURE
     const int id_;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

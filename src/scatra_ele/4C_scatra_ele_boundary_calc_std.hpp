@@ -16,12 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType distype, int probdim = Core::FE::dim<distype> + 1>
     class ScaTraEleBoundaryCalcStd : public ScaTraEleBoundaryCalc<distype, probdim>
     {
-      typedef Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim> my;
+      typedef Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim> my;
 
      public:
       /// Singleton access method
@@ -34,7 +34,7 @@ namespace Discret
       ScaTraEleBoundaryCalcStd(
           const int numdofpernode, const int numscal, const std::string& disname);
     };  // class ScaTraEleBoundaryCalcStd
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

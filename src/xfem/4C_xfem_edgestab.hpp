@@ -28,11 +28,11 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Fluid;
     class FluidIntFace;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 namespace Core::Elements
@@ -79,7 +79,7 @@ namespace XFEM
     void evaluate_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,                        ///< element parameter list
         Teuchos::RCP<Core::FE::Discretization> discret,           ///< discretization
-        Discret::ELEMENTS::FluidIntFace* faceele,                 ///< face element
+        Discret::Elements::FluidIntFace* faceele,                 ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,    ///< systemmatrix
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< systemvector
         Cut::CutWizard& wizard,                                   ///< cut wizard
@@ -93,7 +93,7 @@ namespace XFEM
     void assemble_edge_stab_ghost_penalty(
         Teuchos::ParameterList& eleparams,         ///< element parameter list
         const Inpar::XFEM::FaceType& face_type,    ///< which type of face std, ghost, ghost-penalty
-        Discret::ELEMENTS::FluidIntFace* intface,  ///< internal face element
+        Discret::Elements::FluidIntFace* intface,  ///< internal face element
         Teuchos::RCP<Core::Mat::Material>& material_m,  ///< material of the master side
         Teuchos::RCP<Core::Mat::Material>& material_s,  ///< material of the slave side
         std::vector<int>& nds_master,             ///< nodal dofset vector w.r.t. master element
@@ -106,7 +106,7 @@ namespace XFEM
     //! prepares edge based stabilization for standard fluid
     void evaluate_edge_stab_std(Teuchos::ParameterList& eleparams,  ///< element parameter list
         Teuchos::RCP<Core::FE::Discretization> discret,             ///< discretization
-        Discret::ELEMENTS::FluidIntFace* faceele,                   ///< face element
+        Discret::Elements::FluidIntFace* faceele,                   ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,      ///< systemmatrix
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector     ///< systemvector
     );
@@ -118,7 +118,7 @@ namespace XFEM
         Teuchos::RCP<Core::FE::Discretization> discret,  ///< discretization
         Core::FE::Discretization&
             boundarydiscret,  ///< auxiliary discretization of interface-contributing elements
-        Discret::ELEMENTS::FluidIntFace* faceele,                ///< face element
+        Discret::Elements::FluidIntFace* faceele,                ///< face element
         Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
         Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
     );

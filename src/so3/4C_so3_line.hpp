@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class StructuralLineType : public Core::Elements::ElementType
     {
@@ -217,7 +217,7 @@ namespace Discret
     };  // class StructuralLine
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

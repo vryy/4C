@@ -15,47 +15,47 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Vele3Type Discret::ELEMENTS::Vele3Type::instance_;
+Discret::Elements::Vele3Type Discret::Elements::Vele3Type::instance_;
 
-Discret::ELEMENTS::Vele3Type& Discret::ELEMENTS::Vele3Type::instance() { return instance_; }
+Discret::Elements::Vele3Type& Discret::Elements::Vele3Type::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Vele3Type::create(
+Core::Communication::ParObject* Discret::Elements::Vele3Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Vele3* object = new Discret::ELEMENTS::Vele3(-1, -1);
+  Discret::Elements::Vele3* object = new Discret::Elements::Vele3(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "VELE3")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::Vele3>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::Vele3>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3Type::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Vele3>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Vele3>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::Vele3Type::nodal_block_information(
+void Discret::Elements::Vele3Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
 
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Vele3Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Vele3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   Core::LinAlg::SerialDenseMatrix nullspace;
@@ -63,7 +63,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Vele3Type::compute_null_space
   return nullspace;
 }
 
-void Discret::ELEMENTS::Vele3Type::setup_element_definition(
+void Discret::Elements::Vele3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["VELE3"];
@@ -71,7 +71,7 @@ void Discret::ELEMENTS::Vele3Type::setup_element_definition(
   defs["HEX8"] = Input::LineDefinition::Builder().add_int_vector("HEX8", 8).build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3SurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Surface( id, owner ) );
@@ -79,7 +79,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3SurfaceType::creat
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3LineType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Vele3LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Vele3Line( id, owner ) );
@@ -89,12 +89,12 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Vele3LineType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Vele3::Vele3(int id, int owner) : Core::Elements::Element(id, owner) { return; }
+Discret::Elements::Vele3::Vele3(int id, int owner) : Core::Elements::Element(id, owner) { return; }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Vele3::Vele3(const Discret::ELEMENTS::Vele3& old) : Core::Elements::Element(old)
+Discret::Elements::Vele3::Vele3(const Discret::Elements::Vele3& old) : Core::Elements::Element(old)
 {
   return;
 }
@@ -102,16 +102,16 @@ Discret::ELEMENTS::Vele3::Vele3(const Discret::ELEMENTS::Vele3& old) : Core::Ele
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Vele3::clone() const
+Core::Elements::Element* Discret::Elements::Vele3::clone() const
 {
-  Discret::ELEMENTS::Vele3* newelement = new Discret::ELEMENTS::Vele3(*this);
+  Discret::Elements::Vele3* newelement = new Discret::Elements::Vele3(*this);
   return newelement;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Vele3::shape() const
+Core::FE::CellType Discret::Elements::Vele3::shape() const
 {
   switch (num_node())
   {
@@ -139,7 +139,7 @@ Core::FE::CellType Discret::ELEMENTS::Vele3::shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Vele3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -155,7 +155,7 @@ void Discret::ELEMENTS::Vele3::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Vele3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::Vele3::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
+void Discret::Elements::Vele3::print(std::ostream& os) const
 {
   os << "Vele3 " << Core::FE::cell_type_to_string(shape());
   Element::print(os);
@@ -183,7 +183,7 @@ void Discret::ELEMENTS::Vele3::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3::lines()
 {
   return Core::Communication::element_boundary_factory<Vele3Line, Vele3>(
       Core::Communication::buildLines, *this);
@@ -193,7 +193,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3::surfaces()
 {
   return Core::Communication::element_boundary_factory<Vele3Surface, Vele3>(
       Core::Communication::buildSurfaces, *this);
@@ -204,7 +204,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3::sur
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule (public)                          u.may 05/09|
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule3D Discret::ELEMENTS::Vele3::get_optimal_gaussrule(
+Core::FE::GaussRule3D Discret::Elements::Vele3::get_optimal_gaussrule(
     const Core::FE::CellType& distype) const
 {
   Core::FE::GaussRule3D rule = Core::FE::GaussRule3D::undefined;
@@ -231,7 +231,7 @@ Core::FE::GaussRule3D Discret::ELEMENTS::Vele3::get_optimal_gaussrule(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Vele3::read_element(const std::string& eletype, const std::string& distype,
+bool Discret::Elements::Vele3::read_element(const std::string& eletype, const std::string& distype,
     const Core::IO::InputParameterContainer& container)
 {
   return true;

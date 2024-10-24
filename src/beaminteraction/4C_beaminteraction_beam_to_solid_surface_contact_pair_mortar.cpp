@@ -73,7 +73,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
       contact_parameters->get_beam_to_solid_surface_contact_mortar_defined_in();
 
   // Get beam cross-section diameter
-  const auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
+  const auto beam_ptr = dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1());
   const double beam_cross_section_radius =
       beam_ptr->get_circular_cross_section_radius_for_interactions();
 
@@ -315,7 +315,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairMortar<ScalarType, Beam, Surf
   if (visualization_continuous != Teuchos::null)
   {
     // Get beam cross-section diameter
-    const auto beam_ptr = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1());
+    const auto beam_ptr = dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1());
     const double beam_cross_section_radius =
         beam_ptr->get_circular_cross_section_radius_for_interactions();
 

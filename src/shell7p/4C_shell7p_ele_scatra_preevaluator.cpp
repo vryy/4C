@@ -17,7 +17,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Discret::ELEMENTS::Shell::pre_evaluate_scatra_by_element(Core::Elements::Element& ele,
+void Discret::Elements::Shell::pre_evaluate_scatra_by_element(Core::Elements::Element& ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& dof_index_array)
 {
@@ -46,7 +46,7 @@ void Discret::ELEMENTS::Shell::pre_evaluate_scatra_by_element(Core::Elements::El
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
+void Discret::Elements::Shell::pre_evaluate_scatra(Core::Elements::Element& ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& dof_index_array)
 {

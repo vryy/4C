@@ -391,7 +391,7 @@ void Solid::ModelEvaluator::BrownianDyn::evaluate_brownian(Teuchos::ParameterLis
   // todo: this needs to go, just pass params_interface to elements
   if (p.numParams() > 1)
     FOUR_C_THROW(
-        "Please use the Solid::ELEMENTS::Interface and its derived "
+        "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   // -------------------------------------------------------------------------
   // Evaluate brownian on element level
@@ -610,18 +610,18 @@ void Solid::ModelEvaluator::BrownianDyn::random_numbers_per_element()
   // than any other before
   for (int i = 0; i < discret_ptr_->num_my_col_elements(); ++i)
   {
-    Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<Discret::ELEMENTS::Beam3Base*>(discret_ptr_->l_col_element(i));
+    Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<Discret::Elements::Beam3Base*>(discret_ptr_->l_col_element(i));
     if (beamele != nullptr)
     {
       randomnumbersperlocalelement =
           std::max(randomnumbersperlocalelement, beamele->how_many_random_numbers_i_need());
     }
-    else if (dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret_ptr_->l_col_element(i)) !=
+    else if (dynamic_cast<Discret::Elements::Rigidsphere*>(discret_ptr_->l_col_element(i)) !=
              nullptr)
     {
       randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,
-          dynamic_cast<Discret::ELEMENTS::Rigidsphere*>(discret_ptr_->l_col_element(i))
+          dynamic_cast<Discret::Elements::Rigidsphere*>(discret_ptr_->l_col_element(i))
               ->how_many_random_numbers_i_need());
     }
     else

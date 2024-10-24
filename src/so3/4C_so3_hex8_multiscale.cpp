@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void Discret::ELEMENTS::SoHex8::soh8_homog(Teuchos::ParameterList& params)
+void Discret::Elements::SoHex8::soh8_homog(Teuchos::ParameterList& params)
 {
   if (Global::Problem::instance(0)->get_communicators()->sub_comm()->MyPID() == owner())
   {
@@ -49,7 +49,7 @@ void Discret::ELEMENTS::SoHex8::soh8_homog(Teuchos::ParameterList& params)
 // macroscopic Gauss point and set before the determination of microscale
 // stiffness etc.
 
-void Discret::ELEMENTS::SoHex8::soh8_set_eas_multi(Teuchos::ParameterList& params)
+void Discret::Elements::SoHex8::soh8_set_eas_multi(Teuchos::ParameterList& params)
 {
   if (eastype_ != soh8_easnone)
   {
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::SoHex8::soh8_set_eas_multi(Teuchos::ParameterList& param
 /*----------------------------------------------------------------------*
  |  Initialize EAS internal variables on the microscale         lw 03/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& params)
+void Discret::Elements::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& params)
 {
   if (eastype_ != soh8_easnone)
   {
@@ -114,7 +114,7 @@ void Discret::ELEMENTS::SoHex8::soh8_eas_init_multi(Teuchos::ParameterList& para
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                              lw 05/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoHex8::soh8_read_restart_multi()
+void Discret::Elements::SoHex8::soh8_read_restart_multi()
 {
   Teuchos::RCP<Core::Mat::Material> mat = material();
 

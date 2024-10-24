@@ -36,12 +36,13 @@ Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
   for (int i = 0; i < num_constituents; ++i)
   {
     // Create constituent material
-    constituents_.emplace_back(MIXTURE::PAR::MixtureConstituent::factory(constituent_matids[i]));
+    constituents_.emplace_back(
+        FourC::Mixture::PAR::MixtureConstituent::factory(constituent_matids[i]));
   }
 
   // Create mixture rule
   mixture_rule_ =
-      MIXTURE::PAR::MixtureRule::factory(matdata.parameters.get<int>("MATIDMIXTURERULE"));
+      FourC::Mixture::PAR::MixtureRule::factory(matdata.parameters.get<int>("MATIDMIXTURERULE"));
 }
 
 // Create a material instance from parameters
@@ -64,7 +65,8 @@ Core::Communication::ParObject* Mat::MixtureType::create(Core::Communication::Un
 // constructor
 Mat::Mixture::Mixture()
     : params_(nullptr),
-      constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
+      constituents_(
+          std::make_shared<std::vector<std::unique_ptr<FourC::Mixture::MixtureConstituent>>>(0)),
       setup_(false),
       anisotropy_()
 {
@@ -73,7 +75,8 @@ Mat::Mixture::Mixture()
 // constructor
 Mat::Mixture::Mixture(Mat::PAR::Mixture* params)
     : params_(params),
-      constituents_(std::make_shared<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>>(0)),
+      constituents_(
+          std::make_shared<std::vector<std::unique_ptr<FourC::Mixture::MixtureConstituent>>>(0)),
       setup_(false),
       anisotropy_()
 {

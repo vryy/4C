@@ -27,46 +27,46 @@ Inpar::ScaTra::ImplType Adapter::get_sca_tra_impl_type(Core::Elements::Element* 
 
   if (eletypename == "Wall1ScatraType")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::Wall1Scatra*>(ele))->impl_type();
+    impltype = (dynamic_cast<Discret::Elements::Wall1Scatra*>(ele))->impl_type();
   }
   // shell scatra elements
   else if (eletypename == "Shell7pScatraType")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::Shell7pScatra*>(ele))->impl_type();
+    impltype = (dynamic_cast<Discret::Elements::Shell7pScatra*>(ele))->impl_type();
   }
   // membrane3 scatra element
   else if (eletypename == "MembraneScatra_tri3Type")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri3>*>(ele))
+    impltype = (dynamic_cast<Discret::Elements::MembraneScatra<Core::FE::CellType::tri3>*>(ele))
                    ->impl_type();
   }
   // membrane6 scatra element
   else if (eletypename == "MembraneScatra_tri6Type")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::tri6>*>(ele))
+    impltype = (dynamic_cast<Discret::Elements::MembraneScatra<Core::FE::CellType::tri6>*>(ele))
                    ->impl_type();
   }
   // membrane4 scatra element
   else if (eletypename == "MembraneScatra_quad4Type")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad4>*>(ele))
+    impltype = (dynamic_cast<Discret::Elements::MembraneScatra<Core::FE::CellType::quad4>*>(ele))
                    ->impl_type();
   }
   // membrane9 scatra element
   else if (eletypename == "MembraneScatra_quad9Type")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::MembraneScatra<Core::FE::CellType::quad9>*>(ele))
+    impltype = (dynamic_cast<Discret::Elements::MembraneScatra<Core::FE::CellType::quad9>*>(ele))
                    ->impl_type();
   }
   // truss3 scatra element
   else if (eletypename == "Truss3ScatraType")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::Truss3Scatra*>(ele))->impl_type();
+    impltype = (dynamic_cast<Discret::Elements::Truss3Scatra*>(ele))->impl_type();
   }
   // SolidScatra element
   else if (eletypename == "SolidScatraType")
   {
-    impltype = (dynamic_cast<Discret::ELEMENTS::SolidScatra*>(ele))->impl_type();
+    impltype = (dynamic_cast<Discret::Elements::SolidScatra*>(ele))->impl_type();
   }
   else
   {

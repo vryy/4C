@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Evaluation of general parameters (constant over time)
     class FluidEleParameterTimInt
@@ -137,7 +137,7 @@ namespace Discret
 
     };  // class FluidEleParameterTimInt
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

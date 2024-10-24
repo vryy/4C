@@ -555,9 +555,9 @@ void Solid::TimIntImpl::prepare_line_search()
   for (int i = 0; i < discret_->num_my_row_elements(); i++)
   {
     Core::Elements::Element* actele = discret_->l_row_element(i);
-    Discret::ELEMENTS::SoHex8* ele_hex8 = dynamic_cast<Discret::ELEMENTS::SoHex8*>(actele);
+    Discret::Elements::SoHex8* ele_hex8 = dynamic_cast<Discret::Elements::SoHex8*>(actele);
     if ((ele_hex8 != nullptr && ele_hex8->have_eas() == true) ||
-        (actele->element_type() == Discret::ELEMENTS::SoShw6Type::instance()))
+        (actele->element_type() == Discret::Elements::SoShw6Type::instance()))
       haveCondensationLocal = 1;
   }
   discret_->get_comm().MaxAll(&haveCondensationLocal, &haveCondensationGlobal, 1);

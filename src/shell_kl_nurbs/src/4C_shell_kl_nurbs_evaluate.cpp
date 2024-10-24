@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -122,7 +122,7 @@ int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate(Teuchos::ParameterList&
 /**
  *
  */
-int Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::KirchhoffLoveShellNurbs::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)

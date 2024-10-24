@@ -21,7 +21,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 3 dimensional solid element with modifications for porous media
@@ -278,7 +278,7 @@ namespace Discret
 
       bool is_init_porosity_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

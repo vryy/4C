@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
 
   template <typename T>
@@ -48,7 +48,7 @@ namespace Discret::ELEMENTS
     }
   }
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 FOUR_C_NAMESPACE_CLOSE
 
 #endif

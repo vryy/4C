@@ -13,9 +13,9 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::Vele3SurfaceType Discret::ELEMENTS::Vele3SurfaceType::instance_;
+Discret::Elements::Vele3SurfaceType Discret::Elements::Vele3SurfaceType::instance_;
 
-Discret::ELEMENTS::Vele3SurfaceType& Discret::ELEMENTS::Vele3SurfaceType::instance()
+Discret::Elements::Vele3SurfaceType& Discret::Elements::Vele3SurfaceType::instance()
 {
   return instance_;
 }
@@ -25,8 +25,8 @@ Discret::ELEMENTS::Vele3SurfaceType& Discret::ELEMENTS::Vele3SurfaceType::instan
  |  ctor (public)                                            mwgee 05/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const int* nodeids,
-    Core::Nodes::Node** nodes, Discret::ELEMENTS::Vele3* parent, const int lsurface)
+Discret::Elements::Vele3Surface::Vele3Surface(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::Elements::Vele3* parent, const int lsurface)
     : Core::Elements::FaceElement(id, owner)
 {
   set_node_ids(nnode, nodeids);
@@ -40,7 +40,7 @@ Discret::ELEMENTS::Vele3Surface::Vele3Surface(int id, int owner, int nnode, cons
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Vele3Surface::Vele3Surface(const Discret::ELEMENTS::Vele3Surface& old)
+Discret::Elements::Vele3Surface::Vele3Surface(const Discret::Elements::Vele3Surface& old)
     : Core::Elements::FaceElement(old)
 {
   return;
@@ -49,15 +49,15 @@ Discret::ELEMENTS::Vele3Surface::Vele3Surface(const Discret::ELEMENTS::Vele3Surf
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Vele3Surface::clone() const
+Core::Elements::Element* Discret::Elements::Vele3Surface::clone() const
 {
-  Discret::ELEMENTS::Vele3Surface* newelement = new Discret::ELEMENTS::Vele3Surface(*this);
+  Discret::Elements::Vele3Surface* newelement = new Discret::Elements::Vele3Surface(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Vele3Surface::shape() const
+Core::FE::CellType Discret::Elements::Vele3Surface::shape() const
 {
   switch (num_node())
   {
@@ -78,7 +78,7 @@ Core::FE::CellType Discret::ELEMENTS::Vele3Surface::shape() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Surface::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Vele3Surface::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
@@ -87,7 +87,7 @@ void Discret::ELEMENTS::Vele3Surface::pack(Core::Communication::PackBuffer& data
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Surface::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Vele3Surface::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Vele3Surface element does not support communication");
   return;
@@ -96,7 +96,7 @@ void Discret::ELEMENTS::Vele3Surface::unpack(Core::Communication::UnpackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
+void Discret::Elements::Vele3Surface::print(std::ostream& os) const
 {
   os << "Vele3Surface " << Core::FE::cell_type_to_string(shape());
   Element::print(os);
@@ -107,7 +107,7 @@ void Discret::ELEMENTS::Vele3Surface::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3Surface::lines()
 {
   return Core::Communication::element_boundary_factory<Vele3Line, Vele3Surface>(
       Core::Communication::buildLines, *this);
@@ -117,7 +117,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surfa
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surface::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Vele3Surface::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -127,7 +127,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Vele3Surfa
 /*----------------------------------------------------------------------*
  |  get optimal gauss rule                                   gammi 04/07|
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule2D Discret::ELEMENTS::Vele3Surface::get_optimal_gaussrule(
+Core::FE::GaussRule2D Discret::Elements::Vele3Surface::get_optimal_gaussrule(
     const Core::FE::CellType& distype) const
 {
   Core::FE::GaussRule2D rule = Core::FE::GaussRule2D::undefined;

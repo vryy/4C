@@ -43,10 +43,10 @@ namespace Mat
       /// @name material parameters
       /// @{
       /// list of the references to the constituents
-      std::vector<MIXTURE::PAR::MixtureConstituent*> constituents_;
+      std::vector<FourC::Mixture::PAR::MixtureConstituent*> constituents_;
 
       /// rule of the mixture (contains the physics)
-      MIXTURE::PAR::MixtureRule* mixture_rule_;
+      FourC::Mixture::PAR::MixtureRule* mixture_rule_;
 
       /// @}
 
@@ -71,8 +71,8 @@ namespace Mat
   /*!
    * \brief Material class holding a general mixture material
    *
-   * This class has to be paired with a mixture rule (MIXTURE::MixtureRule) containing the physics
-   * and constituents (MIXTURE::MixtureConstituent). This class manages the interplay between
+   * This class has to be paired with a mixture rule (Mixture::MixtureRule) containing the physics
+   * and constituents (Mixture::MixtureConstituent). This class manages the interplay between
    * the mixture rule and the constituents defining an clear interface if an extension of the
    * mixture framework is needed.
    *
@@ -226,10 +226,10 @@ namespace Mat
     Mat::PAR::Mixture* params_;
 
     /// list of the references to the constituents
-    std::shared_ptr<std::vector<std::unique_ptr<MIXTURE::MixtureConstituent>>> constituents_;
+    std::shared_ptr<std::vector<std::unique_ptr<FourC::Mixture::MixtureConstituent>>> constituents_;
 
     /// Reference to the mixturerule
-    std::shared_ptr<MIXTURE::MixtureRule> mixture_rule_;
+    std::shared_ptr<FourC::Mixture::MixtureRule> mixture_rule_;
 
     /// Flag whether constituents are already set up.
     bool setup_;

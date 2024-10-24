@@ -18,24 +18,24 @@ FOUR_C_NAMESPACE_OPEN
  |  initialize EAS data (private)                           seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::eas_init()
+void Discret::Elements::So3Plast<distype>::eas_init()
 {
   switch (eastype_)
   {
     case soh8p_easnone:
-      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easnone>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::Elements::soh8p_easnone>::neas;
       break;
     case soh8p_easmild:
-      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas;
       break;
     case soh8p_easfull:
-      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::Elements::soh8p_easfull>::neas;
       break;
     case soh8p_eassosh8:
-      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas;
       break;
     case soh18p_eassosh18:
-      neas_ = PlastEasTypeToNumEas<Discret::ELEMENTS::soh18p_eassosh18>::neas;
+      neas_ = PlastEasTypeToNumEas<Discret::Elements::soh18p_eassosh18>::neas;
       break;
     default:
       FOUR_C_THROW("unknown EAS type");
@@ -69,7 +69,7 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_init()
  |  setup EAS data (private)                                seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::eas_setup()
+void Discret::Elements::So3Plast<distype>::eas_setup()
 {
   /* evaluation of EAS variables (which are constant for the following):
   ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -145,7 +145,7 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_setup()
  |  Defgrd consistent with enhanced GL strain (private)     seitz 04/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
+void Discret::Elements::So3Plast<distype>::calc_consistent_defgrd()
 {
   static Core::LinAlg::Matrix<numstr_, 1> glstrain_mod(false);
   glstrain_mod(0) = 0.5 * (rcg()(0, 0) - 1.0);
@@ -202,7 +202,7 @@ void Discret::ELEMENTS::So3Plast<distype>::calc_consistent_defgrd()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
+void Discret::Elements::So3Plast<distype>::eas_shape(const int gp)
 {
   std::vector<Core::LinAlg::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
@@ -337,17 +337,17 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
   {
     case soh8p_easfull:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
-          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas>(
+          PlastEasTypeToNumEas<Discret::Elements::soh8p_easfull>::neas>(
           set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().data(), (M_GP->at(gp)).values());
       break;
     case soh8p_easmild:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
-          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas>(
+          PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas>(
           set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().data(), (M_GP->at(gp)).values());
       break;
     case soh8p_eassosh8:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_, numstr_,
-          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas>(
+          PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas>(
           set_m_eas().values(), det_jac_0() / det_j(), t0inv_t().data(), (M_GP->at(gp)).values());
       break;
     case soh8p_easnone:
@@ -359,7 +359,7 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_shape(const int gp)
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
+void Discret::Elements::So3Plast<distype>::eas_enhance_strains()
 {
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
   static Core::LinAlg::Matrix<numstr_, 1> total_glstrain(false);
@@ -374,17 +374,17 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
   {
     case soh8p_easfull:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_,
-          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easfull>::neas, 1>(
+          PlastEasTypeToNumEas<Discret::Elements::soh8p_easfull>::neas, 1>(
           1.0, total_glstrain.data(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easmild:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_,
-          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_easmild>::neas, 1>(
+          PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, 1>(
           1.0, total_glstrain.data(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_eassosh8:
       Core::LinAlg::DenseFunctions::multiply<double, numstr_,
-          PlastEasTypeToNumEas<Discret::ELEMENTS::soh8p_eassosh8>::neas, 1>(
+          PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, 1>(
           1.0, total_glstrain.data(), 1.0, m_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easnone:
@@ -403,10 +403,10 @@ void Discret::ELEMENTS::So3Plast<distype>::eas_enhance_strains()
   calc_consistent_defgrd();
 }
 
-template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex18>;
-template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::So3Plast<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::So3Plast<Core::FE::CellType::tet4>;
+template class Discret::Elements::So3Plast<Core::FE::CellType::hex8>;
+template class Discret::Elements::So3Plast<Core::FE::CellType::hex18>;
+template class Discret::Elements::So3Plast<Core::FE::CellType::hex27>;
+template class Discret::Elements::So3Plast<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

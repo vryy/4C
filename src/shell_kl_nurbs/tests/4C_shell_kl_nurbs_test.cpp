@@ -343,14 +343,14 @@ namespace
     // Evaluate residuum and Jacobian at the same time
     res.putScalar(0.0);
     stiff.putScalar(0.0);
-    Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_residuum_and_jacobian_auto_generated(
+    Discret::Elements::KirchhoffLoveShellNurbs::evaluate_residuum_and_jacobian_auto_generated(
         young, nu, thickness, intpoints_xi, intpoints_eta, knots, weights, X, q, res, stiff);
     FOUR_C_EXPECT_NEAR(res, res_ref, 1e-12);
     FOUR_C_EXPECT_NEAR(stiff, stiff_ref, 1e-12);
 
     // Evaluate residuum
     res.putScalar(0.0);
-    FourC::Discret::ELEMENTS::KirchhoffLoveShellNurbs::evaluate_residuum_auto_generated(
+    FourC::Discret::Elements::KirchhoffLoveShellNurbs::evaluate_residuum_auto_generated(
         young, nu, thickness, intpoints_xi, intpoints_eta, knots, weights, X, q, res);
     FOUR_C_EXPECT_NEAR(res, res_ref, 1e-12);
   }

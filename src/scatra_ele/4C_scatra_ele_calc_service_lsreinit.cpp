@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action(
+int Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -107,7 +107,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate_action
  | setup element evaluation                                  fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::setup_calc(
+int Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::setup_calc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // reset all managers to their default values (I feel better this way)
@@ -130,7 +130,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::setup_calc(
  | calculate system matrix and rhs for correction step  rasthofer 12/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correction(
+void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correction(
     const double penalty,                   ///< element penalty parameter
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -183,11 +183,11 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correct
     // scalar at integration point at time step n+1
     const double phinp = my::funct_.dot(my::ephinp_[0]);
     Teuchos::rcp_dynamic_cast<
-        Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
+        Discret::Elements::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->set_phinp(0, phinp);
     Teuchos::rcp_dynamic_cast<
-        Discret::ELEMENTS::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
+        Discret::Elements::ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
         my::scatravarmanager_)
         ->set_hist(0, 0.0);
 
@@ -221,7 +221,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_correct
  | calculation of element-wise denominator of penalty parameter  rasthofer 12/13 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penalty_parameter(
+void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penalty_parameter(
     double& penalty)
 {
   // safety check
@@ -314,7 +314,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_ele_penal
  |  calculation of penalty term on rhs                rasthofer 12/13 |
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_rhs_penalty(
+void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_rhs_penalty(
     Core::LinAlg::SerialDenseVector& erhs, const double fac, const double penalty,
     const double deriv_sign, const double norm_gradphizero)
 {
@@ -335,7 +335,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::calc_rhs_penal
  | calculate system matrix and rhs for velocity projection rasthofer 12/13 |
  *-------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, unsigned prob_dim>
-void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_vel(
+void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_vel(
     const int dir,                          ///< current spatial direction
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     Core::LinAlg::SerialDenseVector& erhs   ///< element rhs to calculate
@@ -476,29 +476,29 @@ void Discret::ELEMENTS::ScaTraEleCalcLsReinit<distype, prob_dim>::sysmat_nodal_v
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 1>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::line3, 1>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 1>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tri3, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tri6, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad4, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad4, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad8,2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::quad9, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::nurbs9, 2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::tri3, 2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::tri6, 2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::quad4, 2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::quad4, 3>;
+// template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::quad8,2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::quad9, 2>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::hex8, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::hex20,3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::hex27, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tet4, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::tet10, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::wedge6,3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::pyramid5, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLsReinit<Core::FE::CellType::nurbs27,3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::hex8, 3>;
+// template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::hex20,3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::hex27, 3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::tet4, 3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::tet10, 3>;
+// template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::wedge6,3>;
+template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::Elements::ScaTraEleCalcLsReinit<Core::FE::CellType::nurbs27,3>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
  |  Singleton access method                                  thon 02/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::instance(
+Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>*
+Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::string>(
@@ -41,10 +41,10 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::instance(
  |  Private constructor                                      thon 02/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype,
+Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<distype,
     probdim>::ScaTraEleBoundaryCalcRefConcReac(const int numdofpernode, const int numscal,
     const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
+    : Discret::Elements::ScaTraEleBoundaryCalc<distype, probdim>::ScaTraEleBoundaryCalc(
           numdofpernode, numscal, disname)
 {
   return;
@@ -55,7 +55,7 @@ Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype,
  | Factor needed for the calculation of reference concentrations  thon 02/16 |
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_for_ref_conc(
+double Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fac_for_ref_conc(
     const int iquad,                          ///< current boundary integration point
     const Core::Elements::FaceElement* bele,  ///< current boundary element
     Teuchos::ParameterList& params,           ///< parameter list
@@ -100,7 +100,7 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::fa
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType bdistype, Core::FE::CellType pdistype>
-double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_jat_int_point(
+double Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::calc_jat_int_point(
     const int iquad,                          ///< current boundary integration point
     const Core::Elements::FaceElement* bele,  ///< current boundary element
     const Core::Elements::Element* pele,      ///< current parent element
@@ -169,11 +169,11 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<pnsd> pintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<pdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<pdistype>::rule);
 
   // get Gaussian integration points
   const Core::FE::IntPointsAndWeights<bnsd> bintpoints(
-      Discret::ELEMENTS::DisTypeToOptGaussRule<bdistype>::rule);
+      Discret::Elements::DisTypeToOptGaussRule<bdistype>::rule);
 
   Core::LinAlg::SerialDenseMatrix gps(bintpoints.ip().nquad, bnsd);
   for (int biquad = 0; biquad < bintpoints.ip().nquad; ++biquad)
@@ -223,15 +223,15 @@ double Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<distype, probdim>::ca
 
 
 // template classes
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad4, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad8, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad9, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::tri6, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line3, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::nurbs3, 2>;
-template class Discret::ELEMENTS::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::nurbs9, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad4, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad8, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::quad9, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::tri6, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::line3, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::nurbs3, 2>;
+template class Discret::Elements::ScaTraEleBoundaryCalcRefConcReac<Core::FE::CellType::nurbs9, 3>;
 
 FOUR_C_NAMESPACE_CLOSE

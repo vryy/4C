@@ -27,7 +27,7 @@ namespace Core::Communication
 {
   class PackBuffer;
 }
-namespace MIXTURE
+namespace Mixture
 {
   template <typename T>
   class RemodelFiberMaterial;
@@ -302,7 +302,7 @@ namespace MIXTURE
     bool state_is_set_ = false;
 #endif
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

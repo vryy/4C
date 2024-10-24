@@ -31,7 +31,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Interface base class for LubricationEleCalc
     /*!
@@ -90,7 +90,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra) = 0;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

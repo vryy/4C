@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
  |  calculate stabilization parameter  (private)              gjb 06/08 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -90,7 +90,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau(
  |  calculation of tau according to Taylor, Hughes and Zarins  vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_zarins(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_zarins(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -201,7 +201,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_taylor_hughes_
  |  calculation of tau according to Franca and Valentin        vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valentin(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valentin(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -269,7 +269,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_valenti
  |  calculation of tau according to Franca, Shakib and Codina  vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_codina(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_codina(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -347,7 +347,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_shakib_
  |  calculation of tau according to Codina                     vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -401,7 +401,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_codina(
  |  calculation of tau according to Franca, Madureira and Valentin  vg 01/11 |
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madureira_valentin(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madureira_valentin(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -464,7 +464,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_franca_madurei
  |  exact calculation of tau for 1D                            vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_1d_exact(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_tau_1d_exact(
     double& tau,            //!< the stabilisation parameters (one per transported scalar)
     const double diffus,    //!< diffusivity or viscosity
     const double reacoeff,  //!< reaction coefficient
@@ -508,7 +508,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_tau_1d_exact(
  |  calculation of characteristic element length               vg 01/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
+double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
     const double vol,                               //!< element volume
     const double vel_norm,                          //!< norm of velocity
     const Core::LinAlg::Matrix<nsd_, 1>& convelint  //!< convective velocity at integration point
@@ -572,7 +572,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_char_ele_length(
  |  calculate artificial diffusivity                           vg 10/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
     const double vol,                                //!< element volume
     const int k,                                     //!< id of current scalar
     const double densnp,                             //!< density at t_(n+1)
@@ -843,7 +843,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_artificial_diff(
  | (depending on respective stationary or time-integration scheme)      vg 10/11 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
     const int k,           //!< index of current scalar
     double& scatrares,     //!< residual of convection-diffusion-reaction eq
     const double densam,   //!< density at t_(n+am)
@@ -900,7 +900,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_strong_residual(
  |  calculate subgrid-scale velocity                           vg 10/09 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
     const Core::Elements::Element* ele,              //!< the element we are dealing with
     Core::LinAlg::Matrix<nsd_, 1>& sgvelint,         //!< subgrid velocity at integration point
     const double densam,                             //!< density at t_(n+am)
@@ -1099,7 +1099,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity(
  | calculate viscous part of subgrid-scale velocity   fang 02/15 |
  *---------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity_visc(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity_visc(
     Core::LinAlg::Matrix<nsd_, 1>& epsilonvel)
 {
   if (nsd_ == 3)
@@ -1129,7 +1129,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_velocity_vis
     FOUR_C_THROW("Epsilon(u) is not implemented for the 1D case!");
 
   return;
-}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::calc_subgr_velocity_visc
+}  // Discret::Elements::ScaTraEleCalc<distype,probdim>::calc_subgr_velocity_visc
 
 FOUR_C_NAMESPACE_CLOSE
 

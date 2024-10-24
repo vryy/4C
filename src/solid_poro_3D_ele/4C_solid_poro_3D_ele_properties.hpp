@@ -16,7 +16,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    *  @brief struct for managing solidporo element properties
@@ -40,6 +40,6 @@ namespace Discret::ELEMENTS
     std::vector<std::vector<double>> nodal_coeffs_{};
   };
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 FOUR_C_NAMESPACE_CLOSE
 #endif

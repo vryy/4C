@@ -16,14 +16,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcLoma<distype>*
-Discret::ELEMENTS::FluidEleCalcLoma<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::FluidEleCalcLoma<distype>*
+Discret::Elements::FluidEleCalcLoma<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleCalcLoma<distype>>(
-            new Discret::ELEMENTS::FluidEleCalcLoma<distype>());
+        return std::unique_ptr<Discret::Elements::FluidEleCalcLoma<distype>>(
+            new Discret::Elements::FluidEleCalcLoma<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -33,19 +33,19 @@ Discret::ELEMENTS::FluidEleCalcLoma<distype>::instance(Core::Utils::SingletonAct
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
-    : Discret::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc()
+Discret::Elements::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
+    : Discret::Elements::FluidEleCalc<distype>::FluidEleCalc()
 {
   // we use the standard parameter list here, since there are not any additional
   // loma-specific parameters required in this derived class
-  my::fldpara_ = Discret::ELEMENTS::FluidEleParameterStd::instance();
+  my::fldpara_ = Discret::Elements::FluidEleParameterStd::instance();
 }
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcLoma<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -67,7 +67,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate(Discret::ELEMENTS::Fl
  * evaluation of off-diagonal matrix block for monolithic loma solver (2)
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS::Fluid* ele,
+int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -210,7 +210,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Discret::ELEMENTS:
  * evaluation of off-diagonal matrix block for monolithic loma solver (3)
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList& params,
+int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& elemat1,
@@ -272,7 +272,7 @@ int Discret::ELEMENTS::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::Parameter
  |  for monolithic low-Mach-number solver                      vg 10/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
+void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
     const Core::LinAlg::Matrix<nsd_, nen_>& ebofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eprescpgaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& evelaf, const Core::LinAlg::Matrix<nsd_, nen_>& eveln,
@@ -607,20 +607,20 @@ void Discret::ELEMENTS::FluidEleCalcLoma<distype>::sysmat_od(
 
 
 // Ursula is responsible for this comment!
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::wedge15>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::nurbs9>;
-template class Discret::ELEMENTS::FluidEleCalcLoma<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::hex8>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::hex20>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::hex27>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::tet4>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::tet10>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::wedge6>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::wedge15>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::quad4>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::quad8>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::quad9>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::tri3>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::tri6>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::FluidEleCalcLoma<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

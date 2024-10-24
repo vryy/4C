@@ -36,11 +36,11 @@ namespace Core::LinAlg
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Rigidsphere;
     class Beam3Base;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 namespace BEAMINTERACTION
@@ -109,12 +109,12 @@ namespace BEAMINTERACTION
     /*!
     \brief Get beam element
     */
-    inline Discret::ELEMENTS::Beam3Base const* beam_element() { return beam_element_; };
+    inline Discret::Elements::Beam3Base const* beam_element() { return beam_element_; };
 
     /*!
     \brief Get sphere element
     */
-    inline Discret::ELEMENTS::Rigidsphere const* sphere_element() { return sphere_element_; };
+    inline Discret::Elements::Rigidsphere const* sphere_element() { return sphere_element_; };
 
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
@@ -298,10 +298,10 @@ namespace BEAMINTERACTION
     //! @name member variables
 
     //! first element of contact pair
-    Discret::ELEMENTS::Beam3Base const* beam_element_;
+    Discret::Elements::Beam3Base const* beam_element_;
 
     //! second element of contact pair
-    Discret::ELEMENTS::Rigidsphere const* sphere_element_;
+    Discret::Elements::Rigidsphere const* sphere_element_;
 
     //! current node coordinates of the two elements
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele1pos_;

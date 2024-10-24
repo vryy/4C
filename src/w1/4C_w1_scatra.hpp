@@ -22,7 +22,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Wall1ScatraType : public Wall1Type
     {
@@ -172,7 +172,7 @@ namespace Discret
     };
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

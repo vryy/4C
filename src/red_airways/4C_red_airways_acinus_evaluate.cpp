@@ -20,13 +20,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
-int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::RedAcinus::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::RedAcinus::ActionType act = RedAcinus::none;
+  Discret::Elements::RedAcinus::ActionType act = RedAcinus::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -60,7 +60,7 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
   {
     case calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->evaluate(
+      return Discret::Elements::RedAcinusImplInterface::impl(this)->evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
@@ -70,31 +70,31 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
     break;
     case get_initial_state:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->initial(
+      Discret::Elements::RedAcinusImplInterface::impl(this)->initial(
           this, params, discretization, lm, mat);
     }
     break;
     case set_bc:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->evaluate_terminal_bc(
+      Discret::Elements::RedAcinusImplInterface::impl(this)->evaluate_terminal_bc(
           this, params, discretization, lm, elevec1, mat);
     }
     break;
     case calc_flow_rates:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->calc_flow_rates(
+      Discret::Elements::RedAcinusImplInterface::impl(this)->calc_flow_rates(
           this, params, discretization, lm, mat);
     }
     break;
     case calc_elem_volumes:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->calc_elem_volume(
+      Discret::Elements::RedAcinusImplInterface::impl(this)->calc_elem_volume(
           this, params, discretization, lm, mat);
     }
     break;
     case get_coupled_values:
     {
-      Discret::ELEMENTS::RedAcinusImplInterface::impl(this)->get_coupled_values(
+      Discret::Elements::RedAcinusImplInterface::impl(this)->get_coupled_values(
           this, params, discretization, lm, mat);
     }
     break;
@@ -103,7 +103,7 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
   }  // end of switch(act)
 
   return 0;
-}  // end of Discret::ELEMENTS::RedAcinus::Evaluate
+}  // end of Discret::Elements::RedAcinus::Evaluate
 
 
 /*----------------------------------------------------------------------*
@@ -111,7 +111,7 @@ int Discret::ELEMENTS::RedAcinus::evaluate(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::RedAcinus::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::RedAcinus::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -125,7 +125,7 @@ int Discret::ELEMENTS::RedAcinus::evaluate_neumann(Teuchos::ParameterList& param
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::RedAcinus::evaluate_dirichlet(Teuchos::ParameterList& params,
+int Discret::Elements::RedAcinus::evaluate_dirichlet(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {

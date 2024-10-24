@@ -87,13 +87,13 @@ namespace
 
   template <typename Number, typename Integrand>
   static inline Number integrate_over_deposition_history(
-      const MIXTURE::DepositionHistory<Number>& history, Integrand integrand)
+      const Mixture::DepositionHistory<Number>& history, Integrand integrand)
   {
     Number integration_result = 0;
     for (const auto& interval : history)
     {
       integration_result += Core::Utils::integrate_simpson_trapezoidal(interval.timesteps,
-          [&](const MIXTURE::MassIncrement<Number>& increment)
+          [&](const Mixture::MassIncrement<Number>& increment)
           { return std::make_tuple(increment.deposition_time, integrand(increment)); });
     }
 
@@ -102,8 +102,8 @@ namespace
 
   template <typename Number, typename Integrand>
   static inline std::tuple<Number, Number> integrate_last_timestep_with_derivative(
-      const MIXTURE::DepositionHistoryInterval<Number>& interval,
-      const MIXTURE::MassIncrement<Number>& current_increment, Integrand integrand,
+      const Mixture::DepositionHistoryInterval<Number>& interval,
+      const Mixture::MassIncrement<Number>& current_increment, Integrand integrand,
       Number history_integration)
   {
     const size_t size = interval.timesteps.size();
@@ -142,7 +142,7 @@ namespace
 
   template <typename Number>
   static inline Number evaluate_fiber_material_cauchy_stress(
-      const MIXTURE::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
+      const Mixture::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
   {
     const Number I4 = evaluate_i4(lambda_e);
     return fiber_material.get_cauchy_stress(I4);
@@ -150,7 +150,7 @@ namespace
 
   template <typename Number>
   static inline Number evaluate_d_fiber_material_cauchy_stress_d_lambda_e_sq(
-      const MIXTURE::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
+      const Mixture::RemodelFiberMaterial<Number>& fiber_material, Number lambda_e)
   {
     const Number I4 = evaluate_i4(lambda_e);
     const Number DI4DLambdaESq = evaluate_d_i4_dl_lambda_e_sq(lambda_e);
@@ -159,7 +159,7 @@ namespace
 
   template <typename Number>
   static inline void reinitialize_state(
-      MIXTURE::FullConstrainedMixtureFiber<Number>& fiber, const Number lambda_f, const double time)
+      Mixture::FullConstrainedMixtureFiber<Number>& fiber, const Number lambda_f, const double time)
   {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     fiber.state_is_set_ = true;
@@ -170,7 +170,7 @@ namespace
 
   template <typename Number>
   void update_base_delta_time(
-      MIXTURE::DepositionHistoryInterval<Number>& deposition_history_inverval, const double dt)
+      Mixture::DepositionHistoryInterval<Number>& deposition_history_inverval, const double dt)
   {
     if (deposition_history_inverval.base_dt <= 0)
     {
@@ -202,9 +202,9 @@ namespace
 }  // namespace
 
 template <typename Number>
-MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
-    std::shared_ptr<const MIXTURE::RemodelFiberMaterial<Number>> material,
-    MIXTURE::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution,
+Mixture::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
+    std::shared_ptr<const Mixture::RemodelFiberMaterial<Number>> material,
+    Mixture::LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<Number> growth_evolution,
     Number lambda_pre, HistoryAdaptionStrategy adaptive_history_strategy, bool enable_growth)
     : lambda_pre_(lambda_pre),
       fiber_material_(std::move(material)),
@@ -219,13 +219,13 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::FullConstrainedMixtureFiber(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::pack(Core::Communication::PackBuffer& data) const
+void Mixture::FullConstrainedMixtureFiber<Number>::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::pack(Core::Communication::PackBuffer& data) const
+void Mixture::FullConstrainedMixtureFiber<double>::pack(Core::Communication::PackBuffer& data) const
 {
   data.add_to_pack(sig_h_);
   data.add_to_pack(lambda_pre_);
@@ -260,13 +260,13 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::pack(Core::Communication::Pac
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Mixture::FullConstrainedMixtureFiber<Number>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("Packing and Unpacking is currently only implemented for the double-specialization");
 }
 
 template <>
-void MIXTURE::FullConstrainedMixtureFiber<double>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Mixture::FullConstrainedMixtureFiber<double>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, sig_h_);
   extract_from_pack(buffer, lambda_pre_);
@@ -308,7 +308,7 @@ void MIXTURE::FullConstrainedMixtureFiber<double>::unpack(Core::Communication::U
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
+void Mixture::FullConstrainedMixtureFiber<Number>::recompute_state(
     const Number lambda_f, const double time, const double dt)
 {
   reinitialize_state(*this, lambda_f, time);
@@ -327,7 +327,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::recompute_state(
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::compute_history_cauchy_stress(
+Number Mixture::FullConstrainedMixtureFiber<Number>::compute_history_cauchy_stress(
     const Number lambda_f) const
 {
   const Number growth_scalar = std::invoke(
@@ -357,32 +357,32 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::compute_history_cauchy_stre
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::growth_scalar_integrand(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time) const
+Number Mixture::FullConstrainedMixtureFiber<Number>::growth_scalar_integrand(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time) const
 {
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time);
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::d_growth_scalar_integrand_d_production_rate(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time) const
+Number Mixture::FullConstrainedMixtureFiber<Number>::d_growth_scalar_integrand_d_production_rate(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time) const
 {
   return mass_increment.growth_scalar *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time);
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::d_growth_scalar_integrand_d_growth_scalar(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time) const
+Number Mixture::FullConstrainedMixtureFiber<Number>::d_growth_scalar_integrand_d_growth_scalar(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time) const
 {
   return mass_increment.growth_scalar_production_rate *
          growth_evolution_.evaluate_survival_function(time - mass_increment.deposition_time);
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::scaled_cauchy_stress_integrand(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
+Number Mixture::FullConstrainedMixtureFiber<Number>::scaled_cauchy_stress_integrand(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
   return mass_increment.growth_scalar_production_rate * mass_increment.growth_scalar *
@@ -393,8 +393,8 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::scaled_cauchy_stress_integr
 
 template <typename Number>
 Number
-MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_production_rate(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
+Mixture::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_production_rate(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -406,8 +406,8 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
 
 template <typename Number>
 Number
-MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_growth_scalar(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
+Mixture::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_growth_scalar(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -418,8 +418,8 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_lambda_f_sq(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
+Number Mixture::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_lambda_f_sq(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -432,8 +432,8 @@ Number MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_inte
 
 template <typename Number>
 Number
-MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_lambda_ref_sq(
-    const MIXTURE::MassIncrement<Number>& mass_increment, const double time,
+Mixture::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d_lambda_ref_sq(
+    const Mixture::MassIncrement<Number>& mass_increment, const double time,
     const Number current_lambda_f) const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -447,7 +447,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::d_scaled_cauchy_stress_integrand_d
 template <typename Number>
 std::function<std::tuple<Core::LinAlg::Matrix<2, 1, Number>, Core::LinAlg::Matrix<2, 2, Number>>(
     const Core::LinAlg::Matrix<2, 1, Number>&)>
-MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
+Mixture::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
   FOUR_C_ASSERT(current_time_shift_ == 0.0, "The timeshift should be zero if growth is enabled");
@@ -553,7 +553,7 @@ MIXTURE::FullConstrainedMixtureFiber<Number>::get_local_newton_evaluator() const
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<
+Number Mixture::FullConstrainedMixtureFiber<
     Number>::evaluate_d_residuum_growth_scalar_d_lambda_f_sq() const
 {
   return 0.0;
@@ -561,7 +561,7 @@ Number MIXTURE::FullConstrainedMixtureFiber<
 
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<
+Number Mixture::FullConstrainedMixtureFiber<
     Number>::evaluate_d_residuum_cauchy_stress_d_lambda_f_sq() const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -603,21 +603,21 @@ Number MIXTURE::FullConstrainedMixtureFiber<
 
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::evaluate_lambda_ref(Number lambda_f) const
+Number Mixture::FullConstrainedMixtureFiber<Number>::evaluate_lambda_ref(Number lambda_f) const
 {
   return lambda_pre_ / lambda_f;
 }
 
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<Number>::evaluate_d_lambda_ref_sq_d_lambda_f_sq(
+Number Mixture::FullConstrainedMixtureFiber<Number>::evaluate_d_lambda_ref_sq_d_lambda_f_sq(
     Number lambda_f) const
 {
   return -std::pow(lambda_pre_, 2) / std::pow(lambda_f, 4);
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
+void Mixture::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
 {
   if (!enable_growth_)
   {
@@ -697,7 +697,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::compute_internal_variables()
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::reinitialize_history(
+void Mixture::FullConstrainedMixtureFiber<Number>::reinitialize_history(
     const Number lambda_f, const double time)
 {
   reinitialize_state(*this, lambda_f, time);
@@ -767,7 +767,7 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::reinitialize_history(
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::add_time(const double delta_time)
+void Mixture::FullConstrainedMixtureFiber<Number>::add_time(const double delta_time)
 {
   for (auto& interval : history_)
   {
@@ -780,14 +780,14 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::add_time(const double delta_t
 }
 
 template <typename Number>
-double MIXTURE::FullConstrainedMixtureFiber<Number>::get_last_time_in_history() const
+double Mixture::FullConstrainedMixtureFiber<Number>::get_last_time_in_history() const
 {
   if (history_.size() == 0) return reference_time_;
   return history_.back().timesteps.back().deposition_time;
 }
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::update()
+void Mixture::FullConstrainedMixtureFiber<Number>::update()
 {
   if (enable_growth_)
   {
@@ -949,14 +949,14 @@ void MIXTURE::FullConstrainedMixtureFiber<Number>::update()
 
 
 template <typename Number>
-void MIXTURE::FullConstrainedMixtureFiber<Number>::set_deposition_stretch(double lambda_pre)
+void Mixture::FullConstrainedMixtureFiber<Number>::set_deposition_stretch(double lambda_pre)
 {
   lambda_pre_ = lambda_pre;
   sig_h_ = evaluate_fiber_material_cauchy_stress<Number>(*fiber_material_, lambda_pre_);
 }
 
 template <typename Number>
-Number MIXTURE::FullConstrainedMixtureFiber<
+Number Mixture::FullConstrainedMixtureFiber<
     Number>::evaluate_d_current_fiber_p_k2_stress_d_lambdafsq() const
 {
   FOUR_C_ASSERT(state_is_set_, "You need to call RecomputeState(...) before calling this method!");
@@ -966,6 +966,6 @@ Number MIXTURE::FullConstrainedMixtureFiber<
 
 
 
-template class MIXTURE::FullConstrainedMixtureFiber<double>;
-template class MIXTURE::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
+template class Mixture::FullConstrainedMixtureFiber<double>;
+template class Mixture::FullConstrainedMixtureFiber<Sacado::Fad::DFad<double>>;
 FOUR_C_NAMESPACE_CLOSE

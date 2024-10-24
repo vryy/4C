@@ -31,13 +31,13 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
     const int numdofpernode, const int numscal, const std::string& disname)
     : numdofpernode_(numdofpernode),
       numscal_(numscal),
-      scatrapara_(Discret::ELEMENTS::ScaTraEleParameterStd::instance(disname)),
-      turbparams_(Discret::ELEMENTS::ScaTraEleParameterTurbulence::instance(disname)),
-      scatraparatimint_(Discret::ELEMENTS::ScaTraEleParameterTimInt::instance(disname)),
+      scatrapara_(Discret::Elements::ScaTraEleParameterStd::instance(disname)),
+      turbparams_(Discret::Elements::ScaTraEleParameterTurbulence::instance(disname)),
+      scatraparatimint_(Discret::Elements::ScaTraEleParameterTimInt::instance(disname)),
       diffmanager_(Teuchos::make_rcp<ScaTraEleDiffManager>(numscal_)),
       reamanager_(Teuchos::make_rcp<ScaTraEleReaManager>(numscal_)),
       ephin_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
@@ -45,7 +45,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
       ehist_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       fsphinp_(numdofpernode_, Core::LinAlg::Matrix<nen_, 1>(true)),
       rotsymmpbc_(Teuchos::RCP(new FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1,
-          Discret::ELEMENTS::Fluid::none>())),
+          Discret::Elements::Fluid::none>())),
       evelnp_(true),
       econvelnp_(true),
       efsvel_(true),
@@ -91,7 +91,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::setup_calc(
+int Discret::Elements::ScaTraEleCalc<distype, probdim>::setup_calc(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // get element coordinates
@@ -144,7 +144,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::setup_calc(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements::Element* ele,
+int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -199,7 +199,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate(Core::Elements:
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -337,7 +337,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_element_and_nod
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::extract_turbulence_approach(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la, int& nlayer)
 {
@@ -409,7 +409,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::extract_turbulence_appr
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::Element* ele,
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::Element* ele,
     Core::LinAlg::SerialDenseMatrix& emat, Core::LinAlg::SerialDenseVector& erhs,
     Core::LinAlg::SerialDenseVector& subgrdiff)
 {
@@ -829,7 +829,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat(Core::Elements::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::body_force(
     const Core::Elements::Element* ele)
 {
   std::vector<Core::Conditions::Condition*> myneumcond;
@@ -892,7 +892,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::body_force(
 /*------------------------------------------------------------------------*
  *------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::other_node_based_source_terms(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::other_node_based_source_terms(
     const std::vector<int>& lm, Core::FE::Discretization& discretization,
     Teuchos::ParameterList& params)
 {
@@ -925,7 +925,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::other_node_based_source
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::read_element_coordinates(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::read_element_coordinates(
     const Core::Elements::Element* ele)
 {
   // Directly copy the coordinates since in 3D the transformation is just the identity
@@ -937,7 +937,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::read_element_coordinate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double
-Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_ele_center()
+Discret::Elements::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_ele_center()
 {
   // use one-point Gauss rule to do calculations at the element center
   const Core::FE::IntPointsAndWeights<nsd_ele_> intpoints_tau(
@@ -953,7 +953,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_a
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_int_point(
+double Discret::Elements::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_at_int_point(
     const Core::FE::IntPointsAndWeights<nsd_ele_>& intpoints, const int iquad)
 {
   // coordinates of the current integration point
@@ -988,7 +988,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_d
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double
-Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_in_parameter_space()
+Discret::Elements::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_in_parameter_space()
 {
   double det = 0.0;
 
@@ -1139,7 +1139,7 @@ Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::eval_shape_func_and_derivs_i
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_material_params(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_material_params(
     const Core::Elements::Element* ele, std::vector<double>& densn, std::vector<double>& densnp,
     std::vector<double>& densam, double& visc, const int iquad)
 {
@@ -1167,7 +1167,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_material_params(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::materials(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material, const int k, double& densn,
     double& densnp, double& densam, double& visc, const int iquad)
 {
@@ -1205,7 +1205,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::materials(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra(
     const Teuchos::RCP<const Core::Mat::Material> material, const int k, double& densn,
     double& densnp, double& densam, double& visc, const int iquad)
 {
@@ -1258,7 +1258,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra_multi_scale(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_scatra_multi_scale(
     const Teuchos::RCP<const Core::Mat::Material> material, double& densn, double& densnp,
     double& densam) const
 {
@@ -1281,7 +1281,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_scatra_multi_scale(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_electrode(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::mat_electrode(
     const Teuchos::RCP<const Core::Mat::Material> material)
 {
   // set constant diffusivity
@@ -1294,7 +1294,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::mat_electrode(
 /*---------------------------------------------------------------------------------------*
  *---------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_laplacian_strong_form(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_laplacian_strong_form(
     Core::LinAlg::Matrix<nen_, 1>& diff)
 {
   diff.clear();
@@ -1311,7 +1311,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_laplacian_strong_fo
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_divergence(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_divergence(
     double& vdiv, const Core::LinAlg::Matrix<nsd_, nen_>& evel)
 {
   Core::LinAlg::Matrix<nsd_, nsd_> vderxy;
@@ -1328,7 +1328,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_divergence(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_rhs_int(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_rhs_int(
     double& rhsint, const double densnp, const int k)
 {
   // compute rhs containing bodyforce (divided by specific heat capacity) and,
@@ -1341,7 +1341,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_rhs_int(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_conv(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double densnp, const Core::LinAlg::Matrix<nen_, 1>& sgconv)
 {
@@ -1366,7 +1366,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv(
 /*------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
@@ -1388,7 +1388,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_diff(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_diff(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   // diffusive term
@@ -1410,7 +1410,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_diff(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_trans_conv_diff_stab(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_trans_conv_diff_stab(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timetaufac,
     const double densnp, const Core::LinAlg::Matrix<nen_, 1>& sgconv,
     const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -1491,7 +1491,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_trans_conv_dif
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_mass(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_mass(
     Core::LinAlg::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
 {
   calc_mat_mass(emat, k, fac, densam, funct_, funct_);
@@ -1500,7 +1500,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_mass(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_mass(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_mass(
     Core::LinAlg::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam,
     const Core::LinAlg::Matrix<nen_, 1>& sfunct, const Core::LinAlg::Matrix<nen_, 1>& tfunct) const
 {
@@ -1525,7 +1525,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_mass(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_mass_stab(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_mass_stab(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double taufac, const double densam,
     const double densnp, const Core::LinAlg::Matrix<nen_, 1>& sgconv,
     const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -1574,7 +1574,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_mass_stab(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_react(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_react(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double taufac, const double densnp,
     const Core::LinAlg::Matrix<nen_, 1>& sgconv, const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -1704,7 +1704,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_react(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_lin_mass(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhs_lin_mass(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac, const double fac,
     const double densam, const double densnp)
 {
@@ -1732,7 +1732,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_lin_mass(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::compute_rhs_int(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::compute_rhs_int(
     double& rhsint, const double densam, const double densnp, const double hist)
 {
   if (scatraparatimint_->is_gen_alpha())
@@ -1755,7 +1755,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::compute_rhs_int(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_scatra_res_for_rhs(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::recompute_scatra_res_for_rhs(
     double& scatrares, const int k, const Core::LinAlg::Matrix<nen_, 1>& diff, const double densn,
     const double densnp, double& rea_phi, const double rhsint)
 {
@@ -1804,7 +1804,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_scatra_res_fo
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_conv_phi_for_rhs(const int k,
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::recompute_conv_phi_for_rhs(const int k,
     const Core::LinAlg::Matrix<nsd_, 1>& sgvelint, const double densnp, const double densn,
     const double vdiv)
 {
@@ -1867,7 +1867,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::recompute_conv_phi_for_
 /*-------------------------------------------------------------------------------------- *
  *---------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_hist_and_source(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhs_hist_and_source(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double fac, const double rhsint)
 {
   double vrhs = fac * rhsint;
@@ -1882,7 +1882,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_hist_and_sourc
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_conv(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhs_conv(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const double& conv_phi = scatravarmanager_->conv_phi(k);
@@ -1899,7 +1899,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_conv(
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_diff(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhs_diff(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const Core::LinAlg::Matrix<nsd_, 1>& gradphi = scatravarmanager_->grad_phi(k);
@@ -1919,7 +1919,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_diff(
 /*--------------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_trans_conv_diff_stab(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhs_trans_conv_diff_stab(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhstaufac, const double densnp,
     const double scatrares, const Core::LinAlg::Matrix<nen_, 1>& sgconv,
     const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -1954,7 +1954,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_trans_conv_dif
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_react(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhs_react(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double rea_phi, const double densnp, const double scatrares)
 {
@@ -1986,7 +1986,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhs_react(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsfssgd(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhsfssgd(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac, const double sgdiff,
     const Core::LinAlg::Matrix<nsd_, 1> fsgradphi)
 {
@@ -2004,7 +2004,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsfssgd(
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsmfs(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhsmfs(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac, const double densnp,
     const Core::LinAlg::Matrix<nsd_, 1> mfsggradphi, const Core::LinAlg::Matrix<nsd_, 1> mfsgvelint,
     const double mfssgphi, const double mfsvdiv)
@@ -2043,7 +2043,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsmfs(
 /*-----------------------------------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_scale(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_scale(
     const Core::Elements::Element* const ele, Core::LinAlg::SerialDenseMatrix& emat,
     Core::LinAlg::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
     const double rhsfac)
@@ -2085,7 +2085,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_and_rhs_multi_
 /*-------------------------------------------------------------------- *
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsemd(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_rhsemd(
     const Core::Elements::Element* const ele, Core::LinAlg::SerialDenseVector& erhs,
     const double rhsfac)
 {
@@ -2122,7 +2122,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_rhsemd(
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs()
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::set_internal_variables_for_mat_and_rhs()
 {
   scatravarmanager_->set_internal_variables(
       funct_, derxy_, ephinp_, ephin_, econvelnp_, ehist_, eforcevelocity_);

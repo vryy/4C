@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void Discret::ELEMENTS::SoTet4::sotet4_homog(Teuchos::ParameterList& params)
+void Discret::Elements::SoTet4::sotet4_homog(Teuchos::ParameterList& params)
 {
   if (Global::Problem::instance(0)->get_communicators()->sub_comm()->MyPID() == owner())
   {
@@ -45,7 +45,7 @@ void Discret::ELEMENTS::SoTet4::sotet4_homog(Teuchos::ParameterList& params)
 /*----------------------------------------------------------------------*
  |  Read restart on the microscale                              lw 05/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoTet4::sotet4_read_restart_multi()
+void Discret::Elements::SoTet4::sotet4_read_restart_multi()
 {
   Teuchos::RCP<Core::Mat::Material> mat = material();
 

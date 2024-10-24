@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Artery::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -40,7 +40,7 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
   {
     case Arteries::calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::ArtNetFactory::provide_impl(
+      return Discret::Elements::ArtNetFactory::provide_impl(
           shape(), impltype_, discretization.name())
           ->evaluate(
               this, params, discretization, la, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
@@ -48,7 +48,7 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
     break;
     case Arteries::calc_scatra_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::ArtNetFactory::provide_impl(
+      return Discret::Elements::ArtNetFactory::provide_impl(
           shape(), impltype_, discretization.name())
           ->scatra_evaluate(this, params, discretization, la[0].lm_, elemat1, elemat2, elevec1,
               elevec2, elevec3, mat);
@@ -65,7 +65,7 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
     case Arteries::evaluate_scatra_analytically:
     case Arteries::calc_flow_pressurebased:
     {
-      return Discret::ELEMENTS::ArtNetFactory::provide_impl(
+      return Discret::Elements::ArtNetFactory::provide_impl(
           shape(), impltype_, discretization.name())
           ->evaluate_service(this, action, params, discretization, la, elemat1, elemat2, elevec1,
               elevec2, elevec3, mat);
@@ -77,10 +77,10 @@ int Discret::ELEMENTS::Artery::evaluate(Teuchos::ParameterList& params,
 
 
   return 0;
-}  // end of Discret::ELEMENTS::Artery::Evaluate
+}  // end of Discret::Elements::Artery::Evaluate
 
 
-int Discret::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Artery::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -93,7 +93,7 @@ int Discret::ELEMENTS::Artery::evaluate_neumann(Teuchos::ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::Artery::evaluate_dirichlet(Teuchos::ParameterList& params,
+int Discret::Elements::Artery::evaluate_dirichlet(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -102,7 +102,7 @@ int Discret::ELEMENTS::Artery::evaluate_dirichlet(Teuchos::ParameterList& params
 
 
 // get optimal gaussrule for discretization type
-Core::FE::GaussRule1D Discret::ELEMENTS::Artery::get_optimal_gaussrule(
+Core::FE::GaussRule1D Discret::Elements::Artery::get_optimal_gaussrule(
     const Core::FE::CellType& distype)
 {
   Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
@@ -122,7 +122,7 @@ Core::FE::GaussRule1D Discret::ELEMENTS::Artery::get_optimal_gaussrule(
 
 
 // check, whether higher order derivatives for shape functions (dxdx, dxdy, ...) are necessary
-bool Discret::ELEMENTS::Artery::is_higher_order_element(const Core::FE::CellType distype) const
+bool Discret::Elements::Artery::is_higher_order_element(const Core::FE::CellType distype) const
 {
   bool hoel = true;
   switch (distype)

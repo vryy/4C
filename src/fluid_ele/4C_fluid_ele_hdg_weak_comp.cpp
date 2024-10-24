@@ -19,19 +19,19 @@ FOUR_C_NAMESPACE_OPEN
 
 
 // initialize static variable
-Discret::ELEMENTS::FluidHDGWeakCompType Discret::ELEMENTS::FluidHDGWeakCompType::instance_;
+Discret::Elements::FluidHDGWeakCompType Discret::Elements::FluidHDGWeakCompType::instance_;
 
-Discret::ELEMENTS::FluidHDGWeakCompType& Discret::ELEMENTS::FluidHDGWeakCompType::instance()
+Discret::Elements::FluidHDGWeakCompType& Discret::Elements::FluidHDGWeakCompType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::create(
+Core::Communication::ParObject* Discret::Elements::FluidHDGWeakCompType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::FluidHDGWeakComp* object = new Discret::ELEMENTS::FluidHDGWeakComp(-1, -1);
+  Discret::Elements::FluidHDGWeakComp* object = new Discret::Elements::FluidHDGWeakComp(-1, -1);
   object->unpack(buffer);
   return object;
 }
@@ -40,12 +40,12 @@ Core::Communication::ParObject* Discret::ELEMENTS::FluidHDGWeakCompType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDGWEAKCOMP")
   {
-    return Teuchos::make_rcp<Discret::ELEMENTS::FluidHDGWeakComp>(id, owner);
+    return Teuchos::make_rcp<Discret::Elements::FluidHDGWeakComp>(id, owner);
   }
   return Teuchos::null;
 }
@@ -54,17 +54,17 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::c
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidHDGWeakCompType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidHDGWeakCompType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::FluidHDGWeakComp>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::FluidHDGWeakComp>(id, owner);
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
+void Discret::Elements::FluidHDGWeakCompType::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
 }
@@ -73,7 +73,7 @@ void Discret::ELEMENTS::FluidHDGWeakCompType::nodal_block_information(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakCompType::compute_null_space(
+void Discret::Elements::FluidHDGWeakCompType::compute_null_space(
     Core::FE::Discretization& dis, std::vector<double>& ns, const double* x0, int numdf, int dimns)
 {
 }
@@ -82,7 +82,7 @@ void Discret::ELEMENTS::FluidHDGWeakCompType::compute_null_space(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
+void Discret::Elements::FluidHDGWeakCompType ::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_fluid;
@@ -105,7 +105,7 @@ void Discret::ELEMENTS::FluidHDGWeakCompType ::setup_element_definition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(int id, int owner)
+Discret::Elements::FluidHDGWeakComp::FluidHDGWeakComp(int id, int owner)
     : Fluid(id, owner), degree_(1), completepol_(true)
 {
 }
@@ -114,8 +114,8 @@ Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(int id, int owner)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(
-    const Discret::ELEMENTS::FluidHDGWeakComp& old)
+Discret::Elements::FluidHDGWeakComp::FluidHDGWeakComp(
+    const Discret::Elements::FluidHDGWeakComp& old)
     : Fluid(old), degree_(old.degree_), completepol_(old.completepol_)
 {
 }
@@ -124,16 +124,16 @@ Discret::ELEMENTS::FluidHDGWeakComp::FluidHDGWeakComp(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidHDGWeakComp::clone() const
+Core::Elements::Element* Discret::Elements::FluidHDGWeakComp::clone() const
 {
-  Discret::ELEMENTS::FluidHDGWeakComp* newelement = new Discret::ELEMENTS::FluidHDGWeakComp(*this);
+  Discret::Elements::FluidHDGWeakComp* newelement = new Discret::Elements::FluidHDGWeakComp(*this);
   return newelement;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::pack(Core::Communication::PackBuffer& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -176,7 +176,7 @@ void Discret::ELEMENTS::FluidHDGWeakComp::unpack(Core::Communication::UnpackBuff
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::FluidHDGWeakComp::read_element(const std::string& eletype,
+bool Discret::Elements::FluidHDGWeakComp::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   bool success = Fluid::read_element(eletype, distype, container);
@@ -190,7 +190,7 @@ bool Discret::ELEMENTS::FluidHDGWeakComp::read_element(const std::string& eletyp
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -213,7 +213,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
     //-----------------------------------------------------------------------
     case FLD::calc_fluid_systemmat_and_residual:
     {
-      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
+      return Discret::Elements::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate(
               this, discretization, lm, params, mat, elemat1, elemat2, elevec1, elevec2, elevec3);
     }
@@ -226,7 +226,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
     case FLD::project_fluid_field:
     case FLD::update_local_solution:
     {
-      return Discret::ELEMENTS::FluidFactory::provide_impl(shape(), impltype)
+      return Discret::Elements::FluidFactory::provide_impl(shape(), impltype)
           ->evaluate_service(
               this, params, mat, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -249,7 +249,7 @@ int Discret::ELEMENTS::FluidHDGWeakComp::evaluate(Teuchos::ParameterList& params
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidHDGWeakComp::print(std::ostream& os) const
+void Discret::Elements::FluidHDGWeakComp::print(std::ostream& os) const
 {
   os << "FluidHDGWeakComp ";
   Element::print(os);

@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     class ScaTraEleDiffManagerElchDiffCond;
@@ -469,7 +469,7 @@ namespace Discret
         dmelch::set_valence(valence, k);
 
         const double faraday =
-            Discret::ELEMENTS::ScaTraEleParameterElch::instance("scatra")->faraday();
+            Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
 
         // set additional parameters involving inverse of valence
         invval_[k] = 1. / valence;
@@ -671,8 +671,8 @@ namespace Discret
       using vmelectrode = ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>;
 
       ScaTraEleInternalVariableManagerElchDiffCond(int numscal,
-          const Discret::ELEMENTS::ScaTraEleParameterElch* elchparams,
-          const Discret::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams)
+          const Discret::Elements::ScaTraEleParameterElch* elchparams,
+          const Discret::Elements::ScaTraEleParameterElchDiffCond* diffcondparams)
           : ScaTraEleInternalVariableManagerElchElectrode<nsd, nen>(numscal, elchparams),
             diffcondparams_(diffcondparams),
             rtf_(0.),
@@ -727,7 +727,7 @@ namespace Discret
 
      protected:
       //! parameter class for diffusion-conduction formulation
-      const Discret::ELEMENTS::ScaTraEleParameterElchDiffCond* diffcondparams_;
+      const Discret::Elements::ScaTraEleParameterElchDiffCond* diffcondparams_;
 
       /*========================================================================*/
       //! @name constant internal variables
@@ -746,7 +746,7 @@ namespace Discret
       //! current density at Gauss point
       Core::LinAlg::Matrix<nsd, 1> curint_;
     };  // class ScaTraEleInternalVariableManagerElchDiffCond
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

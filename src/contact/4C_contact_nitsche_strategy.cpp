@@ -458,7 +458,7 @@ void CONTACT::NitscheStrategy::reconnect_parent_elements()
 
       faceele->set_parent_master_element(vele, faceele->face_parent_number());
 
-      auto* vele_plast = dynamic_cast<Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>*>(vele);
+      auto* vele_plast = dynamic_cast<Discret::Elements::So3Plast<Core::FE::CellType::hex8>*>(vele);
       if (vele_plast) vele_plast->set_is_nitsche_contact_ele(true);
     }
   }

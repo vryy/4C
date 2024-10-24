@@ -15,8 +15,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | singleton access method                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter*
-Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(
+Discret::Elements::PoroFluidMultiPhaseEleParameter*
+Discret::Elements::PoroFluidMultiPhaseEleParameter::instance(
     const std::string& disname  //!< name of discretization
 )
 {
@@ -34,7 +34,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::instance(
 /*----------------------------------------------------------------------*
  | private constructor for singletons                       vuong 08/16 |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
+Discret::Elements::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParameter(
     const std::string& disname  //!< name of discretization
     )
     : time_(-1.0),
@@ -60,7 +60,7 @@ Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::PoroFluidMultiPhaseEleParame
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     vuong 08/16 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_time_step_parameters(
+void Discret::Elements::PoroFluidMultiPhaseEleParameter::set_time_step_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_time_step_parameter
 //----------------------------------------------------------------------*/
 // set parameters which are equal for every lubrication     vuong 08/16 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter::set_general_parameters(
+void Discret::Elements::PoroFluidMultiPhaseEleParameter::set_general_parameters(
     Teuchos::ParameterList& parameters  //!< parameter list
 )
 {

@@ -36,14 +36,14 @@ namespace
    * @param alpha_inc (out) : Enhanced strains scalar increment
    */
   template <Core::FE::CellType distype>
-  void evaluate_alpha_increment(Discret::ELEMENTS::ShellEASIterationData& old_eas_data,
+  void evaluate_alpha_increment(Discret::Elements::ShellEASIterationData& old_eas_data,
       const int& neas, const std::vector<double>& residual,
       Core::LinAlg::SerialDenseMatrix& delta_alpha)
   {
     // we need the (residual) displacement at the previous step
     Core::LinAlg::SerialDenseVector disp_inc(
-        Discret::ELEMENTS::Shell::Internal::numdofperelement<distype>);
-    for (int i = 0; i < Discret::ELEMENTS::Shell::Internal::numdofperelement<distype>; ++i)
+        Discret::Elements::Shell::Internal::numdofperelement<distype>);
+    for (int i = 0; i < Discret::Elements::Shell::Internal::numdofperelement<distype>; ++i)
       disp_inc(i) = residual[i];
 
     Core::LinAlg::SerialDenseMatrix eashelp(neas, 1);
@@ -70,16 +70,16 @@ namespace
    * @param integration_factor (in) : Integration factor
    */
   template <Core::FE::CellType distype>
-  void integrate_eas(const Discret::ELEMENTS::Shell::StressEnhanced& stress_enh,
+  void integrate_eas(const Discret::Elements::Shell::StressEnhanced& stress_enh,
       const Core::LinAlg::SerialDenseMatrix& M, const Core::LinAlg::SerialDenseMatrix& Bop,
-      Discret::ELEMENTS::ShellEASIterationData& eas_data, const double& integration_factor,
+      Discret::Elements::ShellEASIterationData& eas_data, const double& integration_factor,
       const int& neas)
   {
     // integrate D_Tilde += M^T * D * M  * detJ * w(gp)
     // IMPORTANT: here we save D_Tilde in invDTilde_, since after the loop over all Gaussian points,
     // we invert the matrix. At this point, this is still D_Tilde and NOT invD_Tilde
     Core::LinAlg::SerialDenseMatrix MTDmat(
-        neas, Discret::ELEMENTS::Shell::Internal::num_internal_variables);
+        neas, Discret::Elements::Shell::Internal::num_internal_variables);
     MTDmat.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, M, stress_enh.dmat_, 0.0);
 
     eas_data.invDTilde_.multiply(
@@ -97,8 +97,8 @@ namespace
 
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
-    : Discret::ELEMENTS::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
+Discret::Elements::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
+    : Discret::Elements::Shell7pEleCalcInterface::Shell7pEleCalcInterface(),
       intpoints_midsurface_(
           Shell::create_gauss_integration_points<distype>(Shell::get_gauss_rule<distype>()))
 {
@@ -107,10 +107,10 @@ Discret::ELEMENTS::Shell7pEleCalcEas<distype>::Shell7pEleCalcEas()
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Element& ele,
+void Discret::Elements::Shell7pEleCalcEas<distype>::setup(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, const Core::IO::InputParameterContainer& container,
-    const Solid::ELEMENTS::ShellLockingTypes& locking_types,
-    const Solid::ELEMENTS::ShellData& shell_data)
+    const Solid::Elements::ShellLockingTypes& locking_types,
+    const Solid::Elements::ShellData& shell_data)
 {
   shell_data_ = shell_data;
   cur_thickness_.resize(intpoints_midsurface_.num_points(), shell_data_.thickness);
@@ -128,7 +128,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::setup(Core::Elements::Elemen
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::pack(
+void Discret::Elements::Shell7pEleCalcEas<distype>::pack(
     Core::Communication::PackBuffer& data) const
 {
   add_to_pack(data, shell_data_.sdc);
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::pack(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::unpack(
+void Discret::Elements::Shell7pEleCalcEas<distype>::unpack(
     Core::Communication::UnpackBuffer& buffer)
 {
   extract_from_pack(buffer, shell_data_.sdc);
@@ -177,7 +177,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::unpack(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::material_post_setup(
+void Discret::Elements::Shell7pEleCalcEas<distype>::material_post_setup(
     Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   // element/nodal wise defined data
@@ -188,14 +188,14 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::material_post_setup(
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::reset_to_last_converged(
+void Discret::Elements::Shell7pEleCalcEas<distype>::reset_to_last_converged(
     Core::Elements::Element& ele, Mat::So3Material& solid_material)
 {
   solid_material.reset_step();
 }
 
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
+double Discret::Elements::Shell7pEleCalcEas<distype>::calculate_internal_energy(
     Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -265,7 +265,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
   Shell::BasisVectorsAndMetrics<distype> g_reference;
   Shell::BasisVectorsAndMetrics<distype> g_current;
 
-  Discret::ELEMENTS::Shell::Strains strains;
+  Discret::Elements::Shell::Strains strains;
   // init enhanced strain for shell
   Core::LinAlg::SerialDenseVector strain_enh(Shell::Internal::num_internal_variables);
 
@@ -325,7 +325,7 @@ double Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
+void Discret::Elements::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
     Core::Elements::Element& ele, Mat::So3Material& solid_material, const ShellStressIO& stressIO,
     const ShellStrainIO& strainIO, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -464,7 +464,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_stiffness_mass(
+void Discret::Elements::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_stiffness_mass(
     Core::Elements::Element& ele, Mat::So3Material& solid_material,
     const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
@@ -711,9 +711,9 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
 
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::recover(Core::Elements::Element& ele,
+void Discret::Elements::Shell7pEleCalcEas<distype>::recover(Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
-    Teuchos::ParameterList& params, Solid::ELEMENTS::ParamsInterface& interface_ptr)
+    Teuchos::ParameterList& params, Solid::Elements::ParamsInterface& interface_ptr)
 {
   Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
       discretization.get_state("residual displacement");
@@ -767,7 +767,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::recover(Core::Elements::Elem
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::update(Core::Elements::Element& ele,
+void Discret::Elements::Shell7pEleCalcEas<distype>::update(Core::Elements::Element& ele,
     Mat::So3Material& solid_material, const Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
@@ -870,8 +870,8 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::update(Core::Elements::Eleme
             if (solid_material.needs_defgrd())
             {
               // update the deformation gradient (if needed)
-              Core::LinAlg::Matrix<Discret::ELEMENTS::Shell::Internal::num_dim,
-                  Discret::ELEMENTS::Shell::Internal::num_dim>
+              Core::LinAlg::Matrix<Discret::Elements::Shell::Internal::num_dim,
+                  Discret::Elements::Shell::Internal::num_dim>
                   defgrd_enh(false);
               Shell::calc_consistent_defgrd<Shell::Internal::num_dim>(
                   strains.defgrd_, strains.gl_strain_, defgrd_enh);
@@ -885,7 +885,7 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::update(Core::Elements::Eleme
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::vis_data(
+void Discret::Elements::Shell7pEleCalcEas<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   if (name == "thickness")
@@ -901,10 +901,10 @@ void Discret::ELEMENTS::Shell7pEleCalcEas<distype>::vis_data(
 }  // vis_data()
 
 // template classes
-template class Discret::ELEMENTS::Shell7pEleCalcEas<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::Shell7pEleCalcEas<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::Shell7pEleCalcEas<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::Shell7pEleCalcEas<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::Shell7pEleCalcEas<Core::FE::CellType::tri6>;
+template class Discret::Elements::Shell7pEleCalcEas<Core::FE::CellType::quad4>;
+template class Discret::Elements::Shell7pEleCalcEas<Core::FE::CellType::quad8>;
+template class Discret::Elements::Shell7pEleCalcEas<Core::FE::CellType::quad9>;
+template class Discret::Elements::Shell7pEleCalcEas<Core::FE::CellType::tri3>;
+template class Discret::Elements::Shell7pEleCalcEas<Core::FE::CellType::tri6>;
 
 FOUR_C_NAMESPACE_CLOSE

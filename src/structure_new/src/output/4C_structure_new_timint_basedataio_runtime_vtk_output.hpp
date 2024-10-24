@@ -16,11 +16,11 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class StructureRuntimeOutputParams;
     class BeamRuntimeOutputParams;
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 
@@ -78,7 +78,7 @@ namespace Solid
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const Discret::ELEMENTS::StructureRuntimeOutputParams> get_structure_params()
+      Teuchos::RCP<const Discret::Elements::StructureRuntimeOutputParams> get_structure_params()
           const
       {
         check_init_setup();
@@ -86,7 +86,7 @@ namespace Solid
       };
 
       /// get the data container for parameters regarding beams
-      Teuchos::RCP<const Discret::ELEMENTS::BeamRuntimeOutputParams> get_beam_params() const
+      Teuchos::RCP<const Discret::Elements::BeamRuntimeOutputParams> get_beam_params() const
       {
         check_init_setup();
         return params_runtime_output_beams_;
@@ -132,11 +132,11 @@ namespace Solid
       bool output_beams_ = false;
 
       /// data container for input parameters related to output of structure at runtime
-      Teuchos::RCP<Discret::ELEMENTS::StructureRuntimeOutputParams>
+      Teuchos::RCP<Discret::Elements::StructureRuntimeOutputParams>
           params_runtime_output_structure_ = Teuchos::null;
 
       /// data container for input parameters related to output of beams at runtime
-      Teuchos::RCP<Discret::ELEMENTS::BeamRuntimeOutputParams> params_runtime_output_beams_ =
+      Teuchos::RCP<Discret::Elements::BeamRuntimeOutputParams> params_runtime_output_beams_ =
           Teuchos::null;
 
       //@}

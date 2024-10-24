@@ -1656,7 +1656,7 @@ void Mortar::Element::estimate_nitsche_trace_max_eigenvalue()
       "support 2D problems.");
 
   auto surf_ele = parent_element()->surfaces()[face_parent_number()];
-  auto* surf = dynamic_cast<Discret::ELEMENTS::StructuralSurface*>(surf_ele.get());
+  auto* surf = dynamic_cast<Discret::Elements::StructuralSurface*>(surf_ele.get());
 
   if (mo_data().parent_scalar().empty())
     traceHE_ = 1.0 / surf->estimate_nitsche_trace_max_eigenvalue(mo_data().parent_disp());

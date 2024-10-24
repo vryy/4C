@@ -93,8 +93,8 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
     const Core::Elements::Element* ele = discretization_->l_row_element(iele);
 
     // check for beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     if (beamele != nullptr) local_row_indices_beam_elements_.push_back(iele);
   }
@@ -135,8 +135,8 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -276,8 +276,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_displacement_field(
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -372,8 +372,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_triad_field(
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -458,8 +458,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_owning_processor()
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
@@ -491,8 +491,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_gid()
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
 #endif
@@ -509,7 +509,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_gid()
 void BeamDiscretizationRuntimeOutputWriter::append_element_ghosting_information()
 {
   const auto only_select_beam_elements = [](const Core::Elements::Element* ele)
-  { return dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele); };
+  { return dynamic_cast<const Discret::Elements::Beam3Base*>(ele); };
   Core::IO::append_element_ghosting_information(
       *discretization_, *visualization_manager_, only_select_beam_elements);
 }
@@ -534,8 +534,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_internal_energy()
 
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // Todo safety check for now, may be removed when better tested
@@ -572,8 +572,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_kinetic_energy()
 
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     // Todo safety check for now, may be removed when better tested
@@ -610,8 +610,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_filament_id_and_type(
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -660,8 +660,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_circular_cross_sectio
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -717,8 +717,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_point_circular_cross_section_
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -821,8 +821,8 @@ void BeamDiscretizationRuntimeOutputWriter::
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -997,8 +997,8 @@ void BeamDiscretizationRuntimeOutputWriter::
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -1185,8 +1185,8 @@ void BeamDiscretizationRuntimeOutputWriter::
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (beamele == nullptr)
@@ -1481,8 +1481,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     BEAMINTERACTION::Utils::get_current_element_dis(
         *discretization_, ele, displacement_state_vector, beamelement_shift_displacement_vector);
@@ -1558,8 +1558,8 @@ void BeamDiscretizationRuntimeOutputWriter::append_element_elastic_energy()
   //    const Core::Elements::Element* ele = discretization_->lRowElement(iele);
   //
   //    // check for beam element
-  //    const Discret::ELEMENTS::Beam3Base* beamele = dynamic_cast<const
-  //    Discret::ELEMENTS::Beam3Base*>(ele);
+  //    const Discret::Elements::Beam3Base* beamele = dynamic_cast<const
+  //    Discret::Elements::Beam3Base*>(ele);
   //
   //    // Todo for now, simply skip all other elements
   //    if ( beamele == nullptr )
@@ -1593,7 +1593,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_ref_length()
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to beam element
-    auto beamele = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    auto beamele = dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     if (beamele == nullptr)
       FOUR_C_THROW("BeamDiscretizationRuntimeOutputWriter expects a beam element here!");
@@ -1736,7 +1736,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resu
         discretization_->l_row_element(local_row_indices_beam_elements_[ibeamele]);
 
     // cast to SR beam element
-    const auto* sr_beam = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(ele);
+    const auto* sr_beam = dynamic_cast<const Discret::Elements::Beam3r*>(ele);
 
     // Todo safety check for now, may be removed when better tested
     if (sr_beam == nullptr)
@@ -1766,12 +1766,12 @@ void BeamDiscretizationRuntimeOutputWriter::append_continuous_stress_strain_resu
 
     // Calculate the interpolated coefficients
     Core::FE::GaussRule1D force_int_rule =
-        sr_beam->my_gauss_rule(Discret::ELEMENTS::Beam3r::res_elastic_force);
+        sr_beam->my_gauss_rule(Discret::Elements::Beam3r::res_elastic_force);
     for (std::size_t i = 0; i < 3; i++)
       calc_interpolation_polynomial_coefficients(
           force_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);
     Core::FE::GaussRule1D moment_int_rule =
-        sr_beam->my_gauss_rule(Discret::ELEMENTS::Beam3r::res_elastic_moment);
+        sr_beam->my_gauss_rule(Discret::Elements::Beam3r::res_elastic_moment);
     for (std::size_t i = 3; i < 6; i++)
       calc_interpolation_polynomial_coefficients(
           moment_int_rule, stress_strain_GPs_current_element[i], stress_strain_coefficients[i]);

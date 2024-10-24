@@ -22,7 +22,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media using
@@ -32,7 +32,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     class Wall1PoroP1Scatra : public Wall1PoroP1<distype>
     {
-      typedef Discret::ELEMENTS::Wall1PoroP1<distype> my;
+      typedef Discret::Elements::Wall1PoroP1<distype> my;
 
      public:
       //@}
@@ -123,7 +123,7 @@ namespace Discret
       //! don't want = operator
       Wall1PoroP1Scatra& operator=(const Wall1PoroP1Scatra& old);
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

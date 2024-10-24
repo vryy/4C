@@ -9,33 +9,33 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Nurbs::Ale2NurbsType Discret::ELEMENTS::Nurbs::Ale2NurbsType::instance_;
+Discret::Elements::Nurbs::Ale2NurbsType Discret::Elements::Nurbs::Ale2NurbsType::instance_;
 
-Discret::ELEMENTS::Nurbs::Ale2NurbsType& Discret::ELEMENTS::Nurbs::Ale2NurbsType::instance()
+Discret::Elements::Nurbs::Ale2NurbsType& Discret::Elements::Nurbs::Ale2NurbsType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Nurbs::Ale2NurbsType::create(
+Core::Communication::ParObject* Discret::Elements::Nurbs::Ale2NurbsType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Nurbs::Ale2Nurbs* object = new Discret::ELEMENTS::Nurbs::Ale2Nurbs(-1, -1);
+  Discret::Elements::Nurbs::Ale2Nurbs* object = new Discret::Elements::Nurbs::Ale2Nurbs(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::Ale2NurbsType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ALE2")
   {
     if (eledistype == "NURBS4" || eledistype == "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::Ale2Nurbs>(id, owner);
+      return Teuchos::make_rcp<Discret::Elements::Nurbs::Ale2Nurbs>(id, owner);
     }
   }
   return Teuchos::null;
@@ -43,31 +43,31 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::c
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Nurbs::Ale2NurbsType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::Ale2NurbsType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::Nurbs::Ale2Nurbs>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::Nurbs::Ale2Nurbs>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Nurbs::Ale2Nurbs::Ale2Nurbs(int id, int owner)
-    : Discret::ELEMENTS::Ale2::Ale2(id, owner)
+Discret::Elements::Nurbs::Ale2Nurbs::Ale2Nurbs(int id, int owner)
+    : Discret::Elements::Ale2::Ale2(id, owner)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Nurbs::Ale2Nurbs::Ale2Nurbs(const Discret::ELEMENTS::Nurbs::Ale2Nurbs& old)
-    : Discret::ELEMENTS::Ale2::Ale2(old)
+Discret::Elements::Nurbs::Ale2Nurbs::Ale2Nurbs(const Discret::Elements::Nurbs::Ale2Nurbs& old)
+    : Discret::Elements::Ale2::Ale2(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Nurbs::Ale2Nurbs::print(std::ostream& os) const
+void Discret::Elements::Nurbs::Ale2Nurbs::print(std::ostream& os) const
 {
   os << "Ale2Nurbs ";
   Element::print(os);
@@ -76,7 +76,7 @@ void Discret::ELEMENTS::Nurbs::Ale2Nurbs::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Nurbs::Ale2Nurbs::shape() const
+Core::FE::CellType Discret::Elements::Nurbs::Ale2Nurbs::shape() const
 {
   switch (num_node())
   {

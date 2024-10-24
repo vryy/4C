@@ -19,7 +19,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declarations
   template <typename T>
@@ -30,17 +30,17 @@ namespace MIXTURE
     template <typename T>
     class RemodelFiberMaterialExponential : public RemodelFiberMaterial<T>
     {
-      friend class MIXTURE::RemodelFiberMaterialExponential<T>;
+      friend class Mixture::RemodelFiberMaterialExponential<T>;
 
      public:
       explicit RemodelFiberMaterialExponential(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      [[nodiscard]] std::unique_ptr<MIXTURE::RemodelFiberMaterial<T>>
+      [[nodiscard]] std::unique_ptr<Mixture::RemodelFiberMaterial<T>>
       create_remodel_fiber_material() const override;
 
       /// @name parameters of the exponential strain energy function
       /// @{
-      MIXTURE::PAR::ExponentialFiberParameters params_;
+      Mixture::PAR::ExponentialFiberParameters params_;
       /// @}
     };
   }  // namespace PAR
@@ -61,7 +61,7 @@ namespace MIXTURE
     const PAR::RemodelFiberMaterialExponential<T>* params_;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

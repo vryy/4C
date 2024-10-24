@@ -15,42 +15,42 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::ArteryType Discret::ELEMENTS::ArteryType::instance_;
+Discret::Elements::ArteryType Discret::Elements::ArteryType::instance_;
 
-Discret::ELEMENTS::ArteryType& Discret::ELEMENTS::ArteryType::instance() { return instance_; }
+Discret::Elements::ArteryType& Discret::Elements::ArteryType::instance() { return instance_; }
 
-Core::Communication::ParObject* Discret::ELEMENTS::ArteryType::create(
+Core::Communication::ParObject* Discret::Elements::ArteryType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Artery* object = new Discret::ELEMENTS::Artery(-1, -1);
+  Discret::Elements::Artery* object = new Discret::Elements::Artery(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ArteryType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::ArteryType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "ART")
   {
     Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::ELEMENTS::Artery>(id, owner);
+        Teuchos::make_rcp<Discret::Elements::Artery>(id, owner);
     return ele;
   }
   return Teuchos::null;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::ArteryType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::ArteryType::create(
     const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::ELEMENTS::Artery>(id, owner);
+      Teuchos::make_rcp<Discret::Elements::Artery>(id, owner);
   return ele;
 }
 
 
-void Discret::ELEMENTS::ArteryType::setup_element_definition(
+void Discret::Elements::ArteryType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["ART"];
@@ -68,7 +68,7 @@ void Discret::ELEMENTS::ArteryType::setup_element_definition(
  |  ctor (public)                                           ismail 01/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Artery::Artery(int id, int owner)
+Discret::Elements::Artery::Artery(int id, int owner)
     : Core::Elements::Element(id, owner), impltype_(Inpar::ArtDyn::impltype_undefined)
 {
   gaussrule_ = Core::FE::GaussRule1D::undefined;
@@ -80,7 +80,7 @@ Discret::ELEMENTS::Artery::Artery(int id, int owner)
  |  copy-ctor (public)                                      ismail 01/09|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Artery::Artery(const Discret::ELEMENTS::Artery& old)
+Discret::Elements::Artery::Artery(const Discret::Elements::Artery& old)
     : Core::Elements::Element(old), impltype_(old.impltype_), gaussrule_(old.gaussrule_)
 {
   return;
@@ -90,9 +90,9 @@ Discret::ELEMENTS::Artery::Artery(const Discret::ELEMENTS::Artery& old)
  |  Deep copy this instance of Artery and return pointer to it (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Artery::clone() const
+Core::Elements::Element* Discret::Elements::Artery::clone() const
 {
-  Discret::ELEMENTS::Artery* newelement = new Discret::ELEMENTS::Artery(*this);
+  Discret::Elements::Artery* newelement = new Discret::Elements::Artery(*this);
   return newelement;
 }
 
@@ -100,7 +100,7 @@ Core::Elements::Element* Discret::ELEMENTS::Artery::clone() const
  |                                                             (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Artery::shape() const
+Core::FE::CellType Discret::Elements::Artery::shape() const
 {
   switch (num_node())
   {
@@ -115,7 +115,7 @@ Core::FE::CellType Discret::ELEMENTS::Artery::shape() const
  |  Pack data                                                  (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Artery::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -137,7 +137,7 @@ void Discret::ELEMENTS::Artery::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Artery::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -157,7 +157,7 @@ void Discret::ELEMENTS::Artery::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                       kremheller 10/18 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Artery::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Artery::lines()
 {
   return {Teuchos::rcpFromRef(*this)};
 }
@@ -167,7 +167,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Artery::li
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/09|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Artery::print(std::ostream& os) const
+void Discret::Elements::Artery::print(std::ostream& os) const
 {
   os << "Artery ";
   Element::print(os);

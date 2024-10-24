@@ -23,13 +23,13 @@ namespace Mat
   class Anisotropy;
 }
 
-namespace MIXTURE
+namespace Mixture
 {
   class MixtureConstituentElastHyperBase;
 
   namespace PAR
   {
-    class MixtureConstituentElastHyperBase : public MIXTURE::PAR::MixtureConstituent
+    class MixtureConstituentElastHyperBase : public Mixture::PAR::MixtureConstituent
     {
      public:
       explicit MixtureConstituentElastHyperBase(const Core::Mat::PAR::Parameter::Data& matdata);
@@ -55,14 +55,14 @@ namespace MIXTURE
    * \brief Constituent for any hyperelastic material
    *
    * This constituent represents any hyperelastic material from the elasthyper toolbox. It has to
-   * be paired with the Mat::Mixture material and a MIXTURE::MixtureRule.
+   * be paired with the Mat::Mixture material and a Mixture::MixtureRule.
    */
-  class MixtureConstituentElastHyperBase : public MIXTURE::MixtureConstituent
+  class MixtureConstituentElastHyperBase : public Mixture::MixtureConstituent
   {
    public:
     /// Constructor for the material given the material parameters
     explicit MixtureConstituentElastHyperBase(
-        MIXTURE::PAR::MixtureConstituentElastHyperBase* params, int id);
+        Mixture::PAR::MixtureConstituentElastHyperBase* params, int id);
 
     /*!
      * \brief Pack data into a char vector from this class
@@ -180,7 +180,7 @@ namespace MIXTURE
       return cosy_anisotropy_extension_;
     }
 
-    std::shared_ptr<MIXTURE::PrestressStrategy> prestress_strategy() { return prestress_strategy_; }
+    std::shared_ptr<Mixture::PrestressStrategy> prestress_strategy() { return prestress_strategy_; }
 
    private:
     /// @name Flags to specify the elastic formulations (initialize with false)
@@ -189,7 +189,7 @@ namespace MIXTURE
     //@}
 
     /// my material parameters
-    MIXTURE::PAR::MixtureConstituentElastHyperBase* params_;
+    Mixture::PAR::MixtureConstituentElastHyperBase* params_;
 
     /// map to materials/potential summands
     std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum_;
@@ -201,10 +201,10 @@ namespace MIXTURE
     Mat::CylinderCoordinateSystemAnisotropyExtension cosy_anisotropy_extension_;
 
     /// Strategy for prestressing the constituent
-    std::shared_ptr<MIXTURE::PrestressStrategy> prestress_strategy_;
+    std::shared_ptr<Mixture::PrestressStrategy> prestress_strategy_;
   };
 
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

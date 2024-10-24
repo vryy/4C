@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Beam3eb::read_element(const std::string& eletype,
+bool Discret::Elements::Beam3eb::read_element(const std::string& eletype,
     const std::string& distype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model

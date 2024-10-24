@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-Teuchos::RCP<Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>>
-Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_evaluator(
-    const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+Teuchos::RCP<Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>>
+Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_evaluator(
+    const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
     const PoroFluidManager::PhaseManagerInterface& phasemanager)
 {
@@ -414,7 +414,7 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<nsd, nen>::create_eval
  | linearization of a term scaled with saturation after fluid dofs  kremheller 03/18 |
  *-----------------------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::saturation_linearization_fluid(
     Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
     const double prefac, const int numdofpernode, const int numfluidphases, const int curphase,
     const int phasetoadd, const PoroFluidManager::PhaseManagerInterface& phasemanager)
@@ -442,7 +442,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::saturation_
  | linearization of a term scaled with porosity after fluid dofs    kremheller 03/18 |
  *-----------------------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::porosity_linearization_fluid(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::porosity_linearization_fluid(
     Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
     const double prefac, const int numdofpernode, const int phasetoadd,
     const PoroFluidManager::PhaseManagerInterface& phasemanager)
@@ -472,7 +472,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::porosity_li
  | of a term scaled with div (v^s)                     kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_div_vel_od_mesh(
     Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
     const Core::LinAlg::Matrix<nsd, nen>& deriv, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nsd>& xjm, const Core::LinAlg::Matrix<nsd, nsd>& gridvelderiv,
@@ -597,7 +597,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_div_ve
  | (Fac = Jacobian determinant)                        kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_lin_fac_od_mesh(
     Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nen, 1>& funct,
     const Core::LinAlg::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
     const int phasetoadd)
@@ -633,7 +633,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_lin_fa
  | (diffusive term)                                    kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_diff_od_mesh(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_diff_od_mesh(
     Core::LinAlg::SerialDenseMatrix& mymat, const Core::LinAlg::Matrix<nsd, nen>& deriv,
     const Core::LinAlg::Matrix<nsd, nen>& derxy, const Core::LinAlg::Matrix<nsd, nsd>& xjm,
     const Core::LinAlg::Matrix<nsd, 1>& diffflux, const Core::LinAlg::Matrix<nsd, 1>& refgrad,
@@ -823,7 +823,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBase<nsd, nen>::calc_diff_o
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_matrix_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_matrix_and_assemble(
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -870,7 +870,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_ma
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_vector_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_vector_and_assemble(
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -903,7 +903,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd, nen>::evaluate_ve
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorConv<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -921,7 +921,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorConv<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -941,7 +941,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorConv<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_matrix_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_matrix_and_assemble(
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -957,7 +957,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_vector_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_vector_and_assemble(
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -984,7 +984,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd, nen>::evaluate_
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDivVel<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -1011,7 +1011,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDivVel<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -1031,7 +1031,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDivVel<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -1064,7 +1064,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -1085,7 +1085,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -1107,7 +1107,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -1127,7 +1127,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSatDivVel<nsd,
  | evaluate element matrix                             kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -1143,7 +1143,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
  | evaluate RHS vector                                 kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -1160,7 +1160,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -1178,7 +1178,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -1199,7 +1199,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorBiotStab<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_matrix_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_matrix_and_assemble(
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -1328,7 +1328,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ma
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_vector_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_vector_and_assemble(
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -1381,7 +1381,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd, nen>::evaluate_ve
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDiff<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -1448,7 +1448,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDiff<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -1468,7 +1468,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDiff<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_matrix_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_matrix_and_assemble(
     std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -1514,7 +1514,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_ma
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_vector_and_assemble(
+void Discret::Elements::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_vector_and_assemble(
     std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -1545,7 +1545,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd, nen>::evaluate_ve
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorReac<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -1590,7 +1590,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorReac<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -1636,7 +1636,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorReac<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -1745,7 +1745,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -1779,7 +1779,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -1822,7 +1822,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -1839,7 +1839,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd, nen>::get_rhs_trans(
+double Discret::Elements::PoroFluidEvaluator::EvaluatorMassPressure<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -1882,7 +1882,7 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassPressure<nsd, nen>::g
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2026,7 +2026,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2061,7 +2061,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2104,7 +2104,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2121,7 +2121,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd, nen>::get_rhs_trans(
+double Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -2163,7 +2163,7 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressure<nsd, ne
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2223,7 +2223,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2244,7 +2244,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2266,7 +2266,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2286,7 +2286,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSolidPressureSat<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2406,7 +2406,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2438,7 +2438,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2478,7 +2478,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2495,7 +2495,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd,
  | evaluate transient term at GP                       kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd, nen>::get_rhs_trans(
+double Discret::Elements::PoroFluidEvaluator::EvaluatorMassSaturation<nsd, nen>::get_rhs_trans(
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -2533,7 +2533,7 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorMassSaturation<nsd, nen>:
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2549,7 +2549,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2623,7 +2623,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2641,7 +2641,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2661,7 +2661,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPressureAndSaturation<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2677,7 +2677,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2702,7 +2702,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2720,7 +2720,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2740,7 +2740,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorSolidPressure<nsd,
  | evaluate element matrix                             kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2756,7 +2756,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
  | evaluate RHS vector                                 kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2794,7 +2794,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2812,7 +2812,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2832,7 +2832,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorValidVolFracPressures<nsd,
  | evaluate element matrix                             kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPorosity<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2848,7 +2848,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
  | evaluate RHS vector                                 kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPorosity<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -2873,7 +2873,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 04/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPorosity<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -2891,7 +2891,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPorosity<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -2911,7 +2911,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPorosity<nsd,
  | evaluate element matrix                             kremheller 03/19 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -2926,7 +2926,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3013,7 +3013,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
 inline const Core::Utils::FunctionOfAnything&
-Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd, nen>::function(
+Discret::Elements::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd, nen>::function(
     int functnum) const
 {
   const auto& funct =
@@ -3027,7 +3027,7 @@ Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd, nen>::funct
  | evaluate off-diagonal coupling matrix with structure kremheller 03/19 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3045,7 +3045,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 03/19 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3065,7 +3065,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -3091,7 +3091,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3107,7 +3107,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3125,7 +3125,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3145,7 +3145,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxLinearization<nsd,
  | evaluate element matrix                                   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -3197,7 +3197,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
  | evaluate RHS vector                                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3213,7 +3213,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 03/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3231,7 +3231,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 06/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
+void Discret::Elements::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3250,7 +3250,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::ReconstructFluxRHS<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3354,7 +3354,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorPhaseVelocities<nsd,
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -3516,7 +3516,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3548,7 +3548,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3575,7 +3575,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3592,7 +3592,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd,
  | evaluate rhs term at GP                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
+double Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd, nen>::get_rhs(
     int curphase, int phasetoadd, int numdofpernode,
     const PoroFluidManager::PhaseManagerInterface& phasemanager,
     const PoroFluidManager::VariableManagerInterface<nsd, nen>& variablemanager, double rhsfac,
@@ -3647,7 +3647,7 @@ double Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTerms<nsd
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -3694,7 +3694,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3721,7 +3721,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3751,7 +3751,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3771,7 +3771,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTerm<nsd,
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -3812,7 +3812,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3833,7 +3833,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3855,7 +3855,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3875,7 +3875,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddInstatTermsSat<ns
  | evaluate element matrix                             kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -3911,7 +3911,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
  | evaluate RHS vector                                 kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -3932,7 +3932,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
  | evaluate off-diagonal coupling matrix with structure kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -3954,7 +3954,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
  | evaluate off-diagonal coupling matrix with scatra   kremheller 09/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -3974,7 +3974,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddDivVelTermSat<nsd
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -4021,7 +4021,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -4066,7 +4066,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -4126,7 +4126,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -4146,7 +4146,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracInstat<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -4194,7 +4194,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -4234,7 +4234,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -4380,7 +4380,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -4400,7 +4400,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDivVel<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -4452,7 +4452,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -4496,7 +4496,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -4542,7 +4542,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -4562,7 +4562,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracDiff<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -4617,7 +4617,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -4656,7 +4656,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -4710,7 +4710,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -4763,7 +4763,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracReac<nsd,
  | evaluate element matrix                             kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -4894,7 +4894,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
  | evaluate RHS vector                                 kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -4969,7 +4969,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -5121,7 +5121,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 08/17 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5231,7 +5231,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracAddFlux<nsd,
  | evaluate element matrix                             kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -5299,7 +5299,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
  | evaluate RHS vector                                 kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -5359,7 +5359,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -5416,7 +5416,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5436,7 +5436,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureDiff<nsd,
  | evaluate element matrix                             kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
     nen>::evaluate_matrix_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>& elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     int curphase, int phasetoadd, int numdofpernode,
@@ -5496,7 +5496,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
  | evaluate RHS vector                                 kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
     nen>::evaluate_vector_and_assemble(std::vector<Core::LinAlg::SerialDenseVector*>& elevec,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
     const Core::LinAlg::Matrix<nsd, nen>& xyze, int curphase, int phasetoadd, int numdofpernode,
@@ -5541,7 +5541,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
  | evaluate off-diagonal coupling matrix with structure kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
     nen>::evaluate_matrix_od_struct_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& deriv,
@@ -5601,7 +5601,7 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
  | evaluate off-diagonal coupling matrix with scatra   kremheller 02/18 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
+void Discret::Elements::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
     nen>::evaluate_matrix_od_scatra_and_assemble(std::vector<Core::LinAlg::SerialDenseMatrix*>&
                                                      elemat,
     const Core::LinAlg::Matrix<nen, 1>& funct, const Core::LinAlg::Matrix<nsd, nen>& derxy,
@@ -5659,31 +5659,31 @@ void Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorVolFracPressureReac<nsd,
 
 // 1D elements
 // line 2
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<1, 2>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<1, 2>;
 
 // line 3
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<1, 3>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<1, 3>;
 
 // 2D elements
 // tri3
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<2, 3>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<2, 3>;
 // quad4
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<2, 4>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<2, 4>;
 
 // quad9 and nurbs9
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<2, 9>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<2, 9>;
 
 // 3D elements
 // hex8
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 8>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<3, 8>;
 
 // hex27
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 27>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<3, 27>;
 // tet4
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 4>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<3, 4>;
 // tet10
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 10>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<3, 10>;
 // pyramid5
-template class Discret::ELEMENTS::PoroFluidEvaluator::EvaluatorInterface<3, 5>;
+template class Discret::Elements::PoroFluidEvaluator::EvaluatorInterface<3, 5>;
 
 FOUR_C_NAMESPACE_CLOSE

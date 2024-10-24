@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>*
-Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::instance(
+Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>*
+Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::instance(
     const int numdofpernode, const int numscal, const std::string& disname)
 {
   static auto singleton_map = Core::Utils::make_singleton_map<std::pair<std::string, int>>(
@@ -44,9 +44,9 @@ Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::instance(
  *  constructor---------------------------                   thon 02/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
+Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
     const int numdofpernode, const int numscal, const std::string& disname)
-    : Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
+    : Discret::Elements::ScaTraEleCalc<distype, probdim>::ScaTraEleCalc(
           numdofpernode, numscal, disname)
 {
   my::reamanager_ = Teuchos::make_rcp<ScaTraEleReaManagerAdvReac>(my::numscal_);
@@ -63,7 +63,7 @@ Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::ScaTraEleCalcAdvReac(
  |  get the material constants  (private)                      thon 09/14|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_material_params(
+void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_material_params(
     const Core::Elements::Element* ele,  //!< the element we are dealing with
     std::vector<double>& densn,          //!< density at t_(n)
     std::vector<double>& densnp,         //!< density at t_(n+1) or t_(n+alpha_F)
@@ -126,7 +126,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_material_par
  |  evaluate single material  (protected)                    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::materials(
+void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::materials(
     const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
     const int k,                                             //!< id of current scalar
     double& densn,                                           //!< density at t_(n)
@@ -153,7 +153,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::materials(
  |  Get right hand side including reaction bodyforce term    thon 02/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
+void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
     double& rhsint,       //!< rhs containing bodyforce at Gauss point
     const double densnp,  //!< density at t_(n+1)
     const int k           //!< index of current scalar
@@ -169,7 +169,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::get_rhs_int(
  |  calculation of reactive element matrix for coupled reactions  thon 02/14  |
  *----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
+void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const double timetaufac, const double taufac, const double densnp,
     const Core::LinAlg::Matrix<nen_, 1>& sgconv, const Core::LinAlg::Matrix<nen_, 1>& diff)
@@ -320,7 +320,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::calc_mat_react(
  |  Set advanced reaction terms and derivatives                       thon 09/14 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_reaction_terms(
+void Discret::Elements::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_reaction_terms(
     const int k,                                            //!< index of current scalar
     const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
     const double* gpcoord                                   //!< current Gauss-point coordinates
@@ -339,7 +339,7 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype, probdim>::set_advanced_rea
  | evaluate shape functions and derivatives at ele. center   jhoer 11/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype,
+double Discret::Elements::ScaTraEleCalcAdvReac<distype,
     probdim>::eval_shape_func_and_derivs_at_ele_center()
 {
   const double vol = my::eval_shape_func_and_derivs_at_ele_center();
@@ -355,7 +355,7 @@ double Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype,
  | set internal variables                                          vuong 11/14  |
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype,
+void Discret::Elements::ScaTraEleCalcAdvReac<distype,
     probdim>::set_internal_variables_for_mat_and_rhs()
 {
   my::set_internal_variables_for_mat_and_rhs();
@@ -377,29 +377,29 @@ void Discret::ELEMENTS::ScaTraEleCalcAdvReac<distype,
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::line2, 1>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::line2, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::line2, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::line3, 1>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::line2, 1>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::line2, 2>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::line2, 3>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::line3, 1>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::tri3, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::tri3, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::tri6, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::quad4, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::quad4, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::quad9, 2>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::nurbs9, 2>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::tri3, 2>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::tri3, 3>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::tri6, 2>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::quad4, 2>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::quad4, 3>;
+// template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::quad9, 2>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::nurbs9, 2>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::hex8, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::hex27, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::tet4, 3>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::tet10, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::pyramid5, 3>;
-// template class Discret::ELEMENTS::ScaTraEleCalcAdvReac<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::hex8, 3>;
+// template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::hex27, 3>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::tet4, 3>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::tet10, 3>;
+// template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::pyramid5, 3>;
+// template class Discret::Elements::ScaTraEleCalcAdvReac<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class PreStressType : public Core::Communication::ParObjectType
     {
@@ -47,7 +47,7 @@ namespace Discret
       /*!
       \brief Copy Constructor
       */
-      PreStress(const Discret::ELEMENTS::PreStress& old);
+      PreStress(const Discret::Elements::PreStress& old);
 
       /*!
       \brief Return unique ParObject id
@@ -133,7 +133,7 @@ namespace Discret
       inline int num_node() const { return numnode_; }
 
     };  // class PreStress
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 

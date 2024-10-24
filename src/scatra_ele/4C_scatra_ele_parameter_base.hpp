@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleParameterBase
     {
@@ -32,7 +32,7 @@ namespace Discret
       virtual void set_parameters(Teuchos::ParameterList& parameters  //!< parameter list
           ) = 0;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

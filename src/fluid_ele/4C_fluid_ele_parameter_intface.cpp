@@ -18,14 +18,14 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::FluidEleParameterIntFace* Discret::ELEMENTS::FluidEleParameterIntFace::instance(
+Discret::Elements::FluidEleParameterIntFace* Discret::Elements::FluidEleParameterIntFace::instance(
     Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterIntFace>(
-            new Discret::ELEMENTS::FluidEleParameterIntFace());
+        return std::unique_ptr<Discret::Elements::FluidEleParameterIntFace>(
+            new Discret::Elements::FluidEleParameterIntFace());
       });
 
   return singleton_owner.instance(action);
@@ -34,7 +34,7 @@ Discret::ELEMENTS::FluidEleParameterIntFace* Discret::ELEMENTS::FluidEleParamete
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
+Discret::Elements::FluidEleParameterIntFace::FluidEleParameterIntFace()
     : set_face_general_fluid_parameter_(false),
       set_face_general_XFEM_parameter_(false),
       physicaltype_(Inpar::FLUID::physicaltype_undefined),
@@ -67,13 +67,13 @@ Discret::ELEMENTS::FluidEleParameterIntFace::FluidEleParameterIntFace()
       is_ghost_penalty_reconstruction_step_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
+  fldparatimint_ = Discret::Elements::FluidEleParameterTimInt::instance();
 }
 
 //----------------------------------------------------------------------*
 //  set general parameters                                 schott Jun14 |
 //---------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_parameter(
+void Discret::Elements::FluidEleParameterIntFace::set_face_general_fluid_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   if (set_face_general_fluid_parameter_ == false) set_face_general_fluid_parameter_ = true;
@@ -198,7 +198,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_fluid_paramet
 //----------------------------------------------------------------------*
 //  set general parameters                                 schott Jun14 |
 //---------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_xfem_parameter(
+void Discret::Elements::FluidEleParameterIntFace::set_face_general_xfem_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   if (set_face_general_XFEM_parameter_ == false)
@@ -236,7 +236,7 @@ void Discret::ELEMENTS::FluidEleParameterIntFace::set_face_general_xfem_paramete
 // and return if stabilization for current face is required             |
 //                                                         schott Jun14 |
 //---------------------------------------------------------------------*/
-bool Discret::ELEMENTS::FluidEleParameterIntFace::set_face_specific_fluid_xfem_parameter(
+bool Discret::Elements::FluidEleParameterIntFace::set_face_specific_fluid_xfem_parameter(
     const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
     Teuchos::ParameterList& params           ///< parameter list
 )

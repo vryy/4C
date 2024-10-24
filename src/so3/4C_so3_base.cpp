@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoBase::SoBase(int id, int owner)
+Discret::Elements::SoBase::SoBase(int id, int owner)
     : Core::Elements::Element(id, owner),
       kintype_(Inpar::Solid::KinemType::vague),
       interface_ptr_(Teuchos::null),
@@ -33,7 +33,7 @@ Discret::ELEMENTS::SoBase::SoBase(int id, int owner)
  |  copy-ctor (public)                                       vuong 03/15|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::SoBase::SoBase(const Discret::ELEMENTS::SoBase& old)
+Discret::Elements::SoBase::SoBase(const Discret::Elements::SoBase& old)
     : Core::Elements::Element(old),
       kintype_(old.kintype_),
       interface_ptr_(old.interface_ptr_),
@@ -46,7 +46,7 @@ Discret::ELEMENTS::SoBase::SoBase(const Discret::ELEMENTS::SoBase& old)
  |  Pack data                                                  (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::SoBase::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -67,7 +67,7 @@ void Discret::ELEMENTS::SoBase::pack(Core::Communication::PackBuffer& data) cons
  |  Unpack data                                                (public) |
  |                                                           vuong 03/15|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::SoBase::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -87,7 +87,7 @@ void Discret::ELEMENTS::SoBase::unpack(Core::Communication::UnpackBuffer& buffer
  |  return solid material                                      (public) |
  |                                                           seitz 03/15|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::SoBase::solid_material(int nummat) const
+Teuchos::RCP<Mat::So3Material> Discret::Elements::SoBase::solid_material(int nummat) const
 {
   return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
       Core::Elements::Element::material(nummat), true);
@@ -95,7 +95,7 @@ Teuchos::RCP<Mat::So3Material> Discret::ELEMENTS::SoBase::solid_material(int num
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::set_params_interface_ptr(const Teuchos::ParameterList& p)
+void Discret::Elements::SoBase::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
     interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
@@ -105,23 +105,23 @@ void Discret::ELEMENTS::SoBase::set_params_interface_ptr(const Teuchos::Paramete
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::ELEMENTS::SoBase::params_interface_ptr()
+Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::SoBase::params_interface_ptr()
 {
   return interface_ptr_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Solid::ELEMENTS::ParamsInterface& Discret::ELEMENTS::SoBase::str_params_interface()
+Solid::Elements::ParamsInterface& Discret::Elements::SoBase::str_params_interface()
 {
   if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
-  return *(Teuchos::rcp_dynamic_cast<Solid::ELEMENTS::ParamsInterface>(interface_ptr_, true));
+  return *(Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(interface_ptr_, true));
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::SoBase::error_handling(const double& det_curr,
-    Teuchos::ParameterList& params, const int line_id, const Solid::ELEMENTS::EvalErrorFlag flag)
+void Discret::Elements::SoBase::error_handling(const double& det_curr,
+    Teuchos::ParameterList& params, const int line_id, const Solid::Elements::EvalErrorFlag flag)
 {
   // check, if errors are tolerated or should throw a FOUR_C_THROW
   if (is_params_interface() and str_params_interface().is_tolerate_errors())
@@ -151,7 +151,7 @@ void Discret::ELEMENTS::SoBase::error_handling(const double& det_curr,
 }
 
 // Check, whether the material post setup routine was
-void Discret::ELEMENTS::SoBase::ensure_material_post_setup(Teuchos::ParameterList& params)
+void Discret::Elements::SoBase::ensure_material_post_setup(Teuchos::ParameterList& params)
 {
   if (!material_post_setup_)
   {
@@ -159,7 +159,7 @@ void Discret::ELEMENTS::SoBase::ensure_material_post_setup(Teuchos::ParameterLis
   }
 }
 
-void Discret::ELEMENTS::SoBase::material_post_setup(Teuchos::ParameterList& params)
+void Discret::Elements::SoBase::material_post_setup(Teuchos::ParameterList& params)
 {
   // This is the minimal implementation. Advanced materials may need extra implementation here.
   solid_material()->post_setup(params, id());

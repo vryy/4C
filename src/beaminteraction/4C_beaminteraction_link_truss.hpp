@@ -24,7 +24,7 @@ namespace Core::LinAlg
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class Truss3;
   }
@@ -183,7 +183,7 @@ namespace BEAMINTERACTION
     //! @name member variables
 
     //! new connecting element
-    Teuchos::RCP<Discret::ELEMENTS::Truss3> linkele_;
+    Teuchos::RCP<Discret::Elements::Truss3> linkele_;
 
     //! the following variables are for output purposes only (no need to pack or unpack)
     std::vector<Core::LinAlg::SerialDenseVector> bspotforces_;

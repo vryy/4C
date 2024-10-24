@@ -25,9 +25,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
+Discret::Elements::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
     const int numdofpernode, const std::string& disname)
-    : Discret::ELEMENTS::ArteryEleCalc<distype>(numdofpernode, disname)
+    : Discret::Elements::ArteryEleCalc<distype>(numdofpernode, disname)
 {
 }
 
@@ -35,8 +35,8 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::ArteryEleCalcPresBased(
  | singleton access method                                   vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ArteryEleCalcPresBased<distype>*
-Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::instance(
+Discret::Elements::ArteryEleCalcPresBased<distype>*
+Discret::Elements::ArteryEleCalcPresBased<distype>::instance(
     const int numdofpernode, const std::string& disname)
 {
   using Key = std::pair<std::string, int>;
@@ -55,7 +55,7 @@ Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::instance(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate(Artery* ele,
+int Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -81,7 +81,7 @@ int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate(Artery* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_service(Artery* ele,
+int Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate_service(Artery* ele,
     const Arteries::Action action, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -103,7 +103,7 @@ int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_service(Artery*
 }
 
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::scatra_evaluate(Artery* ele,
+int Discret::Elements::ArteryEleCalcPresBased<distype>::scatra_evaluate(Artery* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -121,7 +121,7 @@ int Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::scatra_evaluate(Artery* 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
+void Discret::Elements::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat, Core::LinAlg::Matrix<my::iel_, 1>& rhs,
     Teuchos::RCP<const Core::Mat::Material> material)
@@ -207,7 +207,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::sysmat(Artery* ele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
+void Discret::Elements::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* ele,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseVector& flowVec, Teuchos::RCP<const Core::Mat::Material> material)
 {
@@ -246,7 +246,7 @@ void Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::evaluate_flow(Artery* e
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
+double Discret::Elements::ArteryEleCalcPresBased<distype>::calculate_ele_length(
     Artery* ele, Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
   double length;
@@ -272,6 +272,6 @@ double Discret::ELEMENTS::ArteryEleCalcPresBased<distype>::calculate_ele_length(
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ArteryEleCalcPresBased<Core::FE::CellType::line2>;
+template class Discret::Elements::ArteryEleCalcPresBased<Core::FE::CellType::line2>;
 
 FOUR_C_NAMESPACE_CLOSE

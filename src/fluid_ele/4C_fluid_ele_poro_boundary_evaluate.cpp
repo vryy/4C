@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::FluidPoroBoundary::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -52,7 +52,7 @@ int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
     case FLD::poro_splitnopenetration_ODpres:
     case FLD::fpsi_coupling:
     {
-      Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(shape(), impltype)
+      Discret::Elements::FluidBoundaryFactory::provide_impl(shape(), impltype)
           ->evaluate_action(
               this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
       break;
@@ -68,7 +68,7 @@ int Discret::ELEMENTS::FluidPoroBoundary::evaluate(Teuchos::ParameterList& param
   return 0;
 }
 
-void Discret::ELEMENTS::FluidPoroBoundary::location_vector(const Core::FE::Discretization& dis,
+void Discret::Elements::FluidPoroBoundary::location_vector(const Core::FE::Discretization& dis,
     Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

@@ -21,7 +21,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /*!
     \brief A C++ version of a 2 dimensional solid element with modifications for porous media
@@ -30,7 +30,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     class Wall1PoroP1 : public Wall1Poro<distype>
     {
-      using Base = Discret::ELEMENTS::Wall1Poro<distype>;
+      using Base = Discret::Elements::Wall1Poro<distype>;
 
      public:
       //!@}
@@ -271,7 +271,7 @@ namespace Discret
           Core::LinAlg::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
           Core::LinAlg::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>& sub_stiff);
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

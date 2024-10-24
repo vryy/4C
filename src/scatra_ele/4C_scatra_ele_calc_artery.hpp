@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     template <int nsd, int nen>
     class ScaTraEleInternalVariableManagerArtery;
@@ -219,7 +219,7 @@ namespace Discret
       //! check if artery material has been set
       bool materialset_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

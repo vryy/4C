@@ -110,7 +110,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   const Core::Elements::ElementType& eot1 = element1_->element_type();
 
   if (smoothing_ == Inpar::BEAMCONTACT::bsm_cpp and
-      eot1 != Discret::ELEMENTS::Beam3rType::instance())
+      eot1 != Discret::Elements::Beam3rType::instance())
     FOUR_C_THROW("Tangent smoothing only implemented for beams of type beam3r!");
 
   // For both elements the 2 direct neighbor elements are determined and saved in the
@@ -141,15 +141,15 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
 
 
   // get radius of elements
-  const Discret::ELEMENTS::Beam3Base* beamele1 =
-      static_cast<const Discret::ELEMENTS::Beam3Base*>(element1_);
+  const Discret::Elements::Beam3Base* beamele1 =
+      static_cast<const Discret::Elements::Beam3Base*>(element1_);
 
   FOUR_C_THROW_UNLESS(beamele1, "cast to beam base failed!");
 
   radius1_ = MANIPULATERADIUS * beamele1->get_circular_cross_section_radius_for_interactions();
 
-  const Discret::ELEMENTS::Beam3Base* beamele2 =
-      static_cast<const Discret::ELEMENTS::Beam3Base*>(element2_);
+  const Discret::Elements::Beam3Base* beamele2 =
+      static_cast<const Discret::Elements::Beam3Base*>(element2_);
 
   if (beamele2 == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
@@ -2785,14 +2785,14 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_shape_functions(
   }
   else if (numnodalvalues == 2)
   {
-    if (element1_->element_type() != Discret::ELEMENTS::Beam3ebType::instance())
+    if (element1_->element_type() != Discret::Elements::Beam3ebType::instance())
       FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
-    if (element2_->element_type() != Discret::ELEMENTS::Beam3ebType::instance())
+    if (element2_->element_type() != Discret::Elements::Beam3ebType::instance())
       FOUR_C_THROW("Only elements of type Beam3eb are valid for the case numnodalvalues=2!");
 
-    double length1 = 2 * (static_cast<Discret::ELEMENTS::Beam3eb*>(element1_))->jacobi();
-    double length2 = 2 * (static_cast<Discret::ELEMENTS::Beam3eb*>(element2_))->jacobi();
+    double length1 = 2 * (static_cast<Discret::Elements::Beam3eb*>(element1_))->jacobi();
+    double length2 = 2 * (static_cast<Discret::Elements::Beam3eb*>(element2_))->jacobi();
 
     // get values and derivatives of shape functions
     Core::FE::shape_function_hermite_1d(N1_i, eta1, length1, distype1);
@@ -3858,13 +3858,13 @@ double CONTACT::Beam3contactnew<numnodes, numnodalvalues>::get_jacobi(
 
   // The jacobi factor is only needed in order to scale the CPP condition. Therefore, we only use
   // the jacobi_ factor corresponding to the first gauss point of the beam element
-  if (eot1 == Discret::ELEMENTS::Beam3ebType::instance())
+  if (eot1 == Discret::Elements::Beam3ebType::instance())
   {
-    jacobi = (static_cast<Discret::ELEMENTS::Beam3eb*>(element1))->get_jacobi();
+    jacobi = (static_cast<Discret::Elements::Beam3eb*>(element1))->get_jacobi();
   }
-  else if (eot1 == Discret::ELEMENTS::Beam3rType::instance())
+  else if (eot1 == Discret::Elements::Beam3rType::instance())
   {
-    jacobi = (static_cast<Discret::ELEMENTS::Beam3r*>(element1))->get_jacobi();
+    jacobi = (static_cast<Discret::Elements::Beam3r*>(element1))->get_jacobi();
   }
   else
   {

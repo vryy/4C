@@ -32,7 +32,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class TransportBoundary;
 
@@ -58,7 +58,7 @@ namespace Discret
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& elevec1,
           const double scalar) = 0;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

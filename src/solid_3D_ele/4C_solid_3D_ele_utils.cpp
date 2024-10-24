@@ -78,14 +78,14 @@ Core::LinAlg::Matrix<6, 1> Solid::Utils::green_lagrange_to_log_strain(
   return log_strain_voigt;
 }
 
-int Solid::Utils::read_element::read_element_material(
+int Solid::Utils::ReadElement::read_element_material(
     const Core::IO::InputParameterContainer& container)
 {
   int material = container.get<int>("MAT");
   return material;
 }
 
-Inpar::Solid::KinemType Solid::Utils::read_element::read_element_kinematic_type(
+Inpar::Solid::KinemType Solid::Utils::ReadElement::read_element_kinematic_type(
     const Core::IO::InputParameterContainer& container)
 {
   auto kinem = container.get<std::string>("KINEM");
@@ -101,71 +101,71 @@ Inpar::Solid::KinemType Solid::Utils::read_element::read_element_kinematic_type(
   }
 }
 
-Discret::ELEMENTS::ElementTechnology Solid::Utils::read_element::read_element_technology(
+Discret::Elements::ElementTechnology Solid::Utils::ReadElement::read_element_technology(
     const Core::IO::InputParameterContainer& container)
 {
   auto type = container.get_or<std::string>("TECH", "none");
 
   if (type == "fbar")
   {
-    return Discret::ELEMENTS::ElementTechnology::fbar;
+    return Discret::Elements::ElementTechnology::fbar;
   }
   else if (type == "eas_full")
   {
-    return Discret::ELEMENTS::ElementTechnology::eas_full;
+    return Discret::Elements::ElementTechnology::eas_full;
   }
   else if (type == "eas_mild")
   {
-    return Discret::ELEMENTS::ElementTechnology::eas_mild;
+    return Discret::Elements::ElementTechnology::eas_mild;
   }
   else if (type == "shell_ans")
   {
-    return Discret::ELEMENTS::ElementTechnology::shell_ans;
+    return Discret::Elements::ElementTechnology::shell_ans;
   }
   else if (type == "shell_eas")
   {
-    return Discret::ELEMENTS::ElementTechnology::shell_eas;
+    return Discret::Elements::ElementTechnology::shell_eas;
   }
   else if (type == "none")
   {
-    return Discret::ELEMENTS::ElementTechnology::none;
+    return Discret::Elements::ElementTechnology::none;
   }
   else
     FOUR_C_THROW("unrecognized element technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::PrestressTechnology Solid::Utils::read_element::read_prestress_technology(
+Discret::Elements::PrestressTechnology Solid::Utils::ReadElement::read_prestress_technology(
     const Core::IO::InputParameterContainer& container)
 {
   auto type = container.get_or<std::string>("PRESTRESS_TECH", "none");
 
   if (type == "none")
   {
-    return Discret::ELEMENTS::PrestressTechnology::none;
+    return Discret::Elements::PrestressTechnology::none;
   }
   else if (type == "mulf")
   {
-    return Discret::ELEMENTS::PrestressTechnology::mulf;
+    return Discret::Elements::PrestressTechnology::mulf;
   }
 
   FOUR_C_THROW("unrecognized prestress technology type %s", type.c_str());
 }
 
-Discret::ELEMENTS::SolidElementProperties Solid::Utils::read_element::read_solid_element_properties(
+Discret::Elements::SolidElementProperties Solid::Utils::ReadElement::read_solid_element_properties(
     const Core::IO::InputParameterContainer& container)
 {
-  Discret::ELEMENTS::SolidElementProperties solid_properties{};
+  Discret::Elements::SolidElementProperties solid_properties{};
 
   // element technology
   solid_properties.element_technology =
-      Solid::Utils::read_element::read_element_technology(container);
+      Solid::Utils::ReadElement::read_element_technology(container);
 
   // prestress technology
   solid_properties.prestress_technology =
-      Solid::Utils::read_element::read_prestress_technology(container);
+      Solid::Utils::ReadElement::read_prestress_technology(container);
 
   // kinematic type
-  solid_properties.kintype = Solid::Utils::read_element::read_element_kinematic_type(container);
+  solid_properties.kintype = Solid::Utils::ReadElement::read_element_kinematic_type(container);
 
   return solid_properties;
 }

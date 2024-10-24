@@ -1046,10 +1046,10 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
                  // nodes the function call node->Elements()[0]->num_node() would tell you)
       {
         if (node->elements()[0]->nodes()[i]->id() == node->id() and
-            node->elements()[0]->element_type() == Discret::ELEMENTS::Beam3ebType::instance())
+            node->elements()[0]->element_type() == Discret::Elements::Beam3ebType::instance())
         {
-          const Discret::ELEMENTS::Beam3eb* ele =
-              dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(node->elements()[0]);
+          const Discret::Elements::Beam3eb* ele =
+              dynamic_cast<const Discret::Elements::Beam3eb*>(node->elements()[0]);
           currtan(0) =
               ((ele->tref())[i])(0) + disccol[bt_sol_discret().dof_col_map()->LID(dofnode[3])];
           currtan(1) =
@@ -1058,10 +1058,10 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
               ((ele->tref())[i])(2) + disccol[bt_sol_discret().dof_col_map()->LID(dofnode[5])];
         }
         else if (node->elements()[0]->nodes()[i]->id() == node->id() and
-                 node->elements()[0]->element_type() == Discret::ELEMENTS::Beam3kType::instance())
+                 node->elements()[0]->element_type() == Discret::Elements::Beam3kType::instance())
         {
-          const Discret::ELEMENTS::Beam3k* ele =
-              dynamic_cast<const Discret::ELEMENTS::Beam3k*>(node->elements()[0]);
+          const Discret::Elements::Beam3k* ele =
+              dynamic_cast<const Discret::Elements::Beam3k*>(node->elements()[0]);
           currtan(0) =
               ((ele->tref())[i])(0) + disccol[bt_sol_discret().dof_col_map()->LID(dofnode[3])];
           currtan(1) =
@@ -1070,10 +1070,10 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
               ((ele->tref())[i])(2) + disccol[bt_sol_discret().dof_col_map()->LID(dofnode[5])];
         }
         else if (node->elements()[0]->nodes()[i]->id() == node->id() and
-                 node->elements()[0]->element_type() == Discret::ELEMENTS::Beam3rType::instance())
+                 node->elements()[0]->element_type() == Discret::Elements::Beam3rType::instance())
         {
-          const Discret::ELEMENTS::Beam3r* ele =
-              dynamic_cast<const Discret::ELEMENTS::Beam3r*>(node->elements()[0]);
+          const Discret::Elements::Beam3r* ele =
+              dynamic_cast<const Discret::Elements::Beam3r*>(node->elements()[0]);
           currtan(0) =
               ((ele->tref())[i])(0) + disccol[bt_sol_discret().dof_col_map()->LID(dofnode[6])];
           currtan(1) =
@@ -1221,18 +1221,18 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
   {
     Core::Elements::Element* element = problem_discret().l_col_element(i);
     const Core::Elements::ElementType& eot = element->element_type();
-    if (eot == Discret::ELEMENTS::Beam3ebType::instance())
+    if (eot == Discret::Elements::Beam3ebType::instance())
     {
-      const Discret::ELEMENTS::Beam3eb* beam3ebelement =
-          dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element);
+      const Discret::Elements::Beam3eb* beam3ebelement =
+          dynamic_cast<const Discret::Elements::Beam3eb*>(element);
 
       if (fabs(beam3ebelement->get_kappa_max()) > kappa_max)
         kappa_max = fabs(beam3ebelement->get_kappa_max());
     }
-    else if (eot == Discret::ELEMENTS::Beam3rType::instance())
+    else if (eot == Discret::Elements::Beam3rType::instance())
     {
-      const Discret::ELEMENTS::Beam3r* beam3relement =
-          dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
+      const Discret::Elements::Beam3r* beam3relement =
+          dynamic_cast<const Discret::Elements::Beam3r*>(element);
 
       if (fabs(beam3relement->get_kappa_max()) > kappa_max)
         kappa_max = fabs(beam3relement->get_kappa_max());
@@ -2357,28 +2357,28 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
         const Core::Elements::ElementType& eot = element->element_type();
 
         // no output for solid elements here
-        if (eot != Discret::ELEMENTS::Beam3ebType::instance() and
-            eot != Discret::ELEMENTS::Beam3rType::instance() and
-            eot != Discret::ELEMENTS::Beam3kType::instance() and
-            eot != Discret::ELEMENTS::RigidsphereType::instance())
+        if (eot != Discret::Elements::Beam3ebType::instance() and
+            eot != Discret::Elements::Beam3rType::instance() and
+            eot != Discret::Elements::Beam3kType::instance() and
+            eot != Discret::Elements::RigidsphereType::instance())
           continue;
 
         //**********
         // BEAM3R
         //**********
         // standard procedure for Reissner beams or rigid spheres
-        if (eot == Discret::ELEMENTS::Beam3rType::instance() or
-            eot == Discret::ELEMENTS::RigidsphereType::instance())
+        if (eot == Discret::Elements::Beam3rType::instance() or
+            eot == Discret::Elements::RigidsphereType::instance())
         {
           //*******************************************************************
           // special output for BEAM3r with Hermite center line interpolation
           //*******************************************************************
           bool done = false;
-          if (eot == Discret::ELEMENTS::Beam3rType::instance())
+          if (eot == Discret::Elements::Beam3rType::instance())
           {
             // this cast is necessary in order to use the method ->Tref() and others
-            const Discret::ELEMENTS::Beam3r* ele =
-                dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
+            const Discret::Elements::Beam3r* ele =
+                dynamic_cast<const Discret::Elements::Beam3r*>(element);
 
             if (ele->hermite_centerline_interpolation())
             {
@@ -2386,8 +2386,8 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
               done = true;
 
               // this cast is necessary in order to use the method ->Tref()
-              const Discret::ELEMENTS::Beam3r* ele =
-                  dynamic_cast<const Discret::ELEMENTS::Beam3r*>(element);
+              const Discret::Elements::Beam3r* ele =
+                  dynamic_cast<const Discret::Elements::Beam3r*>(element);
 
               int nnodescl = 2;
               Core::LinAlg::SerialDenseMatrix nodalcoords(3, nnodescl);
@@ -2505,11 +2505,11 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
         // BEAM3EB
         //**********
         // initially straight torsion-free Kirchhoff beams need a special treatment
-        else if (eot == Discret::ELEMENTS::Beam3ebType::instance())
+        else if (eot == Discret::Elements::Beam3ebType::instance())
         {
           // this cast is necessary in order to use the method ->Tref()
-          const Discret::ELEMENTS::Beam3eb* ele =
-              dynamic_cast<const Discret::ELEMENTS::Beam3eb*>(element);
+          const Discret::Elements::Beam3eb* ele =
+              dynamic_cast<const Discret::Elements::Beam3eb*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->num_node();
           Core::LinAlg::SerialDenseMatrix nodalcoords(3, nnodes);
@@ -2566,11 +2566,11 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
         // BEAM3K
         //**********
         // full strong/weak Kirchhoff beams need a special treatment
-        else if (eot == Discret::ELEMENTS::Beam3kType::instance())
+        else if (eot == Discret::Elements::Beam3kType::instance())
         {
           // this cast is necessary in order to use the method ->Tref()
-          const Discret::ELEMENTS::Beam3k* ele =
-              dynamic_cast<const Discret::ELEMENTS::Beam3k*>(element);
+          const Discret::Elements::Beam3k* ele =
+              dynamic_cast<const Discret::Elements::Beam3k*>(element);
           // prepare storage for nodal coordinates
           int nnodes = element->num_node();
           Core::LinAlg::SerialDenseMatrix nodalcoords(3, nnodes);
@@ -2762,7 +2762,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
       //{
       //  Core::Elements::Element* element1 =
       //  const_cast<Core::Elements::Element*>(btsolpairs_[0]->Element1()); Iyy1 =
-      //  (dynamic_cast<Discret::ELEMENTS::Beam3eb*>(element1))->MomentOfInertiaY();
+      //  (dynamic_cast<Discret::Elements::Beam3eb*>(element1))->MomentOfInertiaY();
       //}
 
       // Get number of beam elements and surface elements on contact surface
@@ -4026,8 +4026,8 @@ void CONTACT::Beam3cmanager::gmsh_4_noded(const int& n,
 
 
   // get radius of element
-  const Discret::ELEMENTS::Beam3Base* thisbeam =
-      static_cast<const Discret::ELEMENTS::Beam3Base*>(thisele);
+  const Discret::Elements::Beam3Base* thisbeam =
+      static_cast<const Discret::Elements::Beam3Base*>(thisele);
 
   if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
@@ -4228,8 +4228,8 @@ void CONTACT::Beam3cmanager::gmsh_n_noded(const int& n, int& n_axial,
   Core::LinAlg::SerialDenseMatrix coord(3, 2);
 
   // get radius of element
-  const Discret::ELEMENTS::Beam3Base* thisbeam =
-      static_cast<const Discret::ELEMENTS::Beam3Base*>(thisele);
+  const Discret::Elements::Beam3Base* thisbeam =
+      static_cast<const Discret::Elements::Beam3Base*>(thisele);
 
   if (thisbeam == nullptr) FOUR_C_THROW("cast to beam base failed!");
 
@@ -4493,10 +4493,10 @@ void CONTACT::Beam3cmanager::gmsh_sphere(const Core::LinAlg::SerialDenseMatrix& 
   // get radius of element
   const Core::Elements::ElementType& eot = thisele->element_type();
 
-  if (eot == Discret::ELEMENTS::RigidsphereType::instance())
+  if (eot == Discret::Elements::RigidsphereType::instance())
   {
-    const Discret::ELEMENTS::Rigidsphere* thisparticle =
-        static_cast<const Discret::ELEMENTS::Rigidsphere*>(thisele);
+    const Discret::Elements::Rigidsphere* thisparticle =
+        static_cast<const Discret::Elements::Rigidsphere*>(thisele);
     eleradius = thisparticle->radius();
   }
   else
@@ -5021,7 +5021,7 @@ void CONTACT::Beam3cmanager::gmsh_st(
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3cmanager::set_element_type_and_distype(Core::Elements::Element* ele1)
 {
-  const Discret::ELEMENTS::Beam3Base* ele = dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele1);
+  const Discret::Elements::Beam3Base* ele = dynamic_cast<const Discret::Elements::Beam3Base*>(ele1);
 
   numnodes_ = ele->num_centerline_nodes();
   numnodalvalues_ = ele->hermite_centerline_interpolation() ? 2 : 1;

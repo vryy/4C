@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  setup of constant EAS data (private)                       mgit 01/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_eassetup(Core::LinAlg::SerialDenseMatrix& boplin0,
+void Discret::Elements::Wall1::w1_eassetup(Core::LinAlg::SerialDenseMatrix& boplin0,
     Core::LinAlg::SerialDenseVector& F0,           // deformation gradient at origin
     Core::LinAlg::SerialDenseMatrix& xjm0,         // jacobian matrix at origin
     double& detJ0,                                 // det of Jacobian at origin
@@ -115,7 +115,7 @@ void Discret::ELEMENTS::Wall1::w1_eassetup(Core::LinAlg::SerialDenseMatrix& bopl
  | get the enhanced deformation gradient and                            |
  | also the operators G, W0 and Z                   (private) mgit 01/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_call_defgrad_enh(Core::LinAlg::SerialDenseMatrix& F_enh,
+void Discret::Elements::Wall1::w1_call_defgrad_enh(Core::LinAlg::SerialDenseMatrix& F_enh,
     const Core::LinAlg::SerialDenseMatrix xjm0, const Core::LinAlg::SerialDenseMatrix xjm,
     const double detJ0, const double det, const Core::LinAlg::SerialDenseVector F0,
     const Core::LinAlg::SerialDenseMatrix alpha, const double e1, const double e2,
@@ -312,7 +312,7 @@ void Discret::ELEMENTS::Wall1::w1_call_defgrad_enh(Core::LinAlg::SerialDenseMatr
 /*----------------------------------------------------------------------*
  |total deformation gradient and green lagrange strain (private)mgit 01/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_call_defgrad_tot(const Core::LinAlg::SerialDenseMatrix& F_enh,
+void Discret::Elements::Wall1::w1_call_defgrad_tot(const Core::LinAlg::SerialDenseMatrix& F_enh,
     Core::LinAlg::SerialDenseMatrix& F_tot, const Core::LinAlg::SerialDenseVector& F,
     Core::LinAlg::SerialDenseVector& strain)
 {
@@ -339,7 +339,7 @@ void Discret::ELEMENTS::Wall1::w1_call_defgrad_tot(const Core::LinAlg::SerialDen
 /*-----------------------------------------------------------------------------*
  |first piola-kirchhoff stress vector                       (private)mgit 02/08|
  *----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_stress_eas(const Core::LinAlg::SerialDenseMatrix& stress,
+void Discret::Elements::Wall1::w1_stress_eas(const Core::LinAlg::SerialDenseMatrix& stress,
     const Core::LinAlg::SerialDenseMatrix& F_tot, Core::LinAlg::SerialDenseMatrix& p_stress)
 {
   /*-------------reduce stress matrix-----------------------------------------*/
@@ -360,7 +360,7 @@ void Discret::ELEMENTS::Wall1::w1_stress_eas(const Core::LinAlg::SerialDenseMatr
 /*-----------------------------------------------------------------------------*
 | calculate stiffness matrix kdd                                     mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_kdd(const Core::LinAlg::SerialDenseMatrix& boplin,
+void Discret::Elements::Wall1::w1_kdd(const Core::LinAlg::SerialDenseMatrix& boplin,
     const Core::LinAlg::SerialDenseMatrix& W0, const Core::LinAlg::SerialDenseMatrix& F_tot,
     const Core::LinAlg::SerialDenseMatrix& C, const Core::LinAlg::SerialDenseMatrix& stress,
     Core::LinAlg::SerialDenseMatrix& FCF, Core::LinAlg::SerialDenseMatrix& estif, const double fac)
@@ -403,13 +403,13 @@ void Discret::ELEMENTS::Wall1::w1_kdd(const Core::LinAlg::SerialDenseMatrix& bop
   Core::LinAlg::multiply_tn(1.0, estif, fac, BplusW, Temp3);
 
   return;
-}  // Discret::ELEMENTS::Wall1::w1_kdd
+}  // Discret::Elements::Wall1::w1_kdd
 
 
 /*-----------------------------------------------------------------------------*
 | calculate matrix kda                                               mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_kda(const Core::LinAlg::SerialDenseMatrix& FCF,
+void Discret::Elements::Wall1::w1_kda(const Core::LinAlg::SerialDenseMatrix& FCF,
     const Core::LinAlg::SerialDenseMatrix& W0, const Core::LinAlg::SerialDenseMatrix& boplin,
     const Core::LinAlg::SerialDenseMatrix& stress, const Core::LinAlg::SerialDenseMatrix& G,
     const Core::LinAlg::SerialDenseMatrix& Z, Core::LinAlg::SerialDenseMatrix& Kda,
@@ -444,13 +444,13 @@ void Discret::ELEMENTS::Wall1::w1_kda(const Core::LinAlg::SerialDenseMatrix& FCF
   }
 
   return;
-}  // Discret::ELEMENTS::Wall1::w1_kda
+}  // Discret::Elements::Wall1::w1_kda
 
 
 /*-----------------------------------------------------------------------------*
 | calculate matrix kaa                                               mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_kaa(const Core::LinAlg::SerialDenseMatrix& FCF,
+void Discret::Elements::Wall1::w1_kaa(const Core::LinAlg::SerialDenseMatrix& FCF,
     const Core::LinAlg::SerialDenseMatrix& stress, const Core::LinAlg::SerialDenseMatrix& G,
     Core::LinAlg::SerialDenseMatrix& Kaa, const double fac)
 {
@@ -467,13 +467,13 @@ void Discret::ELEMENTS::Wall1::w1_kaa(const Core::LinAlg::SerialDenseMatrix& FCF
   Core::LinAlg::multiply_tn(1.0, Kaa, fac, G, Temp3);
 
   return;
-}  // Discret::ELEMENTS::Wall1::w1_kaa
+}  // Discret::Elements::Wall1::w1_kaa
 
 
 /*-----------------------------------------------------------------------------*
 | calculate internal forces fint(displacements u) and feas           mgit 03/08|
 *-----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1::w1_fint_eas(const Core::LinAlg::SerialDenseMatrix& W0,
+void Discret::Elements::Wall1::w1_fint_eas(const Core::LinAlg::SerialDenseMatrix& W0,
     const Core::LinAlg::SerialDenseMatrix& boplin, const Core::LinAlg::SerialDenseMatrix& G,
     const Core::LinAlg::SerialDenseMatrix& p_stress, Core::LinAlg::SerialDenseVector& intforce,
     Core::LinAlg::SerialDenseVector& feas, const double fac)
@@ -497,7 +497,7 @@ void Discret::ELEMENTS::Wall1::w1_fint_eas(const Core::LinAlg::SerialDenseMatrix
   for (int i = 0; i < Wall1::neas_; i++) feas(i) += fac * Temp2(i, 0);
 
   return;
-}  // Discret::ELEMENTS::Wall1::w1_fint_eas
+}  // Discret::Elements::Wall1::w1_fint_eas
 
 
 /*----------------------------------------------------------------------*/

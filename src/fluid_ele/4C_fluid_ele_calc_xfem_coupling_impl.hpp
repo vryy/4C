@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleParameterXFEM;
     namespace XFLUID
@@ -320,7 +320,7 @@ namespace Discret
         //! field)
         NitscheCoupling(Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,              ///< C_um coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -329,7 +329,7 @@ namespace Discret
                             slave_xyze,  ///< global node coordinates of slave element
             Core::LinAlg::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -342,7 +342,7 @@ namespace Discret
             Core::LinAlg::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
             Core::LinAlg::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
             Core::LinAlg::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
-            const Discret::ELEMENTS::FluidEleParameterXFEM&
+            const Discret::Elements::FluidEleParameterXFEM&
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
@@ -766,7 +766,7 @@ namespace Discret
         //@}
 
         /// specific XFEM based fluid parameters
-        const Discret::ELEMENTS::FluidEleParameterXFEM& fldparaxfem_;
+        const Discret::Elements::FluidEleParameterXFEM& fldparaxfem_;
 
         Core::LinAlg::Matrix<master_numdof_ * nen_, master_numdof_ * nen_>
             c_umum_;  ///< coupling matrix C_umum
@@ -1061,7 +1061,7 @@ namespace Discret
         const double adj_visc_scale_;
       };
     }  // namespace XFLUID
-  }    // namespace ELEMENTS
+  }    // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

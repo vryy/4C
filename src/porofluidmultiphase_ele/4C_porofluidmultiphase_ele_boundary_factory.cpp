@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::provide_impl(
+Discret::Elements::PoroFluidMultiPhaseEleInterface*
+Discret::Elements::PoroFluidMultiPhaseBoundaryFactory::provide_impl(
     const Core::Elements::Element* ele, const int numdofpernode, const std::string& disname)
 {
   switch (ele->shape())
@@ -68,11 +68,11 @@ Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::provide_impl(
  | provide the implementation of evaluation class      (public) vuong 08/16 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::PoroFluidMultiPhaseEleInterface*
-Discret::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::define_problem_type(
+Discret::Elements::PoroFluidMultiPhaseEleInterface*
+Discret::Elements::PoroFluidMultiPhaseBoundaryFactory::define_problem_type(
     const int numdofpernode, const std::string& disname)
 {
-  return Discret::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
+  return Discret::Elements::PoroFluidMultiPhaseEleBoundaryCalc<distype>::instance(
       numdofpernode, disname);
 }
 

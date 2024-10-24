@@ -9,14 +9,14 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidEleParameterPoro* Discret::ELEMENTS::FluidEleParameterPoro::instance(
+Discret::Elements::FluidEleParameterPoro* Discret::Elements::FluidEleParameterPoro::instance(
     Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::FluidEleParameterPoro>(
-            new Discret::ELEMENTS::FluidEleParameterPoro());
+        return std::unique_ptr<Discret::Elements::FluidEleParameterPoro>(
+            new Discret::Elements::FluidEleParameterPoro());
       });
 
   return singleton_owner.instance(action);
@@ -25,8 +25,8 @@ Discret::ELEMENTS::FluidEleParameterPoro* Discret::ELEMENTS::FluidEleParameterPo
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
-    : Discret::ELEMENTS::FluidEleParameter::FluidEleParameter(),
+Discret::Elements::FluidEleParameterPoro::FluidEleParameterPoro()
+    : Discret::Elements::FluidEleParameter::FluidEleParameter(),
       set_fluid_parameter_poro_(false),
       poro_conti_partint_(false),
       stab_biot_(false),
@@ -39,7 +39,7 @@ Discret::ELEMENTS::FluidEleParameterPoro::FluidEleParameterPoro()
 //----------------------------------------------------------------------*
 //  set poro parameters                                      vuong 11/12|
 //---------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
+void Discret::Elements::FluidEleParameterPoro::set_element_poro_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   set_element_general_fluid_parameter(params, myrank);
@@ -81,7 +81,7 @@ void Discret::ELEMENTS::FluidEleParameterPoro::set_element_poro_parameter(
 //----------------------------------------------------------------------*/
 // print fluid parameter to screen                          rauch 11/13 |
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameterPoro::print_fluid_parameter_poro() const
+void Discret::Elements::FluidEleParameterPoro::print_fluid_parameter_poro() const
 {
   std::cout << std::endl
             << "|-----------------------------------------------------------------------------"

@@ -15,16 +15,16 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidXWallBoundaryType Discret::ELEMENTS::FluidXWallBoundaryType::instance_;
+Discret::Elements::FluidXWallBoundaryType Discret::Elements::FluidXWallBoundaryType::instance_;
 
-Discret::ELEMENTS::FluidXWallBoundaryType& Discret::ELEMENTS::FluidXWallBoundaryType::instance()
+Discret::Elements::FluidXWallBoundaryType& Discret::Elements::FluidXWallBoundaryType::instance()
 {
   return instance_;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallBoundaryType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidXWallBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -34,8 +34,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidXWallBoundaryType:
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int nnode,
-    const int* nodeids, Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent,
+Discret::Elements::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int nnode,
+    const int* nodeids, Core::Nodes::Node** nodes, Discret::Elements::Fluid* parent,
     const int lsurface)
     : FluidBoundary(id, owner, nnode, nodeids, nodes, parent, lsurface)
 {
@@ -45,8 +45,8 @@ Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(int id, int owner, int
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(
-    const Discret::ELEMENTS::FluidXWallBoundary& old)
+Discret::Elements::FluidXWallBoundary::FluidXWallBoundary(
+    const Discret::Elements::FluidXWallBoundary& old)
     : FluidBoundary(old)
 {
   return;
@@ -56,17 +56,17 @@ Discret::ELEMENTS::FluidXWallBoundary::FluidXWallBoundary(
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidXWallBoundary::clone() const
+Core::Elements::Element* Discret::Elements::FluidXWallBoundary::clone() const
 {
-  Discret::ELEMENTS::FluidXWallBoundary* newelement =
-      new Discret::ELEMENTS::FluidXWallBoundary(*this);
+  Discret::Elements::FluidXWallBoundary* newelement =
+      new Discret::Elements::FluidXWallBoundary(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWallBoundary::print(std::ostream& os) const
+void Discret::Elements::FluidXWallBoundary::print(std::ostream& os) const
 {
   os << "FluidXWallBoundary ";
   Element::print(os);
@@ -77,7 +77,7 @@ void Discret::ELEMENTS::FluidXWallBoundary::print(std::ostream& os) const
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidXWallBoundary::location_vector(const Core::FE::Discretization& dis,
+void Discret::Elements::FluidXWallBoundary::location_vector(const Core::FE::Discretization& dis,
     Core::Elements::LocationArray& la, bool doDirichlet, const std::string& condstring,
     Teuchos::ParameterList& params) const
 {

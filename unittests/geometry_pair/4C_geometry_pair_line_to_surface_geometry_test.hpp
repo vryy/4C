@@ -269,7 +269,7 @@ namespace
     // Set up the beam element.
     const int dummy_node_ids[2] = {0, 1};
     std::shared_ptr<Core::Elements::Element> element =
-        std::make_shared<Discret::ELEMENTS::Beam3r>(0, 0);
+        std::make_shared<Discret::Elements::Beam3r>(0, 0);
     element->set_node_ids(2, dummy_node_ids);
 
     // Set up the beam.

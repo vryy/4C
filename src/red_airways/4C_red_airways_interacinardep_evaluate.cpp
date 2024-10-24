@@ -24,13 +24,13 @@ FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
  |Evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
-int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::RedInterAcinarDep::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
     Core::LinAlg::SerialDenseVector& elevec3)
 {
-  Discret::ELEMENTS::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
+  Discret::Elements::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
 
   // get the action required
   std::string action = params.get<std::string>("action", "none");
@@ -64,7 +64,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
   {
     case calc_sys_matrix_rhs:
     {
-      return Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->evaluate(
+      return Discret::Elements::RedInterAcinarDepImplInterface::impl(this)->evaluate(
           this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3, mat);
     }
     break;
@@ -74,13 +74,13 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
     break;
     case get_initial_state:
     {
-      Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->initial(
+      Discret::Elements::RedInterAcinarDepImplInterface::impl(this)->initial(
           this, params, discretization, lm, elevec3, mat);
     }
     break;
     case set_bc:
     {
-      Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->evaluate_terminal_bc(
+      Discret::Elements::RedInterAcinarDepImplInterface::impl(this)->evaluate_terminal_bc(
           this, params, discretization, lm, elevec1, mat);
     }
     break;
@@ -95,7 +95,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
 
     case get_coupled_values:
     {
-      Discret::ELEMENTS::RedInterAcinarDepImplInterface::impl(this)->get_coupled_values(
+      Discret::Elements::RedInterAcinarDepImplInterface::impl(this)->get_coupled_values(
           this, params, discretization, lm, mat);
     }
     break;
@@ -105,10 +105,10 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate(Teuchos::ParameterList& param
   }  // end of switch(act)
 
   return 0;
-}  // end of Discret::ELEMENTS::RedInterAcinarDep::Evaluate
+}  // end of Discret::Elements::RedInterAcinarDep::Evaluate
 
 
-int Discret::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -121,7 +121,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate_neumann(Teuchos::ParameterLis
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList& params,
+int Discret::Elements::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -133,7 +133,7 @@ int Discret::ELEMENTS::RedInterAcinarDep::evaluate_dirichlet(Teuchos::ParameterL
  | Get optimal gaussrule for discretisation type                        |
  |                                                                      |
  *----------------------------------------------------------------------*/
-Core::FE::GaussRule1D Discret::ELEMENTS::RedInterAcinarDep::get_optimal_gaussrule(
+Core::FE::GaussRule1D Discret::Elements::RedInterAcinarDep::get_optimal_gaussrule(
     const Core::FE::CellType& distype)
 {
   Core::FE::GaussRule1D rule = Core::FE::GaussRule1D::undefined;
@@ -157,7 +157,7 @@ Core::FE::GaussRule1D Discret::ELEMENTS::RedInterAcinarDep::get_optimal_gaussrul
  | Check, whether higher order derivatives for shape functions          |
  | (dxdx, dxdy, ...) are necessary|                                     |
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::RedInterAcinarDep::is_higher_order_element(
+bool Discret::Elements::RedInterAcinarDep::is_higher_order_element(
     const Core::FE::CellType distype) const
 {
   bool hoel = true;

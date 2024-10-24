@@ -143,7 +143,7 @@ void elch_dyn(int restart)
         // set implementation type
         for (int i = 0; i < scatradis->num_my_col_elements(); ++i)
         {
-          auto* element = dynamic_cast<Discret::ELEMENTS::Transport*>(scatradis->l_col_element(i));
+          auto* element = dynamic_cast<Discret::Elements::Transport*>(scatradis->l_col_element(i));
           if (element == nullptr)
             FOUR_C_THROW("Invalid element type!");
           else

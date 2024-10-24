@@ -20,8 +20,8 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void MIXTURE::Internal::adapt_timestep_adaptivity_info(
-    MIXTURE::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
+void Mixture::Internal::adapt_timestep_adaptivity_info(
+    Mixture::TimestepAdaptivityInfo& timestep_adaptivity_info, unsigned int level,
     unsigned int num_coarsened_intervals)
 {
   if (level == 0)
@@ -34,7 +34,7 @@ void MIXTURE::Internal::adapt_timestep_adaptivity_info(
   }
 }
 
-void MIXTURE::Internal::mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
+void Mixture::Internal::mark_coarsened_timestep_as_to_be_deleted(std::vector<bool>& items_to_delete,
     const unsigned int num_items_to_delete, const unsigned int begin_index)
 {
   bool last_deleted = true;
@@ -56,7 +56,7 @@ void MIXTURE::Internal::mark_coarsened_timestep_as_to_be_deleted(std::vector<boo
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::pack(Core::Communication::PackBuffer& data) const
+void Mixture::TimestepAdaptivityInfo::pack(Core::Communication::PackBuffer& data) const
 {
   data.add_to_pack(get_number_of_levels());
   for (const auto& item : list_)
@@ -66,7 +66,7 @@ void MIXTURE::TimestepAdaptivityInfo::pack(Core::Communication::PackBuffer& data
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::unpack(Core::Communication::UnpackBuffer& buffer)
+void Mixture::TimestepAdaptivityInfo::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   std::size_t size_of_adaptivity_info;
   extract_from_pack(buffer, size_of_adaptivity_info);
@@ -80,7 +80,7 @@ void MIXTURE::TimestepAdaptivityInfo::unpack(Core::Communication::UnpackBuffer& 
   }
 }
 
-void MIXTURE::TimestepAdaptivityInfo::emplace_back(
+void Mixture::TimestepAdaptivityInfo::emplace_back(
     unsigned int level, unsigned int num_simpson_intervals)
 {
   if (list_.size() > 0 && list_.back().level_ == level)
@@ -101,14 +101,14 @@ void MIXTURE::TimestepAdaptivityInfo::emplace_back(
   }
 }
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::get_total_number_of_simpson_intervals()
+unsigned int Mixture::TimestepAdaptivityInfo::get_total_number_of_simpson_intervals()
 {
   return std::accumulate(list_.begin(), list_.end(), 0,
       [](unsigned int sum, const TimestepAdaptivityInfoItem& item)
       { return sum + item.simpson_intervals_; });
 }
 
-void MIXTURE::TimestepAdaptivityInfo::split_level(
+void Mixture::TimestepAdaptivityInfo::split_level(
     unsigned int level, unsigned int new_num_simpson_intervals)
 {
   for (std::size_t i = 0; i < list_.size(); ++i)
@@ -147,30 +147,30 @@ void MIXTURE::TimestepAdaptivityInfo::split_level(
   FOUR_C_THROW("Could not find refinement level %d in the list", level);
 }
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::max_level()
+unsigned int Mixture::TimestepAdaptivityInfo::max_level()
 {
   if (list_.size() == 0) return 0;
   return list_[0].level_;
 }
-unsigned int MIXTURE::TimestepAdaptivityInfo::get_base_index(const unsigned int index) const
+unsigned int Mixture::TimestepAdaptivityInfo::get_base_index(const unsigned int index) const
 {
   return get_base_indices<unsigned int, 1>({index})[0];
 }
 
-std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::get_base_index(
+std::optional<unsigned int> Mixture::TimestepAdaptivityInfo::get_base_index(
     const TimestepAdaptivityInfo& base, unsigned int timestep) const
 {
   return base.get_index_from_base(get_base_index(timestep));
 }
 
-std::optional<unsigned int> MIXTURE::TimestepAdaptivityInfo::get_index_from_base(
+std::optional<unsigned int> Mixture::TimestepAdaptivityInfo::get_index_from_base(
     const unsigned int base_index) const
 {
   return get_indices_from_base<unsigned int, 1>({base_index})[0];
 }
 
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::get_number_of_simpson_intervals(
+unsigned int Mixture::TimestepAdaptivityInfo::get_number_of_simpson_intervals(
     const unsigned int level) const
 {
   for (const auto& item : list_)
@@ -190,7 +190,7 @@ unsigned int MIXTURE::TimestepAdaptivityInfo::get_number_of_simpson_intervals(
       level);
 }
 
-unsigned int MIXTURE::TimestepAdaptivityInfo::get_begin_index(const unsigned int level) const
+unsigned int Mixture::TimestepAdaptivityInfo::get_begin_index(const unsigned int level) const
 {
   unsigned int current_index = 0;
   for (const auto& item : list_)
@@ -203,7 +203,7 @@ unsigned int MIXTURE::TimestepAdaptivityInfo::get_begin_index(const unsigned int
   return current_index;
 }
 
-double MIXTURE::TimestepAdaptivityInfo::get_begin_time(
+double Mixture::TimestepAdaptivityInfo::get_begin_time(
     const unsigned int level, const double base_time, const double base_dt) const
 {
   double begin_time = base_time;
@@ -216,7 +216,7 @@ double MIXTURE::TimestepAdaptivityInfo::get_begin_time(
   return begin_time;
 }
 
-double MIXTURE::TimestepAdaptivityInfo::get_index_time(
+double Mixture::TimestepAdaptivityInfo::get_index_time(
     const unsigned int index, const double base_time, const double base_dt) const
 {
   return base_time + get_base_index(index) * base_dt;

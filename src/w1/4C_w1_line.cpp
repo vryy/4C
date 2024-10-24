@@ -13,15 +13,15 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-Discret::ELEMENTS::Wall1LineType Discret::ELEMENTS::Wall1LineType::instance_;
+Discret::Elements::Wall1LineType Discret::Elements::Wall1LineType::instance_;
 
-Discret::ELEMENTS::Wall1LineType& Discret::ELEMENTS::Wall1LineType::instance() { return instance_; }
+Discret::Elements::Wall1LineType& Discret::Elements::Wall1LineType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mgit 03/07|
   *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
-    Core::Nodes::Node** nodes, Discret::ELEMENTS::Wall1* parent, const int lline)
+Discret::Elements::Wall1Line::Wall1Line(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::Elements::Wall1* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
   set_node_ids(nnode, nodeids);
@@ -33,7 +33,7 @@ Discret::ELEMENTS::Wall1Line::Wall1Line(int id, int owner, int nnode, const int*
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mgit 03/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Wall1Line::Wall1Line(const Discret::ELEMENTS::Wall1Line& old)
+Discret::Elements::Wall1Line::Wall1Line(const Discret::Elements::Wall1Line& old)
     : Core::Elements::FaceElement(old)
 {
   return;
@@ -43,9 +43,9 @@ Discret::ELEMENTS::Wall1Line::Wall1Line(const Discret::ELEMENTS::Wall1Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Wall1Line::clone() const
+Core::Elements::Element* Discret::Elements::Wall1Line::clone() const
 {
-  Discret::ELEMENTS::Wall1Line* newelement = new Discret::ELEMENTS::Wall1Line(*this);
+  Discret::Elements::Wall1Line* newelement = new Discret::Elements::Wall1Line(*this);
   return newelement;
 }
 
@@ -53,7 +53,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1Line::clone() const
  |                                                             (public) |
  |                                                          farah 02/14 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Wall1Line::shape() const
+Core::FE::CellType Discret::Elements::Wall1Line::shape() const
 {
   Core::FE::CellType distype_line = Core::FE::CellType::dis_none;
 
@@ -95,7 +95,7 @@ Core::FE::CellType Discret::ELEMENTS::Wall1Line::shape() const
       break;
     }
     default:
-      FOUR_C_THROW("Discret::ELEMENTS::Wall1Line::Wall1Line: Unknown parent shape!");
+      FOUR_C_THROW("Discret::Elements::Wall1Line::Wall1Line: Unknown parent shape!");
   }
 
   return distype_line;
@@ -105,7 +105,7 @@ Core::FE::CellType Discret::ELEMENTS::Wall1Line::shape() const
  |  Pack data                                                  (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Wall1Line::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Wall1Line element does not support communication");
 
@@ -116,7 +116,7 @@ void Discret::ELEMENTS::Wall1Line::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Wall1Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this line element does not support communication");
   return;
@@ -127,7 +127,7 @@ void Discret::ELEMENTS::Wall1Line::unpack(Core::Communication::UnpackBuffer& buf
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mgit 03/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Line::print(std::ostream& os) const
+void Discret::Elements::Wall1Line::print(std::ostream& os) const
 {
   os << "Wall1Line ";
   Element::print(os);

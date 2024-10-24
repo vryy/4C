@@ -243,12 +243,12 @@ bool Solid::ModelEvaluator::Generic::eval_error_check() const
                  "#"
               << gstate_ptr_->get_comm().MyPID() << ".\n"
               << "(Error: "
-              << Solid::ELEMENTS::eval_error_flag_to_string(
+              << Solid::Elements::eval_error_flag_to_string(
                      eval_data_ptr_->get_ele_eval_error_flag())
               << ")\n";
 
   // reset the flag
-  eval_data_ptr_->set_ele_eval_error_flag(Solid::ELEMENTS::ele_error_none);
+  eval_data_ptr_->set_ele_eval_error_flag(Solid::Elements::ele_error_none);
 
   // --- check for local errors on each proc and communicate the information ---
   int lerr = (ok ? 0 : 1);

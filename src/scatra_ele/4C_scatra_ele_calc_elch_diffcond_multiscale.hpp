@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declaration
     class ScaTraEleDiffManagerElchDiffCondMultiScale;
@@ -112,7 +112,7 @@ namespace Discret
         ScaTraEleDiffManagerElchDiffCond::output_transport_params(numscal);
       };
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

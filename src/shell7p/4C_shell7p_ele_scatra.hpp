@@ -24,7 +24,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   class Shell7pEleCalcInterface;
   class Shell7pLine;
@@ -146,7 +146,7 @@ namespace Discret::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline Solid::ELEMENTS::ParamsInterface& str_params_interface() const
+    [[nodiscard]] inline Solid::Elements::ParamsInterface& str_params_interface() const
     {
       if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
@@ -189,7 +189,7 @@ namespace Discret::ELEMENTS
     Core::FE::CellType distype_ = Core::FE::CellType::dis_none;
 
     //! interface ptr, data exchange between the element and the time integrator.
-    Teuchos::RCP<Solid::ELEMENTS::ParamsInterface> interface_ptr_ = Teuchos::null;
+    Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_ = Teuchos::null;
 
     //! element technology
     std::set<Inpar::Solid::EleTech> eletech_ = {};
@@ -210,7 +210,7 @@ namespace Discret::ELEMENTS
     Inpar::ScaTra::ImplType impltype_ = Inpar::ScaTra::ImplType::impltype_undefined;
   };
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

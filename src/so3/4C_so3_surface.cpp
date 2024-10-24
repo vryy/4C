@@ -15,22 +15,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::StructuralSurfaceType Discret::ELEMENTS::StructuralSurfaceType::instance_;
+Discret::Elements::StructuralSurfaceType Discret::Elements::StructuralSurfaceType::instance_;
 
-Discret::ELEMENTS::StructuralSurfaceType& Discret::ELEMENTS::StructuralSurfaceType::instance()
+Discret::Elements::StructuralSurfaceType& Discret::Elements::StructuralSurfaceType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::StructuralSurfaceType::create(
+Core::Communication::ParObject* Discret::Elements::StructuralSurfaceType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  auto* object = new Discret::ELEMENTS::StructuralSurface(-1, -1);
+  auto* object = new Discret::Elements::StructuralSurface(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralSurfaceType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::StructuralSurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralSurface( id, owner ) );
@@ -40,7 +40,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::StructuralSurfaceType::
 /*----------------------------------------------------------------------*
  |  ctor (public)                                              gee 04/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode,
+Discret::Elements::StructuralSurface::StructuralSurface(int id, int owner, int nnode,
     const int* nodeids, Core::Nodes::Node** nodes, Core::Elements::Element* parent,
     const int lsurface)
     : Core::Elements::FaceElement(id, owner),
@@ -72,7 +72,7 @@ Discret::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int n
 /*------------------------------------------------------------------------*
  |  ctor (private) - used by StructuralSurfaceType              ager 12/16|
  *-----------------------------------------------------------------------*/
-Discret::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
+Discret::Elements::StructuralSurface::StructuralSurface(int id, int owner)
     : Core::Elements::FaceElement(id, owner),
       distype_(Core::FE::CellType::dis_none),
       numdofpernode_(-1),
@@ -84,8 +84,8 @@ Discret::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                         gee 04/08|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::StructuralSurface::StructuralSurface(
-    const Discret::ELEMENTS::StructuralSurface& old)
+Discret::Elements::StructuralSurface::StructuralSurface(
+    const Discret::Elements::StructuralSurface& old)
     : Core::Elements::FaceElement(old),
       distype_(old.distype_),
       numdofpernode_(old.numdofpernode_),
@@ -98,9 +98,9 @@ Discret::ELEMENTS::StructuralSurface::StructuralSurface(
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 04/08|
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::StructuralSurface::clone() const
+Core::Elements::Element* Discret::Elements::StructuralSurface::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::StructuralSurface(*this);
+  auto* newelement = new Discret::Elements::StructuralSurface(*this);
   return newelement;
 }
 
@@ -108,13 +108,13 @@ Core::Elements::Element* Discret::ELEMENTS::StructuralSurface::clone() const
  |                                                             (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::StructuralSurface::shape() const { return distype_; }
+Core::FE::CellType Discret::Elements::StructuralSurface::shape() const { return distype_; }
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::StructuralSurface::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -136,7 +136,7 @@ void Discret::ELEMENTS::StructuralSurface::pack(Core::Communication::PackBuffer&
  |  Unpack data                                                (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::StructuralSurface::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -162,22 +162,22 @@ void Discret::ELEMENTS::StructuralSurface::unpack(Core::Communication::UnpackBuf
 /*----------------------------------------------------------------------*
  |  print this element (public)                                gee 04/08|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::print(std::ostream& os) const
+void Discret::Elements::StructuralSurface::print(std::ostream& os) const
 {
   os << "StructuralSurface ";
   Element::print(os);
   return;
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::StructuralSurface::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::StructuralSurface::lines()
 {
-  return Core::Communication::element_boundary_factory<Discret::ELEMENTS::StructuralLine,
-      Discret::ELEMENTS::StructuralSurface>(Core::Communication::buildLines, *this);
+  return Core::Communication::element_boundary_factory<Discret::Elements::StructuralLine,
+      Discret::Elements::StructuralSurface>(Core::Communication::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Discret::ELEMENTS::StructuralSurface::num_line() const
+int Discret::Elements::StructuralSurface::num_line() const
 {
   return Core::FE::get_number_of_element_lines(shape());
 }
@@ -185,7 +185,7 @@ int Discret::ELEMENTS::StructuralSurface::num_line() const
 /*------------------------------------------------------------------------*
  |  Set discretization Type of the Surface Element              ager 12/16|
  *-----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::set_distype()
+void Discret::Elements::StructuralSurface::set_distype()
 {
   // if NURBS elements:
   if (parent_master_element()->shape() == Core::FE::CellType::nurbs8)
@@ -232,7 +232,7 @@ void Discret::ELEMENTS::StructuralSurface::set_distype()
 /*------------------------------------------------------------------------*
  |  Set Gaussrule dependent on shape of the structural surface  ager 12/16|
  *-----------------------------------------------------------------------*/
-void Discret::ELEMENTS::StructuralSurface::set_gaussrule()
+void Discret::Elements::StructuralSurface::set_gaussrule()
 {
   // type of gaussian integration
   switch (shape())

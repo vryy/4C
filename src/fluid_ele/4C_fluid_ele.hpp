@@ -32,7 +32,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleParameter;
     class FluidEleParameterStd;
@@ -364,17 +364,17 @@ namespace Discret
     };  // class Fluid
 
     //! Template Meta Programming version of switch over enrichment type
-    template <Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+    template <Discret::Elements::Fluid::EnrichmentType enrtype>
     struct MultipleNumNode
     {
     };
     template <>
-    struct MultipleNumNode<Discret::ELEMENTS::Fluid::none>
+    struct MultipleNumNode<Discret::Elements::Fluid::none>
     {
       static constexpr int multipleNode = 1;
     };
     template <>
-    struct MultipleNumNode<Discret::ELEMENTS::Fluid::xwall>
+    struct MultipleNumNode<Discret::Elements::Fluid::xwall>
     {
       static constexpr int multipleNode = 2;
     };
@@ -455,7 +455,7 @@ namespace Discret
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       explicit FluidBoundary(int id, int owner, int nnode, const int* nodeids,
-          Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent, const int lsurface);
+          Core::Nodes::Node** nodes, Discret::Elements::Fluid* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -623,13 +623,13 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override;
 
-      Discret::ELEMENTS::Fluid* parent_element() const override
+      Discret::Elements::Fluid* parent_element() const override
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Fluid*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Fluid*>(parent) != nullptr,
             "Master element is no fluid element");
-        return static_cast<Discret::ELEMENTS::Fluid*>(parent);
+        return static_cast<Discret::Elements::Fluid*>(parent);
       }
 
       int surface_number() { return face_master_number(); }
@@ -764,7 +764,7 @@ namespace Discret
       face's coordinate system
       */
       FluidIntFace(int id, int owner, int nnode, const int* nodeids, Core::Nodes::Node** nodes,
-          Discret::ELEMENTS::Fluid* parent_master, Discret::ELEMENTS::Fluid* parent_slave,
+          Discret::Elements::Fluid* parent_master, Discret::Elements::Fluid* parent_slave,
           const int lsurface_master, const int lsurface_slave,
           const std::vector<int> localtrafomap);
 
@@ -983,26 +983,26 @@ namespace Discret
       /*!
       \brief return the master parent fluid element
       */
-      Discret::ELEMENTS::Fluid* parent_master_element() const
+      Discret::Elements::Fluid* parent_master_element() const
       {
         Core::Elements::Element* parent =
             this->Core::Elements::FaceElement::parent_master_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Fluid*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Fluid*>(parent) != nullptr,
             "Master element is no fluid element");
-        return static_cast<Discret::ELEMENTS::Fluid*>(parent);
+        return static_cast<Discret::Elements::Fluid*>(parent);
       }
 
       /*!
       \brief return the slave parent fluid element
       */
-      Discret::ELEMENTS::Fluid* parent_slave_element() const
+      Discret::Elements::Fluid* parent_slave_element() const
       {
         Core::Elements::Element* parent = this->Core::Elements::FaceElement::parent_slave_element();
         // make sure the static cast below is really valid
-        FOUR_C_ASSERT(dynamic_cast<Discret::ELEMENTS::Fluid*>(parent) != nullptr,
+        FOUR_C_ASSERT(dynamic_cast<Discret::Elements::Fluid*>(parent) != nullptr,
             "Slave element is no fluid element");
-        return static_cast<Discret::ELEMENTS::Fluid*>(parent);
+        return static_cast<Discret::Elements::Fluid*>(parent);
       }
 
       //@}
@@ -1015,7 +1015,7 @@ namespace Discret
 
 
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

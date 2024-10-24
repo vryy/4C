@@ -725,8 +725,8 @@ namespace Immersed
               matched = 1;
 
               // if element interpolates to structural intpoint set as "boundary is immersed"
-              Teuchos::RCP<Discret::ELEMENTS::FluidImmersedBase> immersedele =
-                  Teuchos::rcp_dynamic_cast<Discret::ELEMENTS::FluidImmersedBase>(curr->second);
+              Teuchos::RCP<Discret::Elements::FluidImmersedBase> immersedele =
+                  Teuchos::rcp_dynamic_cast<Discret::Elements::FluidImmersedBase>(curr->second);
               // only possible and reasonable if current element is fluid element
               if (immersedele != Teuchos::null)
               {

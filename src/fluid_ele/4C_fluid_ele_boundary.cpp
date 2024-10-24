@@ -10,22 +10,22 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::FluidBoundaryType Discret::ELEMENTS::FluidBoundaryType::instance_;
+Discret::Elements::FluidBoundaryType Discret::Elements::FluidBoundaryType::instance_;
 
-Discret::ELEMENTS::FluidBoundaryType& Discret::ELEMENTS::FluidBoundaryType::instance()
+Discret::Elements::FluidBoundaryType& Discret::Elements::FluidBoundaryType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::FluidBoundaryType::create(
+Core::Communication::ParObject* Discret::Elements::FluidBoundaryType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::FluidBoundary* object = new Discret::ELEMENTS::FluidBoundary(-1, -1);
+  Discret::Elements::FluidBoundary* object = new Discret::Elements::FluidBoundary(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidBoundaryType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidBoundaryType::create(
     const int id, const int owner)
 {
   return Teuchos::null;
@@ -36,8 +36,8 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::FluidBoundaryType::crea
  |  ctor (public)                                            mwgee 01/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
-    Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent, const int lsurface)
+Discret::Elements::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
+    Core::Nodes::Node** nodes, Discret::Elements::Fluid* parent, const int lsurface)
     : Core::Elements::FaceElement(id, owner),
       distype_(Core::FE::CellType::dis_none),
       numdofpernode_(-1)
@@ -62,7 +62,7 @@ Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, co
 /*------------------------------------------------------------------------*
  |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
  *-----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
+Discret::Elements::FluidBoundary::FluidBoundary(int id, int owner)
     : Core::Elements::FaceElement(id, owner),
       distype_(Core::FE::CellType::dis_none),
       numdofpernode_(-1)
@@ -73,7 +73,7 @@ Discret::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidBoundary::FluidBoundary(const Discret::ELEMENTS::FluidBoundary& old)
+Discret::Elements::FluidBoundary::FluidBoundary(const Discret::Elements::FluidBoundary& old)
     : Core::Elements::FaceElement(old), distype_(old.distype_), numdofpernode_(old.numdofpernode_)
 {
   return;
@@ -83,9 +83,9 @@ Discret::ELEMENTS::FluidBoundary::FluidBoundary(const Discret::ELEMENTS::FluidBo
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::FluidBoundary::clone() const
+Core::Elements::Element* Discret::Elements::FluidBoundary::clone() const
 {
-  Discret::ELEMENTS::FluidBoundary* newelement = new Discret::ELEMENTS::FluidBoundary(*this);
+  Discret::Elements::FluidBoundary* newelement = new Discret::Elements::FluidBoundary(*this);
   return newelement;
 }
 
@@ -93,7 +93,7 @@ Core::Elements::Element* Discret::ELEMENTS::FluidBoundary::clone() const
  |  Pack data                                                  (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::FluidBoundary::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -113,7 +113,7 @@ void Discret::ELEMENTS::FluidBoundary::pack(Core::Communication::PackBuffer& dat
  |  Unpack data                                                (public) |
  |                                                           ager 12/16 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::FluidBoundary::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -136,7 +136,7 @@ void Discret::ELEMENTS::FluidBoundary::unpack(Core::Communication::UnpackBuffer&
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidBoundary::print(std::ostream& os) const
+void Discret::Elements::FluidBoundary::print(std::ostream& os) const
 {
   os << "FluidBoundary ";
   Element::print(os);
@@ -146,7 +146,7 @@ void Discret::ELEMENTS::FluidBoundary::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidBoundary::lines()
 {
   FOUR_C_THROW("Lines of FluidBoundary not implemented");
 }
@@ -154,7 +154,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBound
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ager 12/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::FluidBoundary::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidBoundary::surfaces()
 {
   return {Teuchos::rcpFromRef(*this)};
 }

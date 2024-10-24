@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
  | calculate filtered quantities for dynamic Smagorinsky model  rasthofer 08/12|
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(double& dens_hat,
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter(double& dens_hat,
     double& temp_hat, double& dens_temp_hat, double& phi2_hat, double& phiexpression_hat,
     std::vector<double>& vel_hat, std::vector<double>& densvel_hat,
     std::vector<double>& densveltemp_hat, std::vector<double>& densstraintemp_hat,
@@ -173,7 +173,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_apply_box_filter
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(
+double Discret::Elements::ScaTraEleCalc<distype, probdim>::get_density(
     const Core::Elements::Element* ele, Teuchos::RCP<const Core::Mat::Material> material,
     Teuchos::ParameterList& params, const double tempnp)
 {
@@ -201,14 +201,14 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_density(
     FOUR_C_THROW("Invalid material type!");
 
   return density;
-}  // Discret::ELEMENTS::ScaTraEleCalc<distype,probdim>::GetDensity
+}  // Discret::Elements::ScaTraEleCalc<distype,probdim>::GetDensity
 
 
 /*----------------------------------------------------------------------------------*
  | calculate turbulent Prandtl number for dynamic Smagorinsky model  rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_lk_mk_and_mk_mk(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_lk_mk_and_mk_mk(
     Core::LinAlg::MultiVector<double>& col_filtered_vel,
     Core::LinAlg::MultiVector<double>& col_filtered_dens_vel,
     Core::LinAlg::MultiVector<double>& col_filtered_dens_vel_temp,
@@ -359,7 +359,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_smag_const_
  | calculate vreman constant                                             krank 08/13|
  *----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
     Core::LinAlg::MultiVector<double>& col_filtered_phi,
     Core::LinAlg::Vector<double>& col_filtered_phi2,
     Core::LinAlg::Vector<double>& col_filtered_phiexpression,
@@ -472,7 +472,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::scatra_calc_vreman_dt(
  | calculate mean turbulent Prandtl number                           rasthofer 08/12|
  *----------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogenous_direction(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogenous_direction(
     Teuchos::ParameterList& turbmodelparams, int& nlayer)
 {
   // NOTE: we calculate the inverse of the turbulent Prandtl number here (i.e., (Cs*h)^2 / Pr_t)
@@ -623,7 +623,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::get_mean_prt_of_homogen
   |  calculate all-scale art. subgrid diffusivity (private)     vg 10/09 |
   *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
     double& visc, const double vol, const int k, const double densnp)
 {
   // get number of dimensions
@@ -773,7 +773,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_subgr_diff(
   |  calculate fine-scale art. subgrid diffusivity (private)    vg 10/09 |
   *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_fine_scale_subgr_diff(double& sgdiff,
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_fine_scale_subgr_diff(double& sgdiff,
     Core::LinAlg::SerialDenseVector& subgrdiff, Core::Elements::Element* ele, const double vol,
     const int k, const double densnp, const double diffus,
     const Core::LinAlg::Matrix<nsd_, 1> convelint)
@@ -873,7 +873,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_fine_scale_subgr_d
  |                                                      rasthofer 12/11 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multifrac_subgrid_scales(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multifrac_subgrid_scales(
     Core::LinAlg::Matrix<nsd_, 1>& B_mfs,  ///< coefficient for fine-scale velocity (will be filled)
     double& D_mfs,                         ///< coefficient for fine-scale scalar (will be filled)
     const double vol,                      ///< volume of element
@@ -1166,7 +1166,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_b_and_d_for_multif
  |                                                      rasthofer 09/12 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
+double Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_ref_length(
     const double vol, const Core::LinAlg::Matrix<nsd_, 1> convelint)
 {
   // calculate characteristic element length
@@ -1325,7 +1325,7 @@ double Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_ref_length(
  | output of model parameters                           rasthofer 09/12 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::store_model_parameters_for_output(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::store_model_parameters_for_output(
     const Core::Elements::Element* ele, const bool isowned, Teuchos::ParameterList& turbulencelist,
     const int nlayer)
 {
@@ -1398,7 +1398,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::store_model_parameters_
  | dissipation introduced by stabilization and turbulence models        |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_dissipation(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_dissipation(
     Teuchos::ParameterList& params,            //!< parameter list
     Core::Elements::Element* ele,              //!< pointer to element
     Core::FE::Discretization& discretization,  //!< scatra discretization

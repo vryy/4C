@@ -134,7 +134,7 @@ namespace XFEM
         const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,  ///< integration points for boundary cell integration
         const Inpar::XFEM::ViscStabHk visc_stab_hk,  ///< h definition
-        Teuchos::RCP<Discret::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =
+        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> emb =
             Teuchos::null,  ///< pointer to the embedded coupling implementation
         Core::Elements::Element* face = nullptr  ///< side element in 3D
     );

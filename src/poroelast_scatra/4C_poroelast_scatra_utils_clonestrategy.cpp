@@ -42,21 +42,21 @@ Inpar::ScaTra::ImplType PoroElastScaTra::Utils::PoroScatraCloneStrategy::get_imp
   {
     return (
         dynamic_cast<
-            Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4, Core::FE::CellType::tet4>*>(
+            Discret::Elements::So3PoroScatra<Discret::Elements::SoTet4, Core::FE::CellType::tet4>*>(
             ele))
         ->impl_type();
   }
   // tet4 solid porop1 scatra
   else if (eletypename == "So_tet4PoroP1ScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoTet4,
+    return (dynamic_cast<Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoTet4,
                 Core::FE::CellType::tet4>*>(ele))
         ->impl_type();
   }
   // tet 10 solid poro scatra
   else if (eletypename == "So_tet10PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10,
+    return (dynamic_cast<Discret::Elements::So3PoroScatra<Discret::Elements::SoTet10,
                 Core::FE::CellType::tet10>*>(ele))
         ->impl_type();
   }
@@ -66,84 +66,84 @@ Inpar::ScaTra::ImplType PoroElastScaTra::Utils::PoroScatraCloneStrategy::get_imp
   {
     return (
         dynamic_cast<
-            Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8, Core::FE::CellType::hex8>*>(
+            Discret::Elements::So3PoroScatra<Discret::Elements::SoHex8, Core::FE::CellType::hex8>*>(
             ele))
         ->impl_type();
   }
   // hex8 solid porop1 scatra
   else if (eletypename == "So_hex8PoroP1ScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::So3PoroP1Scatra<Discret::ELEMENTS::SoHex8,
+    return (dynamic_cast<Discret::Elements::So3PoroP1Scatra<Discret::Elements::SoHex8,
                 Core::FE::CellType::hex8>*>(ele))
         ->impl_type();
   }
   // hex27 solid poro scatra
   else if (eletypename == "So_hex27PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27,
+    return (dynamic_cast<Discret::Elements::So3PoroScatra<Discret::Elements::SoHex27,
                 Core::FE::CellType::hex27>*>(ele))
         ->impl_type();
   }
   // nurbs 27
   else if (eletypename == "So_nurbs27PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
+    return (dynamic_cast<Discret::Elements::So3PoroScatra<Discret::Elements::Nurbs::SoNurbs27,
                 Core::FE::CellType::nurbs27>*>(ele))
         ->impl_type();
   }
   // Solidporo
   else if (eletypename == "SolidPoroPressureBasedType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::SolidPoroPressureBased*>(ele))->get_impl_type();
+    return (dynamic_cast<Discret::Elements::SolidPoroPressureBased*>(ele))->get_impl_type();
   }
   // wall poro scatra elements
   // quad 4
   else if (eletypename == "WallQuad4PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad4>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad4>*>(ele))
         ->impl_type();
   }
   // quad 9
   else if (eletypename == "WallQuad9PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::quad9>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad9>*>(ele))
         ->impl_type();
   }
   // nurbs 4
   else if (eletypename == "WallNurbs4PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs4>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs4>*>(ele))
         ->impl_type();
   }
   // nurbs 9
   else if (eletypename == "WallNurbs9PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::nurbs9>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs9>*>(ele))
         ->impl_type();
   }
   // tri 3
   else if (eletypename == "WallTri3PoroScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroScatra<Core::FE::CellType::tri3>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::tri3>*>(ele))
         ->impl_type();
   }
   // wall poro p1 elements
   // quad 4
   else if (eletypename == "WallQuad4PoroP1ScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroP1Scatra<Core::FE::CellType::quad4>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroP1Scatra<Core::FE::CellType::quad4>*>(ele))
         ->impl_type();
   }
   // quad 9
   else if (eletypename == "WallQuad9PoroP1ScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroP1Scatra<Core::FE::CellType::quad9>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroP1Scatra<Core::FE::CellType::quad9>*>(ele))
         ->impl_type();
   }
   // tri 3
   else if (eletypename == "WallTri3PoroP1ScatraType")
   {
-    return (dynamic_cast<Discret::ELEMENTS::Wall1PoroP1Scatra<Core::FE::CellType::tri3>*>(ele))
+    return (dynamic_cast<Discret::Elements::Wall1PoroP1Scatra<Core::FE::CellType::tri3>*>(ele))
         ->impl_type();
   }
   // call base class routine
@@ -176,7 +176,7 @@ void PoroElastScaTra::Utils::PoroScatraCloneStrategy::set_element_data(
   // element type in order to access the material property
 
   // note: set_material() was reimplemented by the transport element!
-  auto* trans = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto* trans = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (trans == nullptr) FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
 
 

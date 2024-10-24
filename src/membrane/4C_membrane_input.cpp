@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
  |  read_element                                            fbraeu 06/16 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::Membrane<distype>::read_element(const std::string& eletype,
+bool Discret::Elements::Membrane<distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read number of material model
@@ -49,9 +49,9 @@ bool Discret::ELEMENTS::Membrane<distype>::read_element(const std::string& elety
   return true;
 }
 
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::Membrane<Core::FE::CellType::quad9>;
+template class Discret::Elements::Membrane<Core::FE::CellType::tri3>;
+template class Discret::Elements::Membrane<Core::FE::CellType::tri6>;
+template class Discret::Elements::Membrane<Core::FE::CellType::quad4>;
+template class Discret::Elements::Membrane<Core::FE::CellType::quad9>;
 
 FOUR_C_NAMESPACE_CLOSE

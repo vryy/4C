@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidXWallType : public FluidType
     {
@@ -184,7 +184,7 @@ namespace Discret
       \param lsurface: the local surface number of this surface w.r.t. the parent element
       */
       FluidXWallBoundary(int id, int owner, int nnode, const int* nodeids,
-          Core::Nodes::Node** nodes, Discret::ELEMENTS::Fluid* parent, const int lsurface);
+          Core::Nodes::Node** nodes, Discret::Elements::Fluid* parent, const int lsurface);
 
       /*!
       \brief Copy Constructor
@@ -278,7 +278,7 @@ namespace Discret
 
     };  // class FluidXWallBoundary
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 

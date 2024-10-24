@@ -234,7 +234,7 @@ MultiScale::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   {
     ele->location_vector(*discret_, la, false);
 
-    const auto* solid_ele = dynamic_cast<const Discret::ELEMENTS::Solid*>(ele);
+    const auto* solid_ele = dynamic_cast<const Discret::Elements::Solid*>(ele);
     FOUR_C_THROW_UNLESS(solid_ele,
         "Multiscale simulations are currently only possible with the new solid elements");
 
@@ -888,8 +888,8 @@ void MultiScale::MicroStatic::set_eas_data()
   {
     Core::Elements::Element* actele = discret_->l_row_element(lid);
 
-    if (actele->element_type() == Discret::ELEMENTS::SoHex8Type::instance() or
-        actele->element_type() == Discret::ELEMENTS::SoShw6Type::instance())
+    if (actele->element_type() == Discret::Elements::SoHex8Type::instance() or
+        actele->element_type() == Discret::Elements::SoShw6Type::instance())
     {
       // create the parameters for the discretization
       Teuchos::ParameterList p;

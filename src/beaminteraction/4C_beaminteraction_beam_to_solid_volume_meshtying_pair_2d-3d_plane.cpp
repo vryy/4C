@@ -90,7 +90,7 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DPlane<Beam, Solid>::eval
   double beam_jacobian;
   double penalty_parameter =
       this->params()->beam_to_solid_volume_meshtying_params()->get_penalty_parameter();
-  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1()))
+  const double radius = (dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1()))
                             ->get_circular_cross_section_radius_for_interactions();
 
   // Calculate the meshtying forces.

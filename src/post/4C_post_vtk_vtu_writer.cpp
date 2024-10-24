@@ -103,8 +103,8 @@ void PostVtuWriter::write_geo()
   {
     const Core::Elements::Element* ele = dis->l_row_element(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
@@ -287,8 +287,8 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
   {
     const Core::Elements::Element* ele = dis->l_row_element(e);
     // check for beam element that potentially needs special treatment due to Hermite interpolation
-    const Discret::ELEMENTS::Beam3Base* beamele =
-        dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(ele);
+    const Discret::Elements::Beam3Base* beamele =
+        dynamic_cast<const Discret::Elements::Beam3Base*>(ele);
 
     if (Core::FE::is_nurbs_celltype(ele->shape()))
     {
@@ -661,7 +661,7 @@ Core::FE::CellType PostVtuWriter::map_nurbs_dis_type_to_lagrange_dis_type(
   }
 }
 
-void PostVtuWriter::write_geo_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::write_geo_beam_ele(const Discret::Elements::Beam3Base* beamele,
     std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
     std::vector<double>& coordinates)
 {
@@ -820,7 +820,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
 }
 
 
-void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::ELEMENTS::Beam3Base* beamele,
+void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::Elements::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
     Teuchos::RCP<Core::LinAlg::Vector<double>>& ghostedData, const int& from, const bool fillzeros)
 {

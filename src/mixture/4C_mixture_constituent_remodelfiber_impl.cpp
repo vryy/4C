@@ -36,7 +36,7 @@ namespace
   }
 }  // namespace
 
-MIXTURE::PAR::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiberImpl(
+Mixture::PAR::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiberImpl(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : MixtureConstituent(matdata),
       fiber_id_(matdata.parameters.get<int>("FIBER_ID") - 1),
@@ -52,14 +52,14 @@ MIXTURE::PAR::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiber
 {
 }
 
-std::unique_ptr<MIXTURE::MixtureConstituent>
-MIXTURE::PAR::MixtureConstituentRemodelFiberImpl::create_constituent(int id)
+std::unique_ptr<Mixture::MixtureConstituent>
+Mixture::PAR::MixtureConstituentRemodelFiberImpl::create_constituent(int id)
 {
-  return std::make_unique<MIXTURE::MixtureConstituentRemodelFiberImpl>(this, id);
+  return std::make_unique<Mixture::MixtureConstituentRemodelFiberImpl>(this, id);
 }
 
-MIXTURE::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiberImpl(
-    MIXTURE::PAR::MixtureConstituentRemodelFiberImpl* params, int id)
+Mixture::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiberImpl(
+    Mixture::PAR::MixtureConstituentRemodelFiberImpl* params, int id)
     : MixtureConstituent(params, id),
       params_(params),
       remodel_fiber_(),
@@ -72,37 +72,37 @@ MIXTURE::MixtureConstituentRemodelFiberImpl::MixtureConstituentRemodelFiberImpl(
       Mat::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR);
 }
 
-Core::Materials::MaterialType MIXTURE::MixtureConstituentRemodelFiberImpl::material_type() const
+Core::Materials::MaterialType Mixture::MixtureConstituentRemodelFiberImpl::material_type() const
 {
   return Core::Materials::mix_remodelfiber_impl;
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::pack_constituent(
+void Mixture::MixtureConstituentRemodelFiberImpl::pack_constituent(
     Core::Communication::PackBuffer& data) const
 {
-  MIXTURE::MixtureConstituent::pack_constituent(data);
+  Mixture::MixtureConstituent::pack_constituent(data);
   anisotropy_extension_.pack_anisotropy(data);
 
   for (const RemodelFiber<2>& fiber : remodel_fiber_) fiber.pack(data);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::unpack_constituent(
+void Mixture::MixtureConstituentRemodelFiberImpl::unpack_constituent(
     Core::Communication::UnpackBuffer& buffer)
 {
-  MIXTURE::MixtureConstituent::unpack_constituent(buffer);
+  Mixture::MixtureConstituent::unpack_constituent(buffer);
   initialize();
 
   anisotropy_extension_.unpack_anisotropy(buffer);
   for (RemodelFiber<2>& fiber : remodel_fiber_) fiber.unpack(buffer);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::register_anisotropy_extensions(
+void Mixture::MixtureConstituentRemodelFiberImpl::register_anisotropy_extensions(
     Mat::Anisotropy& anisotropy)
 {
   anisotropy.register_anisotropy_extension(anisotropy_extension_);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::initialize()
+void Mixture::MixtureConstituentRemodelFiberImpl::initialize()
 {
   dgrowthscalard_c_.resize(num_gp());
   dlambdard_c_.resize(num_gp());
@@ -119,20 +119,20 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::initialize()
   }
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::read_element(
+void Mixture::MixtureConstituentRemodelFiberImpl::read_element(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
-  MIXTURE::MixtureConstituent::read_element(numgp, container);
+  Mixture::MixtureConstituent::read_element(numgp, container);
   initialize();
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::setup(Teuchos::ParameterList& params, int eleGID)
+void Mixture::MixtureConstituentRemodelFiberImpl::setup(Teuchos::ParameterList& params, int eleGID)
 {
-  MIXTURE::MixtureConstituent::setup(params, eleGID);
+  Mixture::MixtureConstituent::setup(params, eleGID);
   update_homeostatic_values(params, eleGID);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::update(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::MixtureConstituentRemodelFiberImpl::update(const Core::LinAlg::Matrix<3, 3>& F,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {
   MixtureConstituent::update(F, params, gp, eleGID);
@@ -143,7 +143,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::update(const Core::LinAlg::Mat
   update_homeostatic_values(params, eleGID);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::register_output_data_names(
+void Mixture::MixtureConstituentRemodelFiberImpl::register_output_data_names(
     std::unordered_map<std::string, int>& names_and_size) const
 {
   MixtureConstituent::register_output_data_names(names_and_size);
@@ -153,7 +153,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::register_output_data_names(
   names_and_size["mixture_constituent_" + std::to_string(id()) + "_lambda_r"] = 1;
 }
 
-bool MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_output_data(
+bool Mixture::MixtureConstituentRemodelFiberImpl::evaluate_output_data(
     const std::string& name, Core::LinAlg::SerialDenseMatrix& data) const
 {
   if (name == "mixture_constituent_" + std::to_string(id()) + "_sig_h")
@@ -191,7 +191,7 @@ bool MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_output_data(
   return MixtureConstituent::evaluate_output_data(name, data);
 }
 
-Core::LinAlg::Matrix<1, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_d_lambdafsq_dc(
+Core::LinAlg::Matrix<1, 6> Mixture::MixtureConstituentRemodelFiberImpl::evaluate_d_lambdafsq_dc(
     int gp, int eleGID) const
 {
   Core::LinAlg::Matrix<1, 6> dLambdafDC(false);
@@ -199,7 +199,7 @@ Core::LinAlg::Matrix<1, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
   return dLambdafDC;
 }
 
-Core::LinAlg::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_current_p_k2(
+Core::LinAlg::Matrix<6, 1> Mixture::MixtureConstituentRemodelFiberImpl::evaluate_current_p_k2(
     int gp, int eleGID) const
 {
   Core::LinAlg::Matrix<6, 1> S_stress(false);
@@ -210,7 +210,7 @@ Core::LinAlg::Matrix<6, 1> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
   return S_stress;
 }
 
-Core::LinAlg::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_current_cmat(
+Core::LinAlg::Matrix<6, 6> Mixture::MixtureConstituentRemodelFiberImpl::evaluate_current_cmat(
     const int gp, const int eleGID) const
 {
   const double dPK2dlambdafsq =
@@ -231,7 +231,7 @@ Core::LinAlg::Matrix<6, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate
   return cmat;
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equations(
+void Mixture::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equations(
     const double dt, int gp, int eleGID)
 {
   FOUR_C_ASSERT(params_->enable_growth_,
@@ -285,7 +285,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::integrate_local_evolution_equa
   dlambdard_c_[gp].multiply(-1.0, dlambdardR, dRdC);
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
+void Mixture::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::Matrix<3, 3>& F,
     const Core::LinAlg::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     Core::LinAlg::Matrix<6, 1>& S_stress, Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
 {
@@ -302,7 +302,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate(const Core::LinAlg::M
   cmat.update(evaluate_current_cmat(gp, eleGID));
 }
 
-void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_elastic_part(
+void Mixture::MixtureConstituentRemodelFiberImpl::evaluate_elastic_part(
     const Core::LinAlg::Matrix<3, 3>& FM, const Core::LinAlg::Matrix<3, 3>& iFextin,
     Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
     Core::LinAlg::Matrix<6, 6>& cmat, int gp, int eleGID)
@@ -313,19 +313,19 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_elastic_part(
       "external deformation.");
 }
 
-double MIXTURE::MixtureConstituentRemodelFiberImpl::get_growth_scalar(int gp) const
+double Mixture::MixtureConstituentRemodelFiberImpl::get_growth_scalar(int gp) const
 {
   return remodel_fiber_[gp].evaluate_current_growth_scalar();
 }
 
-Core::LinAlg::Matrix<1, 6> MIXTURE::MixtureConstituentRemodelFiberImpl::get_d_growth_scalar_d_cg(
+Core::LinAlg::Matrix<1, 6> Mixture::MixtureConstituentRemodelFiberImpl::get_d_growth_scalar_d_cg(
     int gp, int eleGID) const
 {
   if (!params_->enable_growth_) return Core::LinAlg::Matrix<1, 6>(true);
   return dgrowthscalard_c_[gp];
 }
 
-double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(
+double Mixture::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(
     const double time) const
 {
   if (params_->deposition_stretch_timefunc_num_ == 0)
@@ -337,7 +337,7 @@ double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_deposition_stretch(
       ->function_by_id<Core::Utils::FunctionOfTime>(params_->deposition_stretch_timefunc_num_ - 1)
       .evaluate(time);
 }
-void MIXTURE::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
+void Mixture::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
     const Teuchos::ParameterList& params, const int eleGID)
 {
   // Update deposition stretch / prestretch of fiber depending on time function
@@ -361,7 +361,7 @@ void MIXTURE::MixtureConstituentRemodelFiberImpl::update_homeostatic_values(
   }
 }
 
-double MIXTURE::MixtureConstituentRemodelFiberImpl::evaluate_lambdaf(
+double Mixture::MixtureConstituentRemodelFiberImpl::evaluate_lambdaf(
     const Core::LinAlg::Matrix<3, 3>& C, const int gp, const int eleGID) const
 {
   return std::sqrt(C.dot(anisotropy_extension_.get_structural_tensor(gp, 0)));

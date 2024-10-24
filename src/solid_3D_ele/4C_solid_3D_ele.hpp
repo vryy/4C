@@ -27,7 +27,7 @@ namespace Mat
 {
   class So3Material;
 }
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   // forward declaration
   class SolidEleCalcInterface;
@@ -149,13 +149,13 @@ namespace Discret::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& params_interface() const
+    [[nodiscard]] inline FourC::Solid::Elements::ParamsInterface& params_interface() const
     {
       if (not is_params_interface()) FOUR_C_THROW("The interface ptr is not set!");
       return *interface_ptr_;
     }
 
-    [[nodiscard]] inline FourC::Solid::ELEMENTS::ParamsInterface& get_solid_params_interface() const
+    [[nodiscard]] inline FourC::Solid::Elements::ParamsInterface& get_solid_params_interface() const
     {
       return params_interface();
     }
@@ -206,7 +206,7 @@ namespace Discret::ELEMENTS
     SolidElementProperties solid_ele_property_{};
 
     //! interface pointer for data exchange between the element and the time integrator.
-    Teuchos::RCP<FourC::Solid::ELEMENTS::ParamsInterface> interface_ptr_;
+    Teuchos::RCP<FourC::Solid::Elements::ParamsInterface> interface_ptr_;
 
     //! element calculation holding one of the implemented variants
     SolidCalcVariant solid_calc_variant_;
@@ -216,7 +216,7 @@ namespace Discret::ELEMENTS
 
   };  // class Solid
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

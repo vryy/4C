@@ -16,23 +16,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Ale3Type Discret::ELEMENTS::Ale3Type::instance_;
+Discret::Elements::Ale3Type Discret::Elements::Ale3Type::instance_;
 
-Discret::ELEMENTS::Ale3Type& Discret::ELEMENTS::Ale3Type::instance() { return instance_; }
+Discret::Elements::Ale3Type& Discret::Elements::Ale3Type::instance() { return instance_; }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Communication::ParObject* Discret::ELEMENTS::Ale3Type::create(
+Core::Communication::ParObject* Discret::Elements::Ale3Type::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Ale3* object = new Discret::ELEMENTS::Ale3(-1, -1);
+  Discret::Elements::Ale3* object = new Discret::Elements::Ale3(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   Teuchos::RCP<Core::Elements::Element> ele;
@@ -41,7 +41,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3Type::create(
   {
     if (eledistype != "NURBS27")
     {
-      ele = Teuchos::make_rcp<Discret::ELEMENTS::Ale3>(id, owner);
+      ele = Teuchos::make_rcp<Discret::Elements::Ale3>(id, owner);
     }
   }
 
@@ -50,15 +50,15 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3Type::create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3Type::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3Type::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::Ale3>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::Ale3>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Type::nodal_block_information(
+void Discret::Elements::Ale3Type::nodal_block_information(
     Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
   numdf = 3;
@@ -68,7 +68,7 @@ void Discret::ELEMENTS::Ale3Type::nodal_block_information(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Ale3Type::compute_null_space(
+Core::LinAlg::SerialDenseMatrix Discret::Elements::Ale3Type::compute_null_space(
     Core::Nodes::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return compute_solid_3d_null_space(node, x0);
@@ -76,7 +76,7 @@ Core::LinAlg::SerialDenseMatrix Discret::ELEMENTS::Ale3Type::compute_null_space(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3Type::setup_element_definition(
+void Discret::Elements::Ale3Type::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, Input::LineDefinition>& defs = definitions["ALE3"];
@@ -108,7 +108,7 @@ void Discret::ELEMENTS::Ale3Type::setup_element_definition(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3SurfaceType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3SurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale3Surface( id, owner ) );
@@ -117,26 +117,26 @@ Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Ale3SurfaceType::create
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3::Ale3(int id, int owner) : Core::Elements::Element(id, owner) {}
+Discret::Elements::Ale3::Ale3(int id, int owner) : Core::Elements::Element(id, owner) {}
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Discret::ELEMENTS::Ale3::Ale3(const Discret::ELEMENTS::Ale3& old) : Core::Elements::Element(old)
+Discret::Elements::Ale3::Ale3(const Discret::Elements::Ale3& old) : Core::Elements::Element(old)
 {
   return;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Ale3::clone() const
+Core::Elements::Element* Discret::Elements::Ale3::clone() const
 {
-  Discret::ELEMENTS::Ale3* newelement = new Discret::ELEMENTS::Ale3(*this);
+  Discret::Elements::Ale3* newelement = new Discret::Elements::Ale3(*this);
   return newelement;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Ale3::shape() const
+Core::FE::CellType Discret::Elements::Ale3::shape() const
 {
   switch (num_node())
   {
@@ -162,7 +162,7 @@ Core::FE::CellType Discret::ELEMENTS::Ale3::shape() const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Ale3::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -175,7 +175,7 @@ void Discret::ELEMENTS::Ale3::pack(Core::Communication::PackBuffer& data) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Ale3::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -190,7 +190,7 @@ void Discret::ELEMENTS::Ale3::unpack(Core::Communication::UnpackBuffer& buffer)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Discret::ELEMENTS::Ale3::print(std::ostream& os) const
+void Discret::Elements::Ale3::print(std::ostream& os) const
 {
   os << "Ale3 ";
   Element::print(os);
@@ -201,7 +201,7 @@ void Discret::ELEMENTS::Ale3::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::Ale3::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Ale3::surfaces()
 {
   return Core::Communication::element_boundary_factory<Ale3Surface, Ale3>(
       Core::Communication::buildSurfaces, *this);

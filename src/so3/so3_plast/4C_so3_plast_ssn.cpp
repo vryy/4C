@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                            seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::So3Plast<distype>::So3Plast(int id, int owner)
+Discret::Elements::So3Plast<distype>::So3Plast(int id, int owner)
     : SoBase(id, owner),
       fbar_(false),
       KbbInv_(std::vector<Core::LinAlg::SerialDenseMatrix>(0)),
@@ -54,7 +54,7 @@ Discret::ELEMENTS::So3Plast<distype>::So3Plast(int id, int owner)
  | copy-ctor (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::So3Plast<distype>::So3Plast(const Discret::ELEMENTS::So3Plast<distype>& old)
+Discret::Elements::So3Plast<distype>::So3Plast(const Discret::Elements::So3Plast<distype>& old)
     : SoBase(old)
 {
 }
@@ -65,125 +65,125 @@ Discret::ELEMENTS::So3Plast<distype>::So3Plast(const Discret::ELEMENTS::So3Plast
  | it (public)                                                          |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::Element* Discret::ELEMENTS::So3Plast<distype>::clone() const
+Core::Elements::Element* Discret::Elements::So3Plast<distype>::clone() const
 {
-  auto* newelement = new Discret::ELEMENTS::So3Plast<distype>(*this);
+  auto* newelement = new Discret::Elements::So3Plast<distype>(*this);
 
   return newelement;
 }
 
 
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nen_, 1>>
-    Discret::ELEMENTS::So3Plast<distype>::shapefunct_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nen_, 1>>
+    Discret::Elements::So3Plast<distype>::shapefunct_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nen_>>
-    Discret::ELEMENTS::So3Plast<distype>::deriv_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nen_>>
+    Discret::Elements::So3Plast<distype>::deriv_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::invJ_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::invJ_;
 template <Core::FE::CellType distype>
-std::pair<bool, double> Discret::ELEMENTS::So3Plast<distype>::detJ_;
+std::pair<bool, double> Discret::Elements::So3Plast<distype>::detJ_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nen_>>
-    Discret::ELEMENTS::So3Plast<distype>::N_XYZ_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nen_>>
+    Discret::Elements::So3Plast<distype>::N_XYZ_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::defgrd_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::defgrd_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::defgrd_mod_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::defgrd_mod_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::rcg_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::rcg_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::delta_Lp_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::delta_Lp_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::numstr_,
-                    Discret::ELEMENTS::So3Plast<distype>::numdofperelement_>>
-    Discret::ELEMENTS::So3Plast<distype>::bop_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::numstr_,
+                    Discret::Elements::So3Plast<distype>::numdofperelement_>>
+    Discret::Elements::So3Plast<distype>::bop_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::numstr_, 1>>
-    Discret::ELEMENTS::So3Plast<distype>::pk2_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::numstr_, 1>>
+    Discret::Elements::So3Plast<distype>::pk2_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::numstr_,
-                    Discret::ELEMENTS::So3Plast<distype>::numstr_>>
-    Discret::ELEMENTS::So3Plast<distype>::cmat_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::numstr_,
+                    Discret::Elements::So3Plast<distype>::numstr_>>
+    Discret::Elements::So3Plast<distype>::cmat_;
 
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nen_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::xrefe_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nen_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::xrefe_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nen_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::xcurr_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nen_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::xcurr_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nen_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::xcurr_rate_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nen_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::xcurr_rate_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nen_, 1>>
-    Discret::ELEMENTS::So3Plast<distype>::etemp_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nen_, 1>>
+    Discret::Elements::So3Plast<distype>::etemp_;
 
 template <Core::FE::CellType distype>
-std::pair<bool, double> Discret::ELEMENTS::So3Plast<distype>::detF_;
+std::pair<bool, double> Discret::Elements::So3Plast<distype>::detF_;
 template <Core::FE::CellType distype>
-std::pair<bool, double> Discret::ELEMENTS::So3Plast<distype>::detF_0_;
+std::pair<bool, double> Discret::Elements::So3Plast<distype>::detF_0_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::inv_defgrd_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::inv_defgrd_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::inv_defgrd_0_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::inv_defgrd_0_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nen_>>
-    Discret::ELEMENTS::So3Plast<distype>::N_XYZ_0_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nen_>>
+    Discret::Elements::So3Plast<distype>::N_XYZ_0_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::numstr_, 1>>
-    Discret::ELEMENTS::So3Plast<distype>::rcg_vec_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::numstr_, 1>>
+    Discret::Elements::So3Plast<distype>::rcg_vec_;
 template <Core::FE::CellType distype>
-std::pair<bool, double> Discret::ELEMENTS::So3Plast<distype>::f_bar_fac_;
+std::pair<bool, double> Discret::Elements::So3Plast<distype>::f_bar_fac_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::numdofperelement_, 1>>
-    Discret::ELEMENTS::So3Plast<distype>::htensor_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::numdofperelement_, 1>>
+    Discret::Elements::So3Plast<distype>::htensor_;
 
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::numstr_,
-                    Discret::ELEMENTS::So3Plast<distype>::numstr_>>
-    Discret::ELEMENTS::So3Plast<distype>::T0invT_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::numstr_,
+                    Discret::Elements::So3Plast<distype>::numstr_>>
+    Discret::Elements::So3Plast<distype>::T0invT_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nsd_,
-                    Discret::ELEMENTS::So3Plast<distype>::nsd_>>
-    Discret::ELEMENTS::So3Plast<distype>::jac_0_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nsd_,
+                    Discret::Elements::So3Plast<distype>::nsd_>>
+    Discret::Elements::So3Plast<distype>::jac_0_;
 template <Core::FE::CellType distype>
-std::pair<bool, double> Discret::ELEMENTS::So3Plast<distype>::det_jac_0_;
+std::pair<bool, double> Discret::Elements::So3Plast<distype>::det_jac_0_;
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::SerialDenseMatrix> Discret::ELEMENTS::So3Plast<distype>::M_eas_;
+std::pair<bool, Core::LinAlg::SerialDenseMatrix> Discret::Elements::So3Plast<distype>::M_eas_;
 
 template <Core::FE::CellType distype>
-std::pair<bool, Core::LinAlg::Matrix<Discret::ELEMENTS::So3Plast<distype>::nen_, 1>>
-    Discret::ELEMENTS::So3Plast<distype>::weights_;
+std::pair<bool, Core::LinAlg::Matrix<Discret::Elements::So3Plast<distype>::nen_, 1>>
+    Discret::Elements::So3Plast<distype>::weights_;
 template <Core::FE::CellType distype>
 std::pair<bool, std::vector<Core::LinAlg::SerialDenseVector>>
-    Discret::ELEMENTS::So3Plast<distype>::knots_;
+    Discret::Elements::So3Plast<distype>::knots_;
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Plast<distype>::num_volume() const
+int Discret::Elements::So3Plast<distype>::num_volume() const
 {
   switch (distype)
   {
@@ -202,7 +202,7 @@ int Discret::ELEMENTS::So3Plast<distype>::num_volume() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Plast<distype>::num_surface() const
+int Discret::Elements::So3Plast<distype>::num_surface() const
 {
   switch (distype)
   {
@@ -222,7 +222,7 @@ int Discret::ELEMENTS::So3Plast<distype>::num_surface() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Plast<distype>::num_line() const
+int Discret::Elements::So3Plast<distype>::num_line() const
 {
   switch (distype)
   {
@@ -242,7 +242,7 @@ int Discret::ELEMENTS::So3Plast<distype>::num_line() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<distype>::lines()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::So3Plast<distype>::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -252,7 +252,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<d
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<distype>::surfaces()
+std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::So3Plast<distype>::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -262,7 +262,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::ELEMENTS::So3Plast<d
  | pack data (public)                                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::So3Plast<distype>::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -329,7 +329,7 @@ void Discret::ELEMENTS::So3Plast<distype>::pack(Core::Communication::PackBuffer&
  | unpack data (public)                                     seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -370,7 +370,7 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   }
 
   // EAS element technology
-  eastype_ = static_cast<Discret::ELEMENTS::So3PlastEasType>(extract_int(buffer));
+  eastype_ = static_cast<Discret::Elements::So3PlastEasType>(extract_int(buffer));
   extract_from_pack(buffer, neas_);
 
   // no EAS
@@ -448,7 +448,7 @@ void Discret::ELEMENTS::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
  | print this element (public)                              seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::print(std::ostream& os) const
+void Discret::Elements::So3Plast<distype>::print(std::ostream& os) const
 {
   os << "So3Plast ";
 }
@@ -458,7 +458,7 @@ void Discret::ELEMENTS::So3Plast<distype>::print(std::ostream& os) const
  | read this element, get the material (public)             seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& eletype,
+bool Discret::Elements::So3Plast<distype>::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   std::string buffer = container.get<std::string>("KINEM");
@@ -640,7 +640,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::read_element(const std::string& elety
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::So3Plast<distype>::unique_par_object_id() const
+int Discret::Elements::So3Plast<distype>::unique_par_object_id() const
 {
   switch (distype)
   {
@@ -667,7 +667,7 @@ int Discret::ELEMENTS::So3Plast<distype>::unique_par_object_id() const
  | get the nodes from so3 (public)                          seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Core::Elements::ElementType& Discret::ELEMENTS::So3Plast<distype>::element_type() const
+Core::Elements::ElementType& Discret::Elements::So3Plast<distype>::element_type() const
 {
   switch (distype)
   {
@@ -694,7 +694,7 @@ Core::Elements::ElementType& Discret::ELEMENTS::So3Plast<distype>::element_type(
  | return names of visualization data (public)              seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::vis_names(std::map<std::string, int>& names)
+void Discret::Elements::So3Plast<distype>::vis_names(std::map<std::string, int>& names)
 {
   Core::Elements::Element::vis_names(names);
   solid_material()->vis_names(names);
@@ -704,7 +704,7 @@ void Discret::ELEMENTS::So3Plast<distype>::vis_names(std::map<std::string, int>&
  | return visualization data (public)                       seitz 07/13 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Plast<distype>::vis_data(
+bool Discret::Elements::So3Plast<distype>::vis_data(
     const std::string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
@@ -718,7 +718,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::vis_data(
  | read relevant parameters from paramter list              seitz 01/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
+void Discret::Elements::So3Plast<distype>::read_parameter_list(
     Teuchos::RCP<Teuchos::ParameterList> plparams)
 {
   double cpl = plparams->get<double>("SEMI_SMOOTH_CPL");
@@ -771,7 +771,7 @@ void Discret::ELEMENTS::So3Plast<distype>::read_parameter_list(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 template <unsigned int num_cols>
-void Discret::ELEMENTS::So3Plast<distype>::soh8_expol(
+void Discret::Elements::So3Plast<distype>::soh8_expol(
     Core::LinAlg::Matrix<numgpt_post, num_cols>& data, Core::LinAlg::MultiVector<double>& expolData)
 {
   if (distype != Core::FE::CellType::hex8) FOUR_C_THROW("soh8_expol called from non-hex8 element");
@@ -848,18 +848,18 @@ void Discret::ELEMENTS::So3Plast<distype>::soh8_expol(
   }
 }
 
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
+template void Discret::Elements::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
     Core::LinAlg::Matrix<numgpt_post, 1>&, Core::LinAlg::MultiVector<double>&);
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
+template void Discret::Elements::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
     Core::LinAlg::Matrix<numgpt_post, numstr_>&, Core::LinAlg::MultiVector<double>&);
-template void Discret::ELEMENTS::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
+template void Discret::Elements::So3Plast<Core::FE::CellType::hex8>::soh8_expol(
     Core::LinAlg::Matrix<numgpt_post, 9>&, Core::LinAlg::MultiVector<double>&);
 
 /*----------------------------------------------------------------------*
  | Have plastic spin                                        seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-bool Discret::ELEMENTS::So3Plast<distype>::have_plastic_spin()
+bool Discret::Elements::So3Plast<distype>::have_plastic_spin()
 {
   // get plastic hyperelastic material
   Mat::PlasticElastHyper* plmat = nullptr;
@@ -871,7 +871,7 @@ bool Discret::ELEMENTS::So3Plast<distype>::have_plastic_spin()
   return false;
 }
 
-int Discret::ELEMENTS::plast_eas_type_to_num_eas_v(Discret::ELEMENTS::So3PlastEasType et)
+int Discret::Elements::plast_eas_type_to_num_eas_v(Discret::Elements::So3PlastEasType et)
 {
   switch (et)
   {

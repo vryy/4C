@@ -22,11 +22,11 @@ namespace Core::Communication
   class UnpackBuffer;
 }  // namespace Core::Communication
 
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   enum class EasType;
 }
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   enum class ElementTechnology
   {
@@ -131,12 +131,12 @@ namespace Discret::ELEMENTS
   };
 
   void add_to_pack(Core::Communication::PackBuffer& data,
-      const Discret::ELEMENTS::SolidElementProperties& properties);
+      const Discret::Elements::SolidElementProperties& properties);
 
   void extract_from_pack(Core::Communication::UnpackBuffer& buffer,
-      Discret::ELEMENTS::SolidElementProperties& properties);
+      Discret::Elements::SolidElementProperties& properties);
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 
 FOUR_C_NAMESPACE_CLOSE

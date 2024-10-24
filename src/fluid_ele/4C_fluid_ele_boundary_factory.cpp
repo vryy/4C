@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 /*--------------------------------------------------------------------------*
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidBoundaryInterface* Discret::ELEMENTS::FluidBoundaryFactory::provide_impl(
+Discret::Elements::FluidBoundaryInterface* Discret::Elements::FluidBoundaryFactory::provide_impl(
     Core::FE::CellType distype, std::string problem)
 {
   switch (distype)
@@ -78,15 +78,15 @@ Discret::ELEMENTS::FluidBoundaryInterface* Discret::ELEMENTS::FluidBoundaryFacto
  |                                                 (public) rasthofer 11/13 |
  *--------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::FluidBoundaryInterface*
-Discret::ELEMENTS::FluidBoundaryFactory::define_problem_type(std::string problem)
+Discret::Elements::FluidBoundaryInterface*
+Discret::Elements::FluidBoundaryFactory::define_problem_type(std::string problem)
 {
   if (problem == "std")
-    return Discret::ELEMENTS::FluidEleBoundaryCalcStd<distype>::instance();
+    return Discret::Elements::FluidEleBoundaryCalcStd<distype>::instance();
   else if (problem == "poro")
-    return Discret::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::instance();
+    return Discret::Elements::FluidEleBoundaryCalcPoro<distype>::instance();
   else if (problem == "poro_p1")
-    return Discret::ELEMENTS::FluidEleBoundaryCalcPoroP1<distype>::instance();
+    return Discret::Elements::FluidEleBoundaryCalcPoroP1<distype>::instance();
   else
     FOUR_C_THROW("Defined problem type does not exist!!");
 

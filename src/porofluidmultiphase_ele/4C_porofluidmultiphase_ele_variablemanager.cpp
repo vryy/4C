@@ -20,9 +20,9 @@ FOUR_C_NAMESPACE_OPEN
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-Teuchos::RCP<Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>>
-Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_variable_manager(
-    const Discret::ELEMENTS::PoroFluidMultiPhaseEleParameter& para,
+Teuchos::RCP<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
+Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_variable_manager(
+    const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
     const POROFLUIDMULTIPHASE::Action& action, Teuchos::RCP<Core::Mat::Material> mat,
     int numdofpernode, int numfluidphases)
 {
@@ -134,7 +134,7 @@ Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<nsd, nen>::create_
  | extract node values related to the state vector 'phinp'   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerPhi<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
@@ -161,7 +161,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd, nen>::evaluate_gp_variables(
+void Discret::Elements::PoroFluidManager::VariableManagerPhi<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -191,7 +191,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhi<nsd, nen>::evaluate
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerPhiGradPhi<nsd,
     nen>::evaluate_gp_variables(const Core::LinAlg::Matrix<nen, 1>&
                                     funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
@@ -218,7 +218,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerPhiGradPhi<nsd,
  | extract node values related to time derivatives           vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerInstat<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
@@ -248,7 +248,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::evaluate_gp_variables(
+void Discret::Elements::PoroFluidManager::VariableManagerInstat<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -276,7 +276,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerInstat<nsd, nen>::evalu
  | extract node values related to deforming domain           vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerStruct<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
@@ -333,7 +333,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::evaluate_gp_variables(
+void Discret::Elements::PoroFluidManager::VariableManagerStruct<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -365,7 +365,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerStruct<nsd, nen>::evalu
  | extract node values related to ScaTra coupling           vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerScalar<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
@@ -395,7 +395,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd,
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd, nen>::evaluate_gp_variables(
+void Discret::Elements::PoroFluidManager::VariableManagerScalar<nsd, nen>::evaluate_gp_variables(
     const Core::LinAlg::Matrix<nen, 1>& funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
         derxy  //! array for shape function derivatives w.r.t x,y,z
@@ -426,7 +426,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerScalar<nsd, nen>::evalu
  | extract node values related to the state vector 'phinp'   vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValue<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerMaximumNodalVolFracValue<nsd,
     nen>::extract_element_and_node_values(const Core::Elements::Element& ele,
     const Core::FE::Discretization& discretization, Core::Elements::LocationArray& la,
     Core::LinAlg::Matrix<nsd, nen>& xyze, const int dofsetnum)
@@ -476,7 +476,7 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
  | evaluate state vector at gauss point                      vuong 09/16 |
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValue<nsd,
+void Discret::Elements::PoroFluidManager::VariableManagerMaximumNodalVolFracValue<nsd,
     nen>::evaluate_gp_variables(const Core::LinAlg::Matrix<nen, 1>&
                                     funct,  //! array for shape functions
     const Core::LinAlg::Matrix<nsd, nen>&
@@ -495,33 +495,33 @@ void Discret::ELEMENTS::PoroFluidManager::VariableManagerMaximumNodalVolFracValu
 
 // 1D elements
 // line 2
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<1, 2>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<1, 2>;
 
 // line 3
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<1, 3>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<1, 3>;
 
 // 2D elements
 // tri3
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<2, 3>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<2, 3>;
 // tri6
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<2, 6>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<2, 6>;
 // quad4
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<2, 4>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<2, 4>;
 
 // quad9 and nurbs9
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<2, 9>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<2, 9>;
 
 // 3D elements
 // hex8
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<3, 8>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<3, 8>;
 
 // hex27
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<3, 27>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<3, 27>;
 // tet4
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<3, 4>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<3, 4>;
 // tet10
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<3, 10>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<3, 10>;
 // pyramid5
-template class Discret::ELEMENTS::PoroFluidManager::VariableManagerInterface<3, 5>;
+template class Discret::Elements::PoroFluidManager::VariableManagerInterface<3, 5>;
 
 FOUR_C_NAMESPACE_CLOSE

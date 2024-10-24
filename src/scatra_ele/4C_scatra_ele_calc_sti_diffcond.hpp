@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // forward declarations
     template <Core::FE::CellType distype, int probdim>
@@ -185,9 +185,9 @@ namespace Discret
       Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanagerdiffcond_;
 
       //! utility class supporting element evaluation for diffusion-conduction formulation
-      Discret::ELEMENTS::ScaTraEleUtilsElchDiffCond<distype>* utils_;
+      Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>* utils_;
     };  // class ScaTraEleCalcSTIDiffCond
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

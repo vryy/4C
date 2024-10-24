@@ -14,15 +14,15 @@ FOUR_C_NAMESPACE_OPEN
 
 
 
-Discret::ELEMENTS::Vele3LineType Discret::ELEMENTS::Vele3LineType::instance_;
+Discret::Elements::Vele3LineType Discret::Elements::Vele3LineType::instance_;
 
-Discret::ELEMENTS::Vele3LineType& Discret::ELEMENTS::Vele3LineType::instance() { return instance_; }
+Discret::Elements::Vele3LineType& Discret::Elements::Vele3LineType::instance() { return instance_; }
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 04/07|
  |  id             (in)  this element's global id                       |
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
+Discret::Elements::Vele3Line::Vele3Line(int id, int owner, int nnode, const int* nodeids,
     Core::Nodes::Node** nodes, Core::Elements::Element* parent, const int lline)
     : Core::Elements::FaceElement(id, owner)
 {
@@ -36,7 +36,7 @@ Discret::ELEMENTS::Vele3Line::Vele3Line(int id, int owner, int nnode, const int*
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Vele3Line::Vele3Line(const Discret::ELEMENTS::Vele3Line& old)
+Discret::Elements::Vele3Line::Vele3Line(const Discret::Elements::Vele3Line& old)
     : Core::Elements::FaceElement(old)
 {
   return;
@@ -47,9 +47,9 @@ Discret::ELEMENTS::Vele3Line::Vele3Line(const Discret::ELEMENTS::Vele3Line& old)
  |  Deep copy this instance return pointer to it               (public) |
  |                                                            gee 01/07 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Vele3Line::clone() const
+Core::Elements::Element* Discret::Elements::Vele3Line::clone() const
 {
-  Discret::ELEMENTS::Vele3Line* newelement = new Discret::ELEMENTS::Vele3Line(*this);
+  Discret::Elements::Vele3Line* newelement = new Discret::Elements::Vele3Line(*this);
   return newelement;
 }
 
@@ -58,7 +58,7 @@ Core::Elements::Element* Discret::ELEMENTS::Vele3Line::clone() const
  |                                                             (public) |
  |                                                          u.kue 03/07 |
  *----------------------------------------------------------------------*/
-Core::FE::CellType Discret::ELEMENTS::Vele3Line::shape() const
+Core::FE::CellType Discret::Elements::Vele3Line::shape() const
 {
   switch (num_node())
   {
@@ -76,7 +76,7 @@ Core::FE::CellType Discret::ELEMENTS::Vele3Line::shape() const
  |  Pack data                                                  (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Vele3Line::pack(Core::Communication::PackBuffer& data) const
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
 
@@ -88,7 +88,7 @@ void Discret::ELEMENTS::Vele3Line::pack(Core::Communication::PackBuffer& data) c
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Vele3Line::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   FOUR_C_THROW("this Vele3Line element does not support communication");
   return;
@@ -99,7 +99,7 @@ void Discret::ELEMENTS::Vele3Line::unpack(Core::Communication::UnpackBuffer& buf
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Vele3Line::print(std::ostream& os) const
+void Discret::Elements::Vele3Line::print(std::ostream& os) const
 {
   os << "Vele3Line ";
   Element::print(os);

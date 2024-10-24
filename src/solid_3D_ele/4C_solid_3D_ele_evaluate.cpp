@@ -56,7 +56,7 @@ namespace
   }
 }  // namespace
 
-int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
+int Discret::Elements::Solid::evaluate(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -256,14 +256,14 @@ int Discret::ELEMENTS::Solid::evaluate(Teuchos::ParameterList& params,
   return 0;
 }
 
-void Discret::ELEMENTS::Solid::set_integration_rule(
+void Discret::Elements::Solid::set_integration_rule(
     const Core::FE::GaussIntegration& integration_rule)
 {
   std::visit([&](auto& interface) { interface->set_integration_rule(integration_rule); },
       solid_calc_variant_);
 }
 
-int Discret::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Solid::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -279,25 +279,25 @@ int Discret::ELEMENTS::Solid::evaluate_neumann(Teuchos::ParameterList& params,
           return params.get("total time", -1.0);
       });
 
-  Discret::ELEMENTS::evaluate_neumann_by_element(
+  Discret::Elements::evaluate_neumann_by_element(
       *this, discretization, condition, lm, elevec1, time);
   return 0;
 }
 
 template <int dim>
-double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi(const std::vector<double>& disp,
+double Discret::Elements::Solid::get_normal_cauchy_stress_at_xi(const std::vector<double>& disp,
     const Core::LinAlg::Matrix<dim, 1>& xi, const Core::LinAlg::Matrix<dim, 1>& n,
     const Core::LinAlg::Matrix<dim, 1>& dir, CauchyNDirLinearizations<dim>& linearizations)
 {
-  return Discret::ELEMENTS::get_normal_cauchy_stress_at_xi<dim>(
+  return Discret::Elements::get_normal_cauchy_stress_at_xi<dim>(
       solid_calc_variant_, *this, *solid_material(), disp, xi, n, dir, linearizations);
 }
 
-template double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi<3>(
+template double Discret::Elements::Solid::get_normal_cauchy_stress_at_xi<3>(
     const std::vector<double>&, const Core::LinAlg::Matrix<3, 1>&,
     const Core::LinAlg::Matrix<3, 1>&, const Core::LinAlg::Matrix<3, 1>&,
     CauchyNDirLinearizations<3>&);
-template double Discret::ELEMENTS::Solid::get_normal_cauchy_stress_at_xi<2>(
+template double Discret::Elements::Solid::get_normal_cauchy_stress_at_xi<2>(
     const std::vector<double>&, const Core::LinAlg::Matrix<2, 1>&,
     const Core::LinAlg::Matrix<2, 1>&, const Core::LinAlg::Matrix<2, 1>&,
     CauchyNDirLinearizations<2>&);

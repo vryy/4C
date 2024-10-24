@@ -2044,7 +2044,7 @@ bool XFEM::XFluidTimeInt::check_st_side_volume(
 
   // use one-point Gauss rule
   Core::FE::IntPointsAndWeights<nsd> intpoints_stab(
-      Discret::ELEMENTS::DisTypeToStabGaussRule<space_time_distype>::rule);
+      Discret::Elements::DisTypeToStabGaussRule<space_time_distype>::rule);
 
   Core::LinAlg::Matrix<nsd, 1> xsi(true);
 

@@ -14,7 +14,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace Discret::ELEMENTS
+namespace Discret::Elements
 {
   /*!
    * \brief calculate core linearizations of Butler-Volmer mass flux density w.r.t. elch dofs
@@ -135,7 +135,7 @@ namespace Discret::ELEMENTS
   //! Return, if kinetic model uses reduced prefactor in Butler-Volmer equation
   bool is_reduced_butler_volmer(int kineticmodel);
 
-}  // namespace Discret::ELEMENTS
+}  // namespace Discret::Elements
 
 FOUR_C_NAMESPACE_CLOSE
 

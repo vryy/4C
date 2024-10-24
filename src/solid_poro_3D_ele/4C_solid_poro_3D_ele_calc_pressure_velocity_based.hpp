@@ -24,15 +24,15 @@ namespace Mat
   class FluidPoro;
   class StructPoro;
 }  // namespace Mat
-namespace Solid::ELEMENTS
+namespace Solid::Elements
 {
   class ParamsInterface;
-}  // namespace Solid::ELEMENTS
+}  // namespace Solid::Elements
 
 namespace Discret
 {
 
-  namespace ELEMENTS
+  namespace Elements
   {
     template <Core::FE::CellType celltype>
     class SolidPoroPressureVelocityBasedEleCalc
@@ -75,7 +75,7 @@ namespace Discret
 
       Core::FE::GaussIntegration gauss_integration_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

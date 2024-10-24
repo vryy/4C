@@ -17,7 +17,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
+int Discret::Elements::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
     std::vector<int>& dof_index_array, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseMatrix* elemat1)
@@ -123,7 +123,7 @@ int Discret::ELEMENTS::Shell7pLine::evaluate_neumann(Teuchos::ParameterList& par
 }
 
 
-void Discret::ELEMENTS::Shell7pLine::line_integration(double& dL,
+void Discret::Elements::Shell7pLine::line_integration(double& dL,
     const Core::LinAlg::SerialDenseMatrix& x, const Core::LinAlg::SerialDenseMatrix& derivatives)
 {
   // compute dXYZ / drs

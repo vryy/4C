@@ -19,23 +19,23 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   // forward declaration
   class FunctionMixtureRule;
 
   namespace PAR
   {
-    class FunctionMixtureRule : public MIXTURE::PAR::MixtureRule
+    class FunctionMixtureRule : public Mixture::PAR::MixtureRule
     {
-      friend class MIXTURE::FunctionMixtureRule;
+      friend class Mixture::FunctionMixtureRule;
 
      public:
       /// constructor
       explicit FunctionMixtureRule(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// Create mixturerule instance
-      std::unique_ptr<MIXTURE::MixtureRule> create_rule() override;
+      std::unique_ptr<Mixture::MixtureRule> create_rule() override;
 
       /// @name parameters of the mixture rule
       /// @{
@@ -51,11 +51,11 @@ namespace MIXTURE
    * \brief Mixture rule to be used in homogenized constrained mixture models. It scales the mass
    * fractions of the individual constitutents by functions of space and time.
    */
-  class FunctionMixtureRule : public MIXTURE::MixtureRule
+  class FunctionMixtureRule : public Mixture::MixtureRule
   {
    public:
     /// Constructor for mixture rule given the input parameters
-    explicit FunctionMixtureRule(MIXTURE::PAR::FunctionMixtureRule* params);
+    explicit FunctionMixtureRule(Mixture::PAR::FunctionMixtureRule* params);
 
     void evaluate(const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, Core::LinAlg::Matrix<6, 1>& S_stress,
@@ -75,7 +75,7 @@ namespace MIXTURE
     PAR::FunctionMixtureRule* params_{};
     std::vector<const Core::Utils::FunctionOfSpaceTime*> mass_fractions_functions_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

@@ -17,15 +17,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet4,
+template class Discret::Elements::So3PoroScatra<Discret::Elements::SoTet4,
     Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoTet10,
+template class Discret::Elements::So3PoroScatra<Discret::Elements::SoTet10,
     Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex8,
+template class Discret::Elements::So3PoroScatra<Discret::Elements::SoHex8,
     Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::SoHex27,
+template class Discret::Elements::So3PoroScatra<Discret::Elements::SoHex27,
     Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::So3PoroScatra<Discret::ELEMENTS::Nurbs::SoNurbs27,
+template class Discret::Elements::So3PoroScatra<Discret::Elements::Nurbs::SoNurbs27,
     Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

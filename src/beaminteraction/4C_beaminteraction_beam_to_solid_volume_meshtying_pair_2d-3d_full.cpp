@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
         "surface!");
 
   // Check that the beam element is a Simo--Reissner beam.
-  auto beam_ele = dynamic_cast<const Discret::ELEMENTS::Beam3r*>(this->element1());
+  auto beam_ele = dynamic_cast<const Discret::Elements::Beam3r*>(this->element1());
   if (beam_ele == nullptr)
     FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
 
@@ -135,7 +135,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DFull<Beam, Solid>::evalu
   double beam_jacobian = 0.0;
   const double penalty_parameter =
       this->params()->beam_to_solid_volume_meshtying_params()->get_penalty_parameter();
-  const double radius = (dynamic_cast<const Discret::ELEMENTS::Beam3Base*>(this->element1()))
+  const double radius = (dynamic_cast<const Discret::Elements::Beam3Base*>(this->element1()))
                             ->get_circular_cross_section_radius_for_interactions();
 
   // Calculate the mesh tying forces.

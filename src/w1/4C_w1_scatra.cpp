@@ -12,42 +12,42 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Discret::ELEMENTS::Wall1ScatraType Discret::ELEMENTS::Wall1ScatraType::instance_;
+Discret::Elements::Wall1ScatraType Discret::Elements::Wall1ScatraType::instance_;
 
-Discret::ELEMENTS::Wall1ScatraType& Discret::ELEMENTS::Wall1ScatraType::instance()
+Discret::Elements::Wall1ScatraType& Discret::Elements::Wall1ScatraType::instance()
 {
   return instance_;
 }
 
-Core::Communication::ParObject* Discret::ELEMENTS::Wall1ScatraType::create(
+Core::Communication::ParObject* Discret::Elements::Wall1ScatraType::create(
     Core::Communication::UnpackBuffer& buffer)
 {
-  Discret::ELEMENTS::Wall1Scatra* object = new Discret::ELEMENTS::Wall1Scatra(-1, -1);
+  Discret::Elements::Wall1Scatra* object = new Discret::Elements::Wall1Scatra(-1, -1);
   object->unpack(buffer);
   return object;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLSCATRA")
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::ELEMENTS::Wall1Scatra>(id, owner);
+      return Teuchos::make_rcp<Discret::Elements::Wall1Scatra>(id, owner);
     }
   }
   return Teuchos::null;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::ELEMENTS::Wall1ScatraType::create(
+Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::ELEMENTS::Wall1Scatra>(id, owner);
+  return Teuchos::make_rcp<Discret::Elements::Wall1Scatra>(id, owner);
 }
 
-void Discret::ELEMENTS::Wall1ScatraType::setup_element_definition(
+void Discret::Elements::Wall1ScatraType::setup_element_definition(
     std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
 {
   std::map<std::string, std::map<std::string, Input::LineDefinition>> definitions_wall;
@@ -66,7 +66,7 @@ void Discret::ELEMENTS::Wall1ScatraType::setup_element_definition(
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 01/14/|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Wall1Scatra::Wall1Scatra(int id, int owner)
+Discret::Elements::Wall1Scatra::Wall1Scatra(int id, int owner)
     : Wall1(id, owner), impltype_(Inpar::ScaTra::impltype_undefined)
 {
   return;
@@ -75,7 +75,7 @@ Discret::ELEMENTS::Wall1Scatra::Wall1Scatra(int id, int owner)
 /*----------------------------------------------------------------------*
  |  copy-ctor (public)                                       vuong 01/14|
  *----------------------------------------------------------------------*/
-Discret::ELEMENTS::Wall1Scatra::Wall1Scatra(const Discret::ELEMENTS::Wall1Scatra& old)
+Discret::Elements::Wall1Scatra::Wall1Scatra(const Discret::Elements::Wall1Scatra& old)
     : Wall1(old), impltype_(old.impltype_)
 {
   return;
@@ -85,9 +85,9 @@ Discret::ELEMENTS::Wall1Scatra::Wall1Scatra(const Discret::ELEMENTS::Wall1Scatra
  |  Deep copy this instance of Wall1 and return pointer to it (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-Core::Elements::Element* Discret::ELEMENTS::Wall1Scatra::clone() const
+Core::Elements::Element* Discret::Elements::Wall1Scatra::clone() const
 {
-  Discret::ELEMENTS::Wall1Scatra* newelement = new Discret::ELEMENTS::Wall1Scatra(*this);
+  Discret::Elements::Wall1Scatra* newelement = new Discret::Elements::Wall1Scatra(*this);
   return newelement;
 }
 
@@ -95,7 +95,7 @@ Core::Elements::Element* Discret::ELEMENTS::Wall1Scatra::clone() const
  |  Pack data                                                  (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::pack(Core::Communication::PackBuffer& data) const
+void Discret::Elements::Wall1Scatra::pack(Core::Communication::PackBuffer& data) const
 {
   Core::Communication::PackBuffer::SizeMarker sm(data);
 
@@ -116,7 +116,7 @@ void Discret::ELEMENTS::Wall1Scatra::pack(Core::Communication::PackBuffer& data)
  |  Unpack data                                                (public) |
  |                                                            vuong 01/14 |
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::unpack(Core::Communication::UnpackBuffer& buffer)
+void Discret::Elements::Wall1Scatra::unpack(Core::Communication::UnpackBuffer& buffer)
 {
   Core::Communication::extract_and_assert_id(buffer, unique_par_object_id());
 
@@ -133,7 +133,7 @@ void Discret::ELEMENTS::Wall1Scatra::unpack(Core::Communication::UnpackBuffer& b
 /*----------------------------------------------------------------------*
  |  print this element (public)                              vuong 01/14|
  *----------------------------------------------------------------------*/
-void Discret::ELEMENTS::Wall1Scatra::print(std::ostream& os) const
+void Discret::Elements::Wall1Scatra::print(std::ostream& os) const
 {
   os << "Wall1_Scatra ";
   Wall1::print(os);
@@ -143,7 +143,7 @@ void Discret::ELEMENTS::Wall1Scatra::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  read this element (public)                             schmidt 09/17|
  *----------------------------------------------------------------------*/
-bool Discret::ELEMENTS::Wall1Scatra::read_element(const std::string& eletype,
+bool Discret::Elements::Wall1Scatra::read_element(const std::string& eletype,
     const std::string& eledistype, const Core::IO::InputParameterContainer& container)
 {
   // read base element

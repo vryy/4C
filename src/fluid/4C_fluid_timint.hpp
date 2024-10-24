@@ -731,7 +731,7 @@ namespace FLD
     Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh> runtime_output_writer_;
 
     /// runtime output parameter
-    Discret::ELEMENTS::FluidRuntimeOutputParams runtime_output_params_;
+    Discret::Elements::FluidRuntimeOutputParams runtime_output_params_;
 
     //! @name Time loop stuff
     //@{

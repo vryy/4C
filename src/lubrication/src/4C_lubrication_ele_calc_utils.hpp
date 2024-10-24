@@ -15,7 +15,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace LUBRICATION
+namespace Lubrication
 {
   //! Template Meta Programming version of switch over discretization type
   template <Core::FE::CellType distype>
@@ -100,7 +100,7 @@ namespace LUBRICATION
   };  // not tested
 
 
-}  // namespace LUBRICATION
+}  // namespace Lubrication
 
 
 FOUR_C_NAMESPACE_CLOSE

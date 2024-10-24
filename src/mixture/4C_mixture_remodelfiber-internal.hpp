@@ -25,7 +25,7 @@ namespace Core::Communication
   class UnpackBuffer;
 }  // namespace Core::Communication
 
-namespace MIXTURE
+namespace Mixture
 {
   template <typename T>
   class RemodelFiberMaterial;
@@ -181,7 +181,7 @@ namespace MIXTURE
 #endif
     };
   }  // namespace Implementation
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

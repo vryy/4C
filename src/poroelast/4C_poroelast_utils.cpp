@@ -35,30 +35,30 @@ FOUR_C_NAMESPACE_OPEN
 bool PoroElast::Utils::is_poro_element(const Core::Elements::Element* actele)
 {
   // all poro elements need to be listed here
-  return actele->element_type() == Discret::ELEMENTS::SoHex8PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SolidPoroPressureBasedType::instance() or
+  return actele->element_type() == Discret::Elements::SoHex8PoroType::instance() or
+         actele->element_type() == Discret::Elements::SolidPoroPressureBasedType::instance() or
          actele->element_type() ==
-             Discret::ELEMENTS::SolidPoroPressureVelocityBasedType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoTet4PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoTet10PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoHex27PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoNurbs27PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallTri3PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad4PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad9PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallNurbs4PoroType::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallNurbs9PoroType::instance() or
+             Discret::Elements::SolidPoroPressureVelocityBasedType::instance() or
+         actele->element_type() == Discret::Elements::SoTet4PoroType::instance() or
+         actele->element_type() == Discret::Elements::SoTet10PoroType::instance() or
+         actele->element_type() == Discret::Elements::SoHex27PoroType::instance() or
+         actele->element_type() == Discret::Elements::SoNurbs27PoroType::instance() or
+         actele->element_type() == Discret::Elements::WallTri3PoroType::instance() or
+         actele->element_type() == Discret::Elements::WallQuad4PoroType::instance() or
+         actele->element_type() == Discret::Elements::WallQuad9PoroType::instance() or
+         actele->element_type() == Discret::Elements::WallNurbs4PoroType::instance() or
+         actele->element_type() == Discret::Elements::WallNurbs9PoroType::instance() or
          is_poro_p1_element(actele);
 }
 
 bool PoroElast::Utils::is_poro_p1_element(const Core::Elements::Element* actele)
 {
   // all poro-p1 elements need to be listed here
-  return actele->element_type() == Discret::ELEMENTS::SoHex8PoroP1Type::instance() or
-         actele->element_type() == Discret::ELEMENTS::SoTet4PoroP1Type::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad4PoroP1Type::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallTri3PoroP1Type::instance() or
-         actele->element_type() == Discret::ELEMENTS::WallQuad9PoroP1Type::instance();
+  return actele->element_type() == Discret::Elements::SoHex8PoroP1Type::instance() or
+         actele->element_type() == Discret::Elements::SoTet4PoroP1Type::instance() or
+         actele->element_type() == Discret::Elements::WallQuad4PoroP1Type::instance() or
+         actele->element_type() == Discret::Elements::WallTri3PoroP1Type::instance() or
+         actele->element_type() == Discret::Elements::WallQuad9PoroP1Type::instance();
 }
 
 Teuchos::RCP<PoroElast::PoroBase> PoroElast::Utils::create_poro_algorithm(
@@ -408,7 +408,7 @@ void PoroElast::Utils::PoroMaterialStrategy::assign_material2_to1(
   }
 
   // if Bele is a fluid element
-  auto* fluid = dynamic_cast<Discret::ELEMENTS::FluidPoro*>(ele2);
+  auto* fluid = dynamic_cast<Discret::Elements::FluidPoro*>(ele2);
   if (fluid != nullptr)
   {
     // Copy Initial Porosity from StructPoro Material to FluidPoro Material
@@ -458,10 +458,10 @@ void PoroElast::Utils::PoroMaterialStrategy::assign_material1_to2(
   }
 
   // if Aele is a so3_base element
-  auto* so_base = dynamic_cast<Discret::ELEMENTS::SoBase*>(ele1);
+  auto* so_base = dynamic_cast<Discret::Elements::SoBase*>(ele1);
 
   // if Bele is a fluid element
-  auto* fluid = dynamic_cast<Discret::ELEMENTS::FluidPoro*>(ele2);
+  auto* fluid = dynamic_cast<Discret::Elements::FluidPoro*>(ele2);
   if (fluid != nullptr)
   {
     if (so_base)

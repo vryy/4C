@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  | evaluate action                                           fang 02/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Elements::Element* ele,
+int Discret::Elements::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     const ScaTra::Action& action, Core::Elements::LocationArray& la,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -82,7 +82,7 @@ int Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::evaluate_action(Core::Element
  |  calculate domain integral                                   vg 01/09|
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyforce(
     Core::LinAlg::SerialDenseVector& scalars, const Core::Elements::Element* ele)
 {
   // ---------------------------------------------------------------------
@@ -119,7 +119,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calculate_domain_and_bodyfor
  | extract element based or nodal values and return extracted values of phinp   fang 02/15 |
  *-----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::extract_element_and_node_values(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, Core::Elements::LocationArray& la)
 {
@@ -149,7 +149,7 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::extract_element_and_node_val
  | get density at integration point                                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-double Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(
+double Discret::Elements::ScaTraEleCalcLoma<distype>::get_density(
     const Core::Elements::Element* ele, Teuchos::RCP<const Core::Mat::Material> material,
     Teuchos::ParameterList& params, const double tempnp)
 {
@@ -172,14 +172,14 @@ double Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::get_density(
     FOUR_C_THROW("Invalid material type!");
 
   return density;
-}  // Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::GetDensity
+}  // Discret::Elements::ScaTraEleCalcLoma<distype>::GetDensity
 
 
 /*-----------------------------------------------------------------------------*
  | calculate viscous part of subgrid-scale velocity                 fang 02/15 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
+void Discret::Elements::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
     Core::LinAlg::Matrix<nsd_, 1>& epsilonvel)
 {
   double prefac = 1.0 / 3.0;
@@ -227,31 +227,31 @@ void Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc(
   my::derxy2_.scale(1.0 / prefac);
 
   return;
-}  // Discret::ELEMENTS::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc
+}  // Discret::Elements::ScaTraEleCalcLoma<distype>::calc_subgr_velocity_visc
 
 
 // template classes
 
 // 1D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::line2>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::line3>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::line2>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::line3>;
 
 // 2D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad4>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tri3>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tri6>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::quad4>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::quad8>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::quad9>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::nurbs9>;
 
 // 3D elements
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex8>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::tet10>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::pyramid5>;
-// template class Discret::ELEMENTS::ScaTraEleCalcLoma<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::hex8>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::hex20>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::hex27>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tet4>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::tet10>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::pyramid5>;
+// template class Discret::Elements::ScaTraEleCalcLoma<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE

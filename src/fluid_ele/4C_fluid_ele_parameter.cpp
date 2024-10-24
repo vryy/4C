@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------*/
 //    constructor
 //----------------------------------------------------------------------*/
-Discret::ELEMENTS::FluidEleParameter::FluidEleParameter()
+Discret::Elements::FluidEleParameter::FluidEleParameter()
     : set_general_fluid_parameter_(false),
       physicaltype_(Inpar::FLUID::incompressible),
       stabtype_(Inpar::FLUID::stabtype_nostab),  // stabilization parameters
@@ -81,13 +81,13 @@ Discret::ELEMENTS::FluidEleParameter::FluidEleParameter()
       multifrac_loma_conti_(false)
 {
   // we have to know the time parameters here to check for illegal combinations
-  fldparatimint_ = Discret::ELEMENTS::FluidEleParameterTimInt::instance();
+  fldparatimint_ = Discret::Elements::FluidEleParameterTimInt::instance();
 }
 
 //----------------------------------------------------------------------*
 //  set general parameters                                   ehrl 04/10 |
 //---------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
+void Discret::Elements::FluidEleParameter::set_element_general_fluid_parameter(
     Teuchos::ParameterList& params, int myrank)
 {
   if (set_general_fluid_parameter_ == false) set_general_fluid_parameter_ = true;
@@ -427,7 +427,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_general_fluid_parameter(
 //----------------------------------------------------------------------*
 //  set loma parameters                                  rasthofer 03/12|
 //---------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameter::set_element_loma_parameter(
+void Discret::Elements::FluidEleParameter::set_element_loma_parameter(
     Teuchos::ParameterList& params)
 {
   // get parameter lists
@@ -464,7 +464,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_loma_parameter(
 //----------------------------------------------------------------------*
 //  set two phase parameters                                winter 05/14|
 //----------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameter::set_element_two_phase_parameter(
+void Discret::Elements::FluidEleParameter::set_element_two_phase_parameter(
     Teuchos::ParameterList& params)
 {
   // Two Phase Flow specific parameters,
@@ -480,7 +480,7 @@ void Discret::ELEMENTS::FluidEleParameter::set_element_two_phase_parameter(
 //----------------------------------------------------------------------*
 //  set turbulence parameters                            rasthofer 11/11|
 //---------------------------------------------------------------------*/
-void Discret::ELEMENTS::FluidEleParameter::set_element_turbulence_parameters(
+void Discret::Elements::FluidEleParameter::set_element_turbulence_parameters(
     Teuchos::ParameterList& params)
 {
   // get parameter lists

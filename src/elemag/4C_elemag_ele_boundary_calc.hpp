@@ -24,7 +24,7 @@ namespace Core::FE
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ElemagBoundary;
 
@@ -47,14 +47,14 @@ namespace Discret
         This class does not provide a definition for this function, it
         must be defined in ElemagBoundaryImpl.
        */
-      virtual int evaluate_neumann(Discret::ELEMENTS::ElemagBoundary* ele,
+      virtual int evaluate_neumann(Discret::Elements::ElemagBoundary* ele,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
           Core::Conditions::Condition& condition, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) = 0;
 
       /// Evaluate routine for boundary elements inteface
-      virtual int evaluate(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+      virtual int evaluate(Discret::Elements::ElemagBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -89,13 +89,13 @@ namespace Discret
       static constexpr int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      int evaluate_neumann(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+      int evaluate_neumann(Discret::Elements::ElemagBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, Core::Conditions::Condition& condition,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseMatrix* elemat1) override;
 
       /// Evaluate routine for boundary elements
-      int evaluate(Discret::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
+      int evaluate(Discret::Elements::ElemagBoundary* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -123,7 +123,7 @@ namespace Discret
 
     };  // class ElemagBoundaryImpl
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

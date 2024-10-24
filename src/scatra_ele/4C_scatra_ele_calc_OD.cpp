@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elements::Element* ele,
+int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elements::Element* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -58,7 +58,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_od(Core::Elemen
  | evaluate action for off-diagonal system matrix block      fang 11/15 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action_od(
+int Discret::Elements::ScaTraEleCalc<distype, probdim>::evaluate_action_od(
     Core::Elements::Element* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const ScaTra::Action& action,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -99,7 +99,7 @@ int Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::evaluate_action_od(
 |  calculate system matrix and rhs (public)                 vuong 08/14|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
     Core::Elements::Element* ele,           ///< the element those matrix is calculated
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     const int ndofpernodemesh               ///< number of DOF of mesh displacement field
@@ -260,7 +260,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_mesh(
 |  calculate system matrix and rhs (public)                 vuong 08/14|
 *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
     Core::Elements::Element* ele,           ///< the element those matrix is calculated
     Core::LinAlg::SerialDenseMatrix& emat,  ///< element matrix to calculate
     const int numdofpernode_fluid           ///< number of DOF of fluid field
@@ -386,7 +386,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::sysmat_od_fluid(
  |  in convective form (OD fluid)                                   vuong 08/14 |
  *-----------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_conv_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const Core::LinAlg::Matrix<nsd_, 1>& gradphi)
 {
@@ -412,7 +412,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_od_fluid(
  |   contributions (OD fluid)                                       vuong 08/14 |
  *------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const double phinp)
 {
@@ -435,7 +435,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_mat_conv_add_cons_
  |  calculation of linearized mass (OD mesh)             vuong 08/14 |
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double fac, const double densam, const double densnp,
     const double phinp, const double hist, const double J,
@@ -470,7 +470,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_mesh(
  |  standard Galerkin transient, old part of rhs and source term  (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double J, const Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh,
     const double densnp)
@@ -495,7 +495,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od
  |  standard Galerkin convective term (OD mesh)            vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_conv_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsfac, const double densnp, const double J,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const Core::LinAlg::Matrix<nsd_, 1>& convelint)
@@ -530,7 +530,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_od_mesh(
  | standard Galerkin convective term in conservative form (OD mesh)   fang 08/17 |
  *-------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element matrix
     const int k,                            //!< species index
     const double fac,                       //!< domain-integration factor
@@ -627,7 +627,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_conv_cons_od_mesh(
  |  put it into its own function                      kremheller 07/17 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const double rhsfac, const double densnp,
     const double J, const Core::LinAlg::Matrix<nsd_, 1>& gradphi,
     const Core::LinAlg::Matrix<nsd_, 1>& convelint)
@@ -741,7 +741,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::apply_shape_derivs_conv
  |  standard Galerkin diffusive term (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_diff_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double diffcoeff, const double fac, const double rhsfac, const double J,
     const Core::LinAlg::Matrix<nsd_, 1>& gradphi, const Core::LinAlg::Matrix<nsd_, 1>& convelint,
@@ -938,7 +938,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_mesh(
  |  standard Galerkin reactive term (OD mesh)              vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_react_od_mesh(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi, const double J,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh)
@@ -968,7 +968,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_mesh(
  |  calculation of linearized mass (OD fluid)        kremheller 07/17 |
  *--------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double fac, const double densam, const double densnp,
     const double phinp, const double hist)
@@ -979,7 +979,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_lin_mass_od_fluid(
  |  standard Galerkin transient, old part of rhs and source term (OD fluid) kremheller 07/17 |
  *-------------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double densnp)
 {
@@ -989,7 +989,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_hist_and_source_od
  |  standard Galerkin reactive term (OD fluid)  kremheller 07/17     |
  *----------------------------------------------------------------   */
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_react_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
     const double rhsfac, const double rea_phi)
 {
@@ -999,7 +999,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_react_od_fluid(
  |  standard Galerkin diffusive term (OD fluid)  kremheller 07/17    |
  *----------------------------------------------------------------   */
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_fluid(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_diff_od_fluid(
     Core::LinAlg::SerialDenseMatrix& emat,  //!< element current to be filled
     const int k,                            //!< index of current scalar
     const int ndofpernodemesh,              //!< number of dofs per node of ale element
@@ -1012,7 +1012,7 @@ void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_diff_od_fluid(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
-void Discret::ELEMENTS::ScaTraEleCalc<distype, probdim>::calc_djd_mesh(
+void Discret::Elements::ScaTraEleCalc<distype, probdim>::calc_djd_mesh(
     Core::LinAlg::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   const double J = xjm_.determinant();

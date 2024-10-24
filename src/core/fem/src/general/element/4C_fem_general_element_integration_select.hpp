@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     //! decide, whether second derivatives are needed  (template version)
     /*  Hence, unlike to the Navier-Stokes equations, hex8, wedge6 and pyramid5
@@ -515,7 +515,7 @@ namespace Discret
       return -1.0;
     }
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 
 }  // namespace Discret
 

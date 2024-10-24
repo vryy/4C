@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     /// Evaluation of general parameters (constant over time)
     class LubricationEleParameter
@@ -62,7 +62,7 @@ namespace Discret
       double roughness_deviation_;
 
     };  // class LubricationEleParameter
-  }     // namespace ELEMENTS
+  }     // namespace Elements
 }  // namespace Discret
 
 

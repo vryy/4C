@@ -18,14 +18,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidXWall;
 
-    template <Core::FE::CellType distype, Discret::ELEMENTS::Fluid::EnrichmentType enrtype>
+    template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
     class FluidEleCalcXWall : public FluidEleCalc<distype, enrtype>
     {
-      typedef Discret::ELEMENTS::FluidEleCalc<distype, enrtype> my;
+      typedef Discret::Elements::FluidEleCalc<distype, enrtype> my;
 
       using my::nen_;
       using my::nsd_;
@@ -36,7 +36,7 @@ namespace Discret
       static FluidEleCalcXWall<distype, enrtype>* instance(
           Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
-      int evaluate_service(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int evaluate_service(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
@@ -47,14 +47,14 @@ namespace Discret
       /*!
         Interface function for supporting methods of the element
        */
-      virtual int evaluate_service_x_wall(Discret::ELEMENTS::Fluid* ele,
+      virtual int evaluate_service_x_wall(Discret::Elements::Fluid* ele,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
           Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
           Core::LinAlg::SerialDenseVector& elevec3);
 
-      int evaluate(Discret::ELEMENTS::Fluid* ele, Core::FE::Discretization& discretization,
+      int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
@@ -132,7 +132,7 @@ namespace Discret
       virtual void prepare_gauss_rule();
 
       //! get properties of xwall element
-      virtual void get_ele_properties(Discret::ELEMENTS::Fluid* ele,
+      virtual void get_ele_properties(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat);
 
@@ -163,7 +163,7 @@ namespace Discret
        *  \author bk \date 06/2014
        */
 
-      virtual int tau_w_via_gradient(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int tau_w_via_gradient(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
@@ -176,7 +176,7 @@ namespace Discret
        *  \author bk \date 06/2014
        */
 
-      virtual int calc_mk(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int calc_mk(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2);
@@ -191,7 +191,7 @@ namespace Discret
        *
        *  \author bk \date 06/2014
        */
-      virtual int x_wall_projection(Discret::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      virtual int x_wall_projection(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2);
@@ -290,7 +290,7 @@ namespace Discret
       //! object to construct gauss points in several dimensions
       Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

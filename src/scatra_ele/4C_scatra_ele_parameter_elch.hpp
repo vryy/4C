@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     // class implementation
     class ScaTraEleParameterElch : public ScaTraEleParameterBase
@@ -82,7 +82,7 @@ namespace Discret
       //! homogeneous temperature within the scalar transport field (can be time dependent)
       double temperature_;
     };
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 FOUR_C_NAMESPACE_CLOSE
 

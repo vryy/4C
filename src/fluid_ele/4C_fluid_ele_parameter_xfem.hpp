@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class FluidEleParameterXFEM : public FluidEleParameterStd
     {
@@ -279,7 +279,7 @@ namespace Discret
       FluidEleParameterXFEM();
     };
 
-  }  // namespace ELEMENTS
+  }  // namespace Elements
 }  // namespace Discret
 
 FOUR_C_NAMESPACE_CLOSE

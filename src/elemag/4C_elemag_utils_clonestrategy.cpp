@@ -47,14 +47,14 @@ void EleMag::Utils::ScatraCloneStrategy<sft>::set_element_data(
     Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
     const bool nurbsdis)
 {
-  auto Transport = dynamic_cast<Discret::ELEMENTS::Transport*>(newele.get());
+  auto Transport = dynamic_cast<Discret::Elements::Transport*>(newele.get());
   if (Transport != nullptr)
   {
     Transport->set_dis_type(oldele->shape());
     Transport->set_material(0, Mat::factory(matid));
     if (sft == Core::FE::ShapeFunctionType::hdg)
     {
-      auto scatraele = dynamic_cast<Discret::ELEMENTS::ScaTraHDG*>(Transport);
+      auto scatraele = dynamic_cast<Discret::Elements::ScaTraHDG*>(Transport);
       scatraele->set_impl_type(Inpar::ScaTra::impltype_std_hdg);
       scatraele->set_degree(oldele->degree());
       scatraele->set_complete_polynomial_space(false);

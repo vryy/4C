@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 // forward declarations
 namespace Discret
 {
-  namespace ELEMENTS
+  namespace Elements
   {
     class ScaTraEleParameterBoundary;
   }
@@ -1011,7 +1011,7 @@ namespace ScaTra
     );
 
     //! pointer to scatra boundary parameter list
-    Discret::ELEMENTS::ScaTraEleParameterBoundary* scatraparamsboundary_;
+    Discret::Elements::ScaTraEleParameterBoundary* scatraparamsboundary_;
 
     //! nodal, slave-side state variables associated with time t_{n+1} or t_{n+alpha_f}
     std::vector<Core::LinAlg::Matrix<nen_slave_, 1>> ephinp_slave_;

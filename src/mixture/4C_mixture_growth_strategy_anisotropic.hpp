@@ -15,18 +15,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace MIXTURE
+namespace Mixture
 {
   class AnisotropicGrowthStrategy;
 
   namespace PAR
   {
-    class AnisotropicGrowthStrategy : public MIXTURE::PAR::MixtureGrowthStrategy
+    class AnisotropicGrowthStrategy : public Mixture::PAR::MixtureGrowthStrategy
     {
      public:
       explicit AnisotropicGrowthStrategy(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      std::unique_ptr<MIXTURE::MixtureGrowthStrategy> create_growth_strategy() override;
+      std::unique_ptr<Mixture::MixtureGrowthStrategy> create_growth_strategy() override;
 
       const int init_mode_;
       const int fiber_id_;
@@ -43,10 +43,10 @@ namespace MIXTURE
    * The direction of growth can be specified with a fiber with the fiber id specified in FIBER_ID
    *
    */
-  class AnisotropicGrowthStrategy : public MIXTURE::MixtureGrowthStrategy
+  class AnisotropicGrowthStrategy : public Mixture::MixtureGrowthStrategy
   {
    public:
-    explicit AnisotropicGrowthStrategy(MIXTURE::PAR::AnisotropicGrowthStrategy* params);
+    explicit AnisotropicGrowthStrategy(Mixture::PAR::AnisotropicGrowthStrategy* params);
 
     void pack_mixture_growth_strategy(Core::Communication::PackBuffer& data) const override;
 
@@ -57,10 +57,10 @@ namespace MIXTURE
     [[nodiscard]] bool has_inelastic_growth_deformation_gradient() const override { return true; };
 
     void evaluate_inverse_growth_deformation_gradient(Core::LinAlg::Matrix<3, 3>& iFgM,
-        const MIXTURE::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
+        const Mixture::MixtureRule& mixtureRule, double currentReferenceGrowthScalar,
         int gp) const override;
 
-    void evaluate_growth_stress_cmat(const MIXTURE::MixtureRule& mixtureRule,
+    void evaluate_growth_stress_cmat(const Mixture::MixtureRule& mixtureRule,
         double currentReferenceGrowthScalar,
         const Core::LinAlg::Matrix<1, 6>& dCurrentReferenceGrowthScalarDC,
         const Core::LinAlg::Matrix<3, 3>& F, const Core::LinAlg::Matrix<6, 1>& E_strain,
@@ -74,7 +74,7 @@ namespace MIXTURE
     /// Anisotropy extension that manages fibers and structural tensors
     Mat::DefaultAnisotropyExtension<1> anisotropy_extension_;
   };
-}  // namespace MIXTURE
+}  // namespace Mixture
 
 FOUR_C_NAMESPACE_CLOSE
 

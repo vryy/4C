@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  * Constructor
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElemagDiffEleCalc()
+Discret::Elements::ElemagDiffEleCalc<distype>::ElemagDiffEleCalc()
 {
 }
 
@@ -38,7 +38,7 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::ElemagDiffEleCalc()
  * Action type: Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::Elemag* ele,
+int Discret::Elements::ElemagDiffEleCalc<distype>::evaluate(Discret::Elements::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
@@ -56,7 +56,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
  * Evaluate
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::Elemag* ele,
+int Discret::Elements::ElemagDiffEleCalc<distype>::evaluate(Discret::Elements::Elemag* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
@@ -64,7 +64,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
     Core::LinAlg::SerialDenseVector&, bool offdiag)
 {
   // check if this is an hdg element and init completepoly
-  Discret::ELEMENTS::ElemagDiff* hdgele = static_cast<Discret::ELEMENTS::ElemagDiff*>(ele);
+  Discret::Elements::ElemagDiff* hdgele = static_cast<Discret::Elements::ElemagDiff*>(ele);
   usescompletepoly_ = hdgele->uses_complete_polynomial_space();
   // else FOUR_C_THROW("cannot cast element to elemag element");
 
@@ -281,7 +281,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::evaluate(Discret::ELEMENTS::E
  * Print trace
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::print_trace(Core::Elements::Element* ele)
+void Discret::Elements::ElemagDiffEleCalc<distype>::print_trace(Core::Elements::Element* ele)
 {
   std::cout << "Local trace of element: " << ele->lid() << std::endl;
   std::cout << "Number of entries: " << localtrace_.size() << std::endl;
@@ -306,8 +306,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::print_trace(Core::Elements::
 }
 
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::initialize_shapes(
-    const Discret::ELEMENTS::ElemagDiff* ele)
+void Discret::Elements::ElemagDiffEleCalc<distype>::initialize_shapes(
+    const Discret::Elements::ElemagDiff* ele)
 {
   if (shapes_ == Teuchos::null || shapes_->degree_ != unsigned(ele->degree()) ||
       shapes_->usescompletepoly_ != usescompletepoly_)
@@ -337,12 +337,12 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::initialize_shapes(
  * read_global_vectors
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
+void Discret::Elements::ElemagDiffEleCalc<distype>::read_global_vectors(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::read_global_vectors");
-  Discret::ELEMENTS::ElemagDiff* elemagele = static_cast<Discret::ELEMENTS::ElemagDiff*>(ele);
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::read_global_vectors");
+  Discret::Elements::ElemagDiff* elemagele = static_cast<Discret::Elements::ElemagDiff*>(ele);
 
   // read vectors from element storage
   interior_electricnm_.size(elemagele->eleinteriorElectricnm1_.numRows());
@@ -369,13 +369,13 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::read_global_vectors(
  * fill_restart_vectors
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
+void Discret::Elements::ElemagDiffEleCalc<distype>::fill_restart_vectors(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
   // sort this back to the interior values vector
   int size = shapes_->ndofs_ * nsd_;
 
-  Discret::ELEMENTS::Elemag* hdgele = static_cast<Discret::ELEMENTS::Elemag*>(ele);
+  Discret::Elements::Elemag* hdgele = static_cast<Discret::Elements::Elemag*>(ele);
 
   std::vector<double> interiorVar(size * 2);
   for (unsigned int i = 0; i < shapes_->ndofs_ * nsd_; ++i)
@@ -422,10 +422,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::fill_restart_vectors(
  * element_init_from_restart
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
+void Discret::Elements::ElemagDiffEleCalc<distype>::element_init_from_restart(
     Core::Elements::Element* ele, Core::FE::Discretization& discretization)
 {
-  Discret::ELEMENTS::ElemagDiff* elemagele = dynamic_cast<Discret::ELEMENTS::ElemagDiff*>(ele);
+  Discret::Elements::ElemagDiff* elemagele = dynamic_cast<Discret::Elements::ElemagDiff*>(ele);
   unsigned int size = shapes_->ndofs_ * nsd_;
 
   std::vector<double> interiorVar(size * 2);
@@ -457,8 +457,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init_from_restart(
  * Element init
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params)
+void Discret::Elements::ElemagDiffEleCalc<distype>::element_init(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params)
 {
   // Save the position of element's dirichlet dofs
   if (params.isParameter("dirichdof"))
@@ -468,7 +468,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init(
 
   // each element has to store the interior vectors by itseld, p-adaptivity or not
   // so, shape it, as you need it
-  Discret::ELEMENTS::ElemagDiff* diff_ele = static_cast<Discret::ELEMENTS::ElemagDiff*>(ele);
+  Discret::Elements::ElemagDiff* diff_ele = static_cast<Discret::Elements::ElemagDiff*>(ele);
   diff_ele->eleinteriorElectricnm3_.size(shapes_->ndofs_ * nsd_);
   diff_ele->eleinteriorElectricnm2_.size(shapes_->ndofs_ * nsd_);
   diff_ele->eleinteriorElectricnm1_.size(shapes_->ndofs_ * nsd_);
@@ -488,8 +488,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::element_init(
  * ProjectField
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_field(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   shapes_.evaluate(*ele);
@@ -612,8 +612,8 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field(
  * project_electric_field_from_scatra
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric_field_from_scatra(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_electric_field_from_scatra(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params,
     const Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec)
 {
   shapes_.evaluate(*ele);
@@ -689,8 +689,8 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_electric
  * compute_error
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   double error_ele = 0.0, error_ele_post = 0.0, error_mag = 0.0;
@@ -854,10 +854,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_error(
  * PostProcessing
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::post_processing(
-    Discret::ELEMENTS::ElemagDiff& ele)
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::post_processing(
+    Discret::Elements::ElemagDiff& ele)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::PostProcessing");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::PostProcessing");
   shapes_.evaluate(ele);
   postproc_shapes_.evaluate(ele);
 
@@ -964,8 +964,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::post_processing
  * ProjectFieldTest
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   shapes_.evaluate(*ele);
@@ -1101,8 +1101,8 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_te
  * project_field_test_trace
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test_trace(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_field_test_trace(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // Here we have the projection of the field on the trace
@@ -1210,8 +1210,8 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_field_te
  * ProjectDirichField
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_dirich_field(
-    Discret::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
+int Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::project_dirich_field(
+    Discret::Elements::ElemagDiff* ele, Teuchos::ParameterList& params,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   // Updating face data
@@ -1291,7 +1291,7 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::project_dirich_f
  * evaluate_all
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(const int start_func,
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(const int start_func,
     const double t, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseVector& v) const
 {
@@ -1323,7 +1323,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::evaluate_all(co
  * compute_function_gradient
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_function_gradient(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_function_gradient(
     const int start_func, const double t, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseMatrix& v) const
 {
@@ -1358,7 +1358,7 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
  * compute_function_time_derivative
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_function_time_derivative(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_function_time_derivative(
     const int start_func, const double t, const double dt, const Core::LinAlg::Matrix<nsd_, 1>& xyz,
     Core::LinAlg::SerialDenseVector& v) const
 {
@@ -1394,11 +1394,11 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_functio
  | interpolate_solution_to_nodes                          berardocco 04/18 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes(
-    Discret::ELEMENTS::ElemagDiff* ele, Core::FE::Discretization& discretization,
+int Discret::Elements::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes(
+    Discret::Elements::ElemagDiff* ele, Core::FE::Discretization& discretization,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::interpolate_solution_to_nodes");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::interpolate_solution_to_nodes");
   initialize_shapes(ele);
 
   // Check if the vector has the correct size
@@ -1565,14 +1565,14 @@ int Discret::ELEMENTS::ElemagDiffEleCalc<distype>::interpolate_solution_to_nodes
 }
 
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagDiffEleCalc<distype>*
-Discret::ELEMENTS::ElemagDiffEleCalc<distype>::instance(Core::Utils::SingletonAction action)
+Discret::Elements::ElemagDiffEleCalc<distype>*
+Discret::Elements::ElemagDiffEleCalc<distype>::instance(Core::Utils::SingletonAction action)
 {
   static auto singleton_owner = Core::Utils::make_singleton_owner(
       []()
       {
-        return std::unique_ptr<Discret::ELEMENTS::ElemagDiffEleCalc<distype>>(
-            new Discret::ELEMENTS::ElemagDiffEleCalc<distype>());
+        return std::unique_ptr<Discret::Elements::ElemagDiffEleCalc<distype>>(
+            new Discret::Elements::ElemagDiffEleCalc<distype>());
       });
 
   return singleton_owner.instance(action);
@@ -1582,8 +1582,8 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::instance(Core::Utils::SingletonAc
  * Constructor LocalSolver
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
-    const Discret::ELEMENTS::ElemagDiff* ele, Core::FE::ShapeValues<distype>& shapeValues,
+Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
+    const Discret::Elements::ElemagDiff* ele, Core::FE::ShapeValues<distype>& shapeValues,
     Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>& shapeValuesFace,
     Inpar::EleMag::DynamicType& dyna, Core::FE::ShapeValues<distype>& postproc_shapeValues)
     : ndofs_(shapeValues.ndofs_),
@@ -1648,12 +1648,12 @@ Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
  * update_interior_variables_and_compute_residual
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_and_compute_residual(
-    Teuchos::ParameterList& params, Discret::ELEMENTS::ElemagDiff& ele, Core::Mat::Material& mat,
+void Discret::Elements::ElemagDiffEleCalc<distype>::update_interior_variables_and_compute_residual(
+    Teuchos::ParameterList& params, Discret::Elements::ElemagDiff& ele, Core::Mat::Material& mat,
     Core::LinAlg::SerialDenseVector& elevec, double dt, bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
-      "Discret::ELEMENTS::ElemagDiffEleCalc::update_interior_variables_and_compute_residual");
+      "Discret::Elements::ElemagDiffEleCalc::update_interior_variables_and_compute_residual");
 
   // *****************************************************
   // update interior variables first
@@ -1786,15 +1786,15 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::update_interior_variables_an
  * ComputeAbsorbingBC
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_absorbing_bc(
-    Core::FE::Discretization& discretization, Discret::ELEMENTS::ElemagDiff* ele,
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_absorbing_bc(
+    Core::FE::Discretization& discretization, Discret::Elements::ElemagDiff* ele,
     Teuchos::ParameterList& params, Core::Mat::Material& mat, int face,
     Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
   FOUR_C_THROW("ComputeAbsorbingBC() not yet implemented.");
   /*
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::ComputeAbsorbingBC");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::ComputeAbsorbingBC");
 
   shapesface_->EvaluateFace(*ele, face);
 
@@ -1953,7 +1953,7 @@ Core::LinAlg::multiply(1.0,   tempVec2, 1.0,  magneticMat,  tempVec1);
  * ComputeSource
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_source(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_source(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& interiorSourcen,
     Core::LinAlg::SerialDenseVector& interiorSourcenp)
 {
@@ -2000,14 +2000,14 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_source(
  * compute_interior_matrices
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_interior_matrices(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_interior_matrices(
     double dt, double sigma, double mu, double epsilon)
 {
   // The definitions of the matrices created here can be found in the internal
   // paper from Berardocco "A hybridizable discontinous Galerkin method for
   // electromagnetics in subsurface applications".
   // The explicit form of these matrices is reported for convenience?
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::compute_interior_matrices");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::compute_interior_matrices");
   // Why is this made in this order? Is it faster in this order? Or is it better
   // to have it shape_functions->quadrature_points?
   // loop quadrature points
@@ -2093,11 +2093,11 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_interio
  * ComputeResidual
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_residual(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_residual(
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector& elevec, double dt,
-    Discret::ELEMENTS::ElemagDiff& ele)
+    Discret::Elements::ElemagDiff& ele)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::ComputeResidual");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::ComputeResidual");
 
   // for BDF2
   //                                -1
@@ -2190,11 +2190,11 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_residua
  * ComputeFaceMatrices
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_matrices(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_matrices(
     const int face, double dt, int indexstart, int newindex, double sigma, double mu,
     const double tau)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::ComputeFaceMatrices");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::ComputeFaceMatrices");
 
   // Tau is defined as (\frac{|sigma|}{\mu t_c})^0.5 where t_c is a
   // characteristic time scale
@@ -2343,10 +2343,10 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_face_ma
  * CondenseLocalPart
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::condense_local_part(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::condense_local_part(
     Core::LinAlg::SerialDenseMatrix& eleMat)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("Discret::ELEMENTS::ElemagDiffEleCalc::CondenseLocalPart");
+  TEUCHOS_FUNC_TIME_MONITOR("Discret::Elements::ElemagDiffEleCalc::CondenseLocalPart");
 
   // THE MATRIX
   //                             -1
@@ -2420,8 +2420,8 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::condense_local_
  * Symmetrify
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::symmetrify(
-    Discret::ELEMENTS::ElemagDiff& ele, Core::LinAlg::SerialDenseMatrix& eleMat, bool dodirich)
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::symmetrify(
+    Discret::Elements::ElemagDiff& ele, Core::LinAlg::SerialDenseMatrix& eleMat, bool dodirich)
 {
   if (ele.lm_.lmdirich_.size())
     for (int i = 0; i < eleMat.numRows(); ++i)
@@ -2442,9 +2442,9 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::symmetrify(
  * Compute internal and face matrices
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_matrices(
+void Discret::Elements::ElemagDiffEleCalc<distype>::LocalSolver::compute_matrices(
     Core::FE::Discretization& discretization, const Teuchos::RCP<Core::Mat::Material>& mat,
-    Discret::ELEMENTS::ElemagDiff& ele, double dt, Inpar::EleMag::DynamicType dyna,
+    Discret::Elements::ElemagDiff& ele, double dt, Inpar::EleMag::DynamicType dyna,
     const double tau)
 {
   // The material properties change elementwise or can also be computed pointwise?
@@ -2498,19 +2498,19 @@ void Discret::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::compute_matrice
 
 
 // template classes
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::hex8>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::hex20>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::hex27>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::tet4>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::tet10>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::wedge6>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::pyramid5>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::quad4>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::quad8>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::quad9>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::tri3>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::tri6>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::nurbs9>;
-template class Discret::ELEMENTS::ElemagDiffEleCalc<Core::FE::CellType::nurbs27>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::hex8>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::hex20>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::hex27>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::tet4>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::tet10>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::wedge6>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::pyramid5>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::quad4>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::quad8>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::quad9>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::tri3>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::tri6>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::nurbs9>;
+template class Discret::Elements::ElemagDiffEleCalc<Core::FE::CellType::nurbs27>;
 
 FOUR_C_NAMESPACE_CLOSE
