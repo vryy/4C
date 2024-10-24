@@ -17,7 +17,7 @@ SHAPEFCT                        Nurbs
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DAMPING                         Material
+DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 ITERNORM                        L2

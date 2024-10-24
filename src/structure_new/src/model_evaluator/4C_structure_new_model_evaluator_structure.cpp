@@ -2132,6 +2132,8 @@ void Solid::ModelEvaluator::Structure::params_interface2_parameter_list(
       "ioplstrain", interface_ptr->get_plastic_strain_output_type());
   params.set<Inpar::Solid::OptQuantityType>(
       "iooptquantity", interface_ptr->get_opt_quantity_output_type());
+
+  params.set<Inpar::Solid::DampKind>("damping", interface_ptr->get_damping_type());
 }
 
 /*----------------------------------------------------------------------------*

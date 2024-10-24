@@ -16,7 +16,7 @@ PROBLEMTYP                      Structure
 SHAPEFCT                        Nurbs
 RESTART                         0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-DAMPING                         Material
+DAMPING                         No
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 INT_STRATEGY                    Standard

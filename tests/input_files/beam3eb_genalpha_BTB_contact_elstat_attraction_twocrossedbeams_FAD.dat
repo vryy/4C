@@ -34,7 +34,7 @@ NLNSOL                          fullnewton
 TIMESTEP                        1.0e-4
 NUMSTEP                         40
 MAXTIME                         4.0e-3
-DAMPING                         Material
+DAMPING                         No
 PREDICT                         ConstDis
 TOLRES                          1.0e-10
 TOLDISP                         1.0e-12

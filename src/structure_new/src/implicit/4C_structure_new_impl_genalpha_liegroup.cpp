@@ -206,8 +206,14 @@ double Solid::IMPLICIT::GenAlphaLieGroup::get_int_param() const
 void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
     Core::LinAlg::Vector<double>& f) const
 {
-  // viscous damping forces at t_{n+1}
-  Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
+  // the following is only done for rayleigh damping as for material damping viscous forces are
+  // already added at element level and else would be added twice
+  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  {
+    // viscous damping forces at t_{n+1}
+    Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fvisconp_ptr_);
+  }
+
   // inertia forces at t_{n+1}
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *finertianp_ptr_);
 }
@@ -222,8 +228,8 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
   // add inertial contributions to structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false,
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), 1.0);
-  // add Rayleigh damping contributions
-  if (tim_int().get_data_sdyn().get_damping_type() == Inpar::Solid::damp_rayleigh)
+  // add damping contributions
+  if (tim_int().get_data_sdyn().get_damping_type() != Inpar::Solid::damp_none)
     stiff_ptr->add(*global_state().get_damp_matrix(), false, gamma_ / (beta_ * dt), 1.0);
 }
 
