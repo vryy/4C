@@ -1,0 +1,9 @@
+-------INCLUDES
+folder1/include1a.dat
+-------SECTION 1
+test line
+test line
+// The includes section can appear multiple times
+-------INCLUDES
+//Go crazy with the slashes to check that we do not strip comments inadvertently
+folder1///././include1b.dat //a comment after the include

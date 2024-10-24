@@ -126,17 +126,20 @@ function(four_c_add_google_test_executable TESTNAME)
     )
 
   # Deal with additional support files
-  set(_support_file_dir "${CMAKE_BINARY_DIR}/tests/support_files/${TESTNAME}/")
+  set(FOUR_C_TEST_SUPPORT_FILE_DIR "${CMAKE_BINARY_DIR}/tests/support_files/${TESTNAME}/")
 
   foreach(support_file ${FOUR_C_ADD_GOOGLE_TEST_EXECUTABLE_SUPPORT_FILES})
     # Get file name relative to current list file
     cmake_path(RELATIVE_PATH support_file)
-    message(DEBUG "Copying support file ${support_file} to ${_support_file_dir}/${support_file}")
+    message(
+      DEBUG
+      "Copying support file ${support_file} to ${FOUR_C_TEST_SUPPORT_FILE_DIR}/${support_file}"
+      )
 
-    configure_file(${support_file} ${_support_file_dir}/${support_file} COPYONLY)
+    configure_file(${support_file} ${FOUR_C_TEST_SUPPORT_FILE_DIR}/${support_file})
   endforeach()
   target_compile_definitions(
-    ${TESTNAME} PRIVATE -DFOUR_C_TEST_SUPPORT_FILE_DIR="${_support_file_dir}"
+    ${TESTNAME} PRIVATE -DFOUR_C_TEST_SUPPORT_FILE_DIR="${FOUR_C_TEST_SUPPORT_FILE_DIR}"
     )
 
   add_dependencies(unittests ${TESTNAME})

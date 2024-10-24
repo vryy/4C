@@ -37,16 +37,11 @@ namespace Core::Utils
     return boost::split(return_value, input, boost::is_any_of(delimiter));
   }
 
-  std::string strip_comment(const std::string& line)
+  std::string strip_comment(const std::string& line, const std::string& comment_marker)
   {
-    std::string newline = line;
-
     // remove comments
-    std::string::size_type loc = line.find("//");
-    if (loc != std::string::npos)
-    {
-      newline = newline.substr(0, loc);
-    }
+    std::string::size_type loc = line.find(comment_marker);
+    std::string newline = line.substr(0, loc);
 
     // remove trailing and leading whitespaces
     // compact internal whitespaces

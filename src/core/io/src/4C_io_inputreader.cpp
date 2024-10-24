@@ -7,6 +7,7 @@
 
 #include "4C_io_inputreader.hpp"
 
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_node.hpp"
 #include "4C_fem_nurbs_discretization_knotvector.hpp"
 #include "4C_io_pstream.hpp"
@@ -16,6 +17,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_Time.hpp>
 
+#include <filesystem>
 #include <sstream>
 #include <utility>
 
@@ -26,90 +28,101 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-namespace
-{
-  constexpr double tolerance_n = 1.0e-14;
-
-  /*----------------------------------------------------------------------*/
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& find_sublist(std::string name, Teuchos::ParameterList& list)
-  {
-    Teuchos::ParameterList* sublist = &list;
-
-    for (std::string::size_type pos = name.find('/'); pos != std::string::npos;
-         pos = name.find('/'))
-    {
-      sublist = &sublist->sublist(name.substr(0, pos));
-      name = name.substr(pos + 1);
-    }
-
-    return sublist->sublist(name);
-  }
-
-  void add_entry(const std::string& key, const std::string& value, Teuchos::ParameterList& list)
-  {
-    // safety check: Is there a duplicate of the same parameter?
-    if (list.isParameter(key))
-      FOUR_C_THROW("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
-
-    if (key.empty()) FOUR_C_THROW("Internal error: missing key.", key.c_str());
-    // safety check: Is the parameter without any specified value?
-    if (value.empty())
-      FOUR_C_THROW("Missing value for parameter %s. Fix your input file!", key.c_str());
-
-    {  // try to find an int
-      std::stringstream ssi;
-      int iv;
-
-      ssi << value;
-      ssi >> iv;
-
-      if (ssi.eof())
-      {
-        list.set(key, iv);
-        return;
-      }
-    }
-
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-    // somehow the following test whether we have a double or not
-    // creates always an internal floating point exception (FE_INVALID). An alternative
-    // implementation using boost::lexical_cast<double> does not solve this problem!
-    // Better temporarily disable this floating point exception in the following,
-    // so that we can go on.
-    feclearexcept(FE_INVALID);
-    /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
-    fedisableexcept(FE_INVALID);
-#endif
-
-    {  // try to find a double
-      std::stringstream ssd;
-      double dv;
-
-      ssd << value;
-      ssd >> dv;
-
-#ifdef FOUR_C_ENABLE_FE_TRAPPING
-      feclearexcept(FE_INVALID);
-      /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
-      feenableexcept(FE_INVALID | FE_DIVBYZERO);
-#endif
-
-      if (ssd.eof())
-      {
-        list.set(key, dv);
-        return;
-      }
-    }
-
-    // if it is not an int or a double it must be a string
-    list.set(key, value);
-  }
-
-}  // namespace
-
 namespace Core::IO
 {
+  namespace
+  {
+    constexpr double tolerance_n = 1.0e-14;
+
+    /*----------------------------------------------------------------------*/
+    /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& find_sublist(std::string name, Teuchos::ParameterList& list)
+    {
+      Teuchos::ParameterList* sublist = &list;
+
+      for (std::string::size_type pos = name.find('/'); pos != std::string::npos;
+           pos = name.find('/'))
+      {
+        sublist = &sublist->sublist(name.substr(0, pos));
+        name = name.substr(pos + 1);
+      }
+
+      return sublist->sublist(name);
+    }
+
+    void add_entry(const std::string& key, const std::string& value, Teuchos::ParameterList& list)
+    {
+      // safety check: Is there a duplicate of the same parameter?
+      if (list.isParameter(key))
+        FOUR_C_THROW("Duplicate parameter %s in sublist %s", key.c_str(), list.name().c_str());
+
+      if (key.empty()) FOUR_C_THROW("Internal error: missing key.", key.c_str());
+      // safety check: Is the parameter without any specified value?
+      if (value.empty())
+        FOUR_C_THROW("Missing value for parameter %s. Fix your input file!", key.c_str());
+
+      {  // try to find an int
+        std::stringstream ssi;
+        int iv;
+
+        ssi << value;
+        ssi >> iv;
+
+        if (ssi.eof())
+        {
+          list.set(key, iv);
+          return;
+        }
+      }
+
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+      // somehow the following test whether we have a double or not
+      // creates always an internal floating point exception (FE_INVALID). An alternative
+      // implementation using boost::lexical_cast<double> does not solve this problem!
+      // Better temporarily disable this floating point exception in the following,
+      // so that we can go on.
+      feclearexcept(FE_INVALID);
+      /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+      fedisableexcept(FE_INVALID);
+#endif
+
+      {  // try to find a double
+        std::stringstream ssd;
+        double dv;
+
+        ssd << value;
+        ssd >> dv;
+
+#ifdef FOUR_C_ENABLE_FE_TRAPPING
+        feclearexcept(FE_INVALID);
+        /*feenableexcept(FE_INVALID | FE_DIVBYZERO | FE_UNDERFLOW | FE_OVERFLOW);*/
+        feenableexcept(FE_INVALID | FE_DIVBYZERO);
+#endif
+
+        if (ssd.eof())
+        {
+          list.set(key, dv);
+          return;
+        }
+      }
+
+      // if it is not an int or a double it must be a string
+      list.set(key, value);
+    }
+
+    //! The different ways we want to handle sections in the input file.
+    enum class SectionType
+    {
+      //! A section that is read directly.
+      normal,
+      //! A section that is skipped and read on-the-fly later.
+      on_the_fly,
+      //! A section that mentions other files that are included and need to be read.
+      include,
+    };
+
+  }  // namespace
+
   namespace Internal
   {
 
@@ -204,7 +217,7 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   DatFileReader::DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag)
-      : filename_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
+      : top_level_file_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
   {
     read_dat();
   }
@@ -212,7 +225,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::string DatFileReader::my_inputfile_name() const { return filename_; }
+  std::string DatFileReader::my_inputfile_name() const { return top_level_file_.string(); }
 
 
   /*----------------------------------------------------------------------*/
@@ -820,87 +833,180 @@ namespace Core::IO
     exclude.emplace_back("--CELLSCATRA DOMAIN");
     exclude.emplace_back("--PARTICLES");
 
-    int arraysize = 0;
+    const auto name_of_excluded_section = [&exclude](const std::string& section_header)
+    {
+      auto it = std::find_if(exclude.begin(), exclude.end(),
+          [&section_header](const std::string& section)
+          { return section_header.find(section) != std::string::npos; });
+
+      if (it != exclude.end())
+        return *it;
+      else
+        return std::string{};
+    };
+
     if (comm_.MyPID() == 0)
     {
-      std::ifstream file(filename_.c_str());
-      if (not file) FOUR_C_THROW("unable to open file: %s", filename_.c_str());
+      // Helper function reading a file and returning any include files
+      const auto read_file = [name_of_excluded_section](const std::filesystem::path& file_path,
+                                 std::list<std::string>& content,
+                                 std::map<std::string, SectionPosition>& exclude_information)
+          -> std::vector<std::filesystem::path>
+      {
+        std::ifstream file(file_path);
+        if (not file) FOUR_C_THROW("unable to open file: %s", file_path.c_str());
+
+        // Tracking variables while walking through the file
+        std::vector<std::filesystem::path> included_files;
+        std::string current_excluded_section_name{};
+        unsigned current_section_linecount = 0;
+        SectionType current_section_type = SectionType::normal;
+        std::string line;
+
+        const auto finalize_section_read = [&](int number_of_lines)
+        {
+          if (current_section_type == SectionType::on_the_fly)
+          {
+            exclude_information[current_excluded_section_name].length = number_of_lines;
+          }
+
+          // Reset tracking variables
+          current_excluded_section_name.clear();
+          current_section_linecount = 0;
+
+          // Determine what kind of new section we started.
+          const auto maybe_excluded_section = name_of_excluded_section(line);
+          if (!maybe_excluded_section.empty())
+          {
+            // Start a new excluded section. This starts at the next line. The correct length
+            // will be set when the section ends.
+            exclude_information.emplace(
+                maybe_excluded_section, SectionPosition{file_path, file.tellg(), 0});
+            current_excluded_section_name = maybe_excluded_section;
+            current_section_type = SectionType::on_the_fly;
+          }
+          else if (line.rfind("--INCLUDES") != std::string::npos)
+          {
+            current_section_type = SectionType::include;
+          }
+          else
+          {
+            current_section_type = SectionType::normal;
+          }
+        };
+
+        // Loop over all input lines. This reads the actual file contents and determines whether a
+        // line is to be read immediately or should be excluded because it is in one of the excluded
+        // sections.
+        while (getline(file, line))
+        {
+          ++current_section_linecount;
+
+          // In case we are reading an include section, a comment needs to be preceded by
+          // whitespace. Otherwise, we would treat double slashes as comments, although they are
+          // part of the file path.
+          if (current_section_type == SectionType::include)
+          {
+            // Take care to remove comments only if they are preceded by whitespace.
+            line = Core::Utils::strip_comment(line, " //");
+            if (line.empty()) continue;
+
+            // Additionally check if the first token is a comment to handle the case where the
+            // comment starts at the beginning of the line.
+            if (line.find("//") == 0) continue;
+          }
+          // Remove comments, trailing and leading whitespaces, compact internal whitespaces
+          else
+          {
+            line = Core::Utils::strip_comment(line);
+          }
+
+          // line is now empty
+          if (line.size() == 0) continue;
+
+          // This line starts a new section
+          if (line.find("--") == 0)
+          {
+            // finalize the last excluded section. Subtract the current line which is not part of
+            // the section anymore.
+            finalize_section_read(current_section_linecount - 1);
+          }
+
+          switch (current_section_type)
+          {
+            case SectionType::normal:
+            {
+              // This line contains content that we want to read now.
+              content.push_back(line);
+              break;
+            }
+            case SectionType::on_the_fly:
+              // We are in an on-the-fly section. Skip the line.
+              break;
+            case SectionType::include:
+            {
+              if (line.find("--") != 0)
+              {
+                // Interpret the path as relative to the currently read file, if is not absolute
+                std::filesystem::path included_file(line);
+                if (!included_file.is_absolute())
+                {
+                  included_file = file_path.parent_path() / included_file;
+                }
+                FOUR_C_THROW_UNLESS(std::filesystem::status(included_file).type() ==
+                                        std::filesystem::file_type::regular,
+                    "Included file '%s' is not a regular file. Does the file exist?",
+                    included_file.c_str());
+                included_files.emplace_back(included_file);
+              }
+              break;
+            }
+          }
+        }
+        // Finalize the last section
+        finalize_section_read(current_section_linecount);
+
+        return included_files;
+      };
 
       std::list<std::string> content;
-      std::string current_excluded_section_name{};
-      unsigned current_section_linecount = 0;
+      // Start by "including" the top-level file.
+      std::list<std::filesystem::path> included_files{top_level_file_};
 
-      const auto name_of_excluded_section = [&exclude](const std::string& section_header)
+      // We use a hand-rolled loop here because the list keeps growing; thus we need to continuously
+      // re-evaluate where the end of the list is.
+      for (auto it = included_files.begin(); it != included_files.end(); ++it)
       {
-        auto it = std::find_if(exclude.begin(), exclude.end(),
-            [&section_header](const std::string& section)
-            { return section_header.find(section) != std::string::npos; });
+        // Read the next file and get its includes.
+        auto new_include_files = read_file(*it, content, excludepositions_);
 
-        if (it != exclude.end())
-          return *it;
-        else
-          return std::string{};
-      };
-
-      std::string line;
-
-      const auto finalize_section_read = [&](int number_of_lines)
-      {
-        if (!current_excluded_section_name.empty())
+        // Check that the file is not included twice
+        for (const auto& file : new_include_files)
         {
-          excludepositions_[current_excluded_section_name].second = number_of_lines;
+          if (std::find(included_files.begin(), included_files.end(), file) != included_files.end())
+          {
+            FOUR_C_THROW(
+                "File '%s' was already included before.\n Cycles are not allowed.", file.c_str());
+          }
+          else
+          {
+            included_files.emplace_back(file);
+          }
         }
-
-        const auto maybe_excluded_section = name_of_excluded_section(line);
-        if (!maybe_excluded_section.empty())
-        {
-          // Start a new excluded section. This starts at the next line.
-          excludepositions_[maybe_excluded_section].first = file.tellg();
-          current_excluded_section_name = maybe_excluded_section;
-        }
-        else
-        {
-          current_excluded_section_name.clear();
-        }
-
-        current_section_linecount = 0;
-      };
-
-      // First loop over all input lines. This reads the actual file contents and determines
-      // whether a line is to be read immediately or should be excluded because it is in one of
-      // the excluded sections.
-      while (getline(file, line))
-      {
-        ++current_section_linecount;
-
-        // remove comments, trailing and leading whitespaces
-        // compact internal whitespaces
-        line = Core::Utils::strip_comment(line);
-
-        // line is now empty
-        if (line.size() == 0) continue;
-
-        // This line starts a new section
-        if (line.find("--") == 0)
-        {
-          // finalize the last excluded section. Subtract the current line which is not part of
-          // the section anymore.
-          finalize_section_read(current_section_linecount - 1);
-        }
-
-        if (!current_excluded_section_name.empty())
-        {
-          // We are in an excluded section. Skip the line.
-          continue;
-        }
-
-        // This line contains content that we want to read now.
-        content.push_back(line);
-        // Count the number of characters in the line + 1 for the null-terminator we will add later.
-        arraysize += static_cast<int>(line.length()) + 1;
       }
-      // Finalize the last section
-      finalize_section_read(current_section_linecount);
+
+      // dump the included files
+      for (const auto& file : included_files)
+      {
+        std::cout << "Included file: " << file << std::endl;
+      }
+
+      int arraysize = std::accumulate(content.begin(), content.end(), 0,
+          [](int sum, const std::string& line)
+          {
+            // add 1 for the null-terminator that we will add below
+            return sum + line.size() + 1;
+          });
 
       // allocate space for copy of file
       inputfile_.clear();
@@ -931,6 +1037,7 @@ namespace Core::IO
     // Now lets do all the parallel setup. Afterwards all processors
     // have to be the same.
 
+    int arraysize = inputfile_.size();
     if (comm_.NumProc() > 1)
     {
       int num_lines = lines_.size();
@@ -972,21 +1079,10 @@ namespace Core::IO
             lines_.size());
       }
 
-      // distribute excluded section positions
-      for (auto& i : exclude)
-      {
-        if (comm_.MyPID() == 0)
-        {
-          auto ep = excludepositions_.find(i);
-          if (ep == excludepositions_.end())
-          {
-            excludepositions_[i] = std::pair<std::ifstream::pos_type, unsigned int>(-1, 0);
-          }
-        }
-        std::pair<std::ifstream::pos_type, unsigned int>& p = excludepositions_[i];
-        // comm_.Broadcast(&p.second,1,0);
-        MPI_Bcast(&p.second, 1, MPI_INT, 0, mpicomm.GetMpiComm());
-      }
+      FOUR_C_ASSERT((comm_.MyPID() == 0 || excludepositions_.empty()), "Internal error.");
+
+      // All-gather does the correct thing becuase the maps are empty on all ranks > 0
+      excludepositions_ = Core::Communication::all_gather(excludepositions_, comm_);
     }
 
     // Now finally find the section names. We have to do this on all
@@ -1102,6 +1198,24 @@ namespace Core::IO
     if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());
 
     return {std::move(key), std::move(value)};
+  }
+
+  void DatFileReader::SectionPosition::pack(Communication::PackBuffer& data) const
+  {
+    Core::Communication::add_to_pack(data, file.string());
+    Core::Communication::add_to_pack(data, static_cast<unsigned>(pos));
+    Core::Communication::add_to_pack(data, length);
+  }
+
+  void DatFileReader::SectionPosition::unpack(Communication::UnpackBuffer& buffer)
+  {
+    std::string file_str;
+    Core::Communication::extract_from_pack(buffer, file_str);
+    file = file_str;
+    unsigned pos_extract;
+    Core::Communication::extract_from_pack(buffer, pos_extract);
+    pos = pos_extract;
+    Core::Communication::extract_from_pack(buffer, length);
   }
 }  // namespace Core::IO
 

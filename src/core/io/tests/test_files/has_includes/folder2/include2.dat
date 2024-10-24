@@ -1,0 +1,16 @@
+-------INCLUDED SECTION 2
+line
+line
+-------INCLUDES
+// test an absolute include path (configured by CMake to point into the test directory)
+@FOUR_C_TEST_SUPPORT_FILE_DIR@/test_files/has_includes/folder3/include3.dat // trailing comment ignored
+    // indented comment ignored
+-------PARTICLES
+line
+line
+line
+
+line
+
+line
+--ANOTHER SECTION
