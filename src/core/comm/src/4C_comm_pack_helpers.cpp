@@ -10,10 +10,6 @@
 FOUR_C_NAMESPACE_OPEN
 
 
-void Core::Communication::add_to_pack(PackBuffer& data, const ParObject& obj) { obj.pack(data); }
-
-void Core::Communication::add_to_pack(PackBuffer& data, const ParObject* obj) { obj->pack(data); }
-
 void Core::Communication::add_to_pack(
     PackBuffer& data, const Core::LinAlg::SerialDenseMatrix& stuff)
 {

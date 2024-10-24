@@ -959,23 +959,23 @@ template class Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
     Solid::Elements::EasType::eastype_h8_21, Inpar::Solid::KinemType::linear>;
 
 static_assert(
-    Discret::Elements::IsPackable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>*>,
+    Core::Communication::is_packable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>>,
     "EAS needs to implement the method pack(Core::Communication::PackBuffer&) to be able to store "
     "history data!");
 static_assert(
-    Discret::Elements::IsUnpackable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>*>,
+    Core::Communication::is_unpackable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::nonlinearTotLag>>,
     "EAS needs to implement the method unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");
 static_assert(
-    Discret::Elements::IsPackable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>*>,
+    Core::Communication::is_packable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>>,
     "EAS needs to implement the method pack(Core::Communication::PackBuffer&) to be able to store "
     "history data!");
 static_assert(
-    Discret::Elements::IsUnpackable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
-        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>*>,
+    Core::Communication::is_unpackable<Discret::Elements::SolidEleCalcEas<Core::FE::CellType::hex8,
+        Solid::Elements::EasType::eastype_h8_9, Inpar::Solid::KinemType::linear>>,
     "EAS needs to implement the method unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");
 FOUR_C_NAMESPACE_CLOSE

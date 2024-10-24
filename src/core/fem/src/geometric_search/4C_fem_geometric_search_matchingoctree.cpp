@@ -772,7 +772,7 @@ void Core::GeometricSearch::NodeMatchingOctree::pack_entity(
   // get the slavenode
   Core::Nodes::Node* actnode = dis->g_node(id);
   // Add node to list of nodes which will be sent to the next proc
-  add_to_pack(data, actnode);
+  add_to_pack(data, *actnode);
 }  // NodeMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -880,8 +880,8 @@ void Core::GeometricSearch::ElementMatchingOctree::pack_entity(
   Core::Nodes::Node** nodes = actele->nodes();
   // Add node to list of nodes which will be sent to the next proc
   add_to_pack(data, actele->num_node());
-  add_to_pack(data, actele);
-  for (int node = 0; node < actele->num_node(); node++) add_to_pack(data, nodes[node]);
+  add_to_pack(data, *actele);
+  for (int node = 0; node < actele->num_node(); node++) add_to_pack(data, *nodes[node]);
 }  // ElementMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
