@@ -8,7 +8,7 @@
 #include "4C_scatra_timint_elch_scl.hpp"
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
-#include "4C_comm_broadcast_utils.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
@@ -655,7 +655,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   }
   // distribute all maps to all procs
   const auto glob_macro_slave_node_master_dof_gids =
-      Core::Communication::broadcast(my_macro_slave_node_master_dof_gids, comm);
+      Core::Communication::all_gather(my_macro_slave_node_master_dof_gids, comm);
 
   // get master node (this proc) to slave node (any proc)
   std::map<int, int> my_macro_slave_node_master_node_gids;
@@ -678,7 +678,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   }
   // distribute all maps to all procs
   const auto glob_macro_slave_node_master_node_gids =
-      Core::Communication::broadcast(my_macro_slave_node_master_node_gids, comm);
+      Core::Communication::all_gather(my_macro_slave_node_master_node_gids, comm);
 
   // we use Dirchlet conditions on micro side to achieve coupling by adapting the DBC value
   std::vector<Core::Conditions::Condition*> micro_coupling_conditions;
@@ -732,7 +732,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     my_micro_problem_counter++;
   }
   const auto glob_macro_micro_coupled_node_gids =
-      Core::Communication::broadcast(my_macro_micro_coupled_node_gids, comm);
+      Core::Communication::all_gather(my_macro_micro_coupled_node_gids, comm);
 
   // setup macro nodes on this proc and coupled micro nodes (can be other proc)
   std::vector<int> my_micro_permuted_node_gids;
@@ -787,7 +787,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
     }
   }
 
-  const std::vector<int> glob_slave_dofs = Core::Communication::broadcast(my_slave_dofs, comm);
+  const std::vector<int> glob_slave_dofs = Core::Communication::all_gather(my_slave_dofs, comm);
 
   std::vector<int> my_master_dofs;
   std::vector<int> my_perm_slave_dofs;
@@ -836,7 +836,7 @@ void ScaTra::ScaTraTimIntElchSCL::setup_coupling()
   }
 
   const auto glob_micro_coupling_nodes =
-      Core::Communication::broadcast(my_micro_coupling_nodes, discret_->get_comm());
+      Core::Communication::all_gather(my_micro_coupling_nodes, discret_->get_comm());
 
   // by definition, the last node of a micro sub problem is coupled with the macro. Here, all nodes
   // in the sub problem are linked to the coupled node, by looping backwards through all nodes and
@@ -894,7 +894,7 @@ void ScaTra::ScaTraTimIntElchSCL::scale_micro_problem()
   }
 
   const auto glob_nodal_size_micro =
-      Core::Communication::broadcast(my_nodal_size_micro, discret_->get_comm());
+      Core::Communication::all_gather(my_nodal_size_micro, discret_->get_comm());
 
   auto micro_scale = Core::LinAlg::create_vector(*micro_scatra_field()->dof_row_map(), true);
   for (int lid_micro = micro_scatra_field()->dof_row_map()->NumMyElements() - 1; lid_micro >= 0;

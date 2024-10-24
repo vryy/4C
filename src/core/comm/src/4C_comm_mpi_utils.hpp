@@ -5,16 +5,20 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_COMM_BROADCAST_UTILS_HPP
-#define FOUR_C_COMM_BROADCAST_UTILS_HPP
+#ifndef FOUR_C_COMM_MPI_UTILS_HPP
+#define FOUR_C_COMM_MPI_UTILS_HPP
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_helpers.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
+#include <Epetra_MpiComm.h>
+#include <mpi.h>
 
 #include <map>
+#include <numeric>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -24,40 +28,40 @@ FOUR_C_NAMESPACE_OPEN
 namespace Core::Communication
 {
   //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged
-  //! map (key of type @p T and value of type @p U). It is distributed to to all procs.
+  //! map (key of type @p T and value of type @p U). It is distributed to all procs.
   template <typename T, typename U>
-  std::map<T, U> broadcast(const std::map<T, U>& map_in, const Epetra_Comm& comm);
+  std::map<T, U> all_gather(const std::map<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge map @p unordered map_in (key of type @p T and value of type @p U) from all procs to a
-  //! merged unordered map (key of type @p T and value of type @p U). It is distributed to to all
+  //! merged unordered map (key of type @p T and value of type @p U). It is distributed to all
   //! procs.
   template <typename T, typename U>
-  std::unordered_map<T, U> broadcast(
+  std::unordered_map<T, U> all_gather(
       const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge unordered multimap @p map_in (key of type @p T and value of type @p U) from all procs
   //! to a merged unordered multimap (key of type @p T and value of type @p U). It is distributed
-  //! to to all procs.
+  //! to all procs.
   template <typename T, typename U>
-  std::unordered_multimap<T, U> broadcast(
+  std::unordered_multimap<T, U> all_gather(
       const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm);
 
   //! Merge vector of pairs @p pairs_in (items of type @p T and @p U) from all procs to a merged
   //! vector (items of type @p T and @p U). The merged items are in an unspecified order. It is
-  //! distributed to to all procs.
+  //! distributed to all procs.
   template <typename T, typename U>
-  std::vector<std::pair<T, U>> broadcast(
+  std::vector<std::pair<T, U>> all_gather(
       const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm);
 
   //! Merge @p set_in (items of type @p T) from all procs to a merged set (items of type @p T). It
-  //! is distributed to to all procs.
+  //! is distributed to all procs.
   template <typename T>
-  std::set<T> broadcast(const std::set<T>& set_in, const Epetra_Comm& comm);
+  std::set<T> all_gather(const std::set<T>& set_in, const Epetra_Comm& comm);
 
   //! Merge vector @p vec_in (items of type @p T) from all procs to a merged vector (items of type
-  //! @p T). The items of are in an unspecified order. It is distributed to to all procs.
+  //! @p T). The items of are in an unspecified order. The result is distributed to all procs.
   template <typename T>
-  std::vector<T> broadcast(const std::vector<T>& vec_in, const Epetra_Comm& comm);
+  std::vector<T> all_gather(const std::vector<T>& vec_in, const Epetra_Comm& comm);
 }  // namespace Core::Communication
 
 /*----------------------------------------------------------------------*/
@@ -66,7 +70,7 @@ namespace Core::Communication::Internal
 {
   //! Broadcast a map or vector<pair>
   template <typename T, typename U, typename M>
-  void broadcast_map_like_to_vetors(
+  void all_gather_map_like_to_vectors(
       const M& map_in, std::vector<T>& vec_out1, std::vector<U>& vec_out2, const Epetra_Comm& comm)
   {
     // split map or std::vector<std::pair> into two vectors
@@ -77,10 +81,8 @@ namespace Core::Communication::Internal
       my_gid_vec1.emplace_back(pair.first);
       my_gid_vec2.emplace_back(pair.second);
     }
-    std::vector<T> vec1;
-    std::vector<U> vec2;
-    vec1 = broadcast(my_gid_vec1, comm);
-    vec2 = broadcast(my_gid_vec2, comm);
+    std::vector<T> vec1 = all_gather(my_gid_vec1, comm);
+    std::vector<U> vec2 = all_gather(my_gid_vec2, comm);
 
     FOUR_C_ASSERT(vec1.size() == vec2.size(), "Vectors must have the same length.");
 
@@ -96,11 +98,12 @@ namespace Core::Communication::Internal
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::map<T, U> Core::Communication::broadcast(const std::map<T, U>& map_in, const Epetra_Comm& comm)
+std::map<T, U> Core::Communication::all_gather(
+    const std::map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::broadcast_map_like_to_vetors<T, U>(map_in, vec1, vec2, comm);
+  Internal::all_gather_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
   std::map<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -109,12 +112,12 @@ std::map<T, U> Core::Communication::broadcast(const std::map<T, U>& map_in, cons
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::unordered_map<T, U> Core::Communication::broadcast(
+std::unordered_map<T, U> Core::Communication::all_gather(
     const std::unordered_map<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::broadcast_map_like_to_vetors<T, U>(map_in, vec1, vec2, comm);
+  Internal::all_gather_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
   std::unordered_map<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -123,12 +126,12 @@ std::unordered_map<T, U> Core::Communication::broadcast(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::unordered_multimap<T, U> Core::Communication::broadcast(
+std::unordered_multimap<T, U> Core::Communication::all_gather(
     const std::unordered_multimap<T, U>& map_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::broadcast_map_like_to_vetors<T, U>(map_in, vec1, vec2, comm);
+  Internal::all_gather_map_like_to_vectors<T, U>(map_in, vec1, vec2, comm);
   std::unordered_multimap<T, U> map_out;
   for (unsigned i = 0; i < vec1.size(); ++i) map_out.insert(std::make_pair(vec1[i], vec2[i]));
   return map_out;
@@ -137,12 +140,12 @@ std::unordered_multimap<T, U> Core::Communication::broadcast(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T, typename U>
-std::vector<std::pair<T, U>> Core::Communication::broadcast(
+std::vector<std::pair<T, U>> Core::Communication::all_gather(
     const std::vector<std::pair<T, U>>& pairs_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec1;
   std::vector<U> vec2;
-  Internal::broadcast_map_like_to_vetors<T, U>(pairs_in, vec1, vec2, comm);
+  Internal::all_gather_map_like_to_vectors<T, U>(pairs_in, vec1, vec2, comm);
   std::vector<std::pair<T, U>> pairs_out;
   for (unsigned i = 0; i < vec1.size(); ++i)
     pairs_out.emplace_back(std::make_pair(vec1[i], vec2[i]));
@@ -152,11 +155,11 @@ std::vector<std::pair<T, U>> Core::Communication::broadcast(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::set<T> Core::Communication::broadcast(const std::set<T>& set_in, const Epetra_Comm& comm)
+std::set<T> Core::Communication::all_gather(const std::set<T>& set_in, const Epetra_Comm& comm)
 {
   std::vector<T> vec_in, vec_out;
   for (const auto& val : set_in) vec_in.emplace_back(val);
-  vec_out = broadcast(vec_in, comm);
+  vec_out = all_gather(vec_in, comm);
   std::set<T> set_out;
   for (const auto& val : vec_out) set_out.insert(val);
   return set_out;
@@ -165,28 +168,50 @@ std::set<T> Core::Communication::broadcast(const std::set<T>& set_in, const Epet
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <typename T>
-std::vector<T> Core::Communication::broadcast(const std::vector<T>& vec_in, const Epetra_Comm& comm)
+std::vector<T> Core::Communication::all_gather(
+    const std::vector<T>& vec_in, const Epetra_Comm& comm)
 {
-  std::vector<T> vec_out;
-  for (int iproc = 0; iproc < comm.NumProc(); ++iproc)
+  MPI_Comm mpi_comm = dynamic_cast<const Epetra_MpiComm&>(comm).Comm();
+  const int n_procs = comm.NumProc();
+
+  // Use PackBuffer to serialize the data into a vector<char>
+  PackBuffer buffer;
+  add_to_pack(buffer, vec_in);
+
+  int local_size = buffer().size();
+  std::vector<int> size_all_data(n_procs, 0);
+  [[maybe_unused]] int err =
+      MPI_Allgather(&local_size, 1, MPI_INT, size_all_data.data(), 1, MPI_INT, mpi_comm);
+  FOUR_C_ASSERT(err == MPI_SUCCESS, "MPI_Allgather failed.");
+
+  // Compute offset of the data from the i-th rank
+  std::vector<int> accumulated_offset(n_procs);
+  std::partial_sum(size_all_data.begin(), size_all_data.end() - 1, accumulated_offset.begin() + 1);
+
+  std::vector<char> combined_buffer(accumulated_offset.back() + size_all_data.back());
+
+  err = MPI_Allgatherv(buffer().data(), local_size, MPI_CHAR,
+      /*full received buffer*/ combined_buffer.data(),
+      /*sizes of processor contributions*/ size_all_data.data(),
+      /*displacement of processor contributions in full buffer*/ accumulated_offset.data(),
+      MPI_CHAR, mpi_comm);
+  FOUR_C_ASSERT(err == MPI_SUCCESS, "MPI_Allgatherv failed.");
+
+  // Merge the data from all processors into a single vector
+  std::vector<T> all_vectors;
+  for (int i = 0; i < n_procs; ++i)
   {
-    // communicate size of vector
-    int size = static_cast<int>(vec_in.size());
-    comm.Broadcast(&size, 1, iproc);
+    // Since UnpackBuffer cannot view data, we need to make a copy of the data.
+    std::vector<char> local_buffer(combined_buffer.begin() + accumulated_offset[i],
+        combined_buffer.begin() + accumulated_offset[i] + size_all_data[i]);
 
-    // new vectors to be filled (by this proc, if MyPID == iproc or other procs by
-    // communication)
-    std::vector<T> vec_broadcast;
-    if (iproc == comm.MyPID()) vec_broadcast = vec_in;
-
-    // communicate vector
-    vec_broadcast.resize(size);
-    comm.Broadcast(vec_broadcast.data(), size, iproc);
-
-    // append communicated vector to vec_out
-    for (const auto& item : vec_broadcast) vec_out.emplace_back(item);
+    std::vector<T> received;
+    UnpackBuffer unpack_buffer(local_buffer);
+    extract_from_pack(unpack_buffer, received);
+    all_vectors.insert(all_vectors.end(), received.begin(), received.end());
   }
-  return vec_out;
+
+  return all_vectors;
 }
 
 FOUR_C_NAMESPACE_CLOSE

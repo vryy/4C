@@ -9,7 +9,7 @@
 
 #include "4C_adapter_scatra_base_algorithm.hpp"
 #include "4C_adapter_str_ssiwrapper.hpp"
-#include "4C_comm_broadcast_utils.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_coupling_adapter.hpp"
 #include "4C_coupling_adapter_converter.hpp"
@@ -1151,7 +1151,7 @@ void SSI::Utils::SSIMeshTying::find_matching_node_pairs(Core::FE::Discretization
   }
 
   // communicate to all other procs
-  const auto all_coupling_pairs = Core::Communication::broadcast(my_coupling_pairs, comm_);
+  const auto all_coupling_pairs = Core::Communication::all_gather(my_coupling_pairs, comm_);
 
   // remove duplicates (slave node = master node)
   for (const auto& pair : all_coupling_pairs)
@@ -1322,8 +1322,8 @@ void SSI::Utils::SSIMeshTying::define_master_slave_pairing(
       if (node != new_master_gid) my_slave_master_pair.insert(std::make_pair(node, new_master_gid));
   }
 
-  master_gids = Core::Communication::broadcast(my_master_gids, comm_);
-  slave_master_pair = Core::Communication::broadcast(my_slave_master_pair, comm_);
+  master_gids = Core::Communication::all_gather(my_master_gids, comm_);
+  slave_master_pair = Core::Communication::all_gather(my_slave_master_pair, comm_);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // check if everything worked fine
@@ -1370,7 +1370,7 @@ void SSI::Utils::SSIMeshTying::find_slave_slave_transformation_nodes(Core::FE::D
 
   // distribute gids from original slave nodes to all procs (matching might be on different proc)
   all_coupled_original_slave_gids =
-      Core::Communication::broadcast(my_coupled_original_slave_gids, comm_);
+      Core::Communication::all_gather(my_coupled_original_slave_gids, comm_);
 }
 
 /*---------------------------------------------------------------------------------*

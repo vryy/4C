@@ -15,7 +15,7 @@
 #include "4C_beaminteraction_potential_params.hpp"
 #include "4C_beaminteraction_potential_runtime_visualization_output_params.hpp"
 #include "4C_beaminteraction_str_model_evaluator_datastate.hpp"
-#include "4C_comm_broadcast_utils.hpp"
+#include "4C_comm_mpi_utils.hpp"
 #include "4C_comm_utils_gid_vector.hpp"
 #include "4C_io.hpp"
 #include "4C_io_pstream.hpp"
@@ -831,15 +831,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::setup_potential_reductio
 
   // broadcast all data maps to all procs
   data_maps.ele_gid_length_map =
-      Core::Communication::broadcast(data_maps.ele_gid_length_map, discret().get_comm());
+      Core::Communication::all_gather(data_maps.ele_gid_length_map, discret().get_comm());
   data_maps.ele_gid_left_node_gid_map =
-      Core::Communication::broadcast(data_maps.ele_gid_left_node_gid_map, discret().get_comm());
+      Core::Communication::all_gather(data_maps.ele_gid_left_node_gid_map, discret().get_comm());
   data_maps.ele_gid_right_node_gid_map =
-      Core::Communication::broadcast(data_maps.ele_gid_right_node_gid_map, discret().get_comm());
+      Core::Communication::all_gather(data_maps.ele_gid_right_node_gid_map, discret().get_comm());
   data_maps.left_node_gid_ele_gid_map =
-      Core::Communication::broadcast(data_maps.left_node_gid_ele_gid_map, discret().get_comm());
+      Core::Communication::all_gather(data_maps.left_node_gid_ele_gid_map, discret().get_comm());
   data_maps.right_node_gid_ele_gid_map =
-      Core::Communication::broadcast(data_maps.right_node_gid_ele_gid_map, discret().get_comm());
+      Core::Communication::all_gather(data_maps.right_node_gid_ele_gid_map, discret().get_comm());
 
   // determine length to edge for each element and add to map
   for (const auto& [ele_gid, _] : data_maps.ele_gid_length_map)
