@@ -5,7 +5,7 @@ The steps outlined in [Setup and Initial Configuration](#setup-and-initial-confi
 once, while the  [4C Development Workflow](#the-4c-development-workflow) has to be cycled for every bit of code
 development in 4C.
 
-[//]: # (> **Note:**  By contributing to 4C, you implicitly agree to our [contributor license agreement]&#40;https://gitlab.lrz.de/baci/baci/blob/main/ContributorLicenseAgreement.md&#41;.)
+**All contributions to 4C must adhere to [The European Code of Conduct for Research Integrity – Revised Edition 2023](http://www.doi.org/10.26356/ECOC).**
 
 4C development is strongly based on the [GitHub Flow](https://guides.github.com/introduction/flow/index.html) which is a
 branch-based workflow involving only two types of branches: the `main` branch and `feature` branches.
