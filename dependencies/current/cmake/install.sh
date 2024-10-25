@@ -17,7 +17,7 @@ INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
 VERSION="3.30.5"
-CHECKSUM="260ccebc9af23148743411fed2bb58fc1dfd6e8f46aea5370055c429bdac38b4"
+CHECKSUM="83de8839f3fb0d9caf982a0435da3fa8c4fbe2c817dfec99def310dc7e6a8404"
 
 wget --no-verbose https://github.com/Kitware/CMake/releases/download/v${VERSION}/cmake-${VERSION}-linux-x86_64.sh
 # Verify checksum
