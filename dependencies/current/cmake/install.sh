@@ -26,6 +26,7 @@ then
 
   echo "Checksum matches"
 else
+  sha256sum cmake-${VERSION}-linux-x86_64.sh | awk '{print $1}'
   echo $CHECKSUM
   echo "Checksum does not match"
   exit 1
