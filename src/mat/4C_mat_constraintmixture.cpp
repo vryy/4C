@@ -18,10 +18,10 @@
 #include "4C_io_gmsh.hpp"          // for debug plotting with gmsh
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_constraintmixture_history.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -1486,7 +1486,7 @@ void Mat::ConstraintMixture::evaluate_elastin(const Core::LinAlg::Matrix<NUM_STR
   double delta6 = 2. * beta * mue * pow(I3, -beta);
   cmatiso.multiply_nt(delta6, Cisoinv, Cisoinv);
   double delta7 = 2. * mue * pow(I3, -beta);
-  add_holzapfel_product(cmatiso, Cisoinv, delta7);
+  Core::LinAlg::Tensor::add_holzapfel_product(cmatiso, Cisoinv, delta7);
   cmatiso.scale(refmassdenselastin / density * prestretchelastin * prestretchelastin *
                 prestretchelastin * prestretchelastin * elastin_survival);
   *cmat = cmatiso;
@@ -1639,7 +1639,7 @@ void Mat::ConstraintMixture::evaluate_volumetric(const Core::LinAlg::Matrix<NUM_
 
   //--- do elasticity matrix -------------------------------------------------------------
   // cmatvol = J(p + J dp/dJ) Cinv x Cinv  -  2 J p Cinv o Cinv
-  add_holzapfel_product((*cmat), Cinv, (-2 * J * p));
+  Core::LinAlg::Tensor::add_holzapfel_product((*cmat), Cinv, (-2 * J * p));
   for (int i = 0; i < 6; i++)
   {
     for (int j = 0; j < 6; j++)

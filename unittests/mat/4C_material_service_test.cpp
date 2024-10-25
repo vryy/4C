@@ -8,7 +8,11 @@
 #include <gtest/gtest.h>
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_derivatives.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
+#include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_four_tensor.hpp"
+#include "4C_linalg_four_tensor_generators.hpp"
 #include "4C_mat_service.hpp"
 #include "4C_unittest_utils_assertions_test.hpp"
 
@@ -59,7 +63,7 @@ namespace
     double scalar = 0.5;
 
     // result_ijkl = A_ik InvABInvB_jl +  A_il InvABInvB_jk + A_jk InvABInvB_il + A_jl InvABInvB_ik
-    Mat::add_derivative_of_inva_b_inva_product(scalar, A, InvABInvB, Result);
+    Core::LinAlg::Tensor::add_derivative_of_inva_b_inva_product(scalar, A, InvABInvB, Result);
 
     Core::LinAlg::Matrix<6, 6> Result_reference(false);
     Result_reference(0, 0) = -0.86;
@@ -127,7 +131,7 @@ namespace
     Mat::setup_linear_isotropic_elastic_tensor(Ce, E, NU);
 
     Core::LinAlg::Matrix<6, 6> De;
-    Mat::four_tensor_to_matrix(Ce, De);
+    Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(De, Ce);
 
     Core::LinAlg::Matrix<6, 6> De_ref;
     const double c1 = E / ((1.00 + NU) * (1 - 2 * NU));
@@ -179,8 +183,7 @@ namespace
   {
     // test the calculation of fourth order deviatoric tensor and contraction of fourth order tensor
     // and Matrix
-    Core::LinAlg::FourTensor<3> Id;
-    Mat::setup_deviatoric_projection_tensor(Id);
+    Core::LinAlg::FourTensor<3> Id = Core::LinAlg::setup_deviatoric_projection_tensor<3>();
 
     Core::LinAlg::Matrix<3, 3> stress(false);
     stress(0, 0) = 1.0;
@@ -199,79 +202,12 @@ namespace
     s_ref(0, 2) = s_ref(2, 0) = 0.6;
 
     Core::LinAlg::Matrix<3, 3> s;
-    Mat::add_contraction_matrix_four_tensor(s, 1.0, Id, stress);
+    Core::LinAlg::Tensor::add_contraction_matrix_four_tensor(s, 1.0, Id, stress);
 
     FOUR_C_EXPECT_NEAR(s, s_ref, 1.0e-10);
   }
 
-  TEST(MaterialServiceTest, TestKroneckerProduct)
-  {
-    // test the calculation of the fourth order kronecker product of two second-order tensors
-    Core::LinAlg::Matrix<3, 3> a(false);
-    a(0, 0) = 1.0000000000;
-    a(0, 1) = 2.0000000000;
-    a(0, 2) = 3.0000000000;
-    a(1, 0) = 0.0000000000;
-    a(1, 1) = 5.0000000000;
-    a(1, 2) = 1.2000000000;
-    a(2, 0) = 1.0000000000;
-    a(2, 1) = 1.0000000000;
-    a(2, 2) = 1.0000000000;
 
-    Core::LinAlg::Matrix<3, 3> b(false);
-    b(0, 0) = 1.0000000000;
-    b(0, 1) = 0.0000000000;
-    b(0, 2) = 5.0000000000;
-    b(1, 0) = 0.0000000000;
-    b(1, 1) = 0.0000000000;
-    b(1, 2) = 7.0000000000;
-    b(2, 0) = 1.3000000000;
-    b(2, 1) = 1.2000000000;
-    b(2, 2) = 1.0000000000;
-
-    Core::LinAlg::Matrix<6, 6> a_kron_b_ref(true);
-    a_kron_b_ref(0, 0) = 1.0000000000;
-    a_kron_b_ref(0, 1) = 0.0000000000;
-    a_kron_b_ref(0, 2) = 15.0000000000;
-    a_kron_b_ref(0, 3) = 1.0000000000;
-    a_kron_b_ref(0, 4) = 5.0000000000;
-    a_kron_b_ref(0, 5) = 4.0000000000;
-    a_kron_b_ref(1, 0) = 0.0000000000;
-    a_kron_b_ref(1, 1) = 0.0000000000;
-    a_kron_b_ref(1, 2) = 8.4000000000;
-    a_kron_b_ref(1, 3) = 0.0000000000;
-    a_kron_b_ref(1, 4) = 17.5000000000;
-    a_kron_b_ref(1, 5) = 0.0000000000;
-    a_kron_b_ref(2, 0) = 1.3000000000;
-    a_kron_b_ref(2, 1) = 1.2000000000;
-    a_kron_b_ref(2, 2) = 1.0000000000;
-    a_kron_b_ref(2, 3) = 1.2500000000;
-    a_kron_b_ref(2, 4) = 1.1000000000;
-    a_kron_b_ref(2, 5) = 1.1500000000;
-    a_kron_b_ref(3, 0) = 0.0000000000;
-    a_kron_b_ref(3, 1) = 0.0000000000;
-    a_kron_b_ref(3, 2) = 21.0000000000;
-    a_kron_b_ref(3, 3) = 0.0000000000;
-    a_kron_b_ref(3, 4) = 7.0000000000;
-    a_kron_b_ref(3, 5) = 3.5000000000;
-    a_kron_b_ref(4, 0) = 0.0000000000;
-    a_kron_b_ref(4, 1) = 6.0000000000;
-    a_kron_b_ref(4, 2) = 1.2000000000;
-    a_kron_b_ref(4, 3) = 3.2500000000;
-    a_kron_b_ref(4, 4) = 3.2200000000;
-    a_kron_b_ref(4, 5) = 0.7800000000;
-    a_kron_b_ref(5, 0) = 1.3000000000;
-    a_kron_b_ref(5, 1) = 2.4000000000;
-    a_kron_b_ref(5, 2) = 3.0000000000;
-    a_kron_b_ref(5, 3) = 1.9000000000;
-    a_kron_b_ref(5, 4) = 2.8000000000;
-    a_kron_b_ref(5, 5) = 2.4500000000;
-
-    Core::LinAlg::Matrix<6, 6> a_kron_b(true);
-    Mat::add_kronecker_tensor_product(a_kron_b, 1.0, a, b, 0.0);
-
-    FOUR_C_EXPECT_NEAR(a_kron_b, a_kron_b_ref, 1.0e-10);
-  }
 
   TEST(MaterialServiceTest, TestADBCProduct)
   {
@@ -382,7 +318,7 @@ namespace
     x_adbc_y_ref(8, 8) = 5.0000000000;
 
     Core::LinAlg::Matrix<9, 9> x_adbc_y(true);
-    Mat::add_adbc_tensor_product(1.0, x, y, x_adbc_y);
+    Core::LinAlg::Tensor::add_adbc_tensor_product(1.0, x, y, x_adbc_y);
 
     FOUR_C_EXPECT_NEAR(x_adbc_y, x_adbc_y_ref, 1.0e-10);
   }
@@ -399,10 +335,10 @@ namespace
     stress(0, 2) = stress(2, 0) = 0.6;
 
     Core::LinAlg::FourTensor<3> T;
-    Mat::add_dyadic_product_matrix_matrix(T, 1.0, stress, stress);
+    Core::LinAlg::Tensor::add_dyadic_product_matrix_matrix(T, 1.0, stress, stress);
 
     Core::LinAlg::Matrix<3, 3> result;
-    Mat::add_contraction_matrix_four_tensor(result, 1.0, T, stress);
+    Core::LinAlg::Tensor::add_contraction_matrix_four_tensor(result, 1.0, T, stress);
 
     Core::LinAlg::Matrix<3, 3> result_ref = stress;
     result_ref.scale(std::pow(stress.norm2(), 2));

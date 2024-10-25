@@ -10,6 +10,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_linalg_fixedsizematrix_generators.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_muscle_utils.hpp"
@@ -228,14 +229,15 @@ void Mat::Elastic::IsoMuscleBlemker::add_stress_aniso_modified(
   modcmat.update(delta8, IddI5sumdI5Id, 1.0);
   modcmat.update(delta10, dI5dI5, 1.0);
   modcmat.update(delta11, MdI5sumdI5M, 1.0);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       modcmat, delta12, Id3, M, 1.0);  // summand 12 = ddI5/dC^2 = Id_ik*M_jl ...
-  add_elasticity_tensor_product(modcmat, delta12, M, Id3, 1.0);  // ... + M_ik*Id_jl
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
+      modcmat, delta12, M, Id3, 1.0);  // ... + M_ik*Id_jl
   modcmat.scale(std::pow(J, -4.0 / 3.0));
 
   // modified projection tensor Psl = Cinv o Cinv - 1/3 Cinv x Cinv
   Core::LinAlg::Matrix<6, 6> Psl(true);
-  add_holzapfel_product(Psl, icg, 1.0);
+  Core::LinAlg::Tensor::add_holzapfel_product(Psl, icg, 1.0);
   Psl.multiply_nt(-1.0 / 3.0, icg, icg, 1.0);
 
   // Right Cauchy-Green tensor in stress-like Voigt notation

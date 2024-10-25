@@ -346,15 +346,6 @@ namespace Mat
         const Core::LinAlg::Matrix<3, 3> fpi, const Core::LinAlg::Matrix<3, 3> MatExp,
         Core::LinAlg::Matrix<3, 3>* cetrial, Core::LinAlg::Matrix<6, 1>* Ee);
 
-    virtual void matrix_exponential_second_derivative_sym3x3x6(
-        const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<3, 3>& exp,
-        Core::LinAlg::Matrix<6, 6>& dexp_mat, Core::LinAlg::Matrix<6, 6>* MatrixExp2ndDerivVoigt);
-
-    virtual void matrix_exponential_second_derivative_sym3x3(
-        const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<3, 3>& exp,
-        std::vector<Core::LinAlg::Matrix<3, 3>>& MatrixExp1stDeriv,
-        std::vector<std::vector<Core::LinAlg::Matrix<3, 3>>>& MatrixExp2ndDeriv);
-
     virtual void evaluate_plast(Core::LinAlg::Matrix<6, 9>& dPK2dFpinvIsoprinc,
         const Core::LinAlg::Matrix<3, 1>& gamma, const Core::LinAlg::Matrix<8, 1>& delta,
         const Core::LinAlg::Matrix<3, 3>& id2, const Core::LinAlg::Matrix<6, 1>& Cpi,

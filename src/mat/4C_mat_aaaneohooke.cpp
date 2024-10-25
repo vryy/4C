@@ -12,8 +12,8 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_pstream.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -310,7 +310,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     }
 
   // contribution: boeppel-product
-  add_holzapfel_product(*cmat, invc, delta7);
+  Core::LinAlg::Tensor::add_holzapfel_product(*cmat, invc, delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -322,7 +322,7 @@ void Mat::AAAneohooke::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
     for (int j = 0; j < 6; j++) (*cmat)(i, j) += delta6 * invc(i) * invc(j);
 
   // contribution: boeppel-product
-  add_holzapfel_product(*cmat, invc, delta7);
+  Core::LinAlg::Tensor::add_holzapfel_product(*cmat, invc, delta7);
 
   return;
 }

@@ -18,6 +18,8 @@
 #include <Teuchos_LAPACK.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <complex>
+
 FOUR_C_NAMESPACE_OPEN
 
 namespace Core::LinAlg
@@ -79,27 +81,43 @@ namespace Core::LinAlg
    A = V * S * VT
 
    \param A (in):        M-by-M matrix to be decomposed
-   \param S (out):       M-by-N matrix which is zero except for its diagonal entries holding the
+   \param S (out):       M-by-M matrix which is zero except for its diagonal entries holding the
    eigenvalues \param V (out):       M-by-M orthonormal matrix of eigenvectors
    */
   template <unsigned int dim>
-  void syev(Core::LinAlg::Matrix<dim, dim>& A, Core::LinAlg::Matrix<dim, dim>& S,
+  void syev(const Core::LinAlg::Matrix<dim, dim>& A, Core::LinAlg::Matrix<dim, dim>& S,
       Core::LinAlg::Matrix<dim, dim>& V)
   {
-    const char jobz = 'V';                  // Compute eigenvalues and eigenvectors.
-    const char uplo = 'U';                  // Upper triangle of A is stored;
-    const int N = dim;                      // The order of the matrix A.  N >= 0.
-    Matrix<dim, dim> tmp(A.data(), false);  // copy, because content of matrix is destroyed
-    const int lda = dim;  // The leading dimension of the array A.  LDA >=max(1,N).
-    std::vector<double> w(dim);
+    // ----- settings for eigendecomposition ----- //
+
+    // eigenvalues only or eigenvalues + eigenvectors?
+    const char jobz = 'V';  // compute eigenvalues and eigenvectors
+
+    // store upper triangle of A
+    const char uplo = 'U';
+
+    // order of the matrix A
+    const int N = dim;
+
+    // copy contents of the matrix A, since it will be destroyed
+    Matrix<dim, dim> tmp(A.data(), false);
+
+    // leading dimension of the array A
+    const int lda = dim;
+
+    // eigenvalues in ascending order
+    std::array<double, dim> w;
+
+    // further settings needed for the lapack routine
     const int lwork = 2 * dim * dim + 6 * dim + 1;
-    std::vector<double> work(lwork);
+    std::array<double, lwork> work;
     int info;
 
+    // ----- perform eigendecomposition ----- //
     Teuchos::LAPACK<int, double> lapack;
     lapack.SYEV(jobz, uplo, N, tmp.data(), lda, w.data(), work.data(), lwork, &info);
 
-    if (info) FOUR_C_THROW("Lapack's SYEV returned %d", info);
+    FOUR_C_THROW_UNLESS(info == 0, "Lapack's SYEV returned %d", info);
 
     // return eigenvectors
     V.update(tmp);
@@ -110,6 +128,108 @@ namespace Core::LinAlg
 
     return;
   }
+
+  /*!
+   * \brief Compute all (generally complex) eigenvalues and eigenvectors of a real general, not
+   * necessarily symmetric matrix A
+   *
+   * A = V * S * VT
+   * \note the eigenvalues are not sorted!
+   *
+   * \param A (in):        M-by-M matrix to be decomposed
+   * \param S (out):       M-by-M matrix which is zero except for its diagonal entries holding the
+   * eigenvalues
+   * \param V (out):       M-by-M orthonormal matrix of eigenvectors
+   */
+  template <unsigned int dim>
+  void geev(const Core::LinAlg::Matrix<dim, dim, double>& A,
+      Core::LinAlg::Matrix<dim, dim, std::complex<double>>& S,
+      Core::LinAlg::Matrix<dim, dim, std::complex<double>>& V)
+  {
+    // ----- settings for eigendecomposition ----- //
+
+    // set which eigenvectors to compute
+    const char jobvl = 'N';  // do not compute left eigenvectors
+    const char jobvr = 'V';  // compute only right eigenvectors
+
+    // order of the matrix A
+    const int N = dim;
+
+    // copy contents of the matrix A, since it will be destroyed
+    Matrix<dim, dim> tmp(A.data(), false);
+
+    // leading dimension of the array A
+    const int lda = dim;  //  LDA >=max(1,N)
+
+    // real parts of eigenvalues
+    std::array<double, dim> wr;
+
+    // imaginary parts of eigenvalues
+    std::array<double, dim> wi;
+
+    // initialize eigenvectors (left and right)
+    const int ldvl = dim;
+    std::array<double, ldvl * N> vl;
+    const int ldvr = dim;
+    std::array<double, ldvr * N> vr;
+
+    // further settings needed for the lapack routine
+    const int lwork = 2 * dim * dim + 6 * dim + 1;
+    std::array<double, lwork> work;
+    int info;
+
+    // ----- perform eigendecomposition ----- //
+    Teuchos::LAPACK<int, double> lapack;
+    lapack.GEEV(jobvl, jobvr, N, tmp.data(), lda, wr.data(), wi.data(), vl.data(), ldvl, vr.data(),
+        ldvr, work.data(), lwork, &info);
+
+    FOUR_C_THROW_UNLESS(info == 0, "Lapack's GEEV returned %d", info);
+
+    // save the temporary right eigenvectors, which are now in a "real" format instead of their
+    // general complex form with complex conjugate pairs
+    Matrix<dim, dim> temp_V(vr.data());
+
+    // build the complex V matrix (complex eigenvector matrix) from the "real" eigenvector matrix
+    unsigned int i = 0;
+    while (i < dim)
+    {
+      if (std::abs(wi[i]) > 0.0)
+      {
+        // for complex eigenvalues: these come in complex conjugate eigenpairs, and geev sorts them
+        // as to get the i-th complex eigenvector \f$ \bm{v}(i) \f$ from the computed real
+        // eigenmatrix \f$ \bm{V}\f$ via
+        //  \f$ \bm{v}(i) = \bm{V}(:, i) +  i \bm{V}(:, i + 1)  \f$ along with
+        //  \f$ \bm{v}(i+1) = \bm{V}(:, i) -  i \bm{V}(:, i + 1)  \f$, whereby the i-th and (i+1)-th
+        //  eigenvalues are complex conjugate
+        for (unsigned int j = 0; j < dim; ++j)
+        {
+          V(j, i) = std::complex(temp_V(j, i), temp_V(j, i + 1));
+          V(j, i + 1) = std::complex(temp_V(j, i), -temp_V(j, i + 1));
+        }
+
+        // increment column index by 2, as both conjugate eigenpairs were already considered
+        i += 2;
+      }
+      else
+      {
+        // for real eigenvalues: the corresponding eigenvector in V is also real
+        for (unsigned int j = 0; j < dim; ++j)
+        {
+          V(j, i) = std::complex(temp_V(j, i), 0.0);
+        }
+
+        // increment column index by 1
+        i += 1;
+      }
+    }
+
+    // return eigenvalues
+    S.clear();
+    for (unsigned int i = 0; i < dim; ++i) S(i, i) = std::complex<double>(wr[i], wi[i]);
+
+    return;
+  }
+
 
 }  // namespace Core::LinAlg
 

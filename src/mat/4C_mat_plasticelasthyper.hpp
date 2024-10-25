@@ -563,17 +563,6 @@ namespace Mat
         Core::LinAlg::Matrix<3, 1>& dPI, Core::LinAlg::Matrix<6, 1>& ddPII, int gp, int eleGID,
         const double& temp);
 
-    //! calculate the exponential of a 3x3 matrix (symmetric or non-symmetric)
-    virtual void matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& MatrixInOut);
-
-    //! calculate the derivative of the exponential of a symmetric 3x3 matrix
-    virtual void matrix_exponential_derivative_sym3x3(
-        const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<6, 6>& MatrixExpDeriv);
-
-    //! calculate the derivative of the exponential of a non-symmetric 3x3 matrix
-    virtual void matrix_exponential_derivative3x3(
-        const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<9, 9>& MatrixExpDeriv);
-
     /// my material parameters
     Mat::PAR::PlasticElastHyper* params_;
 

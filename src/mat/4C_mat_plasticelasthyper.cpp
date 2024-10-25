@@ -9,8 +9,10 @@
 
 #include "4C_global_data.hpp"
 #include "4C_linalg_fixedsizematrix_solver.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_linalg_utils_densematrix_eigen.hpp"
+#include "4C_linalg_utils_densematrix_exp_log.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_mat_service.hpp"
 
@@ -510,18 +512,18 @@ void Mat::PlasticElastHyper::setup_hill_plasticity(
 
     // calculate plastic anisotropy tensor
     PlAniso_full_.clear();
-    add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
-    add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
-    add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
-    add_symmetric_elasticity_tensor_product(
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(PlAniso_full_, alpha1, M0, M0, 1.);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(PlAniso_full_, alpha2, M1, M1, 1.);
+    Core::LinAlg::Tensor::add_elasticity_tensor_product(PlAniso_full_, alpha3, M2, M2, 1.);
+    Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
         PlAniso_full_, 0.5 * (alpha3 - alpha1 - alpha2), M0, M1, 1.);
-    add_symmetric_elasticity_tensor_product(
+    Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
         PlAniso_full_, 0.5 * (alpha1 - alpha2 - alpha3), M1, M2, 1.);
-    add_symmetric_elasticity_tensor_product(
+    Core::LinAlg::Tensor::add_symmetric_elasticity_tensor_product(
         PlAniso_full_, 0.5 * (alpha2 - alpha3 - alpha1), M0, M2, 1.);
-    add_symmetric_holzapfel_product(PlAniso_full_, M0, M1, alpha4);
-    add_symmetric_holzapfel_product(PlAniso_full_, M1, M2, alpha5);
-    add_symmetric_holzapfel_product(PlAniso_full_, M0, M2, alpha6);
+    Core::LinAlg::Tensor::add_symmetric_holzapfel_product(PlAniso_full_, M0, M1, alpha4);
+    Core::LinAlg::Tensor::add_symmetric_holzapfel_product(PlAniso_full_, M1, M2, alpha5);
+    Core::LinAlg::Tensor::add_symmetric_holzapfel_product(PlAniso_full_, M0, M2, alpha6);
 
     // we need this matrix to get rid of the zero eigenvalue to be able to invert
     // the anisotropy tensor. After the inversion we expand the tensor again to 6x6
@@ -667,11 +669,11 @@ void Mat::PlasticElastHyper::evaluate_thermal_stress(const Core::LinAlg::Matrix<
   icg(5) = invRCG(0, 2);
 
   pk2->update(-3. * cte() * deltaT * modinv(2) * ddPmodII(2), icg, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *cmat, -3. * cte() * deltaT * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *cmat, -3. * cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
-  add_kronecker_tensor_product(
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
       *cmat, +6. * cte() * deltaT * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
@@ -724,11 +726,11 @@ void Mat::PlasticElastHyper::evaluate_c_tvol(const Core::LinAlg::Matrix<3, 3>* d
   icg(5) = invRCG(0, 2);
 
   cTvol->update(-3. * cte() * modinv(2) * ddPmodII(2), icg, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *dCTvoldE, -3. * cte() * modinv(2) * modinv(2) * dddPmodIII, invRCG, invRCG, 1.);
-  add_elasticity_tensor_product(
+  Core::LinAlg::Tensor::add_elasticity_tensor_product(
       *dCTvoldE, -3. * cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
-  add_kronecker_tensor_product(
+  Core::LinAlg::Tensor::add_kronecker_tensor_product(
       *dCTvoldE, +6. * cte() * modinv(2) * ddPmodII(2), invRCG, invRCG, 1.);
 
   return;
@@ -1024,10 +1026,9 @@ void Mat::PlasticElastHyper::evaluate_ncp(const Core::LinAlg::Matrix<3, 3>* mStr
     eta_s_v.update(apl * s(), eta_v, 1.);
 
     // matrix exponential derivative
-    Core::LinAlg::Matrix<6, 6> Dexp(false);
     Core::LinAlg::Matrix<3, 3> tmp(*deltaDp);
     tmp.scale(-1.);
-    matrix_exponential_derivative_sym3x3(tmp, Dexp);
+    Core::LinAlg::Matrix<6, 6> Dexp = Core::LinAlg::sym_matrix_3x3_exp_1st_deriv(tmp);
 
     // Derivative of inverse plastic deformation gradient
     Core::LinAlg::Matrix<9, 6> dFpiDdeltaDp(true);
@@ -1530,10 +1531,9 @@ void Mat::PlasticElastHyper::evaluate_nc_pand_spin(const Core::LinAlg::Matrix<3,
     eta_s_v.update(apl * s(), eta_v, 1.);
 
     // matrix exponential derivative
-    Core::LinAlg::Matrix<9, 9> Dexp(false);
     Core::LinAlg::Matrix<3, 3> tmp(*deltaLp);
     tmp.scale(-1.);
-    matrix_exponential_derivative3x3(tmp, Dexp);
+    Core::LinAlg::Matrix<9, 9> Dexp = Core::LinAlg::matrix_3x3_exp_1st_deriv(tmp);
 
     // Derivative of inverse plastic deformation gradient
     Core::LinAlg::Matrix<9, 9> dFpiDdeltaLp(true);
@@ -1814,16 +1814,19 @@ void Mat::PlasticElastHyper::evaluate_cauchy_plast(const Core::LinAlg::Matrix<3,
       (.5 * dPI(1) / prinv_(2) - ddPII(3)) / sqrt(prinv_(2)), be2v_, CFpiCei_, 1.);
   d_cauchy_dFpi.scale(2.);
 
-  add_right_non_symmetric_holzapfel_product(
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
       d_cauchy_dFpi, *defgrd, Fe_, (dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
       d_cauchy_dFpi, *defgrd, beFe_, -dPI(1) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(d_cauchy_dFpi, beF_, Fe_, -dPI(1) / sqrt(prinv_(2)));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dFpi, beF_, Fe_, -dPI(1) / sqrt(prinv_(2)));
 
-  add_right_non_symmetric_holzapfel_product(
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
       d_cauchy_dF, id2_, FCpi_, (dPI(0) + prinv_(0) * dPI(1)) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(d_cauchy_dF, id2_, beFCpi_, -dPI(1) / sqrt(prinv_(2)));
-  add_right_non_symmetric_holzapfel_product(d_cauchy_dF, be_, FCpi_, -dPI(1) / sqrt(prinv_(2)));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dF, id2_, beFCpi_, -dPI(1) / sqrt(prinv_(2)));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      d_cauchy_dF, be_, FCpi_, -dPI(1) / sqrt(prinv_(2)));
   d_cauchy_dF.scale(2.);
   d_cauchy_dFpi.scale(2.);
 
@@ -1968,9 +1971,9 @@ void Mat::PlasticElastHyper::update_gp(const int gp, const Core::LinAlg::Matrix<
     // update plastic deformation gradient
     Core::LinAlg::Matrix<3, 3> tmp;
     tmp.update(-1., *deltaDp);
-    matrix_exponential3x3(tmp);
+    Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp);
     Core::LinAlg::Matrix<3, 3> fpi_last = last_plastic_defgrd_inverse_[gp];
-    last_plastic_defgrd_inverse_[gp].multiply(fpi_last, tmp);
+    last_plastic_defgrd_inverse_[gp].multiply(fpi_last, exp_tmp);
     // update isotropic hardening
     last_alpha_isotropic_[gp] += delta_alpha_i_[gp];
 
@@ -1993,8 +1996,8 @@ void Mat::PlasticElastHyper::evaluate_kin_quant_elast(const Core::LinAlg::Matrix
   Core::LinAlg::Matrix<3, 3> invpldefgrd;
   Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.update(-1., *deltaLp);
-  matrix_exponential3x3(tmp);
-  invpldefgrd.multiply(InvPlasticDefgrdLast, tmp);
+  Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp);
+  invpldefgrd.multiply(InvPlasticDefgrdLast, exp_tmp);
 
   // inverse plastic right Cauchy-Green
   Core::LinAlg::Matrix<3, 3> CpiM;
@@ -2059,8 +2062,8 @@ int Mat::PlasticElastHyper::evaluate_kin_quant_plast(const Core::LinAlg::Matrix<
   Core::LinAlg::Matrix<3, 3> tmp33;
   Core::LinAlg::Matrix<3, 3>& InvPlasticDefgrdLast = last_plastic_defgrd_inverse_[gp];
   tmp.update(-1., *deltaLp);
-  matrix_exponential3x3(tmp);
-  invpldefgrd_.multiply(InvPlasticDefgrdLast, tmp);
+  Core::LinAlg::Matrix<3, 3> exp_tmp = Core::LinAlg::matrix_exp(tmp);
+  invpldefgrd_.multiply(InvPlasticDefgrdLast, exp_tmp);
 
   tmp33.multiply(*defgrd, invpldefgrd_);
   Fe_.update(tmp33);
@@ -2215,8 +2218,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_elast(
   cmatisoprinc.multiply_nt(delta(4), CpiCCpi_, ircg_, 1.);
   cmatisoprinc.multiply_nt(delta(4), ircg_, CpiCCpi_, 1.);
   cmatisoprinc.multiply_nt(delta(5), ircg_, ircg_, 1.);
-  add_holzapfel_product(cmatisoprinc, ircg_, delta(6));
-  add_holzapfel_product(cmatisoprinc, Cpi_, delta(7));
+  Core::LinAlg::Tensor::add_holzapfel_product(cmatisoprinc, ircg_, delta(6));
+  Core::LinAlg::Tensor::add_holzapfel_product(cmatisoprinc, Cpi_, delta(7));
 
   return;
 }
@@ -2230,8 +2233,10 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
     const Core::LinAlg::Matrix<8, 1>& delta)
 {
   // derivative of PK2 w.r.t. inverse plastic deformation gradient
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, CpiC_, invpldefgrd_, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, id2_, invpldefgrd_, gamma(0));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, CpiC_, invpldefgrd_, gamma(1));
   dPK2dFpinvIsoprinc.multiply_nt(delta(0), Cpi_, CFpi_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(1), Cpi_, CFpiCe_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(1), CpiCCpi_, CFpi_, 1.);
@@ -2241,7 +2246,8 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   dPK2dFpinvIsoprinc.multiply_nt(delta(4), CpiCCpi_, CFpiCei_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(4), ircg_, CFpiCe_, 1.);
   dPK2dFpinvIsoprinc.multiply_nt(delta(5), ircg_, CFpiCei_, 1.);
-  add_right_non_symmetric_holzapfel_product(dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dPK2dFpinvIsoprinc, id2_, FpiCe_, 0.5 * delta(7));
 
   // Mandel stress
   Core::LinAlg::Matrix<6, 1> Mv;
@@ -2257,8 +2263,10 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   MandelStressIsoprinc(2, 0) += Mv(5);
 
   // derivative of Mandel stress w.r.t. GL
-  add_symmetric_holzapfel_product(dMdCisoprinc, invpldefgrd_, invpldefgrd_, .5 * gamma(0));
-  add_symmetric_holzapfel_product(dMdCisoprinc, invpldefgrd_, FpiCe_, gamma(1));
+  Core::LinAlg::Tensor::add_symmetric_holzapfel_product(
+      dMdCisoprinc, invpldefgrd_, invpldefgrd_, .5 * gamma(0));
+  Core::LinAlg::Tensor::add_symmetric_holzapfel_product(
+      dMdCisoprinc, invpldefgrd_, FpiCe_, gamma(1));
   dMdCisoprinc.multiply_nt(delta(0), Ce_, Cpi_, 1.);
   dMdCisoprinc.multiply_nt(delta(1), Ce_, CpiCCpi_, 1.);
   dMdCisoprinc.multiply_nt(delta(1), Ce2_, Cpi_, 1.);
@@ -2270,9 +2278,12 @@ void Mat::PlasticElastHyper::evaluate_isotropic_princ_plast(
   dMdCisoprinc.multiply_nt(delta(5), id2V_, ircg_, 1.);
 
   // derivative of Mandel stress w.r.t. inverse plastic deformation gradient
-  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, FpiTC_, id2_, gamma(0));
-  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, FpiTC_, CeM_, gamma(1));
-  add_right_non_symmetric_holzapfel_product(dMdFpinvIsoprinc, CeFpiTC_, id2_, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dMdFpinvIsoprinc, FpiTC_, id2_, gamma(0));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dMdFpinvIsoprinc, FpiTC_, CeM_, gamma(1));
+  Core::LinAlg::Tensor::add_right_non_symmetric_holzapfel_product(
+      dMdFpinvIsoprinc, CeFpiTC_, id2_, gamma(1));
   dMdFpinvIsoprinc.multiply_nt(delta(0), Ce_, CFpi_, 1.);
   dMdFpinvIsoprinc.multiply_nt(delta(1), Ce_, CFpiCe_, 1.);
   dMdFpinvIsoprinc.multiply_nt(delta(1), Ce2_, CFpi_, 1.);
@@ -2414,294 +2425,6 @@ bool Mat::PlasticElastHyper::evaluate_output_data(
     return true;
   }
   return false;
-}
-
-/*----------------------------------------------------------------------*
- |  matrix exponential                                      seitz 07/13 |
- *----------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::matrix_exponential3x3(Core::LinAlg::Matrix<3, 3>& MatrixInOut)
-{
-  double Norm = MatrixInOut.norm2();
-  // direct calculation for zero-matrix
-  if (Norm == 0.)
-  {
-    MatrixInOut.clear();
-    for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
-    return;
-  }
-
-  // Calculation of matrix exponential via power series. This is usually
-  // faster than by polar decomposition for matrices are close to zero.
-  // For small plastic increments this is the case
-  Core::LinAlg::Matrix<3, 3> In(MatrixInOut);
-  int n = 0;
-  int facn = 1;
-  MatrixInOut.clear();
-  for (int i = 0; i < 3; i++) MatrixInOut(i, i) = 1.;
-  Core::LinAlg::Matrix<3, 3> tmp(MatrixInOut);
-  Core::LinAlg::Matrix<3, 3> tmp2(MatrixInOut);
-  while (n < 50 && tmp.norm2() / facn > 1.e-32)
-  {
-    n++;
-    facn *= n;
-    tmp.multiply(tmp2, In);
-    tmp2 = tmp;
-    MatrixInOut.update(1. / facn, tmp, 1.);
-  }
-  if (n == 50) FOUR_C_THROW("matrix exponential unconverged in %i steps", n);
-
-  return;
-}
-
-/*---------------------------------------------------------------------------*
- |  matrix exponential derivative of a symmetric matrix          seitz 07/13 |
- *---------------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::matrix_exponential_derivative_sym3x3(
-    const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<6, 6>& MatrixExpDeriv)
-{
-  double norm = MatrixIn.norm2();
-
-  Core::LinAlg::Matrix<6, 6> id4sharp(true);
-  for (int i = 0; i < 3; i++) id4sharp(i, i) = 1.0;
-  for (int i = 3; i < 6; i++) id4sharp(i, i) = 0.5;
-
-  // direct calculation for zero-matrix
-  if (norm == 0.)
-  {
-    MatrixExpDeriv = id4sharp;
-    return;
-  }
-
-  if (norm < 0.3)
-  {
-    // see Souza-Neto: Computational Methods for plasticity, Box B.2.
-    int nmax = 0;
-    int nIter = 0;
-    int nfac = 1;
-    Core::LinAlg::Matrix<3, 3> tmp1;
-    Core::LinAlg::Matrix<3, 3> tmp2(true);
-    for (int i = 0; i < 3; i++) tmp2(i, i) = 1.;
-
-    // all needed powers of X
-    std::vector<Core::LinAlg::Matrix<3, 3>> Xn;
-    Xn.resize(0);
-    Xn.push_back(tmp2);
-
-    // all needed factorials
-    std::vector<int> fac;
-    fac.resize(0);
-    fac.push_back(nfac);
-
-    // compute nmax and Xn
-    while (nIter < 50 && tmp2.norm2() / nfac > 1.e-32)
-    {
-      nIter++;
-      nfac *= nIter;
-      fac.push_back(nfac);
-      tmp1.multiply(tmp2, MatrixIn);
-      Xn.push_back(tmp1);
-      tmp2 = tmp1;
-    }
-    if (nIter == 50) FOUR_C_THROW("matrix exponential unconverged in %i steps", nIter);
-    nmax = nIter;
-
-    // compose derivative of matrix exponential (symmetric Voigt-notation)
-    MatrixExpDeriv.clear();
-    for (int n = 1; n <= nmax; n++)
-    {
-      for (int m = 1; m <= n / 2; m++)
-        add_symmetric_holzapfel_product(MatrixExpDeriv, Xn.at(m - 1), Xn.at(n - m), .5 / fac[n]);
-      if (n % 2 == 1)
-        add_symmetric_holzapfel_product(
-            MatrixExpDeriv, Xn.at((n - 1) / 2), Xn.at((n - 1) / 2), .25 / fac[n]);
-    }
-  }
-  else
-  {
-    double EWtolerance = 1.e-12;
-
-    Core::LinAlg::Matrix<3, 3> EV(MatrixIn);
-    Core::LinAlg::Matrix<3, 3> EW;
-    Core::LinAlg::syev(EV, EW, EV);
-
-    Core::LinAlg::Matrix<3, 1> vec1;
-    Core::LinAlg::Matrix<3, 1> vec2;
-    Core::LinAlg::Matrix<3, 3> tmp1;
-    Core::LinAlg::Matrix<3, 3> tmp2;
-
-    MatrixExpDeriv.clear();
-    // souza eq. (A.52)
-    // note: EW stored in ascending order
-
-    //  d X^2 / d X  =  1/2 * (  delta_jk X_lj + delta_il X_kj
-    //                         + delta_jl X_ik + delta_kj X_il )
-    //
-    // y_i = log(x_i)
-    // dy_i / dx_j = delta_ij 1/x_i
-
-    Core::LinAlg::Matrix<3, 3> id2(true);
-    for (int i = 0; i < 3; i++) id2(i, i) = 1.0;
-    //  // --------------------------------- switch by number of equal eigenvalues
-
-    if (abs(EW(0, 0) - EW(1, 1)) < EWtolerance &&
-        abs(EW(1, 1) - EW(2, 2)) < EWtolerance)  // ------------------ x_a == x_b == x_c
-    {
-      // calculate derivative
-      MatrixExpDeriv = id4sharp;
-      MatrixExpDeriv.scale(exp(EW(0, 0)));
-    }
-
-    else if ((abs(EW(0, 0) - EW(1, 1)) < EWtolerance && abs(EW(1, 1) - EW(2, 2)) > EWtolerance) ||
-             (abs(EW(0, 0) - EW(1, 1)) > EWtolerance &&
-                 abs(EW(1, 1) - EW(2, 2)) <
-                     EWtolerance))  // ---- x_a != x_b == x_c or x_a == x_b != x_c
-    {
-      // factors
-      double s1 = 0.0;
-      double s2 = 0.0;
-      double s3 = 0.0;
-      double s4 = 0.0;
-      double s5 = 0.0;
-      double s6 = 0.0;
-
-      int a = 0;
-      int c = 0;
-
-      // switch which two EW are equal
-      if (abs(EW(0, 0) - EW(1, 1)) < EWtolerance &&
-          abs(EW(1, 1) - EW(2, 2)) > EWtolerance)  // ----------------------- x_a == x_b != x_c
-      {
-        a = 2;
-        c = 0;
-      }
-      else if (abs(EW(0, 0) - EW(1, 1)) > EWtolerance &&
-               abs(EW(1, 1) - EW(2, 2)) < EWtolerance)  // ------------------ x_a != x_b == x_c
-      {
-        a = 0;
-        c = 2;
-      }
-      else
-        FOUR_C_THROW("you should not be here");
-
-      // in souza eq. (A.53):
-      s1 = (exp(EW(a, a)) - exp(EW(c, c))) / (pow(EW(a, a) - EW(c, c), 2.0)) -
-           exp(EW(c, c)) / (EW(a, a) - EW(c, c));
-      s2 = 2.0 * EW(c, c) * (exp(EW(a, a)) - exp(EW(c, c))) / (pow(EW(a, a) - EW(c, c), 2.0)) -
-           (EW(a, a) + EW(c, c)) / (EW(a, a) - EW(c, c)) * exp(EW(c, c));
-      s3 = 2.0 * (exp(EW(a, a)) - exp(EW(c, c))) / (pow(EW(a, a) - EW(c, c), 3.0)) -
-           (exp(EW(a, a)) + exp(EW(c, c))) / (pow(EW(a, a) - EW(c, c), 2.0));
-      s4 = EW(c, c) * s3;
-      s5 = s4;
-      s6 = EW(c, c) * EW(c, c) * s3;
-
-      // calculate derivative
-      Mat::add_derivative_of_squared_tensor(MatrixExpDeriv, s1, MatrixIn, 1.);
-      MatrixExpDeriv.update(-s2, id4sharp, 1.);
-      Mat::add_elasticity_tensor_product(MatrixExpDeriv, -1. * s3, MatrixIn, MatrixIn, 1.);
-      Mat::add_elasticity_tensor_product(MatrixExpDeriv, s4, MatrixIn, id2, 1.);
-      Mat::add_elasticity_tensor_product(MatrixExpDeriv, s5, id2, MatrixIn, 1.);
-      Mat::add_elasticity_tensor_product(MatrixExpDeriv, -s6, id2, id2, 1.);
-    }
-
-    else if (abs(EW(0, 0) - EW(1, 1)) > EWtolerance &&
-             abs(EW(1, 1) - EW(2, 2)) > EWtolerance)  // ----------------- x_a != x_b != x_c
-    {
-      for (int a = 0; a < 3; a++)  // loop over all eigenvalues
-      {
-        int b = (a + 1) % 3;
-        int c = (a + 2) % 3;
-
-        Core::LinAlg::Matrix<3, 1> ea;
-        Core::LinAlg::Matrix<3, 1> eb;
-        Core::LinAlg::Matrix<3, 1> ec;
-        for (int i = 0; i < 3; i++)
-        {
-          ea(i) = EV(i, a);
-          eb(i) = EV(i, b);
-          ec(i) = EV(i, c);
-        }
-        Core::LinAlg::Matrix<3, 3> Ea;
-        Ea.multiply_nt(ea, ea);
-        Core::LinAlg::Matrix<3, 3> Eb;
-        Eb.multiply_nt(eb, eb);
-        Core::LinAlg::Matrix<3, 3> Ec;
-        Ec.multiply_nt(ec, ec);
-
-        double fac = exp(EW(a, a)) / ((EW(a, a) - EW(b, b)) * (EW(a, a) - EW(c, c)));
-
-        // + d X^2 / d X
-        Mat::add_derivative_of_squared_tensor(MatrixExpDeriv, fac, MatrixIn, 1.);
-
-        // - (x_b + x_c) I_s
-        MatrixExpDeriv.update(-1. * (EW(b, b) + EW(c, c)) * fac, id4sharp, 1.);
-
-        // - [(x_a - x_b) + (x_a - x_c)] E_a \dyad E_a
-        Mat::add_elasticity_tensor_product(MatrixExpDeriv,
-            -1. * fac * ((EW(a, a) - EW(b, b)) + (EW(a, a) - EW(c, c))), Ea, Ea, 1.);
-
-
-        // - (x_b - x_c) (E_b \dyad E_b)
-        Mat::add_elasticity_tensor_product(
-            MatrixExpDeriv, -1. * fac * (EW(b, b) - EW(c, c)), Eb, Eb, 1.);
-
-        // + (x_b - x_c) (E_c \dyad E_c)
-        Mat::add_elasticity_tensor_product(MatrixExpDeriv, fac * (EW(b, b) - EW(c, c)), Ec, Ec, 1.);
-
-        // dy / dx_a E_a \dyad E_a
-        Mat::add_elasticity_tensor_product(MatrixExpDeriv, exp(EW(a, a)), Ea, Ea, 1.);
-      }  // end loop over all eigenvalues
-    }
-
-    else
-      FOUR_C_THROW("you should not be here.");
-  }
-  return;
-}
-
-/*---------------------------------------------------------------------------*
- |  matrix exponential derivative of a symmetric matrix          seitz 09/13 |
- *---------------------------------------------------------------------------*/
-void Mat::PlasticElastHyper::matrix_exponential_derivative3x3(
-    const Core::LinAlg::Matrix<3, 3> MatrixIn, Core::LinAlg::Matrix<9, 9>& MatrixExpDeriv)
-{
-  // see Souza-Neto: Computational Methods for plasticity, Box B.2.
-  int nmax = 0;
-  int nIter = 0;
-  int nfac = 1;
-  Core::LinAlg::Matrix<3, 3> tmp1;
-  Core::LinAlg::Matrix<3, 3> tmp2(true);
-  for (int i = 0; i < 3; i++) tmp2(i, i) = 1.;
-
-  // all needed powers of X
-  std::vector<Core::LinAlg::Matrix<3, 3>> Xn;
-  Xn.resize(0);
-  Xn.push_back(tmp2);
-
-  // all needed factorials
-  std::vector<int> fac;
-  fac.resize(0);
-  fac.push_back(nfac);
-
-  // compute nmax and Xn
-  while (nIter < 50 && tmp2.norm2() / nfac > 1.e-32)
-  {
-    nIter++;
-    nfac *= nIter;
-    fac.push_back(nfac);
-    tmp1.multiply(tmp2, MatrixIn);
-    Xn.push_back(tmp1);
-    tmp2 = tmp1;
-  }
-  if (nIter == 50) FOUR_C_THROW("matrix exponential unconverged in %i steps", nIter);
-  nmax = nIter;
-
-  // compose derivative of matrix exponential (non-symmetric Voigt-notation)
-  MatrixExpDeriv.clear();
-  for (int n = 1; n <= nmax; n++)
-    for (int m = 1; m <= n; m++)
-      add_non_symmetric_product(1. / fac[n], Xn.at(m - 1), Xn.at(n - m), MatrixExpDeriv);
-
-  return;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -10,10 +10,11 @@
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_global_data.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_derivatives.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_muscle_utils.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -380,9 +381,11 @@ void Mat::MuscleCombo::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   ccmat.multiply_nt(
       (beta * J + 1.) * J * expbeta + kappa * std::pow(detC, -kappa), invCv, invCv, 1.0);
   // adds scalar * (invC boeppel invC) to cmat, see Holzapfel2000, p. 254
-  Mat::add_holzapfel_product(ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
+  Core::LinAlg::Tensor::add_holzapfel_product(
+      ccmat, invCv, -(J * expbeta - std::pow(detC, -kappa)));
   // adds -expbeta*detC * dinvCLinvCdCv to cmats
-  Mat::add_derivative_of_inva_b_inva_product(-expbeta * detC, invCv, invCLinvCv, ccmat);
+  Core::LinAlg::Tensor::add_derivative_of_inva_b_inva_product(
+      -expbeta * detC, invCv, invCLinvCv, ccmat);
   // additional term for corrected derivative of strain energy function
   ccmat.multiply_nt(dEta / (8 * lambdaM), Mv, Mv, 1.0);
   ccmat.scale(gamma);

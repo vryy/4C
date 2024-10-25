@@ -8,6 +8,7 @@
 #include "4C_mixture_constituent_elasthyper_damage.hpp"
 
 #include "4C_global_data.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_matelast_aniso_structuraltensor_strategy.hpp"

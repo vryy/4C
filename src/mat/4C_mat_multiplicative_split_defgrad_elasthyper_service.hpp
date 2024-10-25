@@ -10,6 +10,7 @@
 #include "4C_config.hpp"
 
 #include "4C_linalg_fixedsizematrix.hpp"
+#include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_service.hpp"
@@ -112,8 +113,8 @@ namespace Mat
     cmat.multiply_nt(delta(4), iCinCiCinv, iCv, 1.);
     cmat.multiply_nt(delta(4), iCv, iCinCiCinv, 1.);
     cmat.multiply_nt(delta(5), iCv, iCv, 1.);
-    Mat::add_holzapfel_product(cmat, iCv, delta(6));
-    Mat::add_holzapfel_product(cmat, iCinv, delta(7));
+    Core::LinAlg::Tensor::add_holzapfel_product(cmat, iCv, delta(6));
+    Core::LinAlg::Tensor::add_holzapfel_product(cmat, iCinv, delta(7));
   }
 
 }  // namespace Mat
