@@ -1,0 +1,51 @@
+--TITLE
+A simple test file with long and short section, empty lines and comments to exercise the reader.
+
+--SECTION WITH SPACES
+line in section with spaces
+--SECTION/WITH/SLASHES
+line in section with slashes
+--EMPTY
+
+// use the name of an exluded section that will be read on-the-fly
+--PARTICLES
+line in long section
+line in long section
+line in long section
+line in long section
+// a comment
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+
+
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+line in long section
+
+--SHORT SECTION
+
+line in short section
+
+line in short section
+line in short section

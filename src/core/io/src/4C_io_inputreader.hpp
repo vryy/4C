@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_comm_pack_buffer.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_std_cxx20_ranges.hpp"
@@ -19,6 +20,7 @@
 #include <Teuchos_RCP.hpp>
 
 #include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -212,15 +214,27 @@ namespace Core::IO
 
     //! Internal helper to get the range of lines in a section.
     //! Does not record the section as used.
-    auto line_range(const std::string& section_name) const;
+    [[nodiscard]] auto line_range(const std::string& section_name) const;
 
-    /// input file name
-    std::string filename_;
+    //! Helper to store section positions.
+    struct SectionPosition
+    {
+      std::filesystem::path file;
+      std::ifstream::pos_type pos;
+      unsigned int length;
 
-    /// my communicator
+      void pack(Core::Communication::PackBuffer& data) const;
+
+      void unpack(Core::Communication::UnpackBuffer& buffer);
+    };
+
+    /// The top-level file that is first read by this object.
+    std::filesystem::path top_level_file_;
+
+    /// The communicator associated with this object.
     const Epetra_Comm& comm_;
 
-    /// flag for output (default: output should be written)
+    /// Flag for output (default: output should be written)
     int outflag_{};
 
     /// The whole input file.
@@ -230,12 +244,12 @@ namespace Core::IO
     std::vector<std::string_view> lines_;
 
     /// file positions of skipped sections
-    std::map<std::string, std::pair<std::ifstream::pos_type, unsigned int>> excludepositions_;
+    std::map<std::string, SectionPosition> excludepositions_;
 
-    /// section positions of all sections
+    /// Section positions of all sections inside the #inputfile_ array.
     std::map<std::string, std::pair<std::size_t, std::size_t>> positions_;
 
-    /// protocol of known and unknown section names
+    /// Protocol of known and unknown section names
     std::map<std::string, bool> knownsections_;
   };
 
@@ -293,9 +307,9 @@ namespace Core::IO
 
     if (excludepositions_.count(section_name) > 0)
     {
-      const auto [start_pos, length] = excludepositions_.at(section_name);
+      const auto [path, start_pos, length] = excludepositions_.at(section_name);
 
-      auto file = std::make_shared<std::ifstream>(filename_);
+      auto file = std::make_shared<std::ifstream>(path);
       file->seekg(start_pos);
 
       return std_20::ranges::views::filter(

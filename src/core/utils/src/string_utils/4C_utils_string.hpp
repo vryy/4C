@@ -41,9 +41,10 @@ namespace Core::Utils
    * @brief Remove comments, trailing and leading whitespaces
    *
    * @param[in] line arbitrary string
+   * @param[in] comment_marker The marker that indicates a comment string
    * @result same string stripped
    */
-  std::string strip_comment(const std::string& line);
+  std::string strip_comment(const std::string& line, const std::string& comment_marker = "//");
 
   /*!
    * @brief Convert all characters in a string into lower case (wrapper to the corresponding routine
