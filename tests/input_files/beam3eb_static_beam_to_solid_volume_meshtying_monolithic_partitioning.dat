@@ -37,6 +37,7 @@ NAME                                  Structure_Solver
 SOLVER                                Superlu
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
+SEARCH_STRATEGY                       bounding_volume_hierarchy
 --------------------------------------------------------------------BEAM CONTACT
 MODELEVALUATOR                        Standard
 ----------------------------------------------------------------BINNING STRATEGY
