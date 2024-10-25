@@ -23,8 +23,10 @@ wget --no-verbose https://github.com/Kitware/CMake/releases/download/v${VERSION}
 # Verify checksum
 if [ $CHECKSUM = `sha256sum cmake-${VERSION}-linux-x86_64.sh | awk '{print $1}'` ]
 then
+
   echo "Checksum matches"
 else
+  echo $CHECKSUM
   echo "Checksum does not match"
   exit 1
 fi
