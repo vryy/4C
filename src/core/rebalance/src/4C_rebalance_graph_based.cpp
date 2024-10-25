@@ -19,6 +19,7 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_FECrsGraph.h>
+#include <Epetra_Import.h>
 #include <Isorropia_Epetra.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
@@ -350,39 +351,40 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
   auto result = Core::GeometricSearch::global_collision_search(
       bounding_boxes, bounding_boxes, dis.get_comm(), params.verbosity_);
 
-  // 2. Set up a multivector which will be populated with all ghosting information,
-  // i.e., the nodal connectivity of each element that collides with an element on this rank
+  // 2. Get nodal connectivity of each element
   const int n_nodes_per_element_max = 27;  // element with highest node count is hex27
-  Core::LinAlg::MultiVector<double> node_information(
-      *dis.element_row_map(), n_nodes_per_element_max, true);
-
+  int err;
+  Epetra_CrsGraph element_connectivity(
+      Copy, *dis.element_row_map(), n_nodes_per_element_max, false);
   for (int rowele_i = 0; rowele_i < dis.num_my_row_elements(); ++rowele_i)
   {
     const auto* element = dis.l_row_element(rowele_i);
+    std::vector<int> element_node_ids(element->num_node());
     for (int i_node = 0; i_node < element->num_node(); ++i_node)
     {
-      const auto* node = element->nodes()[i_node];
-      node_information.SumIntoMyValue(rowele_i, i_node, node->id());
+      element_node_ids[i_node] = element->nodes()[i_node]->id();
     }
-    node_information.SumIntoMyValue(rowele_i, element->num_node(), -1);
+    err = element_connectivity.InsertGlobalIndices(
+        element->id(), element_node_ids.size(), element_node_ids.data());
+    if (err != 0) FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d", err);
   }
+  element_connectivity.FillComplete();
 
-  // 3. Get the connectivity information
+  // 3. Get the connectivity information of each element that collides with an element on this rank
   std::set<int> my_colliding_primitives;
   for (const auto& item : result)
   {
     my_colliding_primitives.insert(item.gid_primitive);
   }
-  std::vector<int> my_colliding_primitives_vec;
-  for (const auto& item : my_colliding_primitives)
-  {
-    my_colliding_primitives_vec.emplace_back(item);
-  }
+  std::vector<int> my_colliding_primitives_vec(
+      my_colliding_primitives.begin(), my_colliding_primitives.end());
   Epetra_Map my_colliding_primitives_map(-1, my_colliding_primitives_vec.size(),
       my_colliding_primitives_vec.data(), 0, dis.get_comm());
-  Core::LinAlg::MultiVector<double> my_colliding_primitives_node_ids(
-      my_colliding_primitives_map, n_nodes_per_element_max, false);
-  Core::LinAlg::export_to(node_information, my_colliding_primitives_node_ids);
+  Epetra_Import importer(my_colliding_primitives_map, *dis.element_row_map());
+  Epetra_CrsGraph my_colliding_primitives_connectivity(
+      Copy, my_colliding_primitives_map, n_nodes_per_element_max, false);
+  err = my_colliding_primitives_connectivity.Import(element_connectivity, importer, Insert);
+  if (err != 0) FOUR_C_THROW("Epetra_CrsGraph::Import returned %d", err);
 
   // 4. Build and fill the graph with element internal connectivities
   auto my_graph = Teuchos::make_rcp<Epetra_FECrsGraph>(Copy, *(dis.node_row_map()), 40, false);
@@ -399,7 +401,7 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
         int index = node_inner->id();
 
         int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &index);
-        if (err < 0)
+        if (err != 0)
           FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
               node_main->id());
       }
@@ -425,22 +427,18 @@ Teuchos::RCP<const Epetra_CrsGraph> Core::Rebalance::build_monolithic_node_graph
     {
       const auto* node_main = predicate->nodes()[i_node];
       int index_main = node_main->id();
-      for (int j_node = 0; j_node < n_nodes_per_element_max; ++j_node)
-      {
-        // Get indices for primitive nodes
-        int primitive_node_index =
-            (int)(my_colliding_primitives_node_ids(j_node)[primitive_lid_in_map]);
 
-        if (primitive_node_index == -1)
-          break;
-        else
-        {
-          int err = my_graph->InsertGlobalIndices(1, &index_main, 1, &primitive_node_index);
-          if (err < 0)
-            FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
-                node_main->id());
-        }
-      }
+      int primitive_num_nodes;
+      int* primitive_node_indices;
+      err = my_colliding_primitives_connectivity.ExtractGlobalRowView(
+          primitive_gid, primitive_num_nodes, primitive_node_indices);
+      if (err != 0) FOUR_C_THROW("Epetra_CrsGraph::ExtractGlobalRowView returned %d", err);
+
+      int err = my_graph->InsertGlobalIndices(
+          1, &index_main, primitive_num_nodes, primitive_node_indices);
+      if (err != 0)
+        FOUR_C_THROW("Epetra_CrsGraph::InsertGlobalIndices returned %d for global row %d", err,
+            node_main->id());
     }
   }
 
