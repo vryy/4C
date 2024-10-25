@@ -8,9 +8,10 @@
 #include "4C_config.hpp"
 
 #include "4C_comm_pack_buffer.hpp"
+#include "4C_comm_pack_helpers.hpp"
 
+#include <type_traits>
 #include <variant>
-#include <vector>
 
 
 #ifndef FOUR_C_SOLID_3D_ELE_INTERFACE_SERIALIZABLE_HPP
@@ -20,39 +21,12 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Discret::Elements
 {
-  /*!
-   * @brief A type trait to check whether the type T supports the
-   * pack(Core::Communication::PackBuffer&) method.
-   *
-   * @note T does not necessarily need to derive from some interface class
-   * @{
-   */
-  template <typename T, typename AlwaysVoid = void>
-  constexpr bool IsPackable = false;
-
-  template <typename T>
-  constexpr bool IsPackable<T, std::void_t<decltype(std::declval<const T>()->pack(
-                                   std::declval<Core::Communication::PackBuffer&>()))>> = true;
-  ///@}
-
-  /*!
-   * @brief A type trait to check whether the type T supports the
-   * unpack(std::vector<char>::size_type&, const std::vector<char>&) method.
-   *
-   * @note T does not necessarily need to derive from some interface class
-   * @{
-   */
-  template <typename T, typename AlwaysVoid = void>
-  constexpr bool IsUnpackable = false;
-
-  template <typename T>
-  constexpr bool IsUnpackable<T, std::void_t<decltype(std::declval<T>()->unpack(
-                                     std::declval<Core::Communication::UnpackBuffer&>()))>> = true;
-  ///@}
-
 
   namespace Internal
   {
+    template <typename T>
+    using VariantItemInternalType = decltype(*std::declval<T>());
+
     /*!
      * @brief This struct should be used to serialize an item within a sum type (e.g.
      *std::variant).
@@ -61,20 +35,24 @@ namespace Discret::Elements
      *Nothing is done for types that don't provide a Pack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
-     * the Pack-member function is correct by asserting it with static_assert(IsPackable<T>); in
-     *your cpp file
+     * the Pack-member function is correct by asserting it with
+     *static_assert(Core::Communication::is_packable<T>); in your cpp file
      */
     struct PackAction
     {
       PackAction(Core::Communication::PackBuffer& buffer) : data(buffer) {}
 
-      template <typename T, std::enable_if_t<IsPackable<T>, bool> = true>
+      template <typename T,
+          std::enable_if_t<Core::Communication::is_packable<const VariantItemInternalType<T>>,
+              bool> = true>
       void operator()(const T& packable)
       {
         packable->pack(data);
       }
 
-      template <typename T, std::enable_if_t<!IsPackable<T>, bool> = true>
+      template <typename T,
+          std::enable_if_t<!Core::Communication::is_packable<const VariantItemInternalType<T>>,
+              bool> = true>
       void operator()(const T& other)
       {
         // do nothing if it is not packable
@@ -91,20 +69,24 @@ namespace Discret::Elements
      * method. Nothing is done for types that don't provide a Unpack-method.
      *
      * @note If you have a type that needs to be serialized during execution, you could verify that
-     * the Pack-member function is correct by asserting it with static_assert(IsUnpackable<T>); in
-     * your cpp file
+     * the Pack-member function is correct by asserting it with
+     * static_assert(Core::Communication::is_unpackable<T>); in your cpp file
      */
     struct UnpackAction
     {
       UnpackAction(Core::Communication::UnpackBuffer& buffer) : buffer_(buffer) {}
 
-      template <typename T, std::enable_if_t<IsUnpackable<T&>, bool> = true>
+      template <typename T,
+          std::enable_if_t<Core::Communication::is_unpackable<VariantItemInternalType<T>>, bool> =
+              true>
       void operator()(T& unpackable)
       {
         unpackable->unpack(buffer_);
       }
 
-      template <typename T, std::enable_if_t<!IsUnpackable<T&>, bool> = true>
+      template <typename T,
+          std::enable_if_t<!Core::Communication::is_unpackable<VariantItemInternalType<T>>, bool> =
+              true>
       void operator()(T& other)
       {
         // do nothing if it is not unpackable

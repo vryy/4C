@@ -35,7 +35,38 @@ namespace Core::Communication
     template <class T>
     using is_enum_class =
         std::integral_constant<bool, !std::is_convertible<T, int>::value && std::is_enum<T>::value>;
+
+
   }
+  /*!
+   * @brief A type trait to check whether the type T supports the
+   * pack(Core::Communication::PackBuffer&) method.
+   *
+   * @note T does not necessarily need to derive from some interface class
+   * @{
+   */
+  template <typename T, typename AlwaysVoid = void>
+  constexpr bool is_packable = false;
+
+  template <typename T>
+  constexpr bool is_packable<T, std::void_t<decltype(std::declval<const std::decay_t<T>>().pack(
+                                    std::declval<Core::Communication::PackBuffer&>()))>> = true;
+  ///@}
+
+  /*!
+   * @brief A type trait to check whether the type T supports the
+   * unpack(std::vector<char>::size_type&, const std::vector<char>&) method.
+   *
+   * @note T does not necessarily need to derive from some interface class
+   * @{
+   */
+  template <typename T, typename AlwaysVoid = void>
+  constexpr bool is_unpackable = false;
+
+  template <typename T>
+  constexpr bool is_unpackable<T, std::void_t<decltype(std::declval<std::decay_t<T>>().unpack(
+                                      std::declval<Core::Communication::UnpackBuffer&>()))>> = true;
+  ///@}
 
   //! @name Routines to help pack stuff into a char vector
 
@@ -86,10 +117,14 @@ namespace Core::Communication
     data.add_to_pack(stuff, stuffsize);
   }
 
-
-  void add_to_pack(PackBuffer& data, const ParObject& obj);
-
-  void add_to_pack(PackBuffer& data, const ParObject* obj);
+  /**
+   * Add an object that implements a `pack()` method to the buffer.
+   */
+  template <typename T, std::enable_if_t<is_packable<T>, int> = 0>
+  void add_to_pack(PackBuffer& data, const T& obj)
+  {
+    obj.pack(data);
+  }
 
   /*!
    * \brief Add stuff to the end of a char vector data
@@ -326,7 +361,7 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T>
+  template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
   void extract_from_pack(UnpackBuffer& buffer, T& stuff)
   {
     buffer.extract_from_pack(stuff);
@@ -335,7 +370,7 @@ namespace Core::Communication
   /**
    * Template to forward to the implementation on UnpackBuffer.
    */
-  template <typename T>
+  template <typename T, std::enable_if_t<std::is_pod_v<T>, int> = 0>
   void extract_from_pack(UnpackBuffer& buffer, T* stuff, std::size_t stuff_size)
   {
     buffer.extract_from_pack(stuff, stuff_size);
@@ -344,6 +379,15 @@ namespace Core::Communication
   int extract_int(UnpackBuffer& buffer);
 
   double extract_double(UnpackBuffer& buffer);
+
+  /**
+   * Extract an object that implements an `unpack()` method from the buffer.
+   */
+  template <typename T, std::enable_if_t<is_unpackable<T>, int> = 0>
+  void extract_from_pack(UnpackBuffer& data, T& obj)
+  {
+    obj.unpack(data);
+  }
 
   /*!
    * \brief Extract stuff from a char vector data and increment position
