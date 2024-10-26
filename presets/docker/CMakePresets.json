@@ -60,8 +60,7 @@
         "CMAKE_C_COMPILER": "/opt/4C-dependencies-testing/bin/gcc",
         "CMAKE_BUILD_RPATH": "/opt/4C-dependencies-testing/lib64",
         "FOUR_C_BUILD_DOXYGEN": "OFF",
-        "FOUR_C_BUILD_READTHEDOCS": "OFF",
-        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "OFF"
+        "FOUR_C_BUILD_READTHEDOCS": "OFF"
       }
     },
     {
