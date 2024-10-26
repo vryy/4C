@@ -694,20 +694,6 @@ void Cut::TriangulateFacet::ear_clipping(std::vector<int> ptConcavity,  // list 
     ptConcavity = Kernel::check_convexity(
         ptlist_, str1, true, DeleteInlinePts);  // concave points for the new polygon
 
-    if (triOnly ==
-        false)  // if possible it shifts to splitGeneralFacet so that no of cells are reduced
-    {
-      if (ptConcavity.size() < 2)
-      {
-        split_convex_1pt_concave_facet(ptConcavity);
-        return;
-      }
-      else if ((ptlist_.size() - ptConcavity.size()) > 3)
-      {
-        split_general_facet(ptConcavity);
-        return;
-      }
-    }
     // one of the reason to fail is cases with triangles
     // with multiple points on the line,  we handle it
     // here

@@ -435,8 +435,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     {
       // cont derivatives + 1 artery pressure derivative
       diamderivs_ = std::vector<double>(numdof_cont_ + 1, 0.0);
-      diam_stiffmat11_.shape(0, 0);
-      diam_stiffmat12_.shape(0, 0);
+      diam_stiffmat11_ = Core::LinAlg::SerialDenseMatrix();
+      diam_stiffmat12_ = Core::LinAlg::SerialDenseMatrix();
     }
   }
 
@@ -1261,10 +1261,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   {
     if (!constant_part_evaluated_)
     {
-      gpts_ntp_stiffmat11_.shape(0, 0);
-      gpts_ntp_stiffmat12_.shape(0, 0);
-      gpts_ntp_stiffmat21_.shape(0, 0);
-      gpts_ntp_stiffmat22_.shape(0, 0);
+      gpts_ntp_stiffmat11_ = Core::LinAlg::SerialDenseMatrix();
+      gpts_ntp_stiffmat12_ = Core::LinAlg::SerialDenseMatrix();
+      gpts_ntp_stiffmat21_ = Core::LinAlg::SerialDenseMatrix();
+      gpts_ntp_stiffmat22_ = Core::LinAlg::SerialDenseMatrix();
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1322,10 +1322,10 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
   {
     if (!constant_part_evaluated_)
     {
-      gpts_ntp_stiffmat11_.shape(0, 0);
-      gpts_ntp_stiffmat12_.shape(0, 0);
-      gpts_ntp_stiffmat21_.shape(0, 0);
-      gpts_ntp_stiffmat22_.shape(0, 0);
+      gpts_ntp_stiffmat11_ = Core::LinAlg::SerialDenseMatrix();
+      gpts_ntp_stiffmat12_ = Core::LinAlg::SerialDenseMatrix();
+      gpts_ntp_stiffmat21_ = Core::LinAlg::SerialDenseMatrix();
+      gpts_ntp_stiffmat22_ = Core::LinAlg::SerialDenseMatrix();
     }
 
     // we only have to this once if evaluated in reference configuration
@@ -1385,8 +1385,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPair<distype_art, d
     // initialize
     if (!constant_part_evaluated_)
     {
-      d_.shape(0, 0);
-      m_.shape(0, 0);
+      d_ = Core::LinAlg::SerialDenseMatrix();
+      m_ = Core::LinAlg::SerialDenseMatrix();
     }
     // we only have to this once if evaluated in reference configuration
     if (!constant_part_evaluated_ or !evaluate_in_ref_config_)
