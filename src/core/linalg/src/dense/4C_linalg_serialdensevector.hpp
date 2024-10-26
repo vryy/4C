@@ -30,6 +30,15 @@ namespace Core::LinAlg
 
     /// Using the base class constructor
     using Base::SerialDenseVector;
+
+    //! Return number of rows. Use our case style to better facilitate generic code.
+    [[nodiscard]] int num_rows() const { return this->numRows(); }
+
+    //! Return number of columns. Use our case style to better facilitate generic code.
+    //!
+    //! @note This function exists because of a design decision in Trilinos where a vector is
+    //! implemented as a matrix with one column.
+    [[nodiscard]] int num_cols() const { return this->numCols(); }
   };
 
   // type definition for serial integer vector
