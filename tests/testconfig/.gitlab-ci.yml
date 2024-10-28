@@ -320,6 +320,8 @@ pages: # job name needs to be pages
     - anybadge -l readthedocs -v ok --color=green -f public/readthedocs.svg
     # Create website badge
     - anybadge -l website -v ok --color=green -f public/website.svg
+    # Create performance report
+    - anybadge -l performance -v report --color=cornflowerblue -f public/performance.svg
   coverage: /lines\.*:\s+\d+\.\d+/
   artifacts:
     # store the public path in artifact
