@@ -601,9 +601,6 @@ namespace XFEM
   double interpolate_curvature(const M1& funct, const M2& derxy, const M3& esmoothedgradphi_T,
       const M4& esmoothedcurvature_T, const int numnode)
   {
-    // number space dimensions for element
-    const size_t nsd = Core::FE::dim<distype>;
-
     double icurvature = 0.0;
     return icurvature;
   }

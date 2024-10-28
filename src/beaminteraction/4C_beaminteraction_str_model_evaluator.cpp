@@ -371,7 +371,6 @@ void Solid::ModelEvaluator::BeamInteraction::init_and_setup_sub_model_evaluators
 
   // submodels build their pointer to other submodel objects to enable submodel dependencies
   // this is not particularly nice, at least the nicest way to handle such dependencies
-  Vector::const_iterator iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->init_submodel_dependencies(me_map_ptr_);
 }
