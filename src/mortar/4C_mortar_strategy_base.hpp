@@ -248,7 +248,6 @@ namespace Mortar
     virtual Teuchos::RCP<const Epetra_Map> non_redist_slave_row_dofs() const = 0;
     virtual Teuchos::RCP<const Epetra_Map> non_redist_master_row_dofs() const = 0;
     virtual bool active_set_converged() const = 0;
-    virtual bool active_set_semi_smooth_converged() const = 0;
     virtual void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
         Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
         Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,

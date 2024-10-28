@@ -101,25 +101,6 @@ namespace Core::LinearSolver
     //! preconditioner object
     Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner_;
 
-    /*! \brief Check if active set has changed. If yes, enforce to rebuild the preconditioner.
-     *
-     * We only can reuse the preconditioner if the active set in contact problems has not changed.
-     * Therefore, we compare the current map of active DOFs with #activeDofMap_, i.e. the one
-     * stored from the previous application of the preconditioner.
-     *
-     * The comparison is done in multiple stages:
-     * 1. Check if number of active DOFs has changed:
-     *   - If yes, we need to rebuild the preconditioner.
-     *   - If not, then check 2.
-     * 2. Compare current and stored map of active DOFs using a PointSameAs() comparison.
-     *   - If map has changed, we need to rebuild the preconditioner.
-     *
-     * \param[in/out] bAllowReuse Boolean flag to indicate reuse (true) or rebuild
-     * (false) of the preconditioner
-     * \param[in] linSysParams Parameter list with some linear system information
-     */
-    bool check_reuse_status_of_active_set(const Teuchos::ParameterList& linSysParams);
-
     /*! \brief Map of active DOFs in structural contact simulations.
      *
      * This is used to check whether preconditioner can be reused or not.

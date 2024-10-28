@@ -773,10 +773,8 @@ bool PoroElast::Monolithic::converged()
       {
         if (structure_field()->meshtying_contact_bridge()->have_contact())
         {
-          conv = structure_field()
-                     ->meshtying_contact_bridge()
-                     ->get_strategy()
-                     .active_set_semi_smooth_converged();
+          conv =
+              structure_field()->meshtying_contact_bridge()->get_strategy().active_set_converged();
         }
       }
     }

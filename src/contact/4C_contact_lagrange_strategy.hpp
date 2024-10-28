@@ -46,29 +46,6 @@ namespace CONTACT
         std::vector<Teuchos::RCP<CONTACT::Interface>> interface, const int spatialDim,
         Teuchos::RCP<const Epetra_Comm> comm, const double alphaf, const int maxdof);
 
-
-
-    //! @name Access methods
-
-    /*!
-    \brief Return convergence status of semi-smooth active set search
-
-    If this Lagrange contact strategy is not based on a semi-smooth
-    Newton approach, but on a fixed-point approach with two nested
-    loops, then this method simply returns true, of course. Convergence
-    of the active set is monitored with the flag activesetconv_ in
-    this case and activesetssconv_ is meaningless.
-
-    */
-    bool active_set_semi_smooth_converged() const override
-    {
-      bool semismooth = params().get<bool>("SEMI_SMOOTH_NEWTON");
-      if (semismooth)
-        return activesetssconv_;
-      else
-        return true;
-    }
-
     /*!
     \brief Return convergence status of fixed-point active set search
 
@@ -82,10 +59,10 @@ namespace CONTACT
     bool active_set_converged() const override
     {
       bool semismooth = params().get<bool>("SEMI_SMOOTH_NEWTON");
-      if (!semismooth)
-        return activesetconv_;
+      if (semismooth)
+        return activesetssconv_;
       else
-        return true;
+        return activesetconv_;
     }
 
     /*!

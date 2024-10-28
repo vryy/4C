@@ -1464,7 +1464,7 @@ bool TSI::Monolithic::converged()
                        contact_strategy_lagrange_->params().get<double>("TOLCONTCONSTR"));
     conv = conv && (contact_strategy_lagrange_->mech_contact_incr_ <
                        contact_strategy_lagrange_->params().get<double>("TOLLAGR"));
-    conv = conv && contact_strategy_lagrange_->active_set_semi_smooth_converged();
+    conv = conv && contact_strategy_lagrange_->active_set_converged();
   }
 
   // return things

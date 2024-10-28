@@ -8,7 +8,6 @@
 #include "4C_structure_timint_impl.hpp"
 
 #include "4C_beamcontact_beam3contact_manager.hpp"
-#include "4C_beaminteraction_beam_to_beam_contact_defines.hpp"
 #include "4C_cardiovascular0d_manager.hpp"
 #include "4C_cardiovascular0d_mor_pod.hpp"
 #include "4C_constraint_manager.hpp"
@@ -16,12 +15,8 @@
 #include "4C_constraint_springdashpot_manager.hpp"
 #include "4C_contact_abstract_strategy.hpp"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "4C_contact_defines.hpp"
-#include "4C_contact_manager.hpp"
-#include "4C_contact_meshtying_abstract_strategy.hpp"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "4C_contact_meshtying_contact_bridge.hpp"
-#include "4C_contact_meshtying_manager.hpp"
 #include "4C_fem_condition_locsys.hpp"
-#include "4C_fem_condition_utils.hpp"
 #include "4C_fem_discretization_nullspace.hpp"
 #include "4C_global_data.hpp"
 #include "4C_inpar_beamcontact.hpp"
@@ -36,14 +31,12 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_linalg_utils_sparse_algebra_print.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
-#include "4C_mortar_defines.hpp"
 #include "4C_mortar_manager_base.hpp"
 #include "4C_mortar_strategy_base.hpp"
 #include "4C_so3_hex8.hpp"
 #include "4C_so3_shw6.hpp"
 #include "4C_structure_aux.hpp"
 #include "4C_structure_timint.hpp"
-#include "4C_structure_timint_noxgroup.hpp"
 
 #include <sstream>
 #ifdef FOUR_C_ENABLE_FE_TRAPPING
@@ -1252,7 +1245,7 @@ bool Solid::TimIntImpl::converged()
 
     // only do this convergence check for semi-smooth Lagrange multiplier contact
     if (cmtbridge_->have_contact() && (stype == Inpar::CONTACT::solution_lagmult) && semismooth)
-      ccontact = cmtbridge_->get_strategy().active_set_semi_smooth_converged();
+      ccontact = cmtbridge_->get_strategy().active_set_converged();
 
     // add convergence check for saddlepoint formulations
     // use separate convergence checks for contact constraints and
@@ -3139,6 +3132,7 @@ void Solid::TimIntImpl::cmt_linear_solve()
         mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
+      mueluParams.set<bool>("reuse preconditioner", strat->active_set_converged());
     }
   }  // end: feed solver with contact/meshtying information
 
@@ -4518,6 +4512,7 @@ int Solid::TimIntImpl::cmt_windk_constr_linear_solve(const double k_ptc)
         mueluParams.set<std::string>("Core::ProblemType", "meshtying");
       mueluParams.set<int>("time step", step_);
       mueluParams.set<int>("iter", iter_);
+      mueluParams.set<bool>("reuse preconditioner", strat->active_set_converged());
     }
 
   }  // end: feed solver with contact/meshtying information
