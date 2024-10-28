@@ -262,18 +262,12 @@ void test_level_set_cut_tesselation_and_dd_same_vc(std::vector<int> nids, std::v
   //------------------------------------------------------
 
   // Cut with DirectDivergence as well
-  int counter = 1;
   for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
-    //    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
-    //    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
     vc->direct_divergence_gauss_rule(
         vc->parent_element(), ci.normal_mesh(), true, Cut::BCellGaussPts_Tessellation);
-    //    std::cout << "DIRCETDIVERGENCE CUT VOLUMECELL #" << counter <<  " WITHOUT ERROR!" <<
-    //    std::endl << std::endl;
-    counter++;
     dirDivVol.push_back(vc->volume());
   }
 

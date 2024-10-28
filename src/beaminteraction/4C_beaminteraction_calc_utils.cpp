@@ -1293,8 +1293,8 @@ namespace BEAMINTERACTION
     std::pair<int, int> cantor_de_pairing(long long z)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (8.0 * z > std::numeric_limits<long long>::max())
-        FOUR_C_THROW(" Your cantor paired value exceeds limit of data type int.");
+      if (z > std::numeric_limits<long long>::max() / 8)
+        FOUR_C_THROW(" Your cantor paired value will exceed limit of data type int.");
 #endif
 
       long long w = std::floor((std::sqrt(8.0 * z + 1.0) - 1.0) * 0.5);

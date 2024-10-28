@@ -426,9 +426,6 @@ namespace Mat
     //! current temperature (set by Reinit())
     double current_temperature_{};
 
-    //! flag plastic step was called
-    bool plastic_step_;
-
     //! robinson's material requires the following internal variables:
     //! - visco-plastic strain vector (at t_n, t_n+1^i)
     //! - back stress vector (at t_n, t_n+1^i)

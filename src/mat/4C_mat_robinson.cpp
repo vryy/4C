@@ -83,8 +83,7 @@ Mat::Robinson::Robinson() : params_(nullptr), thermo_(Teuchos::null) {}
 /*----------------------------------------------------------------------*
  | copy-constructor (public) --> called in create_material()  dano 11/11 |
  *----------------------------------------------------------------------*/
-Mat::Robinson::Robinson(Mat::PAR::Robinson* params)
-    : params_(params), thermo_(Teuchos::null), plastic_step_(false)
+Mat::Robinson::Robinson(Mat::PAR::Robinson* params) : params_(params), thermo_(Teuchos::null)
 {
   const int thermoMatId = this->params_->thermomat_;
   if (thermoMatId != -1)

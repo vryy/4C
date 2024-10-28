@@ -535,7 +535,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
   tm6 = Teuchos::null;
 
   // fill SideSet Connectivity
-  int tetc = 0, hexc = 0, pyrc = 0, wedgc = 0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side)
   {
     Teuchos::TimeMonitor tm1(*time1);
@@ -572,30 +571,20 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(const SideSet si
     {
       case ElementBlock::tet4:
       {
-        tetc++;
         break;
       }
       case ElementBlock::hex8:
       {
         actface = hex_side_number_exo_to_four_c(actface);
-        hexc++;
         break;
       }
       case ElementBlock::pyramid5:
       {
-        //      vector<std::vector<int> > test =
-        //      Core::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
-        //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
         actface = pyr_side_number_exo_to_four_c(actface);
-        pyrc++;
         break;
       }
       case ElementBlock::wedge6:
       {
-        //      vector<std::vector<int> > test =
-        //      Core::FE::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape)); for(unsigned
-        //      int j=0; j<test.size(); ++j) PrintVec(std::cout,test[j]);
-        wedgc++;
         break;
       }
       default:
@@ -680,7 +669,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
   }
 
   // fill SideSet Connectivity
-  int tetc = 0, hexc = 0, pyrc = 0, wedgc = 0;
   for (i_side = mysides.begin(); i_side != mysides.end(); ++i_side)
   {
     Teuchos::RCP<Teuchos::TimeMonitor> tm1 = Teuchos::make_rcp<Teuchos::TimeMonitor>(*time1);
@@ -708,24 +696,20 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
     {
       case ElementBlock::tet4:
       {
-        tetc++;
         break;
       }
       case ElementBlock::hex8:
       {
         actface = hex_side_number_exo_to_four_c(actface);
-        hexc++;
         break;
       }
       case ElementBlock::pyramid5:
       {
         actface = pyr_side_number_exo_to_four_c(actface);
-        pyrc++;
         break;
       }
       case ElementBlock::wedge6:
       {
-        wedgc++;
         break;
       }
       default:
@@ -760,7 +744,6 @@ std::map<int, std::vector<int>> EXODUS::Mesh::get_side_set_conn(
     tm1 = Teuchos::null;
   }
   tm_total = Teuchos::null;
-  //  Teuchos::TimeMonitor::summarize();
   std::cout << "...done" << std::endl;
   fflush(stdout);
 
