@@ -12,12 +12,12 @@
 #include "4C_inpar_ssi.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
+#include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
 #include "4C_mat_anisotropy.hpp"
 #include "4C_mat_elasthyper_service.hpp"
 #include "4C_mat_inelastic_defgrad_factors.hpp"
 #include "4C_mat_multiplicative_split_defgrad_elasthyper_service.hpp"
 #include "4C_mat_par_bundle.hpp"
-#include "4C_mat_service.hpp"
 #include "4C_structure_new_enum_lists.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace
 {
-  struct KineamticQuantities
+  struct KinematicQuantities
   {
     Core::LinAlg::Matrix<6, 6> cmatiso{true};
     Core::LinAlg::Matrix<6, 9> dSdiFin{true};
@@ -42,6 +42,8 @@ namespace
     Core::LinAlg::Matrix<9, 1> CiFinCe9x1{true};
     Core::LinAlg::Matrix<9, 1> CiFiniCe9x1{true};
     Core::LinAlg::Matrix<3, 1> prinv{true};
+    Core::LinAlg::Matrix<6, 6> dCedC{true};
+    Core::LinAlg::Matrix<6, 9> dCediFin{true};
     Core::LinAlg::Matrix<3, 3> iFinM{true};
 
     double detFin = 1.0;
@@ -57,26 +59,28 @@ namespace
     Core::LinAlg::Matrix<8, 1> delta{true};
   };
 
-  KineamticQuantities evaluate_kinematic_quantities(
+  KinematicQuantities evaluate_kinematic_quantities(
       const Mat::MultiplicativeSplitDefgradElastHyper& splitdefgrd,
       Mat::InelasticFactorsHandler& inelastic_factors_handler,
       const Core::LinAlg::Matrix<3, 3>& defgrad, const int gp, const int eleGID)
   {
-    KineamticQuantities quantities{};
+    KinematicQuantities quantities{};
 
     // build inverse inelastic deformation gradient
     inelastic_factors_handler.evaluate_inverse_inelastic_def_grad(&defgrad, quantities.iFinM);
 
-    // determinante of inelastic deformation gradient
+    // determinant of inelastic deformation gradient
     quantities.detFin = 1.0 / quantities.iFinM.determinant();
 
     splitdefgrd.evaluate_kin_quant_elast(&defgrad, quantities.iFinM, quantities.iCinV,
         quantities.iCinCiCinV, quantities.iCV, quantities.iCinCM, quantities.iFinCeM,
-        quantities.CiFin9x1, quantities.CiFinCe9x1, quantities.CiFiniCe9x1, quantities.prinv);
+        quantities.CiFin9x1, quantities.CiFinCe9x1, quantities.CiFiniCe9x1, quantities.prinv,
+        quantities.dCedC, quantities.dCediFin);
 
     // derivatives of principle invariants
-    splitdefgrd.evaluate_invariant_derivatives(
-        quantities.prinv, gp, eleGID, quantities.dPIe, quantities.ddPIIe);
+    splitdefgrd.evaluate_invariant_derivatives(quantities.prinv, gp, eleGID, quantities.dPIe,
+        quantities.ddPIIe);  // NOTE: we exclude the transversely isotropic hyperelastic
+                             // components in this function --> we deal with them separately
 
 
     // compose coefficients
@@ -165,7 +169,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     elastic_summand->register_anisotropy_extensions(*anisotropy_);
   }
 
-  inelastic_->setup(params);
+  inelastic_->assign_to_source(params);
 }
 
 /*--------------------------------------------------------------------*
@@ -185,6 +189,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::pack(Core::Communication::PackBu
   Core::Communication::PotentiallyUnusedBufferScope summand_scope{data};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
+    // pack inelastic factors handler
+    inelastic_->pack_inelastic(data);
+
     // loop map of associated potential summands
     for (const auto& p : potsumel_) p->pack_summand(data);
   }
@@ -224,6 +231,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
   Core::Communication::PotentiallyUnusedBufferScope summand_scope{buffer};
   if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
+    // unpack inelastic deformation gradient factors
+    inelastic_->assign_to_source(params_);
+    inelastic_->unpack_inelastic(buffer);
+
     // elastic materials
     for (const auto& matid_elastic : params_->matids_elast_)
     {
@@ -237,9 +248,6 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
       elastic_summand->unpack_summand(buffer);
       elastic_summand->register_anisotropy_extensions(*anisotropy_);
     }
-
-    // inelastic deformation gradient factors
-    inelastic_->setup(params_);
   }
 }
 
@@ -251,16 +259,24 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate(
     Core::LinAlg::Matrix<6, 6>* cmat, const int gp, const int eleGID)
 {
   // do all stuff that only has to be done once per evaluate() call
-  pre_evaluate(params, gp);
+  pre_evaluate(params, gp, eleGID);
 
-  KineamticQuantities kinematic_quantities =
+  KinematicQuantities kinematic_quantities =
       evaluate_kinematic_quantities(*this, *inelastic_, *defgrad, gp, eleGID);
+
+  // right Cauchy-Green deformation tensor
+  Core::LinAlg::Matrix<3, 3> CM(true);
+  CM.multiply_tn(1.0, *defgrad, *defgrad, 0.0);
 
   // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}
   // : \frac{\partial F_{in}^{-1}}{\partial C} = cmatiso + cmatadd
   evaluate_stress_cmat_iso(kinematic_quantities.iCV, kinematic_quantities.iCinV,
       kinematic_quantities.iCinCiCinV, kinematic_quantities.gamma, kinematic_quantities.delta,
       kinematic_quantities.detFin, *stress, kinematic_quantities.cmatiso);
+  // separate update coming from the transversely isotropic components
+  evaluate_transv_iso_quantities(kinematic_quantities.iFinM, CM, kinematic_quantities.dCedC,
+      kinematic_quantities.dCediFin, params, gp, eleGID, kinematic_quantities.dSdiFin, *stress,
+      kinematic_quantities.cmatiso);
   cmat->update(1.0, kinematic_quantities.cmatiso, 0.0);
 
   // evaluate additional terms for the elasticity tensor
@@ -276,7 +292,7 @@ Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // do all stuff that only has to be done once per evaluate() call
-  pre_evaluate(params, gp);
+  pre_evaluate(params, gp, eleGID);
 
   // get source of deformation for this OD block depending on the differentiation type
   auto source(PAR::InelasticSource::none);
@@ -291,7 +307,7 @@ Core::LinAlg::Matrix<6, 1> Mat::MultiplicativeSplitDefgradElastHyper::evaluate_d
 
 
 
-  KineamticQuantities kinematic_quantities =
+  KinematicQuantities kinematic_quantities =
       evaluate_kinematic_quantities(*this, *inelastic_, defgrad, gp, eleGID);
 
   Core::LinAlg::Matrix<6, 1> d_stress_d_scalar(true);
@@ -552,7 +568,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kin_quant_elast(
     Core::LinAlg::Matrix<6, 1>& iCV, Core::LinAlg::Matrix<3, 3>& iCinCM,
     Core::LinAlg::Matrix<3, 3>& iFinCeM, Core::LinAlg::Matrix<9, 1>& CiFin9x1,
     Core::LinAlg::Matrix<9, 1>& CiFinCe9x1, Core::LinAlg::Matrix<9, 1>& CiFiniCe9x1,
-    Core::LinAlg::Matrix<3, 1>& prinv) const
+    Core::LinAlg::Matrix<3, 1>& prinv, Core::LinAlg::Matrix<6, 6>& dCedC,
+    Core::LinAlg::Matrix<6, 9>& dCediFin) const
 {
   // inverse inelastic right Cauchy-Green
   static Core::LinAlg::Matrix<3, 3> iCinM(true);
@@ -605,6 +622,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_kin_quant_elast(
   tmp.multiply_nn(1.0, CM, iFinM, 0.0);
   CiFiniCeM.multiply_nn(1.0, tmp, iCeM, 0.0);
   Core::LinAlg::Voigt::matrix_3x3_to_9x1(CiFiniCeM, CiFiniCe9x1);
+
+  // derivatives of the elastic right CG
+  Mat::elast_hyper_get_derivs_of_elastic_right_cg_tensor(iFinM, CM, dCedC, dCediFin);
 }
 
 /*--------------------------------------------------------------------*
@@ -621,7 +641,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_invariant_derivatives(
   // derivatives of strain energy function w.r.t. principal invariants
   for (const auto& p : potsumel_)
   {
-    p->add_derivatives_principal(dPI, ddPII, prinv, gp, eleGID);
+    if (p->material_type() != Core::Materials::mes_couptransverselyisotropic)
+    {
+      p->add_derivatives_principal(dPI, ddPII, prinv, gp, eleGID);
+    }
   }
 }
 
@@ -682,6 +705,122 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluated_sdi_fin(
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
+void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_transv_iso_quantities(
+    const Core::LinAlg::Matrix<3, 3>& iFinM, const Core::LinAlg::Matrix<3, 3>& CM,
+    const Core::LinAlg::Matrix<6, 6>& dCedC, const Core::LinAlg::Matrix<6, 9>& dCediFin,
+    Teuchos::ParameterList& params, const int gp, const int eleGID,
+    Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 1>& stress,
+    Core::LinAlg::Matrix<6, 6>& cmatiso) const
+{
+  // auxiliaries
+  Core::LinAlg::Matrix<3, 3> id3x3(true);
+  for (int i = 0; i < 3; ++i) id3x3(i, i) = 1.0;
+  Core::LinAlg::Matrix<3, 3> temp3x3(true);
+  Core::LinAlg::Matrix<6, 6> temp6x6(true);
+  Core::LinAlg::Matrix<6, 9> temp6x9(true);
+  Core::LinAlg::Matrix<9, 9> temp9x9(true);
+  Core::LinAlg::Matrix<6, 1> temp6x1(true);
+  Core::LinAlg::FourTensor<3> tempFourTensor(true);
+
+  // compute elastic right CG tensor in matrix form (CeM) and in Voigt strain notation (CeV)
+  Core::LinAlg::Matrix<3, 3> CeM(true);
+  temp3x3.multiply_tn(1.0, iFinM, CM, 0.0);
+  CeM.multiply_nn(1.0, temp3x3, iFinM, 0.0);
+  Core::LinAlg::Matrix<6, 1> CeV(true);
+  Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::strain>::matrix_to_vector(
+      CeM, CeV);
+
+  // initialize elastic 2nd PK stress elast_stress and elasticity tensor elast_stiffness (associated
+  // to the transversely isotropic hyperelastic component)
+  Core::LinAlg::Matrix<6, 1> elast_stress(true);     // Voigt stress notation of SeM
+  Core::LinAlg::Matrix<6, 6> elast_stiffness(true);  // Voigt stress-strain
+
+  // loop through all transversely isotropic parts, and compute the total elastic stress and elastic
+  // stiffness
+  for (const auto& p : potsumel_)
+  {
+    if (p->material_type() == Core::Materials::mes_couptransverselyisotropic)
+    {
+      p->add_stress_aniso_principal(CeV, elast_stiffness, elast_stress, params, gp, eleGID);
+    }
+  }
+
+  // convert stiffness to stress-strain notation
+  temp6x6 = elast_stiffness;
+  elast_stiffness = Core::LinAlg::Voigt::modify_voigt_representation(temp6x6, 1.0, 2.0);
+
+  // calculate stress from elast_stress
+  Core::LinAlg::Matrix<3, 3> SeM(true);
+  Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::vector_to_matrix(
+      elast_stress, SeM);
+  Core::LinAlg::Matrix<3, 3> SM(true);
+  temp3x3.multiply_nn(1.0, iFinM, SeM, 0.0);
+  SM.multiply_nt(1.0, temp3x3, iFinM, 0.0);
+  Core::LinAlg::Voigt::VoigtUtils<Core::LinAlg::Voigt::NotationType::stress>::matrix_to_vector(
+      SM, temp6x1);
+  stress.update(1.0, temp6x1, 1.0);
+
+  // F^{-1}_{in} S_{e} and S_{e} F^{-T}_{in}
+  Core::LinAlg::Matrix<3, 3> iFinSeM(true);
+  iFinSeM.multiply_nn(1.0, iFinM, SeM, 0.0);
+  Core::LinAlg::Matrix<3, 3> SeiFinTM(true);
+  SeiFinTM.multiply_nt(1.0, id3x3, iFinSeM, 0.0);
+
+  // \frac{\partial S_{e}}{\partial F^{-1}_{in}}
+  Core::LinAlg::Matrix<6, 9> dSediFin(true);  // Voigt stress-form
+  dSediFin.multiply_nn(1.0, elast_stiffness, dCediFin, 0.0);
+  Core::LinAlg::FourTensor<3> dSediFin_FourTensor(true);
+  Core::LinAlg::Voigt::setup_four_tensor_from_6x9_voigt_matrix(dSediFin_FourTensor, dSediFin);
+
+  // \frac{\partial S_{e}}{\partial C}
+  Core::LinAlg::Matrix<6, 6> dSedC(true);  // Voigt stress-stress-form
+  dSedC.multiply_nn(1.0, elast_stiffness, dCedC, 0.0);
+  Core::LinAlg::FourTensor<3> dSedC_FourTensor(true);
+  Core::LinAlg::Voigt::setup_four_tensor_from_6x6_voigt_matrix(dSedC_FourTensor, dSedC);
+
+  // [F_{in}^{-1} (F_{in}^{-1} \frac{\partial S_{e}}{\partial F^{-1}_{in}})^T_{12}  ]^T_{12}
+  Core::LinAlg::FourTensor<3> iFindSediFin_FourTensor(true);
+  Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
+      iFindSediFin_FourTensor, iFinM, dSediFin_FourTensor, true);
+  Core::LinAlg::FourTensor<3> iFindSediFin_FourTensor_T12(true);
+  iFindSediFin_FourTensor_T12.transpose_12(iFindSediFin_FourTensor);
+  Core::LinAlg::FourTensor<3> iFin_iFindSediFin_T12_FourTensor(true);
+  Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
+      iFin_iFindSediFin_T12_FourTensor, iFinM, iFindSediFin_FourTensor_T12, true);
+  Core::LinAlg::Matrix<6, 9> iFin_iFindSediFin_T12(true);  // Voigt stress-form
+  Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(iFin_iFindSediFin_T12,
+      iFin_iFindSediFin_T12_FourTensor);  // NOTE: we do not transpose ijkl->jikl anymore, this
+                                          // should be symmetric!
+
+  // [F_{in}^{-1} (F_{in}^{-1} \frac{\partial S_{e}}{\partial C})^T_{12}  ]^T_{12}
+  Core::LinAlg::FourTensor<3> iFindSedC_FourTensor(true);
+  Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
+      iFindSedC_FourTensor, iFinM, dSedC_FourTensor, true);
+  Core::LinAlg::FourTensor<3> iFindSedC_FourTensor_T12(true);
+  iFindSedC_FourTensor_T12.transpose_12(iFindSedC_FourTensor);
+  Core::LinAlg::FourTensor<3> iFin_iFindSedC_T12_FourTensor(true);
+  Core::LinAlg::Tensor::multiply_matrix_four_tensor<3>(
+      iFin_iFindSedC_T12_FourTensor, iFinM, iFindSedC_FourTensor_T12, true);
+  Core::LinAlg::Matrix<6, 6> iFin_iFindSedC_T12(true);  // Voigt stress-stress-form
+  Core::LinAlg::Voigt::setup_6x6_voigt_matrix_from_four_tensor(iFin_iFindSedC_T12,
+      iFin_iFindSedC_T12_FourTensor);  // NOTE: we do not transpose ijkl->jikl anymore, this should
+                                       // be symmetric!
+
+  // \frac{\partial S}{\partial C}
+  cmatiso.update(1.0, iFin_iFindSedC_T12, 1.0);
+
+  // \frac{\partial S}{\partial F^{-1}_{in}}
+  dSdiFin.update(1.0, iFin_iFindSediFin_T12, 1.0);
+  temp9x9.clear();
+  Core::LinAlg::Tensor::add_non_symmetric_product(1.0, id3x3, SeiFinTM, temp9x9);
+  Core::LinAlg::Tensor::add_adbc_tensor_product(1.0, iFinSeM, id3x3, temp9x9);
+  Core::LinAlg::Voigt::setup_four_tensor_from_9x9_voigt_matrix(tempFourTensor, temp9x9);
+  Core::LinAlg::Voigt::setup_6x9_voigt_matrix_from_four_tensor(temp6x9, tempFourTensor);
+  dSdiFin.update(1.0, temp6x9, 1.0);
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
     const Core::LinAlg::Matrix<3, 3>* const defgrad, const Core::LinAlg::Matrix<6, 1>& iCV,
     const Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 6>& cmatadd)
@@ -697,8 +836,10 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
   // implementation accordingly
   if (num_contributions == 1)
   {
+    Core::LinAlg::Matrix<3, 3> id3x3(true);
+    for (int i = 0; i < 3; ++i) id3x3(i, i) = 1.0;
     facdefgradin[0].second->evaluate_additional_cmat(
-        defgrad, iFinjM[0].second, iCV, dSdiFin, cmatadd);
+        defgrad, id3x3, iFinjM[0].second, iCV, dSdiFin, cmatadd);
   }
   else if (num_contributions > 1)
   {
@@ -750,7 +891,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_additional_cmat(
       Core::LinAlg::Tensor::add_non_symmetric_product(1.0, producta, productb, diFindiFinj);
       dSdiFinj.multiply(1.0, dSdiFin, diFindiFinj, 0.0);
       facdefgradin[i].second->evaluate_additional_cmat(
-          defgrad, iFinjM[i].second, iCV, dSdiFinj, cmatadd);
+          defgrad, productb, iFinjM[i].second, iCV, dSdiFinj, cmatadd);
     }
   }
   else
@@ -768,6 +909,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::setup(
 
   // elastic materials
   for (const auto& summand : potsumel_) summand->setup(numgp, container);
+
+  // setup inelastic materials
+  inelastic_->setup(numgp, container);
 }
 
 /*--------------------------------------------------------------------*
@@ -776,6 +920,9 @@ void Mat::MultiplicativeSplitDefgradElastHyper::update()
 {
   // loop map of associated potential summands
   for (const auto& summand : potsumel_) summand->update();
+
+  // update inelastic materials
+  inelastic_->update();
 }
 
 /*--------------------------------------------------------------------*
@@ -865,11 +1012,11 @@ void Mat::MultiplicativeSplitDefgradElastHyper::evaluate_od_stiff_mat(PAR::Inela
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 void Mat::MultiplicativeSplitDefgradElastHyper::pre_evaluate(
-    Teuchos::ParameterList& params, const int gp) const
+    Teuchos::ParameterList& params, const int gp, const int eleGID) const
 {
   // loop over all inelastic contributions
   for (int p = 0; p < inelastic_->num_inelastic_def_grad(); ++p)
-    inelastic_->fac_def_grad_in()[p].second->pre_evaluate(params, gp);
+    inelastic_->fac_def_grad_in()[p].second->pre_evaluate(params, gp, eleGID);
 }
 
 /*--------------------------------------------------------------------*
@@ -882,7 +1029,8 @@ void Mat::MultiplicativeSplitDefgradElastHyper::set_concentration_gp(const doubl
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
+void Mat::InelasticFactorsHandler::assign_to_source(
+    Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
 {
   facdefgradin_.clear();
   i_finj_.clear();
@@ -914,7 +1062,8 @@ void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradEla
           (materialtype != Core::Materials::mfi_no_growth) and
           (materialtype != Core::Materials::mfi_time_funct) and
           (materialtype != Core::Materials::mfi_poly_intercal_frac_aniso) and
-          (materialtype != Core::Materials::mfi_poly_intercal_frac_iso))
+          (materialtype != Core::Materials::mfi_poly_intercal_frac_iso) and
+          (materialtype != Core::Materials::mfi_transv_isotrop_elast_viscoplast))
       {
         FOUR_C_THROW(
             "When you use the 'COUPALGO' 'ssi_Monolithic' from the 'SSI CONTROL' section, you need "
@@ -946,7 +1095,7 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
     iFinp.clear();
 
     // calculate inelastic deformation gradient and its inverse
-    facdefgradin_[i].second->evaluate_inverse_inelastic_def_grad(defgrad, iFinp);
+    facdefgradin_[i].second->evaluate_inverse_inelastic_def_grad(defgrad, iFin_init_store, iFinp);
 
     // store inelastic deformation gradient of p-th inelastic contribution
     i_finj_[i].second = iFinp;
@@ -956,6 +1105,52 @@ void Mat::InelasticFactorsHandler::evaluate_inverse_inelastic_def_grad(
 
     // store result for next evaluation
     iFin_init_store.update(1.0, iFinM, 0.0);
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticFactorsHandler::update()
+{
+  // loop over all inelastic contributions
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  {
+    facdefgradin_[i].second->update();
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticFactorsHandler::setup(
+    const int numgp, const Core::IO::InputParameterContainer& container)
+{
+  // loop over all inelastic contributions
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  {
+    facdefgradin_[i].second->setup(numgp, container);
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+void Mat::InelasticFactorsHandler::pack_inelastic(Core::Communication::PackBuffer& data) const
+{
+  // loop over all inelastic contributions
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  {
+    facdefgradin_[i].second->pack_inelastic(data);
+  }
+}
+
+/*--------------------------------------------------------------------*
+ *--------------------------------------------------------------------*/
+
+void Mat::InelasticFactorsHandler::unpack_inelastic(Core::Communication::UnpackBuffer& buffer)
+{
+  // loop over all inelastic contributions
+  for (int i = 0; i < num_inelastic_def_grad(); ++i)
+  {
+    facdefgradin_[i].second->unpack_inelastic(buffer);
   }
 }
 

@@ -196,11 +196,12 @@ namespace Core::LinAlg
       if (std::abs(wi[i]) > 0.0)
       {
         // for complex eigenvalues: these come in complex conjugate eigenpairs, and geev sorts them
-        // as to get the i-th complex eigenvector \f$ \bm{v}(i) \f$ from the computed real
-        // eigenmatrix \f$ \bm{V}\f$ via
-        //  \f$ \bm{v}(i) = \bm{V}(:, i) +  i \bm{V}(:, i + 1)  \f$ along with
-        //  \f$ \bm{v}(i+1) = \bm{V}(:, i) -  i \bm{V}(:, i + 1)  \f$, whereby the i-th and (i+1)-th
-        //  eigenvalues are complex conjugate
+        // as to get the i-th complex eigenvector \f$ \boldsymbol{v}(i) \f$ from the computed real
+        // eigenmatrix \f$ \boldsymbol{V}\f$ via
+        //  \f$ \boldsymbol{v}(i) = \boldsymbol{V}(:, i) +  i \boldsymbol{V}(:, i + 1)  \f$ along
+        //  with
+        //  \f$ \boldsymbol{v}(i+1) = \boldsymbol{V}(:, i) -  i \boldsymbol{V}(:, i + 1)  \f$,
+        //  whereby the i-th and (i+1)-th eigenvalues are complex conjugate
         for (unsigned int j = 0; j < dim; ++j)
         {
           V(j, i) = std::complex(temp_V(j, i), temp_V(j, i + 1));

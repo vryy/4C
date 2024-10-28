@@ -119,7 +119,19 @@ namespace Mat
     int num_inelastic_def_grad() const { return static_cast<int>(facdefgradin_.size()); }
 
     /// Assigns the different inelastic factors to different sources
-    void setup(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
+    void assign_to_source(Mat::PAR::MultiplicativeSplitDefgradElastHyper* params);
+
+    /// Update the history variables for the different inelastic factors
+    void update();
+
+    /// Set initial conditions for the history variables of all Gauss points
+    void setup(const int numgp, const Core::IO::InputParameterContainer& container);
+
+    /// Pack
+    void pack_inelastic(Core::Communication::PackBuffer& data) const;
+
+    /// Unpack
+    void unpack_inelastic(Core::Communication::UnpackBuffer& buffer);
 
    private:
     /// vector that holds pairs of inelastic contribution and respective source
@@ -243,7 +255,7 @@ namespace Mat
 
     /*!
      * @brief  Evaluate derivative of 2nd Piola Kirchhoff stresses w.r.t. the inelastic deformation
-     * gradient
+     * gradient for the isotropic components
      *
      * @param[in] gamma  Factors for stress calculation (see e.g. Holzapfel - Nonlinear Solid
      *                   Mechanics)
@@ -275,6 +287,30 @@ namespace Mat
         const Core::LinAlg::Matrix<6, 1>& iCinCiCinV, const Core::LinAlg::Matrix<9, 1>& CiFiniCe9x1,
         const Core::LinAlg::Matrix<6, 1>& iCV, const Core::LinAlg::Matrix<3, 3>& iFinCeM,
         double detFin, Core::LinAlg::Matrix<6, 9>& dSdiFin) const;
+
+    /*!
+     * @brief  Evaluate the stress and stiffness components of the transversely isotropic components
+     * separately
+     *
+     * @param[in] iFinM   Inverse inelastic deformation gradient
+     * @param[in] CM Right CG deformation tensor
+     * @param[in] dCedC         Partial derivative of the elastic right CG tensor w.r.t. right CG
+     *                           tensor (Voigt stress-stress notation)
+     * @param[in] dCediFin      Partial derivative of the elastic right CG tensor w.r.t. inelastic
+     *                           deformation gradient (Voigt stress notation)
+     * \param[in]  params additional parameters for comp. of material properties
+     * \param[in]  gp       Gauss point
+     * \param[in]  eleGID element GID
+     * @param[out] dSdiFin      derivative of 2nd Piola Kirchhoff stresses w.r.t. inverse inelastic
+     *                          deformation gradient (Voigt stress-notation)
+     * @param[out] stress   2nd Piola--Kirchhoff stress tensor
+     * @param[out] cmatiso  part of the elasticity tensor as shown above
+     */
+    void evaluate_transv_iso_quantities(const Core::LinAlg::Matrix<3, 3>& iFinM,
+        const Core::LinAlg::Matrix<3, 3>& CM, const Core::LinAlg::Matrix<6, 6>& dCedC,
+        const Core::LinAlg::Matrix<6, 9>& dCediFin, Teuchos::ParameterList& params, const int gp,
+        const int eleGID, Core::LinAlg::Matrix<6, 9>& dSdiFin, Core::LinAlg::Matrix<6, 1>& stress,
+        Core::LinAlg::Matrix<6, 6>& cmatiso) const;
 
     /*!
      * @brief Evaluates stress and cmat
@@ -363,13 +399,20 @@ namespace Mat
      * @param[out] CiFiniCe9x1   \f$ \mathbf{C} \cdot \mathbf{F}_\text{in}^{-1} \cdot
      *                           \mathbf{C}_\text{el}^{-1} \f$ stored as 9x1 vector
      * @param[out] prinv         Principal invariants of the elastic right Cauchy-Green tensor
+     * @param[out] dCedC         Partial derivative of the elastic right Cauchy-Green tensor w.r.t.
+     * right Cauchy-Green tensor \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial
+     * \boldsymbol{C}} \f$ (Voigt stress-stress notation)
+     * @param[out] dCediFin      Partial derivative of the elastic right Cauchy-Green tensor w.r.t.
+     * inelastic deformation gradient \f$ \frac{\partial \boldsymbol{C}_\text{e}}{\partial
+     *                           \boldsymbol{F}_\text{in}^{-1}} \f$ (Voigt stress notation)
      */
     void evaluate_kin_quant_elast(const Core::LinAlg::Matrix<3, 3>* defgrad,
         const Core::LinAlg::Matrix<3, 3>& iFinM, Core::LinAlg::Matrix<6, 1>& iCinV,
         Core::LinAlg::Matrix<6, 1>& iCinCiCinV, Core::LinAlg::Matrix<6, 1>& iCV,
         Core::LinAlg::Matrix<3, 3>& iCinCM, Core::LinAlg::Matrix<3, 3>& iFinCeM,
         Core::LinAlg::Matrix<9, 1>& CiFin9x1, Core::LinAlg::Matrix<9, 1>& CiFinCe9x1,
-        Core::LinAlg::Matrix<9, 1>& CiFiniCe9x1, Core::LinAlg::Matrix<3, 1>& prinv) const;
+        Core::LinAlg::Matrix<9, 1>& CiFiniCe9x1, Core::LinAlg::Matrix<3, 1>& prinv,
+        Core::LinAlg::Matrix<6, 6>& dCedC, Core::LinAlg::Matrix<6, 9>& dCediFin) const;
 
     /*!
      * @brief calculates the derivatives of the hyper-elastic laws with respect to the invariants
@@ -388,8 +431,9 @@ namespace Mat
      *
      * @param[in] params  parameter list as handed in from the element
      * @param[in] gp      current gauss point
+     * @param[in] eleGID  Element ID
      */
-    void pre_evaluate(Teuchos::ParameterList& params, int gp) const;
+    void pre_evaluate(Teuchos::ParameterList& params, int gp, int eleGID) const;
 
     /*!
      * @brief set the gauss point concentration to the respective parameter class of the inelastic

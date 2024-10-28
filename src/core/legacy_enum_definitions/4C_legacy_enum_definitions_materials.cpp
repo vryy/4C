@@ -245,6 +245,10 @@ std::string_view Core::Materials::to_string(Core::Materials::MaterialType materi
       return "MAT_InelasticDefgradLinTempIso";
     case mfi_time_funct:
       return "MAT_InelasticDefgradTimeFunct";
+    case mfi_transv_isotrop_elast_viscoplast:
+      return "MAT_InelasticDefgradTransvIsotropElastViscoplast";
+    case mvl_reformulated_Johnson_Cook:
+      return "MAT_ViscoplasticLawReformulatedJohnsonCook";
     case m_sc_dep_interp:
       return "MAT_ScDepInterp";
     case m_constraintmixture:
