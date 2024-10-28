@@ -1091,7 +1091,7 @@ void Cut::TetMeshIntersection::fill(VolumeCell* parent_cell, ChildCell& childcel
     }
   }
 
-  std::swap(child_cells, done_child_cells);
+  child_cells.swap(done_child_cells);
   childcell.done_ = true;
 
   build_surface_cell_map(parent_cell, childcell);

@@ -2998,7 +2998,7 @@ void Discret::Elements::PoroFluidEvaluator::EvaluatorDomainIntegrals<nsd,
 
   // set values as constants in function
   constants.push_back(std::pair<std::string, double>("x", coords[0]));
-  constants.push_back(std::pair<std::string, double>("y", coords[1]));
+  if (nsd == 2) constants.push_back(std::pair<std::string, double>("y", coords[1]));
   if (nsd == 3) constants.push_back(std::pair<std::string, double>("z", coords[2]));
 
   // call the functions and integrate value (multiply with fac)
