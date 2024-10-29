@@ -17,13 +17,13 @@
 #include "4C_linalg_utils_densematrix_eigen.hpp"
 #include "4C_mat_so3_material.hpp"
 #include "4C_solid_3D_ele.hpp"
+#include "4C_solid_3D_ele_calc_eas_helpers.hpp"
 #include "4C_solid_3D_ele_calc_lib.hpp"
 #include "4C_solid_3D_ele_calc_lib_integration.hpp"
 #include "4C_solid_3D_ele_calc_lib_io.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_structure_new_gauss_point_data_output_manager.hpp"
 #include "4C_utils_exceptions.hpp"
-#include "internal/4C_solid_3D_ele_calc_eas_helpers.hpp"
 
 #include <Teuchos_dyn_cast.hpp>
 #include <Teuchos_ParameterList.hpp>
