@@ -80,6 +80,7 @@ void Mortar::StrategyBase::set_time_integration_info(
       data().set_dyn_parameter_n(0.0);
       break;
     case Inpar::Solid::dyna_genalpha:
+    case Inpar::Solid::dyna_genalpha_liegroup:
     case Inpar::Solid::dyna_onesteptheta:
       data().set_dyn_parameter_n(time_fac);
       break;

@@ -197,7 +197,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::update_constant_state_contributions()
  *----------------------------------------------------------------------------*/
 double Solid::IMPLICIT::GenAlphaLieGroup::get_int_param() const
 {
-  check_init_setup();
+  // access the alphaf value even if the time integrator has not yet been setup
   return 0.0;
 }
 
