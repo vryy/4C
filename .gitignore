@@ -8,6 +8,9 @@
 *.o
 *.a
 
+# Docker
+.devcontainer
+
 # Other build
 DartConfiguration.tcl
 
