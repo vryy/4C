@@ -238,6 +238,14 @@ namespace BEAMINTERACTION
     void reset_rotation_state(const Core::FE::Discretization& discret,
         const Teuchos::RCP<const Core::LinAlg::Vector<double>>& ia_discolnp) override;
 
+    /**
+     * \brief Add the visualization of this pair to the beam to solid visualization output writer
+     * (derived)
+     */
+    void get_pair_visualization(
+        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        Teuchos::ParameterList& visualization_params) const override;
+
    protected:
     /**
      * \brief Get the triad of the beam at the parameter coordinate xi (derived)

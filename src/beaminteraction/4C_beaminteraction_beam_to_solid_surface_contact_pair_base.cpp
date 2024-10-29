@@ -135,7 +135,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surfac
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btss-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
   std::vector<int>* pair_beam_id = nullptr;
   std::vector<int>* pair_solid_id = nullptr;
   if (write_unique_ids)

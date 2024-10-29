@@ -102,7 +102,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the write unique IDs output flag.
      */
-    bool get_write_unique_i_ds_flag() const { return write_unique_ids_; }
+    bool get_write_unique_ids_flag() const { return write_unique_ids_; }
 
    protected:
     /**

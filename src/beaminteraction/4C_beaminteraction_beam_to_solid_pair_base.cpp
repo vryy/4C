@@ -166,7 +166,7 @@ void BEAMINTERACTION::BeamToSolidPairBase<ScalarType, SegmentsScalarType, Beam,
   {
     out << "    segment " << index_segment << ": ";
     out << "eta in ["
-        << Core::FADUtils::cast_to_double(line_to_3D_segments_[index_segment].get_etadata()) << ", "
+        << Core::FADUtils::cast_to_double(line_to_3D_segments_[index_segment].get_eta_a()) << ", "
         << Core::FADUtils::cast_to_double(line_to_3D_segments_[index_segment].get_eta_b()) << "]";
     out << ", Gauss points = "
         << line_to_3D_segments_[index_segment].get_number_of_projection_points();

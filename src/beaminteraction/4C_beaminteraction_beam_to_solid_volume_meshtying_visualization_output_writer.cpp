@@ -49,7 +49,7 @@ BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
           "beam-to-solid-volume", visualization_params_);
 
   // Whether or not to write unique cell and node IDs.
-  const bool write_unique_ids = output_params_ptr_->get_write_unique_i_ds_flag();
+  const bool write_unique_ids = output_params_ptr_->get_write_unique_ids_flag();
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues
@@ -181,7 +181,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
         beam_contact->beam_interaction_data_state().get_dis_np()->get_ptr_of_MultiVector(),
         Core::LinAlg::MultiVector<double>(
             *beam_contact->beam_interaction_data_state().get_force_np()),
-        output_params_ptr_->get_write_unique_i_ds_flag());
+        output_params_ptr_->get_write_unique_ids_flag());
 
 
   // Loop over the assembly managers and add the visualization for the pairs contained in the
@@ -218,6 +218,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
           Teuchos::make_rcp<std::unordered_set<int>>();
       visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>("beam_tracker", beam_tracker);
 
+      // This map is used to ensure, that the continuous Lagrange multiplier field is only written
+      // once per beam element.
+      Teuchos::RCP<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
+          Teuchos::rcp(new std::unordered_set<int>());
+      visualization_params.set<Teuchos::RCP<std::unordered_set<int>>>(
+          "beam_tracker_2d_3d_continuous", beam_tracker_2d_3d_continuous);
+
       // Add the pair specific output.
       for (const auto& pair : indirect_assembly_manager->get_mortar_manager()->get_contact_pairs())
         pair->get_pair_visualization(output_writer_base_ptr_, visualization_params);
@@ -227,6 +234,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter::
       visualization_params.remove("lambda");
       visualization_params.remove("mortar_manager");
       visualization_params.remove("beam_tracker");
+      visualization_params.remove("beam_tracker_2d_3d_continuous");
     }
   }
 

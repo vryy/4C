@@ -57,7 +57,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
   const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btss-output_params_ptr");
-  const bool write_unique_ids = output_params_ptr->get_write_unique_i_ds_flag();
+  const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
 
   if (visualization_discret != Teuchos::null or visualization_continuous != Teuchos::null or
       visualization_nodal_forces != Teuchos::null)
@@ -184,9 +184,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarBase<ScalarType, Beam
              i_curve_segment++)
         {
           // Get the position, displacement and lambda value at the current point.
-          xi = segment.get_etadata() + i_curve_segment *
-                                           (segment.get_eta_b() - segment.get_etadata()) /
-                                           (double)mortar_segments;
+          xi = segment.get_eta_a() + i_curve_segment * (segment.get_eta_b() - segment.get_eta_a()) /
+                                         (double)mortar_segments;
           GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1pos_, r);
           GEOMETRYPAIR::evaluate_position<Beam>(xi, this->ele1posref_, X);
           u = r;

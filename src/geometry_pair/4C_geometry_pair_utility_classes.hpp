@@ -282,12 +282,12 @@ namespace GEOMETRYPAIR
         : start_point_(start_point), end_point_(end_point), segment_projection_points_()
     {
       // Sanity check that eta_a is larger than eta_b.
-      if (!(get_etadata() < get_eta_b()))
+      if (!(get_eta_a() < get_eta_b()))
         FOUR_C_THROW(
             "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
             "has "
             "to be smaller than eta_b!",
-            Core::FADUtils::cast_to_double(get_etadata()),
+            Core::FADUtils::cast_to_double(get_eta_a()),
             Core::FADUtils::cast_to_double(get_eta_b()));
     }
 
@@ -295,12 +295,12 @@ namespace GEOMETRYPAIR
      * \brief Get the length of the segment in parameter coordinates.
      * @return Segment length.
      */
-    inline ScalarType get_segment_length() const { return get_eta_b() - get_etadata(); }
+    inline ScalarType get_segment_length() const { return get_eta_b() - get_eta_a(); }
 
     /**
      * \brief Return a const reference to eta start.
      */
-    inline const ScalarType& get_etadata() const { return start_point_.get_eta(); };
+    inline const ScalarType& get_eta_a() const { return start_point_.get_eta(); };
 
     /**
      * \brief Return a const reference to eta end.
@@ -389,13 +389,13 @@ namespace GEOMETRYPAIR
      */
     friend bool operator<(const LineSegment<ScalarType>& lhs, const LineSegment<ScalarType>& rhs)
     {
-      if (lhs.get_eta_b() < rhs.get_etadata() + Constants::projection_xi_eta_tol)
+      if (lhs.get_eta_b() < rhs.get_eta_a() + Constants::projection_xi_eta_tol)
         return true;
-      else if (lhs.get_etadata() > rhs.get_eta_b() - Constants::projection_xi_eta_tol)
+      else if (lhs.get_eta_a() > rhs.get_eta_b() - Constants::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.get_etadata() - rhs.get_etadata()) < Constants::projection_xi_eta_tol &&
+      else if (abs(lhs.get_eta_a() - rhs.get_eta_a()) < Constants::projection_xi_eta_tol &&
                abs(lhs.get_eta_b() - rhs.get_eta_b()) < Constants::projection_xi_eta_tol)
       {
         // The segments are equal.
@@ -414,13 +414,13 @@ namespace GEOMETRYPAIR
      */
     friend bool operator>(const LineSegment<ScalarType>& lhs, const LineSegment<ScalarType>& rhs)
     {
-      if (lhs.get_etadata() > rhs.get_eta_b() - Constants::projection_xi_eta_tol)
+      if (lhs.get_eta_a() > rhs.get_eta_b() - Constants::projection_xi_eta_tol)
         return true;
-      else if (lhs.get_eta_b() < rhs.get_etadata() + Constants::projection_xi_eta_tol)
+      else if (lhs.get_eta_b() < rhs.get_eta_a() + Constants::projection_xi_eta_tol)
       {
         // The segments do not overlap.
       }
-      else if (abs(lhs.get_etadata() - rhs.get_etadata()) < Constants::projection_xi_eta_tol &&
+      else if (abs(lhs.get_eta_a() - rhs.get_eta_a()) < Constants::projection_xi_eta_tol &&
                abs(lhs.get_eta_b() - rhs.get_eta_b()) < Constants::projection_xi_eta_tol)
       {
         // The segments are equal.

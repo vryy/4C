@@ -86,6 +86,15 @@ namespace BEAMINTERACTION
     }
 
     /**
+     * \brief Return the number of segments for continuous mortar output along the beam
+     * cross-section circumference.
+     */
+    unsigned int get_mortar_lambda_continuous_segments_circumference() const
+    {
+      return mortar_lambda_continuous_segments_circumference_;
+    }
+
+    /**
      * \brief Return the nodal forces flag.
      */
     bool get_segmentation_output_flag() const { return segmentation_; }
@@ -98,7 +107,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the write unique IDs output flag.
      */
-    bool get_write_unique_i_ds_flag() const { return write_unique_ids_; }
+    bool get_write_unique_ids_flag() const { return write_unique_ids_; }
 
    protected:
     /**
@@ -145,6 +154,10 @@ namespace BEAMINTERACTION
 
     //! Number of segments to use for the continuous mortar output.
     unsigned int mortar_lambda_continuous_segments_;
+
+    //! Number of segments to use for the continuous mortar output along the beam cross-section
+    //! circumference.
+    unsigned int mortar_lambda_continuous_segments_circumference_;
 
     //! Flag whether or not to write segmentation data.
     bool segmentation_;

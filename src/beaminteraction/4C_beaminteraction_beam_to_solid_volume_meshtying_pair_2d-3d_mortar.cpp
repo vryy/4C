@@ -10,7 +10,10 @@
 #include "4C_beam3_reissner.hpp"
 #include "4C_beaminteraction_beam_to_solid_mortar_manager.hpp"
 #include "4C_beaminteraction_beam_to_solid_utils.hpp"
+#include "4C_beaminteraction_beam_to_solid_visualization_output_writer_base.hpp"
+#include "4C_beaminteraction_beam_to_solid_visualization_output_writer_visualization.hpp"
 #include "4C_beaminteraction_beam_to_solid_volume_meshtying_params.hpp"
+#include "4C_beaminteraction_beam_to_solid_volume_meshtying_visualization_output_params.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
 #include "4C_beaminteraction_geometry_pair_access_traits.hpp"
@@ -21,6 +24,7 @@
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_geometry_pair_line_to_volume_gauss_point_projection_cross_section.hpp"
 #include "4C_geometry_pair_utility_classes.hpp"
+#include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_utils_densematrix_inverse.hpp"
@@ -31,6 +35,7 @@
 #include <Teuchos_RCPDecl.hpp>
 
 #include <cmath>
+#include <unordered_set>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -383,6 +388,180 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
 {
   get_beam_triad_interpolation_scheme(discret, *ia_discolnp, this->element1(),
       triad_interpolation_scheme_, this->triad_interpolation_scheme_ref_);
+}
+
+/**
+ *
+ */
+template <typename Beam, typename Solid, typename Mortar>
+void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DMortar<Beam, Solid,
+    Mortar>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+                                        visualization_writer,
+    Teuchos::ParameterList& visualization_params) const
+{
+  // Get visualization of base method.
+  base_class::get_pair_visualization(visualization_writer, visualization_params);
+
+  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_continuous =
+      visualization_writer->get_visualization_writer("btsv-mortar-continuous");
+
+  const Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>& output_params_ptr =
+      visualization_params
+          .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+              "btsv-output_params_ptr");
+  const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
+
+  if (visualization_continuous != Teuchos::null)
+  {
+    // Check if data for this beam was already written.
+    Teuchos::RCP<std::unordered_set<int>> beam_tracker_2d_3d_continuous =
+        visualization_params.get<Teuchos::RCP<std::unordered_set<int>>>(
+            "beam_tracker_2d_3d_continuous");
+
+    auto it = beam_tracker_2d_3d_continuous->find(this->element1()->id());
+    if (it == beam_tracker_2d_3d_continuous->end())
+    {
+      // Only do something if this beam element did not write any output yet.
+
+      // Add this element Id to the tracker.
+      beam_tracker_2d_3d_continuous->insert(this->element1()->id());
+
+      // Setup variables.
+      GEOMETRYPAIR::ElementData<Mortar, double> element_data_lambda;
+      Core::LinAlg::Matrix<3, 1, double> X;
+      Core::LinAlg::Matrix<3, 1, double> r;
+      Core::LinAlg::Matrix<3, 1, double> u;
+      Core::LinAlg::Matrix<3, 3, double> triad;
+      Core::LinAlg::Matrix<3, 3, double> triad_ref;
+      Core::LinAlg::Matrix<3, 1, double> cross_section_vector_material;
+      Core::LinAlg::Matrix<3, 1, double> cross_section_vector_ref;
+      Core::LinAlg::Matrix<3, 1, double> cross_section_vector_current;
+      Core::LinAlg::Matrix<3, 1, double> lambda_interpolated;
+
+      // Get beam radius.
+      const auto* beam_ele = dynamic_cast<const Discret::Elements::Beam3r*>(this->element1());
+      if (beam_ele == nullptr)
+        FOUR_C_THROW("GetBeamTriadInterpolationScheme is only implemented for SR beams.");
+      const double beam_cross_section_radius =
+          beam_ele->get_circular_cross_section_radius_for_interactions();
+
+      // Get the mortar manager and the global lambda vector, those objects will be used to get the
+      // discrete Lagrange multiplier values for this pair.
+      Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager =
+          visualization_params.get<Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager>>(
+              "mortar_manager");
+      Teuchos::RCP<Core::LinAlg::Vector<double>> lambda =
+          visualization_params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("lambda");
+
+      // Get the lambda GIDs of this pair.
+      const auto& [lambda_row_pos, _] = mortar_manager->location_vector(*this);
+
+      std::vector<double> lambda_pair;
+      Core::FE::extract_my_values(*lambda, lambda_pair, lambda_row_pos);
+      for (unsigned int i_dof = 0; i_dof < Mortar::n_dof_; i_dof++)
+        element_data_lambda.element_position_(i_dof) = lambda_pair[i_dof];
+
+      // Get parameters for visualization
+      const unsigned int mortar_segments =
+          visualization_params
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+                  "btsv-output_params_ptr")
+              ->get_mortar_lambda_continuous_segments();
+      const unsigned int mortar_segments_circumference =
+          visualization_params
+              .get<Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams>>(
+                  "btsv-output_params_ptr")
+              ->get_mortar_lambda_continuous_segments_circumference();
+
+      // Get visualization data vectors
+      auto& visualization_data = visualization_continuous->get_visualization_data();
+      std::vector<double>& point_coordinates = visualization_data.get_point_coordinates(
+          (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
+      std::vector<double>& displacement = visualization_data.get_point_data<double>(
+          "displacement", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
+      std::vector<double>& lambda_vis = visualization_data.get_point_data<double>(
+          "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
+      std::vector<uint8_t>& cell_types = visualization_data.get_cell_types();
+      std::vector<int32_t>& cell_offsets = visualization_data.get_cell_offsets();
+
+      std::vector<int>* pair_point_uid_0 = nullptr;
+      std::vector<int>* pair_point_uid_1 = nullptr;
+      std::vector<int>* pair_cell_uid_0 = nullptr;
+      std::vector<int>* pair_cell_uid_1 = nullptr;
+      if (write_unique_ids)
+      {
+        pair_point_uid_0 = &(visualization_data.get_point_data<int>("uid_0_pair_beam_id"));
+        pair_point_uid_1 = &(visualization_data.get_point_data<int>("uid_1_pair_solid_id"));
+        pair_cell_uid_0 = &(visualization_data.get_cell_data<int>("uid_0_pair_beam_id"));
+        pair_cell_uid_1 = &(visualization_data.get_cell_data<int>("uid_1_pair_solid_id"));
+      }
+
+      for (unsigned int i_curve_segment = 0; i_curve_segment < mortar_segments; i_curve_segment++)
+      {
+        for (unsigned int i_circumference_segment = 0;
+             i_circumference_segment < mortar_segments_circumference; i_circumference_segment++)
+        {
+          for (const auto& [offset_axial, offset_circumference] :
+              std::initializer_list<std::pair<int, int>>{
+                  {0, 0}, {2, 0}, {2, 2}, {0, 2}, {1, 0}, {2, 1}, {1, 2}, {0, 1}, {1, 1}})
+          {
+            Core::LinAlg::Matrix<2, 1> xi;
+            xi(0) =
+                -1.0 + (2 * i_curve_segment + offset_axial) * 2.0 / (2.0 * (double)mortar_segments);
+            xi(1) = (2.0 * i_circumference_segment + offset_circumference) * 2.0 * M_PI /
+                    (2.0 * (double)mortar_segments_circumference);
+
+            get_triad_at_xi_double(xi(0), triad_ref, true);
+            get_triad_at_xi_double(xi(0), triad, false);
+
+            cross_section_vector_material(0) = 0.0;
+            cross_section_vector_material(1) = cos(xi(1));
+            cross_section_vector_material(2) = sin(xi(1));
+            cross_section_vector_material.scale(beam_cross_section_radius);
+
+            cross_section_vector_ref.multiply(triad_ref, cross_section_vector_material);
+            cross_section_vector_current.multiply(triad, cross_section_vector_material);
+
+            GEOMETRYPAIR::evaluate_position<Beam>(xi(0), this->ele1posref_, X);
+            GEOMETRYPAIR::evaluate_position<Beam>(xi(0), this->ele1pos_, r);
+
+            X += cross_section_vector_ref;
+            r += cross_section_vector_current;
+
+            u = r;
+            u -= X;
+
+            GEOMETRYPAIR::evaluate_position<Mortar>(xi, element_data_lambda, lambda_interpolated);
+
+            // Add to output data.
+            for (unsigned int dim = 0; dim < 3; dim++)
+            {
+              point_coordinates.push_back(X(dim));
+              displacement.push_back(u(dim));
+              lambda_vis.push_back(lambda_interpolated(dim));
+            }
+          }
+
+          // Add the cell for this segment (bi-quadratic quad).
+          cell_types.push_back(28);
+          cell_offsets.push_back(point_coordinates.size() / 3);
+
+          if (write_unique_ids)
+          {
+            // Since we create this output once for all solids that are interacting with this beam,
+            // we don't need the solid element GID
+            pair_cell_uid_0->push_back(this->element1()->id());
+            pair_cell_uid_1->push_back(-1);
+            for (unsigned int i_point = 0; i_point < 9; i_point++)
+            {
+              pair_point_uid_0->push_back(this->element1()->id());
+              pair_point_uid_1->push_back(-1);
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 /**

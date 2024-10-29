@@ -70,8 +70,10 @@ NODAL_FORCES                          yes
 MORTAR_LAMBDA_DISCRET                 yes
 MORTAR_LAMBDA_CONTINUOUS              yes
 MORTAR_LAMBDA_CONTINUOUS_SEGMENTS     5
+MORTAR_LAMBDA_CONTINUOUS_SEGMENTS_CIRCUMFERENCE     4
 SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
+UNIQUE_IDS                            yes
 ----------------------------------------------------------------BEAM INTERACTION
 REPARTITIONSTRATEGY                   Everydt
 --------------------------------------------------------------------BEAM CONTACT
