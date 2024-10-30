@@ -64,7 +64,6 @@ endif()
 
 # For clang: do not error for a number of checks that are not yet fixed
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  enable_compiler_flag_if_supported("-Wno-error=unused-variable")
   enable_compiler_flag_if_supported("-Wno-error=undefined-var-template")
   enable_compiler_flag_if_supported("-Wno-error=potentially-evaluated-expression")
 endif()

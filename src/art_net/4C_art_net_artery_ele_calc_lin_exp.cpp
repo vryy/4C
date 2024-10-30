@@ -73,7 +73,6 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate(Artery* ele,
 {
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   // construct views
   Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.values(), true);
@@ -199,7 +198,6 @@ int Discret::Elements::ArteryEleCalcLinExp<distype>::scatra_evaluate(Artery* ele
 {
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   // construct views
   Core::LinAlg::Matrix<2 * my::iel_, 2 * my::iel_> elemat1(elemat1_epetra.values(), true);
@@ -984,7 +982,6 @@ bool Discret::Elements::ArteryEleCalcLinExp<distype>::solve_riemann(Artery* ele,
 
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
   Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp =
@@ -1231,7 +1228,6 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_terminal_bc(Arter
 
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
 
@@ -1625,7 +1621,6 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_postprocessing_values
 
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   if (qanp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'qanp'");
 
@@ -1708,7 +1703,6 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::calc_scatra_from_scatra_fw
 
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   // extract local values from the global vectors
   std::vector<double> myscatra_fb(lm.size());
@@ -1793,7 +1787,6 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::evaluate_wf_and_wb(Artery*
 
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discretization.get_state("qanp");
   Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp =
@@ -1873,7 +1866,6 @@ void Discret::Elements::ArteryEleCalcLinExp<distype>::solve_scatra_analytically(
 {
   // the number of nodes
   const int numnode = my::iel_;
-  std::vector<int>::iterator it_vcr;
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
