@@ -301,6 +301,8 @@ void TSI::Monolithic::create_linear_solver()
 
       break;
     }
+    case Core::LinearSolver::PreconditionerType::ilu:
+      break;
     default:
       FOUR_C_THROW(
           "Block Gauss-Seidel BGS2x2 preconditioner expected. Alternatively you can define your "

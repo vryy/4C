@@ -494,7 +494,8 @@ Teuchos::RCP<Core::LinAlg::Solver> Adapter::StructureBaseAlgorithm::create_conta
       {
         // if an iterative solver is chosen we need a block preconditioner
         if (prec != Core::LinearSolver::PreconditionerType::multigrid_muelu_contactsp &&
-            prec != Core::LinearSolver::PreconditionerType::block_teko)
+            prec != Core::LinearSolver::PreconditionerType::block_teko &&
+            prec != Core::LinearSolver::PreconditionerType::ilu)
           FOUR_C_THROW(
               "You have chosen an iterative linear solver. For mortar meshtying/contact problems "
               "in saddle-point formulation, a block preconditioner is required. Choose an "

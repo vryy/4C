@@ -7,6 +7,7 @@
 
 #include "4C_linear_solver_preconditioner_ifpack.hpp"
 
+#include "4C_linalg_blocksparsematrix.hpp"
 #include "4C_utils_exceptions.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -27,16 +28,21 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
 {
   if (create)
   {
-    Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
-    if (A == nullptr) FOUR_C_THROW("CrsMatrix expected");
+    Teuchos::RCP<Epetra_CrsMatrix> A_crs =
+        Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*matrix));
 
-    // free old matrix first
-    prec_ = Teuchos::null;
-    pmatrix_ = Teuchos::null;
+    if (A_crs.is_null())
+    {
+      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
+          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
+              Teuchos::rcpFromRef(*matrix));
 
-    // create a copy of the scaled matrix
-    // so we can reuse the preconditioner
-    pmatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*A);
+      std::cout
+          << "\n WARNING: IFPACK preconditioner is merging matrix, this is very expensive! \n";
+      A_crs = A->merge()->epetra_matrix();
+    }
+
+    pmatrix_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*A_crs);
 
     // get the type of ifpack preconditioner from solver parameter list
     std::string prectype = solverlist_.get("Preconditioner Type", "ILU");
