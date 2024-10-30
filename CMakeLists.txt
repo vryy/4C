@@ -10,7 +10,7 @@
 #
 ### General Setup
 
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.30)
 
 # try to prevent modification of source directory
 # note: some files may still be written before CMake can abort and need to be removed manually
