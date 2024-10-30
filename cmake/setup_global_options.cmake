@@ -130,9 +130,25 @@ if(FOUR_C_ENABLE_COVERAGE)
 endif()
 
 four_c_process_global_option(FOUR_C_ENABLE_CORE_DUMP "Uncaught exceptions create a core file" OFF)
+
 four_c_process_global_option(
-  FOUR_C_ENABLE_FE_TRAPPING "Crash the program if a nan or inf occurs" ON
+  FOUR_C_ENABLE_FE_TRAPPING "Crash the program if a nan or inf would occur" ON
   )
+# We need to let the compiler know that we intend to use the floating-point trapping mechanism.
+if(FOUR_C_ENABLE_FE_TRAPPING)
+  enable_compiler_flag_if_supported("-ftrapping-math")
+  # Let's just make this an error to avoid very hard to debug errors.
+  if(NOT FOUR_C_COMPILER_HAS_FLAG_ftrapping_math)
+    message(
+      FATAL_ERROR
+        "Option FOUR_C_ENABLE_FE_TRAPPING is ON but the compiler does not support this feature."
+        "Specifically, the compiler does not support -ftrapping-math, which is necessary to"
+        "generate code that can safely use the floating-point trapping mechanism."
+      )
+  endif()
+else()
+  enable_compiler_flag_if_supported("-fno-trapping-math")
+endif()
 
 ##
 # Optimization flags

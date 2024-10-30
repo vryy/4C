@@ -72,8 +72,7 @@
       ],
       "cacheVariables": {
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_C_COMPILER": "clang",
-        "FOUR_C_ENABLE_WARNINGS_AS_ERRORS": "OFF"
+        "CMAKE_C_COMPILER": "clang"
       }
     },
     {
