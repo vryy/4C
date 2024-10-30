@@ -35,18 +35,6 @@
       ]
     },
     {
-      "name": "docker_release_assertions",
-      "displayName": "Optimized build with assertions for Docker image",
-      "description": "Build release version including debug assertions on a Docker image",
-      "inherits": [
-        ".docker_base"
-      ],
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RELEASE",
-        "FOUR_C_ENABLE_ASSERTIONS": "ON"
-      }
-    },
-    {
       "name": "docker_release_assertions_gcc14",
       "displayName": "Optimized build with assertions for Docker image (with GCC 14)",
       "description": "Build release version including debug assertions on a Docker image",
