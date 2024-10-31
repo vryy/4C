@@ -44,12 +44,6 @@ namespace Discret
     {
       //! @name Friends
       friend class SoHex8ThermoType;
-      friend class SoHex8fbarThermoType;
-      friend class SoTet4ThermoType;
-      friend class SoTet10ThermoType;
-      friend class SoHex27ThermoType;
-      friend class SoHex20ThermoType;
-      friend class SoNurbs27ThermoType;
 
      public:
       //@}
@@ -199,7 +193,7 @@ namespace Discret
 
       //! init the inverse of the jacobian and its determinant in the material
       //! configuration
-      void init_jacobian_mapping_special_for_nurbs(Core::FE::Discretization& dis);
+      void init_jacobian_mapping_special_for_tsi_elements(Core::FE::Discretization& dis);
 
       //@}
 
@@ -352,29 +346,6 @@ namespace Discret
       void g_lto_ea(Core::LinAlg::Matrix<numstr_, 1>* glstrain,
           Core::LinAlg::Matrix<nsd_, nsd_>* defgrd,
           Core::LinAlg::Matrix<nsd_, nsd_>* euler_almansi);
-
-      //! @name TSI and thermoplasticity related stuff
-
-      //! Calculate nonlinear stiffness and mass matrix with temperature fraction
-      //! implementation for hex8fbar elements differs from standard implementation
-      virtual void nln_stifffint_tsi_fbar(Core::Elements::LocationArray& la,  //!< location array
-          std::vector<double>& disp,  //!< current displacements
-          std::vector<double>& temp,  //!< current temperature
-          Core::LinAlg::Matrix<numdofperelement_, numdofperelement_>*
-              stiffmatrix,                                        // element stiffness matrix
-          Core::LinAlg::Matrix<numdofperelement_, 1>* force,      //!< element internal force vector
-          Core::LinAlg::Matrix<numgpt_post, numstr_>* elestress,  //!< stresses at GP
-          Teuchos::ParameterList& params,          //!< algorithmic parameters e.g. time
-          const Inpar::Solid::StressType iostress  //!< stress output option
-      );
-
-      //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
-      virtual void nln_kd_t_tsi_fbar(Core::Elements::LocationArray& la,
-          std::vector<double>& disp,  //!< (i): current displacement
-          std::vector<double>& temp,  //!< current temperature
-          Core::LinAlg::Matrix<numdofperelement_, nen_>*
-              stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
-          Teuchos::ParameterList& params);
 
       //@}
 

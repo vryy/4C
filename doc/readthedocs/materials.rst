@@ -68,7 +68,7 @@ One can see it here in for a simple Thermo-Structure-Interaction problem:
    -----------------------------------------------CLONING MATERIAL MAP
    SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
    -------------------------------------------------STRUCTURE ELEMENTS
-   1 SOLIDH8FBARTHERMO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear
+   1 SOLIDSCALAR HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear TECH fbar
 
 
 .. ToDo::
