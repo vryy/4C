@@ -438,103 +438,6 @@ SOLIDH27PLAST
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-.. _structuresolidh27thermo:
-
-SOLIDH27THERMO
-^^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`HEX27 <hex27>` (27 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| STRENGTH (opt.)   |  1 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
-
-.. _structuresonurbs27thermo:
-
-SONURBS27THERMO
-^^^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`NURBS27 <nurbs27>` (27 nodes)
-
-**Parameters**
-
-+--------------+-------------+
-| Parameter    | Values      |
-+==============+=============+
-| MAT          |  1 x number |
-+--------------+-------------+
-| GP           |  3 x number |
-+--------------+-------------+
-
-.. _structuresolidh20thermo:
-
-SOLIDH20THERMO
-^^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`HEX20 <hex20>` (20 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| STRENGTH (opt.)   |  1 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
-
 .. _structuresonurbs27:
 
 SONURBS27_DEPRECATED
@@ -632,43 +535,6 @@ SOLIDH8FBAR_DEPRECATED
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
 
-
-.. _structuresolidh8fbarthermo:
-
-SOLIDH8FBARTHERMO
-^^^^^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`HEX8 <hex8>` (8 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
 
 .. _structuresolidh8poro:
 
@@ -842,6 +708,9 @@ SOLIDH8POROP1SCATRA
 
 SOLIDH8THERMO
 ^^^^^^^^^^^^^
+
+**Note:** This element is deprecated for all use-cases except in combination with EAS element
+formulation. For all other use-cases, use the SOLIDSCATRA element instead.
 
 *Shapes:*
 
@@ -1314,83 +1183,6 @@ SOLIDT4PORO
 +-------------------+-------------+
 | lambda (opt.)     |  1 x number |
 +-------------------+-------------+
-
-.. _structuresolidt4thermo:
-
-SOLIDT4THERMO
-^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`TET4 <tet4>` (4 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
-
-.. _structuresolidt10thermo:
-
-SOLIDT10THERMO
-^^^^^^^^^^^^^^
-
-*Shapes:*
-
-- :ref:`TET10 <tet10>` (10 nodes)
-
-**Parameters**
-
-+-------------------+-------------+
-| Parameter         | Values      |
-+===================+=============+
-| MAT               |  1 x number |
-+-------------------+-------------+
-| KINEM             |  1 x string |
-+-------------------+-------------+
-| AXI (opt.)        |  3 x number |
-+-------------------+-------------+
-| CIR (opt.)        |  3 x number |
-+-------------------+-------------+
-| FIBER1 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER2 (opt.)     |  3 x number |
-+-------------------+-------------+
-| FIBER3 (opt.)     |  3 x number |
-+-------------------+-------------+
-| GROWTHTRIG (opt.) |  1 x number |
-+-------------------+-------------+
-| HU (opt.)         |  1 x number |
-+-------------------+-------------+
-| RAD (opt.)        |  3 x number |
-+-------------------+-------------+
-| STRENGTH (opt.)   |  1 x number |
-+-------------------+-------------+
-| lambda (opt.)     |  1 x number |
-+-------------------+-------------+
-
 
 
 .. _structuresolidw6:

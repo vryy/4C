@@ -140,38 +140,11 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::unique_par_object_id() const
   switch (distype)
   {
     case Core::FE::CellType::hex8:
-    {
-      // cast the most specialised element
-      // otherwise cast fails, because hex8fbar == hex8
-      const auto* ele = dynamic_cast<const Discret::Elements::SoHex8fbar*>(this);
-      if (ele != nullptr)
-        return SoHex8fbarThermoType::instance().unique_par_object_id();
-      else
-        return SoHex8ThermoType::instance().unique_par_object_id();
-      break;
-    }  // hex8
-    case Core::FE::CellType::tet4:
-      return SoTet4ThermoType::instance().unique_par_object_id();
-      break;
-    case Core::FE::CellType::tet10:
-      return SoTet10ThermoType::instance().unique_par_object_id();
-      break;
-    case Core::FE::CellType::hex27:
-      return SoHex27ThermoType::instance().unique_par_object_id();
-      break;
-    case Core::FE::CellType::hex20:
-      return SoHex20ThermoType::instance().unique_par_object_id();
-      break;
-    case Core::FE::CellType::nurbs27:
-      return SoNurbs27ThermoType::instance().unique_par_object_id();
-      break;
+      return SoHex8ThermoType::instance().unique_par_object_id();
     default:
       FOUR_C_THROW("unknown element type!");
       break;
   }
-  // Intel compiler needs a return
-  return -1;
-
 }  // unique_par_object_id()
 
 
@@ -184,31 +157,7 @@ Core::Elements::ElementType& Discret::Elements::So3Thermo<So3Ele, distype>::elem
   switch (distype)
   {
     case Core::FE::CellType::hex8:
-    {
-      // cast the most specialised element
-      // caution: otherwise does not work, because hex8fbar == hex8
-      const auto* ele = dynamic_cast<const Discret::Elements::SoHex8fbar*>(this);
-      if (ele != nullptr)
-        return SoHex8fbarThermoType::instance();
-      else
-        return SoHex8ThermoType::instance();
-      break;
-    }
-    case Core::FE::CellType::tet4:
-      return SoTet4ThermoType::instance();
-      break;
-    case Core::FE::CellType::tet10:
-      return SoTet10ThermoType::instance();
-      break;
-    case Core::FE::CellType::hex27:
-      return SoHex27ThermoType::instance();
-      break;
-    case Core::FE::CellType::hex20:
-      return SoHex20ThermoType::instance();
-      break;
-    case Core::FE::CellType::nurbs27:
-      return SoNurbs27ThermoType::instance();
-      break;
+      return SoHex8ThermoType::instance();
     default:
       FOUR_C_THROW("unknown element type!");
       break;
