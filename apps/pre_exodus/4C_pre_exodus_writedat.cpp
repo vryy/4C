@@ -588,7 +588,6 @@ void EXODUS::dat_eles(const EXODUS::ElementBlock& eb, const EXODUS::ElemDef& act
   {
     std::stringstream dat;  // first build up the std::string for actual element line
     const std::vector<int> nodes = ele.second;
-    std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;  // e.g. "SOLID"
     dat << " " << Core::FE::cell_type_to_string(pre_shape_to_drt(eb.get_shape()));
