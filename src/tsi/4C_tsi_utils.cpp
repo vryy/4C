@@ -98,7 +98,8 @@ void TSI::Utils::ThermoStructureCloneStrategy::set_element_data(
   }
   else
   {
-    FOUR_C_THROW("unsupported element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW(
+        "unsupported element type '%s'", Core::Utils::get_dynamic_type_name(*newele).c_str());
   }
   return;
 }  // set_element_data()

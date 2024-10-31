@@ -65,7 +65,8 @@ void EleMag::Utils::ScatraCloneStrategy<sft>::set_element_data(
     }
   }
   else
-    FOUR_C_THROW("unsupported ale element type '%s'", typeid(*newele).name());
+    FOUR_C_THROW(
+        "unsupported ale element type '%s'", Core::Utils::get_dynamic_type_name(*newele).c_str());
 
   return;
 }

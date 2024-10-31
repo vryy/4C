@@ -146,7 +146,7 @@ const T& Core::Utils::FunctionManager::function_by_id(int num) const
     FOUR_C_THROW(
         "You tried to query function %d as a function of type '%s'.\n"
         "Actually, it has type '%s'.",
-        input_id, Core::Utils::try_demangle(typeid(T).name()).c_str(), actual_type_name.c_str());
+        input_id, Core::Utils::get_type_name<T>().c_str(), actual_type_name.c_str());
   }
 }
 

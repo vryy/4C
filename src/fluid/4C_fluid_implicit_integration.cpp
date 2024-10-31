@@ -1974,7 +1974,8 @@ void FLD::FluidImplicitTimeInt::evaluate_fluid_edge_based(
   // we need RTTI here - the type-IDs are compared and the dynamic cast is only performed,
   // if we really have an underlying BlockSparseMatrix; hopefully that saves some
   // runtime.. (kruse, 09/14)
-  if (typeid(*systemmatrix1) == typeid(*sysmat_linalg))
+  if (Core::Utils::get_dynamic_type(*systemmatrix1) ==
+      Core::Utils::get_dynamic_type(*sysmat_linalg))
   {
     (systemmatrix1)->add(*sysmat_linalg, false, 1.0, 1.0);
   }

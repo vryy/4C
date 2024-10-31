@@ -103,7 +103,7 @@ namespace Discret::Elements
             "Your element evaluation %s does not allow to evaluate the Cauchy stress at a "
             "specific "
             "point in a specific direction in the dimension dim=%d.",
-            Core::Utils::try_demangle(typeid(T).name()).c_str(), dim);
+            typeid(T).name(), dim);
       }
 
       const Core::Elements::Element& element;

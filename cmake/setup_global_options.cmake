@@ -65,7 +65,6 @@ endif()
 # For clang: do not error for a number of checks that are not yet fixed
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   enable_compiler_flag_if_supported("-Wno-error=undefined-var-template")
-  enable_compiler_flag_if_supported("-Wno-error=potentially-evaluated-expression")
 endif()
 
 four_c_process_global_option(
@@ -75,7 +74,7 @@ if(FOUR_C_ENABLE_WARNINGS_AS_ERRORS)
   enable_compiler_flag_if_supported("-Werror")
 endif()
 
-four_c_process_global_option(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS "Optimze for current hardware" OFF)
+four_c_process_global_option(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS "Optimize for current hardware" OFF)
 if(FOUR_C_ENABLE_NATIVE_OPTIMIZATIONS)
   enable_compiler_flag_if_supported("-march=native")
 endif()
