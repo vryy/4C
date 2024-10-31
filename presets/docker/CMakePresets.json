@@ -52,6 +52,18 @@
       }
     },
     {
+      "name": "docker_release_clang18",
+      "displayName": "Release build with LLVM Clang 18",
+      "description": "Release build with LLVM Clang 18",
+      "inherits": [
+        ".docker_base"
+      ],
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_COMPILER": "clang"
+      }
+    },
+    {
       "name": "docker_asan",
       "displayName": "ASAN build for Docker image",
       "description": "Build release version with address sanitizer on a Docker image",
