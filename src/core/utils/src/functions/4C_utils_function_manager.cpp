@@ -176,8 +176,7 @@ void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
           // If we end up here, the current sections function definition could not be parsed.
           {
             std::stringstream ss;
-            for (const auto& line :
-                reader.lines_in_section("--FUNCT" + std::to_string(funct_suffix)))
+            for (const auto& line : reader.lines_in_section("FUNCT" + std::to_string(funct_suffix)))
             {
               ss << '\n' << line;
             }

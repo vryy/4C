@@ -154,13 +154,13 @@ namespace
     Epetra_MpiComm comm(MPI_COMM_WORLD);
     Core::IO::DatFileReader reader{input_file_name, comm};
 
-    EXPECT_FALSE(reader.has_section("--EMPTY"));
-    EXPECT_FALSE(reader.has_section("--NONEXISTENT SECTION"));
+    EXPECT_FALSE(reader.has_section("EMPTY"));
+    EXPECT_FALSE(reader.has_section("NONEXISTENT SECTION"));
 
-    check_section(reader, "--SECTION WITH SPACES", {"line in section with spaces"});
-    check_section(reader, "--SECTION/WITH/SLASHES", {"line in section with slashes"});
-    check_section(reader, "--SHORT SECTION", std::vector<std::string>(3, "line in short section"));
-    check_section(reader, "--PARTICLES", std::vector<std::string>(30, "line in long section"));
+    check_section(reader, "SECTION WITH SPACES", {"line in section with spaces"});
+    check_section(reader, "SECTION/WITH/SLASHES", {"line in section with slashes"});
+    check_section(reader, "SHORT SECTION", std::vector<std::string>(3, "line in short section"));
+    check_section(reader, "PARTICLES", std::vector<std::string>(30, "line in long section"));
   }
 
   TEST(DatFileReader, HasIncludes)
@@ -171,12 +171,12 @@ namespace
     Epetra_MpiComm comm(MPI_COMM_WORLD);
     Core::IO::DatFileReader reader{input_file_name, comm};
 
-    check_section(reader, "--INCLUDED SECTION 1a", std::vector<std::string>(2, "line"));
-    check_section(reader, "--INCLUDED SECTION 1b", std::vector<std::string>(2, "line"));
-    check_section(reader, "--INCLUDED SECTION 2", std::vector<std::string>(2, "line"));
-    check_section(reader, "--INCLUDED SECTION 3", std::vector<std::string>(2, "line"));
+    check_section(reader, "INCLUDED SECTION 1a", std::vector<std::string>(2, "line"));
+    check_section(reader, "INCLUDED SECTION 1b", std::vector<std::string>(2, "line"));
+    check_section(reader, "INCLUDED SECTION 2", std::vector<std::string>(2, "line"));
+    check_section(reader, "INCLUDED SECTION 3", std::vector<std::string>(2, "line"));
     // Check that an on-the-fly section can be read from an include
-    check_section(reader, "--PARTICLES", std::vector<std::string>(5, "line"));
+    check_section(reader, "PARTICLES", std::vector<std::string>(5, "line"));
   }
 
   TEST(DatFileReader, CyclicIncludes)

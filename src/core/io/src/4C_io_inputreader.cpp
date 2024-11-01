@@ -247,20 +247,12 @@ namespace Core::IO
   bool read_parameters_in_section(
       DatFileReader& reader, const std::string& section_name, Teuchos::ParameterList& list)
   {
-    if (section_name.length() < 3 or section_name[0] != '-' or section_name[1] != '-')
-      FOUR_C_THROW("Illegal section name '%s'", section_name.c_str());
+    if (section_name.empty()) FOUR_C_THROW("Empty section name given.");
 
-    Teuchos::ParameterList& sublist = find_sublist(section_name.substr(2), list);
+    Teuchos::ParameterList& sublist = find_sublist(section_name, list);
 
     for (const auto& line : reader.lines_in_section(section_name))
     {
-      // If the line starts with dashes we found the beginning of the next section and terminate
-      // the read process of the current section.
-      if (line[0] == '-' and line[1] == '-')
-      {
-        break;
-      }
-
       const auto& [key, value] = read_key_value(std::string(line));
 
       add_entry(key, value, sublist);
@@ -279,7 +271,7 @@ namespace Core::IO
     std::map<int, std::set<int>> topology;
 
     std::string sectionname = name + "-NODE TOPOLOGY";
-    std::string marker = std::string("--") + sectionname;
+    std::string marker = sectionname;
 
     for (const auto& l : reader.lines_in_section(marker))
     {
@@ -355,7 +347,7 @@ namespace Core::IO
           if (reader.get_comm().MyPID() == 0)  // Reading is done by proc 0
           {
             // get original domain section from the *.dat-file
-            std::string dommarker = "--" + disname + " DOMAIN";
+            std::string dommarker = disname + " DOMAIN";
             std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
 
             FOUR_C_THROW_UNLESS(reader.has_section(dommarker),
@@ -526,7 +518,7 @@ namespace Core::IO
     }
 
     // another valid section name was found
-    const std::string sectionname = "--" + field + " KNOTVECTORS";
+    const std::string sectionname = field + " KNOTVECTORS";
 
     if (myrank == 0)
     {
@@ -809,29 +801,29 @@ namespace Core::IO
   {
     std::vector<std::string> exclude;
 
-    exclude.emplace_back("--NODE COORDS");
-    exclude.emplace_back("--STRUCTURE ELEMENTS");
-    exclude.emplace_back("--STRUCTURE DOMAIN");
-    exclude.emplace_back("--FLUID ELEMENTS");
-    exclude.emplace_back("--FLUID DOMAIN");
-    exclude.emplace_back("--ALE ELEMENTS");
-    exclude.emplace_back("--ALE DOMAIN");
-    exclude.emplace_back("--ARTERY ELEMENTS");
-    exclude.emplace_back("--REDUCED D AIRWAYS ELEMENTS");
-    exclude.emplace_back("--LUBRICATION ELEMENTS");
-    exclude.emplace_back("--LUBRICATION DOMAIN");
-    exclude.emplace_back("--TRANSPORT ELEMENTS");
-    exclude.emplace_back("--TRANSPORT2 ELEMENTS");
-    exclude.emplace_back("--TRANSPORT DOMAIN");
-    exclude.emplace_back("--THERMO ELEMENTS");
-    exclude.emplace_back("--THERMO DOMAIN");
-    exclude.emplace_back("--ELECTROMAGNETIC ELEMENTS");
-    exclude.emplace_back("--PERIODIC BOUNDINGBOX ELEMENTS");
-    exclude.emplace_back("--CELL ELEMENTS");
-    exclude.emplace_back("--CELL DOMAIN");
-    exclude.emplace_back("--CELLSCATRA ELEMENTS");
-    exclude.emplace_back("--CELLSCATRA DOMAIN");
-    exclude.emplace_back("--PARTICLES");
+    exclude.emplace_back("NODE COORDS");
+    exclude.emplace_back("STRUCTURE ELEMENTS");
+    exclude.emplace_back("STRUCTURE DOMAIN");
+    exclude.emplace_back("FLUID ELEMENTS");
+    exclude.emplace_back("FLUID DOMAIN");
+    exclude.emplace_back("ALE ELEMENTS");
+    exclude.emplace_back("ALE DOMAIN");
+    exclude.emplace_back("ARTERY ELEMENTS");
+    exclude.emplace_back("REDUCED D AIRWAYS ELEMENTS");
+    exclude.emplace_back("LUBRICATION ELEMENTS");
+    exclude.emplace_back("LUBRICATION DOMAIN");
+    exclude.emplace_back("TRANSPORT ELEMENTS");
+    exclude.emplace_back("TRANSPORT2 ELEMENTS");
+    exclude.emplace_back("TRANSPORT DOMAIN");
+    exclude.emplace_back("THERMO ELEMENTS");
+    exclude.emplace_back("THERMO DOMAIN");
+    exclude.emplace_back("ELECTROMAGNETIC ELEMENTS");
+    exclude.emplace_back("PERIODIC BOUNDINGBOX ELEMENTS");
+    exclude.emplace_back("CELL ELEMENTS");
+    exclude.emplace_back("CELL DOMAIN");
+    exclude.emplace_back("CELLSCATRA ELEMENTS");
+    exclude.emplace_back("CELLSCATRA DOMAIN");
+    exclude.emplace_back("PARTICLES");
 
     const auto name_of_excluded_section = [&exclude](const std::string& section_header)
     {
@@ -1095,9 +1087,9 @@ namespace Core::IO
       {
         std::string line(l);
 
-        // take the last "--" and all that follows as section name
+        // take everything after the last "--" as section name
         std::string::size_type loc = line.rfind("--");
-        std::string sectionname = line.substr(loc);
+        std::string sectionname = line.substr(loc + 2);
         section_header_lines.emplace_back(i, sectionname);
       }
     }
@@ -1122,27 +1114,27 @@ namespace Core::IO
     }
 
     // the following section names are always regarded as valid
-    record_section_used("--TITLE");
-    record_section_used("--FUNCT1");
-    record_section_used("--FUNCT2");
-    record_section_used("--FUNCT3");
-    record_section_used("--FUNCT4");
-    record_section_used("--FUNCT5");
-    record_section_used("--FUNCT6");
-    record_section_used("--FUNCT7");
-    record_section_used("--FUNCT8");
-    record_section_used("--FUNCT9");
-    record_section_used("--FUNCT10");
-    record_section_used("--FUNCT11");
-    record_section_used("--FUNCT12");
-    record_section_used("--FUNCT13");
-    record_section_used("--FUNCT14");
-    record_section_used("--FUNCT15");
-    record_section_used("--FUNCT16");
-    record_section_used("--FUNCT17");
-    record_section_used("--FUNCT18");
-    record_section_used("--FUNCT19");
-    record_section_used("--FUNCT20");
+    record_section_used("TITLE");
+    record_section_used("FUNCT1");
+    record_section_used("FUNCT2");
+    record_section_used("FUNCT3");
+    record_section_used("FUNCT4");
+    record_section_used("FUNCT5");
+    record_section_used("FUNCT6");
+    record_section_used("FUNCT7");
+    record_section_used("FUNCT8");
+    record_section_used("FUNCT9");
+    record_section_used("FUNCT10");
+    record_section_used("FUNCT11");
+    record_section_used("FUNCT12");
+    record_section_used("FUNCT13");
+    record_section_used("FUNCT14");
+    record_section_used("FUNCT15");
+    record_section_used("FUNCT16");
+    record_section_used("FUNCT17");
+    record_section_used("FUNCT18");
+    record_section_used("FUNCT19");
+    record_section_used("FUNCT20");
   }
 
 
