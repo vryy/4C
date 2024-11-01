@@ -1,0 +1,15 @@
+SECTION1:
+  key1: value1
+  key2: value2
+  key3: value3
+SECTION2:
+  key1: value1
+  key2: value2
+
+  key3: value3
+# Comment
+SECTION WITH LINES:
+  - first line
+  - second line
+  - third line
+

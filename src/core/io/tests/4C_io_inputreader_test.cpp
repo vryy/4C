@@ -189,4 +189,20 @@ namespace
         Core::Exception, "cycle1.dat' was already included before.");
   }
 
+  TEST(DatFileReader, BasicYaml)
+  {
+    const std::string input_file_name = TESTING::get_support_file_path("test_files/yaml/basic.yml");
+
+    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    Core::IO::DatFileReader reader{input_file_name, comm};
+
+    EXPECT_FALSE(reader.has_section("EMPTY"));
+    EXPECT_FALSE(reader.has_section("NONEXISTENT SECTION"));
+
+    reader.dump(std::cout, Core::IO::DatFileReader::Format::yaml);
+    reader.dump(std::cout, Core::IO::DatFileReader::Format::dat);
+
+    check_section(reader, "SECTION WITH LINES", {"first line", "second line", "third line"});
+  }
+
 }  // namespace

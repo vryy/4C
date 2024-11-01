@@ -16,6 +16,7 @@
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_Time.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include <filesystem>
 #include <sstream>
@@ -121,6 +122,42 @@ namespace Core::IO
       include,
     };
 
+    void make_buffer_and_line_views(const std::list<std::string>& content,
+        std::vector<char>& inputfile, std::vector<std::string_view>& lines)
+    {
+      const int array_size = std::accumulate(content.begin(), content.end(), 0,
+          [](int sum, const std::string& line)
+          {
+            // add 1 for the null-terminator that we will add below
+            return sum + line.size() + 1;
+          });
+
+      // allocate space for copy of file
+      inputfile.clear();
+      inputfile.reserve(array_size);
+      lines.clear();
+      lines.reserve(content.size());
+
+      std::size_t pos = 0u;
+      for (auto& i : content)
+      {
+        inputfile.insert(inputfile.end(), i.begin(), i.end());
+        // This fixup is crucial in the current implementation to get a null-terminated string
+        // we can view with string_view without supplying a length.
+        inputfile.push_back('\0');
+        lines.emplace_back(&inputfile[pos]);
+        // Next entry would begin here.
+        pos = inputfile.size();
+      }
+
+      if (inputfile.size() != static_cast<size_t>(array_size))
+      {
+        FOUR_C_THROW(
+            "internal error in file read: inputfile has %d chars, but was predicted to be %d "
+            "chars long",
+            inputfile.size(), array_size);
+      }
+    }
   }  // namespace
 
   namespace Internal
@@ -219,7 +256,7 @@ namespace Core::IO
   DatFileReader::DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag)
       : top_level_file_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
   {
-    read_dat();
+    read_generic();
   }
 
 
@@ -797,7 +834,136 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::read_dat()
+  void DatFileReader::read_generic()
+  {
+    if (comm_.MyPID() == 0)
+    {
+      const auto file_extension = std::filesystem::path(top_level_file_).extension().string();
+
+      std::list<std::string> content;
+      if (file_extension == ".yaml" || file_extension == ".yml")
+      {
+        read_yaml_content(content);
+      }
+      else
+      {
+        read_dat_content(content);
+      }
+
+      make_buffer_and_line_views(content, inputfile_, lines_);
+    }
+
+    // Now lets do all the parallel setup. Afterwards all processors
+    // have to be the same.
+    int arraysize = inputfile_.size();
+    if (comm_.NumProc() > 1)
+    {
+      int num_lines = lines_.size();
+      /* Now that we use a variable number of bytes per line we have to
+       * communicate the buffer size as well. */
+      comm_.Broadcast(&arraysize, 1, 0);
+      comm_.Broadcast(&num_lines, 1, 0);
+
+      if (comm_.MyPID() > 0)
+      {
+        /*--------------------------------------allocate space for copy of file */
+        inputfile_.resize(arraysize);
+        lines_.reserve(num_lines);
+      }
+
+      // There are no char based functions available! Do it by hand!
+      // comm_.Broadcast(inputfile_.data(),arraysize,0);
+
+      const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
+
+      MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
+
+      if (comm_.MyPID() > 0)
+      {
+        // Chunk the raw input file into lines: whenever encountering a null-terminator,
+        // add the line that just ended to the vector of lines.
+        std::size_t pos = 0u;
+        for (std::size_t i = 0; i < inputfile_.size(); ++i)
+        {
+          if (inputfile_[i] == '\0')
+          {
+            lines_.emplace_back(&inputfile_[pos]);
+            pos = i + 1;
+          }
+        }
+
+        FOUR_C_THROW_UNLESS(static_cast<int>(lines_.size()) == num_lines,
+            "line count mismatch: %d lines expected but %d lines received", num_lines,
+            lines_.size());
+      }
+
+      FOUR_C_ASSERT((comm_.MyPID() == 0 || excludepositions_.empty()), "Internal error.");
+
+      // All-gather does the correct thing becuase the maps are empty on all ranks > 0
+      excludepositions_ = Core::Communication::all_gather(excludepositions_, comm_);
+    }
+
+    // Now finally find the section names. We have to do this on all
+    // processors, so it cannot be done while reading.
+    std::vector<std::pair<std::size_t, std::string>> section_header_lines;
+    for (std::vector<char*>::size_type i = 0; i < lines_.size(); ++i)
+    {
+      const std::string_view l = lines_[i];
+      if (l[0] == '-' and l[1] == '-')
+      {
+        std::string line(l);
+
+        // take everything after the last "--" as section name
+        std::string::size_type loc = line.rfind("--");
+        std::string sectionname = line.substr(loc + 2);
+        section_header_lines.emplace_back(i, sectionname);
+      }
+    }
+
+    // Include a past-the-end pseudo section such that the last actual section can use the
+    // past-the-end position for its position
+    section_header_lines.emplace_back(lines_.size(), "unused");
+
+    // Leave out the past-the-end section
+    for (unsigned i = 0; i < section_header_lines.size() - 1; ++i)
+    {
+      const auto& [position, name] = section_header_lines[i];
+      const auto& [next_position, _] = section_header_lines[i + 1];
+
+      if (positions_.find(name) != positions_.end())
+        FOUR_C_THROW("section '%s' defined more than once", name.c_str());
+
+      // Shift by 1 to start after the header itself
+      positions_[name] = {position + 1, next_position};
+      // Remember the section name to later check if it was ever queried.
+      knownsections_[name] = false;
+    }
+
+    // the following section names are always regarded as valid
+    record_section_used("TITLE");
+    record_section_used("FUNCT1");
+    record_section_used("FUNCT2");
+    record_section_used("FUNCT3");
+    record_section_used("FUNCT4");
+    record_section_used("FUNCT5");
+    record_section_used("FUNCT6");
+    record_section_used("FUNCT7");
+    record_section_used("FUNCT8");
+    record_section_used("FUNCT9");
+    record_section_used("FUNCT10");
+    record_section_used("FUNCT11");
+    record_section_used("FUNCT12");
+    record_section_used("FUNCT13");
+    record_section_used("FUNCT14");
+    record_section_used("FUNCT15");
+    record_section_used("FUNCT16");
+    record_section_used("FUNCT17");
+    record_section_used("FUNCT18");
+    record_section_used("FUNCT19");
+    record_section_used("FUNCT20");
+  }
+
+  void DatFileReader::read_dat_content(std::list<std::string>& content)
   {
     std::vector<std::string> exclude;
 
@@ -961,12 +1127,11 @@ namespace Core::IO
         return included_files;
       };
 
-      std::list<std::string> content;
       // Start by "including" the top-level file.
       std::list<std::filesystem::path> included_files{top_level_file_};
 
-      // We use a hand-rolled loop here because the list keeps growing; thus we need to continuously
-      // re-evaluate where the end of the list is.
+      // We use a hand-rolled loop here because the list keeps growing; thus we need to
+      // continuously re-evaluate where the end of the list is.
       for (auto it = included_files.begin(); it != included_files.end(); ++it)
       {
         // Read the next file and get its includes.
@@ -987,154 +1152,76 @@ namespace Core::IO
         }
       }
 
-      // dump the included files
-      for (const auto& file : included_files)
-      {
-        std::cout << "Included file: " << file << std::endl;
-      }
-
-      int arraysize = std::accumulate(content.begin(), content.end(), 0,
-          [](int sum, const std::string& line)
-          {
-            // add 1 for the null-terminator that we will add below
-            return sum + line.size() + 1;
-          });
-
-      // allocate space for copy of file
-      inputfile_.clear();
-      inputfile_.reserve(arraysize);
-      lines_.reserve(content.size());
-
-      std::size_t pos = 0u;
-      for (auto& i : content)
-      {
-        inputfile_.insert(inputfile_.end(), i.begin(), i.end());
-        // This fixup is crucial in the current implementation to get a null-terminated string
-        // we can view with string_view without supplying a length.
-        inputfile_.push_back('\0');
-        lines_.emplace_back(&inputfile_[pos]);
-        // Next entry would begin here.
-        pos = inputfile_.size();
-      }
-
-      if (inputfile_.size() != static_cast<size_t>(arraysize))
-      {
-        FOUR_C_THROW(
-            "internal error in file read: inputfile has %d chars, but was predicted to be %d "
-            "chars long",
-            inputfile_.size(), arraysize);
-      }
+      // Convert the content into a single contiguous char array and set according views for the
+      // lines.
+      make_buffer_and_line_views(content, inputfile_, lines_);
     }
+  }
 
-    // Now lets do all the parallel setup. Afterwards all processors
-    // have to be the same.
-
-    int arraysize = inputfile_.size();
-    if (comm_.NumProc() > 1)
+  void DatFileReader::read_yaml_content(std::list<std::string>& content)
+  {
+    // In this first iteration of the YAML support, we map the constructs from a YAML file back
+    // to constructs in a dat file. This means that top-level sections are pre-fixed with "--" and
+    // the key-value pairs are mapped to "key = value" lines.
+    //
+    // caveats:
+    // - YAML files can only be read in full.
+    // - YAML files do not support the INCLUDES syntax.
+    YAML::Node config = YAML::LoadFile(top_level_file_);
+    for (const auto& section : config)
     {
-      int num_lines = lines_.size();
-      /* Now that we use a variable number of bytes per line we have to
-       * communicate the buffer size as well. */
-      comm_.Broadcast(&arraysize, 1, 0);
-      comm_.Broadcast(&num_lines, 1, 0);
+      const std::string& section_name = section.first.as<std::string>();
+      content.emplace_back("--" + section_name);
+      const auto entries = section.second;
 
-      if (comm_.MyPID() > 0)
+      if (positions_.find(section_name) != positions_.end())
+        FOUR_C_THROW("section '%s' defined more than once", section_name.c_str());
+
+      const auto read_flat_sequence = [&](const YAML::Node& node)
       {
-        /*--------------------------------------allocate space for copy of file */
-        inputfile_.resize(arraysize);
-        lines_.reserve(num_lines);
-      }
-
-      // There are no char based functions available! Do it by hand!
-      // comm_.Broadcast(inputfile_.data(),arraysize,0);
-
-      const auto& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm_);
-
-      MPI_Bcast(inputfile_.data(), arraysize, MPI_CHAR, 0, mpicomm.GetMpiComm());
-
-      if (comm_.MyPID() > 0)
-      {
-        // Chunk the raw input file into lines: whenever encountering a null-terminator,
-        // add the line that just ended to the vector of lines.
-        std::size_t pos = 0u;
-        for (std::size_t i = 0; i < inputfile_.size(); ++i)
+        for (const auto& entry : node)
         {
-          if (inputfile_[i] == '\0')
-          {
-            lines_.emplace_back(&inputfile_[pos]);
-            pos = i + 1;
-          }
+          FOUR_C_THROW_UNLESS(entry.IsScalar(),
+              "While reading section '%s': "
+              "only scalar entries are supported in sequences.",
+              section_name.c_str());
+          const auto line = entry.as<std::string>();
+          content.emplace_back(line);
         }
+      };
 
-        FOUR_C_THROW_UNLESS(static_cast<int>(lines_.size()) == num_lines,
-            "line count mismatch: %d lines expected but %d lines received", num_lines,
-            lines_.size());
-      }
-
-      FOUR_C_ASSERT((comm_.MyPID() == 0 || excludepositions_.empty()), "Internal error.");
-
-      // All-gather does the correct thing becuase the maps are empty on all ranks > 0
-      excludepositions_ = Core::Communication::all_gather(excludepositions_, comm_);
-    }
-
-    // Now finally find the section names. We have to do this on all
-    // processors, so it cannot be done while reading.
-    std::vector<std::pair<std::size_t, std::string>> section_header_lines;
-    for (std::vector<char*>::size_type i = 0; i < lines_.size(); ++i)
-    {
-      const std::string_view l = lines_[i];
-      if (l[0] == '-' and l[1] == '-')
+      const auto read_map = [&](const YAML::Node& node)
       {
-        std::string line(l);
+        for (const auto& entry : node)
+        {
+          std::cout << YAML::Dump(entry.first) << std::endl;
+          std::cout << YAML::Dump(entry.second) << std::endl;
+          FOUR_C_THROW_UNLESS(entry.first.IsScalar() && entry.second.IsScalar(),
+              "While reading section '%s': "
+              "only scalar key-value pairs are supported in maps.",
+              section_name.c_str());
+          const auto line = entry.first.as<std::string>() + " = " + entry.second.as<std::string>();
+          content.emplace_back(line);
+        }
+      };
 
-        // take everything after the last "--" as section name
-        std::string::size_type loc = line.rfind("--");
-        std::string sectionname = line.substr(loc + 2);
-        section_header_lines.emplace_back(i, sectionname);
+      switch (entries.Type())
+      {
+        case YAML::NodeType::Undefined:
+        case YAML::NodeType::Null:
+        case YAML::NodeType::Scalar:
+          FOUR_C_THROW(
+              "Entries in section %s must either form a map or a sequence", section_name.c_str());
+        case YAML::NodeType::Sequence:
+          read_flat_sequence(entries);
+          break;
+        case YAML::NodeType::Map:
+          read_map(entries);
+          break;
       }
     }
 
-    // Include a past-the-end pseudo section such that the last actual section can use the
-    // past-the-end position for its position
-    section_header_lines.emplace_back(lines_.size(), "unused");
-
-    // Leave out the past-the-end section
-    for (unsigned i = 0; i < section_header_lines.size() - 1; ++i)
-    {
-      const auto& [position, name] = section_header_lines[i];
-      const auto& [next_position, _] = section_header_lines[i + 1];
-
-      if (positions_.find(name) != positions_.end())
-        FOUR_C_THROW("section '%s' defined more than once", name.c_str());
-
-      // Shift by 1 to start after the header itself
-      positions_[name] = {position + 1, next_position};
-      // Remember the section name to later check if it was ever queried.
-      knownsections_[name] = false;
-    }
-
-    // the following section names are always regarded as valid
-    record_section_used("TITLE");
-    record_section_used("FUNCT1");
-    record_section_used("FUNCT2");
-    record_section_used("FUNCT3");
-    record_section_used("FUNCT4");
-    record_section_used("FUNCT5");
-    record_section_used("FUNCT6");
-    record_section_used("FUNCT7");
-    record_section_used("FUNCT8");
-    record_section_used("FUNCT9");
-    record_section_used("FUNCT10");
-    record_section_used("FUNCT11");
-    record_section_used("FUNCT12");
-    record_section_used("FUNCT13");
-    record_section_used("FUNCT14");
-    record_section_used("FUNCT15");
-    record_section_used("FUNCT16");
-    record_section_used("FUNCT17");
-    record_section_used("FUNCT18");
-    record_section_used("FUNCT19");
-    record_section_used("FUNCT20");
+    make_buffer_and_line_views(content, inputfile_, lines_);
   }
 
 
@@ -1164,6 +1251,31 @@ namespace Core::IO
   void DatFileReader::record_section_used(const std::string& section_name)
   {
     knownsections_[section_name] = true;
+  }
+
+  void DatFileReader::dump(std::ostream& output, DatFileReader::Format format) const
+  {
+    if (format == Format::dat)
+    {
+      for (const auto& line : lines_)
+      {
+        output << line << '\n';
+      }
+    }
+    else if (format == Format::yaml)
+    {
+      YAML::Node config;
+      for (const auto& [section_name, section] : positions_)
+      {
+        YAML::Node section_node;
+        for (std::size_t i = section.first; i < section.second; ++i)
+        {
+          section_node.push_back(lines_[i]);
+        }
+        config[section_name] = section_node;
+      }
+      output << config;
+    }
   }
 
   std::pair<std::string, std::string> read_key_value(const std::string& line)

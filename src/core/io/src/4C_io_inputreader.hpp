@@ -158,6 +158,15 @@ namespace Core::IO
   class DatFileReader
   {
    public:
+    /// Format flags for dumping the content of the input file.
+    enum class Format
+    {
+      /// Print the input file as a dat file.
+      dat,
+      /// Print the input file as a yaml file.
+      yaml,
+    };
+
     /// construct a reader for a given file
     DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag = 0);
 
@@ -205,9 +214,27 @@ namespace Core::IO
      */
     bool print_unknown_sections(std::ostream& out) const;
 
+    /**
+     * Dump the content of the input file to the given output stream.
+     * Various output format settings are controlled by the format flags.
+     */
+    void dump(std::ostream& output, Format format) const;
+
    private:
-    /// actual read dat file, store and broadcast general sections
-    void read_dat();
+    /**
+     * The shared part of reading a file and postprocessing its content.
+     */
+    void read_generic();
+
+    /**
+     * Read a dat file and store the content. Expensive sections are skipped and read on-the-fly.
+     */
+    void read_dat_content(std::list<std::string>& content);
+
+    /**
+     * Read a YAML file and store the content. YAML files are read in one go and stored in memory.
+     */
+    void read_yaml_content(std::list<std::string>& content);
 
     //! Remember that a section was used.
     void record_section_used(const std::string& section_name);
