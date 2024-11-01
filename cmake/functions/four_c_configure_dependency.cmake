@@ -22,29 +22,31 @@ function(four_c_configure_dependency _package_name)
     message(FATAL_ERROR "There are unparsed arguments: ${_parsed_UNPARSED_ARGUMENTS}")
   endif()
 
-  string(TOUPPER ${_package_name} _package_name_UPPER)
+  # Sanitize the package name: all upper case, no hyphens and dots.
+  string(TOUPPER ${_package_name} _package_name_SANITIZED)
+  string(REGEX REPLACE "[^A-Z0-9]" "_" _package_name_SANITIZED ${_package_name_SANITIZED})
 
   # Add a cache entry to turn the option ON or OFF.
   four_c_process_global_option(
-    FOUR_C_WITH_${_package_name_UPPER} "Build 4C with ${_package_name}" ${_parsed_DEFAULT}
+    FOUR_C_WITH_${_package_name_SANITIZED} "Build 4C with ${_package_name}" ${_parsed_DEFAULT}
     )
 
-  if(FOUR_C_WITH_${_package_name_UPPER})
+  if(FOUR_C_WITH_${_package_name_SANITIZED})
     if(${_package_name}_ROOT)
       message(
         WARNING
-          "A variable '${_package_name}_ROOT' is set. Prefer setting it via 'FOUR_C_${_package_name_UPPER}_ROOT'."
+          "A variable '${_package_name}_ROOT' is set. Prefer setting it via 'FOUR_C_${_package_name_SANITIZED}_ROOT'."
         )
     endif()
 
-    if(FOUR_C_${_package_name_UPPER}_ROOT)
+    if(FOUR_C_${_package_name_SANITIZED}_ROOT)
       # Translate the ROOT variable into the case style that fits to the package name.
       # This variable is automatically understood by CMake's find_XXX functions.
-      set(${_package_name}_ROOT ${FOUR_C_${_package_name_UPPER}_ROOT})
+      set(${_package_name}_ROOT ${FOUR_C_${_package_name_SANITIZED}_ROOT})
     else()
       message(
         STATUS
-          "No variable 'FOUR_C_${_package_name_UPPER}_ROOT' set. Trying to find ${_package_name} in default locations."
+          "No variable 'FOUR_C_${_package_name_SANITIZED}_ROOT' set. Trying to find ${_package_name} in default locations."
         )
     endif()
 
@@ -54,7 +56,8 @@ function(four_c_configure_dependency _package_name)
 
   # Store the flag that was generated from the package name
   set_property(
-    GLOBAL APPEND PROPERTY FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES FOUR_C_WITH_${_package_name_UPPER}
+    GLOBAL APPEND
+    PROPERTY FOUR_C_FLAGS_EXTERNAL_DEPENDENCIES FOUR_C_WITH_${_package_name_SANITIZED}
     )
 
   message(STATUS "Processed dependency ${_package_name}.\n")
