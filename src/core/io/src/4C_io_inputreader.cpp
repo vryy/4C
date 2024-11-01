@@ -139,9 +139,9 @@ namespace Core::IO
       lines.reserve(content.size());
 
       std::size_t pos = 0u;
-      for (auto& i : content)
+      for (const auto& line : content)
       {
-        inputfile.insert(inputfile.end(), i.begin(), i.end());
+        inputfile.insert(inputfile.end(), line.begin(), line.end());
         // This fixup is crucial in the current implementation to get a null-terminated string
         // we can view with string_view without supplying a length.
         inputfile.push_back('\0');
@@ -157,6 +157,253 @@ namespace Core::IO
             "chars long",
             inputfile.size(), array_size);
       }
+    }
+
+    std::filesystem::path get_include_path(
+        const std::string& include_line, const std::filesystem::path& current_file)
+    {
+      // Interpret the path as relative to the currently read file, if is not absolute
+      std::filesystem::path included_file(include_line);
+      if (!included_file.is_absolute())
+      {
+        included_file = current_file.parent_path() / included_file;
+      }
+      FOUR_C_THROW_UNLESS(
+          std::filesystem::status(included_file).type() == std::filesystem::file_type::regular,
+          "Included file '%s' is not a regular file. Does the file exist?", included_file.c_str());
+      return included_file;
+    }
+
+    std::vector<std::filesystem::path> read_dat_content(const std::filesystem::path& file_path,
+        std::list<std::string>& content,
+        std::map<std::string, Internal::SectionPosition>& exclude_information)
+    {
+      std::vector<std::string> exclude;
+
+      exclude.emplace_back("NODE COORDS");
+      exclude.emplace_back("STRUCTURE ELEMENTS");
+      exclude.emplace_back("STRUCTURE DOMAIN");
+      exclude.emplace_back("FLUID ELEMENTS");
+      exclude.emplace_back("FLUID DOMAIN");
+      exclude.emplace_back("ALE ELEMENTS");
+      exclude.emplace_back("ALE DOMAIN");
+      exclude.emplace_back("ARTERY ELEMENTS");
+      exclude.emplace_back("REDUCED D AIRWAYS ELEMENTS");
+      exclude.emplace_back("LUBRICATION ELEMENTS");
+      exclude.emplace_back("LUBRICATION DOMAIN");
+      exclude.emplace_back("TRANSPORT ELEMENTS");
+      exclude.emplace_back("TRANSPORT2 ELEMENTS");
+      exclude.emplace_back("TRANSPORT DOMAIN");
+      exclude.emplace_back("THERMO ELEMENTS");
+      exclude.emplace_back("THERMO DOMAIN");
+      exclude.emplace_back("ELECTROMAGNETIC ELEMENTS");
+      exclude.emplace_back("PERIODIC BOUNDINGBOX ELEMENTS");
+      exclude.emplace_back("CELL ELEMENTS");
+      exclude.emplace_back("CELL DOMAIN");
+      exclude.emplace_back("CELLSCATRA ELEMENTS");
+      exclude.emplace_back("CELLSCATRA DOMAIN");
+      exclude.emplace_back("PARTICLES");
+
+      const auto name_of_excluded_section = [&exclude](const std::string& section_header)
+      {
+        auto it = std::find_if(exclude.begin(), exclude.end(),
+            [&section_header](const std::string& section)
+            { return section_header.find(section) != std::string::npos; });
+
+        if (it != exclude.end())
+          return *it;
+        else
+          return std::string{};
+      };
+
+      std::ifstream file(file_path);
+      if (not file) FOUR_C_THROW("Unable to open file: %s", file_path.c_str());
+
+      // Tracking variables while walking through the file
+      std::vector<std::filesystem::path> included_files;
+      std::string current_excluded_section_name{};
+      int current_section_linecount = 0;
+      SectionType current_section_type = SectionType::normal;
+      std::string line;
+
+      const auto finalize_section_read = [&](int number_of_lines)
+      {
+        if (current_section_type == SectionType::on_the_fly)
+        {
+          exclude_information[current_excluded_section_name].length = number_of_lines;
+        }
+
+        // Reset tracking variables
+        current_excluded_section_name.clear();
+        current_section_linecount = 0;
+
+        // Determine what kind of new section we started.
+        const auto maybe_excluded_section = name_of_excluded_section(line);
+        if (!maybe_excluded_section.empty())
+        {
+          // Start a new excluded section. This starts at the next line. The correct length
+          // will be set when the section ends.
+          exclude_information.emplace(maybe_excluded_section,
+              Internal::SectionPosition{.file = file_path, .pos = file.tellg(), .length = 0});
+          current_excluded_section_name = maybe_excluded_section;
+          current_section_type = SectionType::on_the_fly;
+        }
+        else if (line.rfind("--INCLUDES") != std::string::npos)
+        {
+          current_section_type = SectionType::include;
+        }
+        else
+        {
+          current_section_type = SectionType::normal;
+        }
+      };
+
+      // Loop over all input lines. This reads the actual file contents and determines whether a
+      // line is to be read immediately or should be excluded because it is in one of the excluded
+      // sections.
+      while (getline(file, line))
+      {
+        ++current_section_linecount;
+
+        // In case we are reading an include section, a comment needs to be preceded by
+        // whitespace. Otherwise, we would treat double slashes as comments, although they are
+        // part of the file path.
+        if (current_section_type == SectionType::include)
+        {
+          // Take care to remove comments only if they are preceded by whitespace.
+          line = Core::Utils::strip_comment(line, " //");
+          if (line.empty()) continue;
+
+          // Additionally check if the first token is a comment to handle the case where the
+          // comment starts at the beginning of the line.
+          if (line.find("//") == 0) continue;
+        }
+        // Remove comments, trailing and leading whitespaces, compact internal whitespaces
+        else
+        {
+          line = Core::Utils::strip_comment(line);
+        }
+
+        // line is now empty
+        if (line.size() == 0) continue;
+
+        // This line starts a new section
+        if (line.find("--") == 0)
+        {
+          // finalize the last excluded section. Subtract the current line which is not part of
+          // the section anymore.
+          finalize_section_read(current_section_linecount - 1);
+        }
+
+        switch (current_section_type)
+        {
+          case SectionType::normal:
+          {
+            // This line contains content that we want to read now.
+            content.push_back(line);
+            break;
+          }
+          case SectionType::on_the_fly:
+            // We are in an on-the-fly section. Skip the line.
+            break;
+          case SectionType::include:
+          {
+            if (line.find("--") != 0)
+            {
+              included_files.emplace_back(get_include_path(line, file_path));
+            }
+            break;
+          }
+        }
+      }
+      // Finalize the last section
+      finalize_section_read(current_section_linecount);
+
+      return included_files;
+    }
+
+    std::vector<std::filesystem::path> read_yaml_content(
+        const std::filesystem::path& file_path, std::list<std::string>& content)
+    {
+      std::vector<std::filesystem::path> included_files;
+
+      // In this first iteration of the YAML support, we map the constructs from a YAML file back
+      // to constructs in a dat file. This means that top-level sections are pre-fixed with "--" and
+      // the key-value pairs are mapped to "key = value" lines.
+      //
+      // caveats:
+      // - YAML files can only be read in full.
+      YAML::Node config = YAML::LoadFile(file_path);
+      for (const auto& section : config)
+      {
+        const std::string& section_name = section.first.as<std::string>();
+        const auto& entries = section.second;
+
+        // If this is the special section "INCLUDES", we need to handle it differently.
+        if (section_name == "INCLUDES")
+        {
+          if (entries.IsScalar())
+            included_files.emplace_back(get_include_path(entries.as<std::string>(), file_path));
+          else if (entries.IsSequence())
+            for (const auto& entry : entries)
+            {
+              FOUR_C_THROW_UNLESS(
+                  entry.IsScalar(), "Only scalar entries are supported in the INCLUDES section.");
+              const auto line = entry.as<std::string>();
+              included_files.emplace_back(get_include_path(line, file_path));
+            }
+          else
+            FOUR_C_THROW("INCLUDES section must contain a single file or a sequence.");
+
+          continue;
+        }
+
+        content.emplace_back("--" + section_name);
+
+        const auto read_flat_sequence = [&](const YAML::Node& node)
+        {
+          for (const auto& entry : node)
+          {
+            FOUR_C_THROW_UNLESS(entry.IsScalar(),
+                "While reading section '%s': "
+                "only scalar entries are supported in sequences.",
+                section_name.c_str());
+            const auto line = entry.as<std::string>();
+            content.emplace_back(line);
+          }
+        };
+
+        const auto read_map = [&](const YAML::Node& node)
+        {
+          for (const auto& entry : node)
+          {
+            FOUR_C_THROW_UNLESS(entry.first.IsScalar() && entry.second.IsScalar(),
+                "While reading section '%s': "
+                "only scalar key-value pairs are supported in maps.",
+                section_name.c_str());
+            const auto line =
+                entry.first.as<std::string>() + " = " + entry.second.as<std::string>();
+            content.emplace_back(line);
+          }
+        };
+
+        switch (entries.Type())
+        {
+          case YAML::NodeType::Undefined:
+          case YAML::NodeType::Null:
+          case YAML::NodeType::Scalar:
+            FOUR_C_THROW(
+                "Entries in section %s must either form a map or a sequence", section_name.c_str());
+          case YAML::NodeType::Sequence:
+            read_flat_sequence(entries);
+            break;
+          case YAML::NodeType::Map:
+            read_map(entries);
+            break;
+        }
+      }
+
+      return included_files;
     }
   }  // namespace
 
@@ -248,6 +495,25 @@ namespace Core::IO
     bool DatFileLineIterator::operator!=(const DatFileLineIterator& other) const
     {
       return !(*this == other);
+    }
+
+
+    void SectionPosition::pack(Communication::PackBuffer& data) const
+    {
+      Core::Communication::add_to_pack(data, file.string());
+      Core::Communication::add_to_pack(data, static_cast<unsigned>(pos));
+      Core::Communication::add_to_pack(data, length);
+    }
+
+    void SectionPosition::unpack(Communication::UnpackBuffer& buffer)
+    {
+      std::string file_str;
+      Core::Communication::extract_from_pack(buffer, file_str);
+      file = file_str;
+      unsigned pos_extract;
+      Core::Communication::extract_from_pack(buffer, pos_extract);
+      pos = pos_extract;
+      Core::Communication::extract_from_pack(buffer, length);
     }
   }  // namespace Internal
 
@@ -838,16 +1104,45 @@ namespace Core::IO
   {
     if (comm_.MyPID() == 0)
     {
-      const auto file_extension = std::filesystem::path(top_level_file_).extension().string();
-
+      // Gather content from all files
       std::list<std::string> content;
-      if (file_extension == ".yaml" || file_extension == ".yml")
+
+      // Start by "including" the top-level file.
+      std::list<std::filesystem::path> included_files{top_level_file_};
+
+      // We use a hand-rolled loop here because the list keeps growing; thus we need to
+      // continuously re-evaluate where the end of the list is.
+      for (auto file_it = included_files.begin(); file_it != included_files.end(); ++file_it)
       {
-        read_yaml_content(content);
-      }
-      else
-      {
-        read_dat_content(content);
+        std::vector<std::filesystem::path> new_include_files = std::invoke(
+            [&]
+            {
+              const auto file_extension = file_it->extension().string();
+              // Note that json is valid yaml and we can read it with the yaml parser.
+              if (file_extension == ".yaml" || file_extension == ".yml" ||
+                  file_extension == ".json")
+              {
+                return read_yaml_content(*file_it, content);
+              }
+              else
+              {
+                return read_dat_content(*file_it, content, excludepositions_);
+              }
+            });
+
+        // Check that the file is not included twice
+        for (const auto& file : new_include_files)
+        {
+          if (std::find(included_files.begin(), included_files.end(), file) != included_files.end())
+          {
+            FOUR_C_THROW(
+                "File '%s' was already included before.\n Cycles are not allowed.", file.c_str());
+          }
+          else
+          {
+            included_files.emplace_back(file);
+          }
+        }
       }
 
       make_buffer_and_line_views(content, inputfile_, lines_);
@@ -931,7 +1226,7 @@ namespace Core::IO
       const auto& [next_position, _] = section_header_lines[i + 1];
 
       if (positions_.find(name) != positions_.end())
-        FOUR_C_THROW("section '%s' defined more than once", name.c_str());
+        FOUR_C_THROW("Section '%s' defined more than once", name.c_str());
 
       // Shift by 1 to start after the header itself
       positions_[name] = {position + 1, next_position};
@@ -963,266 +1258,6 @@ namespace Core::IO
     record_section_used("FUNCT20");
   }
 
-  void DatFileReader::read_dat_content(std::list<std::string>& content)
-  {
-    std::vector<std::string> exclude;
-
-    exclude.emplace_back("NODE COORDS");
-    exclude.emplace_back("STRUCTURE ELEMENTS");
-    exclude.emplace_back("STRUCTURE DOMAIN");
-    exclude.emplace_back("FLUID ELEMENTS");
-    exclude.emplace_back("FLUID DOMAIN");
-    exclude.emplace_back("ALE ELEMENTS");
-    exclude.emplace_back("ALE DOMAIN");
-    exclude.emplace_back("ARTERY ELEMENTS");
-    exclude.emplace_back("REDUCED D AIRWAYS ELEMENTS");
-    exclude.emplace_back("LUBRICATION ELEMENTS");
-    exclude.emplace_back("LUBRICATION DOMAIN");
-    exclude.emplace_back("TRANSPORT ELEMENTS");
-    exclude.emplace_back("TRANSPORT2 ELEMENTS");
-    exclude.emplace_back("TRANSPORT DOMAIN");
-    exclude.emplace_back("THERMO ELEMENTS");
-    exclude.emplace_back("THERMO DOMAIN");
-    exclude.emplace_back("ELECTROMAGNETIC ELEMENTS");
-    exclude.emplace_back("PERIODIC BOUNDINGBOX ELEMENTS");
-    exclude.emplace_back("CELL ELEMENTS");
-    exclude.emplace_back("CELL DOMAIN");
-    exclude.emplace_back("CELLSCATRA ELEMENTS");
-    exclude.emplace_back("CELLSCATRA DOMAIN");
-    exclude.emplace_back("PARTICLES");
-
-    const auto name_of_excluded_section = [&exclude](const std::string& section_header)
-    {
-      auto it = std::find_if(exclude.begin(), exclude.end(),
-          [&section_header](const std::string& section)
-          { return section_header.find(section) != std::string::npos; });
-
-      if (it != exclude.end())
-        return *it;
-      else
-        return std::string{};
-    };
-
-    if (comm_.MyPID() == 0)
-    {
-      // Helper function reading a file and returning any include files
-      const auto read_file = [name_of_excluded_section](const std::filesystem::path& file_path,
-                                 std::list<std::string>& content,
-                                 std::map<std::string, SectionPosition>& exclude_information)
-          -> std::vector<std::filesystem::path>
-      {
-        std::ifstream file(file_path);
-        if (not file) FOUR_C_THROW("unable to open file: %s", file_path.c_str());
-
-        // Tracking variables while walking through the file
-        std::vector<std::filesystem::path> included_files;
-        std::string current_excluded_section_name{};
-        unsigned current_section_linecount = 0;
-        SectionType current_section_type = SectionType::normal;
-        std::string line;
-
-        const auto finalize_section_read = [&](int number_of_lines)
-        {
-          if (current_section_type == SectionType::on_the_fly)
-          {
-            exclude_information[current_excluded_section_name].length = number_of_lines;
-          }
-
-          // Reset tracking variables
-          current_excluded_section_name.clear();
-          current_section_linecount = 0;
-
-          // Determine what kind of new section we started.
-          const auto maybe_excluded_section = name_of_excluded_section(line);
-          if (!maybe_excluded_section.empty())
-          {
-            // Start a new excluded section. This starts at the next line. The correct length
-            // will be set when the section ends.
-            exclude_information.emplace(
-                maybe_excluded_section, SectionPosition{file_path, file.tellg(), 0});
-            current_excluded_section_name = maybe_excluded_section;
-            current_section_type = SectionType::on_the_fly;
-          }
-          else if (line.rfind("--INCLUDES") != std::string::npos)
-          {
-            current_section_type = SectionType::include;
-          }
-          else
-          {
-            current_section_type = SectionType::normal;
-          }
-        };
-
-        // Loop over all input lines. This reads the actual file contents and determines whether a
-        // line is to be read immediately or should be excluded because it is in one of the excluded
-        // sections.
-        while (getline(file, line))
-        {
-          ++current_section_linecount;
-
-          // In case we are reading an include section, a comment needs to be preceded by
-          // whitespace. Otherwise, we would treat double slashes as comments, although they are
-          // part of the file path.
-          if (current_section_type == SectionType::include)
-          {
-            // Take care to remove comments only if they are preceded by whitespace.
-            line = Core::Utils::strip_comment(line, " //");
-            if (line.empty()) continue;
-
-            // Additionally check if the first token is a comment to handle the case where the
-            // comment starts at the beginning of the line.
-            if (line.find("//") == 0) continue;
-          }
-          // Remove comments, trailing and leading whitespaces, compact internal whitespaces
-          else
-          {
-            line = Core::Utils::strip_comment(line);
-          }
-
-          // line is now empty
-          if (line.size() == 0) continue;
-
-          // This line starts a new section
-          if (line.find("--") == 0)
-          {
-            // finalize the last excluded section. Subtract the current line which is not part of
-            // the section anymore.
-            finalize_section_read(current_section_linecount - 1);
-          }
-
-          switch (current_section_type)
-          {
-            case SectionType::normal:
-            {
-              // This line contains content that we want to read now.
-              content.push_back(line);
-              break;
-            }
-            case SectionType::on_the_fly:
-              // We are in an on-the-fly section. Skip the line.
-              break;
-            case SectionType::include:
-            {
-              if (line.find("--") != 0)
-              {
-                // Interpret the path as relative to the currently read file, if is not absolute
-                std::filesystem::path included_file(line);
-                if (!included_file.is_absolute())
-                {
-                  included_file = file_path.parent_path() / included_file;
-                }
-                FOUR_C_THROW_UNLESS(std::filesystem::status(included_file).type() ==
-                                        std::filesystem::file_type::regular,
-                    "Included file '%s' is not a regular file. Does the file exist?",
-                    included_file.c_str());
-                included_files.emplace_back(included_file);
-              }
-              break;
-            }
-          }
-        }
-        // Finalize the last section
-        finalize_section_read(current_section_linecount);
-
-        return included_files;
-      };
-
-      // Start by "including" the top-level file.
-      std::list<std::filesystem::path> included_files{top_level_file_};
-
-      // We use a hand-rolled loop here because the list keeps growing; thus we need to
-      // continuously re-evaluate where the end of the list is.
-      for (auto it = included_files.begin(); it != included_files.end(); ++it)
-      {
-        // Read the next file and get its includes.
-        auto new_include_files = read_file(*it, content, excludepositions_);
-
-        // Check that the file is not included twice
-        for (const auto& file : new_include_files)
-        {
-          if (std::find(included_files.begin(), included_files.end(), file) != included_files.end())
-          {
-            FOUR_C_THROW(
-                "File '%s' was already included before.\n Cycles are not allowed.", file.c_str());
-          }
-          else
-          {
-            included_files.emplace_back(file);
-          }
-        }
-      }
-
-      // Convert the content into a single contiguous char array and set according views for the
-      // lines.
-      make_buffer_and_line_views(content, inputfile_, lines_);
-    }
-  }
-
-  void DatFileReader::read_yaml_content(std::list<std::string>& content)
-  {
-    // In this first iteration of the YAML support, we map the constructs from a YAML file back
-    // to constructs in a dat file. This means that top-level sections are pre-fixed with "--" and
-    // the key-value pairs are mapped to "key = value" lines.
-    //
-    // caveats:
-    // - YAML files can only be read in full.
-    // - YAML files do not support the INCLUDES syntax.
-    YAML::Node config = YAML::LoadFile(top_level_file_);
-    for (const auto& section : config)
-    {
-      const std::string& section_name = section.first.as<std::string>();
-      content.emplace_back("--" + section_name);
-      const auto entries = section.second;
-
-      if (positions_.find(section_name) != positions_.end())
-        FOUR_C_THROW("section '%s' defined more than once", section_name.c_str());
-
-      const auto read_flat_sequence = [&](const YAML::Node& node)
-      {
-        for (const auto& entry : node)
-        {
-          FOUR_C_THROW_UNLESS(entry.IsScalar(),
-              "While reading section '%s': "
-              "only scalar entries are supported in sequences.",
-              section_name.c_str());
-          const auto line = entry.as<std::string>();
-          content.emplace_back(line);
-        }
-      };
-
-      const auto read_map = [&](const YAML::Node& node)
-      {
-        for (const auto& entry : node)
-        {
-          std::cout << YAML::Dump(entry.first) << std::endl;
-          std::cout << YAML::Dump(entry.second) << std::endl;
-          FOUR_C_THROW_UNLESS(entry.first.IsScalar() && entry.second.IsScalar(),
-              "While reading section '%s': "
-              "only scalar key-value pairs are supported in maps.",
-              section_name.c_str());
-          const auto line = entry.first.as<std::string>() + " = " + entry.second.as<std::string>();
-          content.emplace_back(line);
-        }
-      };
-
-      switch (entries.Type())
-      {
-        case YAML::NodeType::Undefined:
-        case YAML::NodeType::Null:
-        case YAML::NodeType::Scalar:
-          FOUR_C_THROW(
-              "Entries in section %s must either form a map or a sequence", section_name.c_str());
-        case YAML::NodeType::Sequence:
-          read_flat_sequence(entries);
-          break;
-        case YAML::NodeType::Map:
-          read_map(entries);
-          break;
-      }
-    }
-
-    make_buffer_and_line_views(content, inputfile_, lines_);
-  }
 
 
   /*----------------------------------------------------------------------*/
@@ -1302,24 +1337,6 @@ namespace Core::IO
     if (value.empty()) FOUR_C_THROW("Cannot get value from line '%s'", line.c_str());
 
     return {std::move(key), std::move(value)};
-  }
-
-  void DatFileReader::SectionPosition::pack(Communication::PackBuffer& data) const
-  {
-    Core::Communication::add_to_pack(data, file.string());
-    Core::Communication::add_to_pack(data, static_cast<unsigned>(pos));
-    Core::Communication::add_to_pack(data, length);
-  }
-
-  void DatFileReader::SectionPosition::unpack(Communication::UnpackBuffer& buffer)
-  {
-    std::string file_str;
-    Core::Communication::extract_from_pack(buffer, file_str);
-    file = file_str;
-    unsigned pos_extract;
-    Core::Communication::extract_from_pack(buffer, pos_extract);
-    pos = pos_extract;
-    Core::Communication::extract_from_pack(buffer, length);
   }
 }  // namespace Core::IO
 

@@ -127,6 +127,18 @@ namespace Core::IO
       //! The two ways to iterate over dat file content are handled by the iterator variants.
       std::variant<StreamLineIterator, PreReadIterator> iterator_;
     };
+
+    //! Helper to store section positions in dat files.
+    struct SectionPosition
+    {
+      std::filesystem::path file;
+      std::ifstream::pos_type pos;
+      unsigned int length;
+
+      void pack(Core::Communication::PackBuffer& data) const;
+
+      void unpack(Core::Communication::UnpackBuffer& buffer);
+    };
   }  // namespace Internal
 
   /*----------------------------------------------------------------------*/
@@ -226,34 +238,12 @@ namespace Core::IO
      */
     void read_generic();
 
-    /**
-     * Read a dat file and store the content. Expensive sections are skipped and read on-the-fly.
-     */
-    void read_dat_content(std::list<std::string>& content);
-
-    /**
-     * Read a YAML file and store the content. YAML files are read in one go and stored in memory.
-     */
-    void read_yaml_content(std::list<std::string>& content);
-
     //! Remember that a section was used.
     void record_section_used(const std::string& section_name);
 
     //! Internal helper to get the range of lines in a section.
     //! Does not record the section as used.
     [[nodiscard]] auto line_range(const std::string& section_name) const;
-
-    //! Helper to store section positions.
-    struct SectionPosition
-    {
-      std::filesystem::path file;
-      std::ifstream::pos_type pos;
-      unsigned int length;
-
-      void pack(Core::Communication::PackBuffer& data) const;
-
-      void unpack(Core::Communication::UnpackBuffer& buffer);
-    };
 
     /// The top-level file that is first read by this object.
     std::filesystem::path top_level_file_;
@@ -271,7 +261,7 @@ namespace Core::IO
     std::vector<std::string_view> lines_;
 
     /// file positions of skipped sections
-    std::map<std::string, SectionPosition> excludepositions_;
+    std::map<std::string, Internal::SectionPosition> excludepositions_;
 
     /// Section positions of all sections inside the #inputfile_ array.
     std::map<std::string, std::pair<std::size_t, std::size_t>> positions_;

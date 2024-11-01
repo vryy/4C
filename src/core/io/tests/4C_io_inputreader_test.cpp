@@ -13,6 +13,8 @@
 #include "4C_unittest_utils_support_files_test.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 namespace
 {
   using namespace FourC;
@@ -203,6 +205,23 @@ namespace
     reader.dump(std::cout, Core::IO::DatFileReader::Format::dat);
 
     check_section(reader, "SECTION WITH LINES", {"first line", "second line", "third line"});
+  }
+
+  TEST(DatFileReader, YamlIncludes)
+  {
+    const std::string input_file_name =
+        TESTING::get_support_file_path("test_files/yaml_includes/main.yaml");
+
+    Epetra_MpiComm comm(MPI_COMM_WORLD);
+    Core::IO::DatFileReader reader{input_file_name, comm};
+    reader.dump(std::cout, Core::IO::DatFileReader::Format::yaml);
+
+    check_section(reader, "INCLUDED SECTION 1", std::vector<std::string>(2, "line"));
+
+    Teuchos::ParameterList pl;
+    Core::IO::read_parameters_in_section(reader, "INCLUDED SECTION 2", pl);
+    EXPECT_EQ(pl.sublist("INCLUDED SECTION 2").get<int>("a"), 1);
+    EXPECT_EQ(pl.sublist("INCLUDED SECTION 2").get<double>("b"), 2.0);
   }
 
 }  // namespace
