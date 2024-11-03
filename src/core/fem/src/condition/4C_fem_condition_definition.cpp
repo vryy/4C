@@ -55,7 +55,7 @@ void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader
   // read the range into a vector
   std::vector<std::string> section_vec;
   {
-    const auto& section = reader.lines_in_section("--" + sectionname_);
+    const auto& section = reader.lines_in_section(sectionname_);
     for (const auto& line : section) section_vec.push_back(std::string{line});
   }
 

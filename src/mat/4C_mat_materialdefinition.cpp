@@ -44,7 +44,7 @@ void Mat::MaterialDefinition::add_component(const Teuchos::RCP<Input::LineCompon
 std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefinition::read(
     Core::IO::DatFileReader& reader)
 {
-  std::string name = "--MATERIALS";
+  std::string name = "MATERIALS";
 
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
   for (const auto& line : reader.lines_in_section(name))

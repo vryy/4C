@@ -48,14 +48,14 @@ void Core::IO::MeshReader::add_advanced_reader(Teuchos::RCP<Core::FE::Discretiza
   {
     case Core::IO::geometry_full:
     {
-      std::string fullsectionname("--" + sectionname + " ELEMENTS");
+      std::string fullsectionname(sectionname + " ELEMENTS");
       ElementReader er = ElementReader(dis, reader, fullsectionname, elementtypes);
       element_readers_.emplace_back(er);
       break;
     }
     case Core::IO::geometry_box:
     {
-      std::string fullsectionname("--" + sectionname + " DOMAIN");
+      std::string fullsectionname(sectionname + " DOMAIN");
       DomainReader dr = DomainReader(dis, reader, fullsectionname);
       domain_readers_.emplace_back(dr);
       break;

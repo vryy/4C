@@ -36,8 +36,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(Teuchos::RCP<Input::
 void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& problem,
     Core::IO::DatFileReader& reader, CONTACT::CONSTITUTIVELAW::Bundle& bundle)
 {
-  std::string name = "--CONTACT CONSTITUTIVE LAWS";
-  for (const auto& i : reader.lines_in_section(name))
+  for (const auto& i : reader.lines_in_section("CONTACT CONSTITUTIVE LAWS"))
   {
     Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(std::string{i});
 
