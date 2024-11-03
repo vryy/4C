@@ -7,6 +7,7 @@
 
 #include "4C_matelast_coupanisoexpobase.hpp"
 
+#include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_material_parameter_base.hpp"
 
 FOUR_C_NAMESPACE_OPEN

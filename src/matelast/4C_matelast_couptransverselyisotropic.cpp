@@ -16,6 +16,8 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
+#include <Teuchos_ParameterList.hpp>
+
 FOUR_C_NAMESPACE_OPEN
 
 
