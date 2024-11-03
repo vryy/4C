@@ -15,14 +15,9 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <NOX_Abstract_Vector.H>
+#include <Teuchos_Time.hpp>
 
 #include <set>
-
-// forward declaration
-namespace Teuchos
-{
-  class Time;
-};
 
 FOUR_C_NAMESPACE_OPEN
 
