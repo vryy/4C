@@ -7,6 +7,7 @@
 
 #include "4C_beam3_kirchhoff.hpp"
 
+#include "4C_beam3_base_templates.hpp"
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_fem_discretization.hpp"

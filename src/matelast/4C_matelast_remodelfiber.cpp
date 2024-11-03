@@ -9,12 +9,10 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_io_linedefinition.hpp"
+#include "4C_linalg_FADmatrix_utils.hpp"
 #include "4C_linalg_fixedsizematrix_tensor_products.hpp"
 #include "4C_linalg_fixedsizematrix_voigt_notation.hpp"
-#include "4C_linalg_utils_densematrix_inverse.hpp"
 #include "4C_material_parameter_base.hpp"
-
-#include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 

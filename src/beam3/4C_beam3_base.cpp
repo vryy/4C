@@ -16,7 +16,6 @@
 #include "4C_inpar_browniandyn.hpp"  // enums
 #include "4C_mat_beam_templated_material_generic.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
-#include "4C_utils_fad.hpp"
 
 #include <Sacado.hpp>
 
