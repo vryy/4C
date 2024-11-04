@@ -71,8 +71,8 @@ void STI::ScatraThermoCloneStrategy::set_element_data(Teuchos::RCP<Core::Element
 
   // safety check
   if (oldele_transport == nullptr or newele_transport == Teuchos::null)
-    FOUR_C_THROW(
-        "Expected transport element, but received element of type '%s'!", typeid(*newele).name());
+    FOUR_C_THROW("Expected transport element, but received element of type '%s'!",
+        Core::Utils::get_dynamic_type_name(*newele).c_str());
 
   // provide cloned element with material
   newele_transport->set_material(matid, oldele);

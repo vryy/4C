@@ -640,7 +640,7 @@ Discret::Elements::SolidScatraEleCalc<celltype, SolidFormulation>::get_normal_ca
     FOUR_C_THROW(
         "Cannot evaluate the Cauchy stress at xi with an element formulation with Gauss point "
         "history. The element formulation is %s.",
-        Core::Utils::try_demangle(typeid(SolidFormulation).name()).c_str());
+        Core::Utils::get_type_name<SolidFormulation>().c_str());
   }
   else
   {

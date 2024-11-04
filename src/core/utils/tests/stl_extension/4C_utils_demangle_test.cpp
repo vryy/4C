@@ -16,6 +16,15 @@ namespace DemangleTest
   struct TestStruct
   {
   };
+
+  struct Base
+  {
+    virtual ~Base() = default;
+  };
+
+  struct Derived : Base
+  {
+  };
 }  // namespace DemangleTest
 
 namespace
@@ -33,5 +42,26 @@ namespace
   {
     EXPECT_EQ(Core::Utils::try_demangle(typeid(Teuchos::RCP<DemangleTest::TestStruct>).name()),
         "Teuchos::RCP<DemangleTest::TestStruct>");
+  }
+
+  TEST(DemangleTest, PointerOfRCP)
+  {
+    Teuchos::RCP<DemangleTest::TestStruct>* ptr = nullptr;
+    EXPECT_EQ(Core::Utils::get_dynamic_type_name(ptr), "Teuchos::RCP<DemangleTest::TestStruct>*");
+  }
+
+  TEST(DemangleTest, BaseDerivedRef)
+  {
+    DemangleTest::Derived d;
+    DemangleTest::Base& base_ref = d;
+    EXPECT_EQ(Core::Utils::get_dynamic_type_name(base_ref), "DemangleTest::Derived");
+  }
+
+  TEST(DemangleTest, BaseDerivedPtr)
+  {
+    DemangleTest::Derived d;
+    DemangleTest::Base* base_ptr = &d;
+    EXPECT_EQ(Core::Utils::get_dynamic_type_name(base_ptr), "DemangleTest::Base*");
+    EXPECT_EQ(Core::Utils::get_dynamic_type_name(*base_ptr), "DemangleTest::Derived");
   }
 }  // namespace
