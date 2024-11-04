@@ -78,9 +78,10 @@ function(four_c_auto_define_module)
   # Add the headers as a file set to the interface library. This will automatically add the current directory as a search directory.
   # Since we append sources to a target successively, we need to add multiple file sets with a unique name. Use
   # the current directory name for this.
+  # Replace non-alphanumeric characters with underscores and make the name lowercase. Drop any leading digits and underscores.
   string(REGEX REPLACE "[^a-zA-Z0-9]" "_" _file_set_name "${CMAKE_CURRENT_SOURCE_DIR}")
   string(TOLOWER "${_file_set_name}" _file_set_name)
-  string(SUBSTRING "${_file_set_name}" 1 -1 _file_set_name)
+  string(REGEX REPLACE "^[0-9_]+" "" _file_set_name "${_file_set_name}")
 
   target_sources(
     ${_target}_deps
