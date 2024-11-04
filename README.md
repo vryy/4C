@@ -123,7 +123,7 @@ The [user guide](https://baci.pages.gitlab.lrz.de/baci/readthedocs/index.html) o
 If you need help with 4C, feel free to ask questions
 by [creating a GitHub issue](https://github.com/4C-multiphysics/4C/issues). Use an issue template to pre-populate the *Description* field, giving you instructions on submitting the issue.
 
-For more general questions, we operate a informal communication channel at ...
+For more general questions, you can reach us on the [4C Slack workspace](https://join.slack.com/t/4c-multiphysics/shared_invite/zt-1oi61jgdd-5tZuHku3Tb_BH5UBgojbpQ).
 
 ## Contributing
 
