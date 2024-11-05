@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 
 #include "4C_comm_mpi_utils.hpp"
 #include "4C_fem_general_node.hpp"
@@ -519,7 +519,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DatFileReader::DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag)
+  InputFile::InputFile(std::string filename, const Epetra_Comm& comm, int outflag)
       : top_level_file_(std::move(filename)), comm_(std::move(comm)), outflag_(outflag)
   {
     read_generic();
@@ -528,17 +528,17 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  std::string DatFileReader::my_inputfile_name() const { return top_level_file_.string(); }
+  std::string InputFile::my_inputfile_name() const { return top_level_file_.string(); }
 
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  int DatFileReader::my_output_flag() const { return outflag_; }
+  int InputFile::my_output_flag() const { return outflag_; }
 
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool DatFileReader::has_section(const std::string& section_name) const
+  bool InputFile::has_section(const std::string& section_name) const
   {
     const auto range = line_range(section_name);
     return range.begin() != range.end();
@@ -548,13 +548,13 @@ namespace Core::IO
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   bool read_parameters_in_section(
-      DatFileReader& reader, const std::string& section_name, Teuchos::ParameterList& list)
+      InputFile& input, const std::string& section_name, Teuchos::ParameterList& list)
   {
     if (section_name.empty()) FOUR_C_THROW("Empty section name given.");
 
     Teuchos::ParameterList& sublist = find_sublist(section_name, list);
 
-    for (const auto& line : reader.lines_in_section(section_name))
+    for (const auto& line : input.lines_in_section(section_name))
     {
       const auto& [key, value] = read_key_value(std::string(line));
 
@@ -566,7 +566,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void read_design(DatFileReader& reader, const std::string& name,
+  void read_design(InputFile& input, const std::string& name,
       std::vector<std::vector<int>>& dobj_fenode,
       const std::function<const Core::FE::Discretization&(const std::string& name)>&
           get_discretization)
@@ -576,7 +576,7 @@ namespace Core::IO
     std::string sectionname = name + "-NODE TOPOLOGY";
     std::string marker = sectionname;
 
-    for (const auto& l : reader.lines_in_section(marker))
+    for (const auto& l : input.lines_in_section(marker))
     {
       int dobj;
       int nodeid;
@@ -647,17 +647,17 @@ namespace Core::IO
         std::vector<double> box_specifications;
         {
           for (int init = 0; init < 9; ++init) box_specifications.push_back(0.0);
-          if (reader.get_comm().MyPID() == 0)  // Reading is done by proc 0
+          if (input.get_comm().MyPID() == 0)  // Reading is done by proc 0
           {
             // get original domain section from the *.dat-file
             std::string dommarker = disname + " DOMAIN";
             std::transform(dommarker.begin(), dommarker.end(), dommarker.begin(), ::toupper);
 
-            FOUR_C_THROW_UNLESS(reader.has_section(dommarker),
+            FOUR_C_THROW_UNLESS(input.has_section(dommarker),
                 "Inputreader: Couldn't find domain section for discretization %s !",
                 disname.c_str());
 
-            for (const auto& line : reader.lines_in_section(dommarker))
+            for (const auto& line : input.lines_in_section(dommarker))
             {
               std::istringstream t{std::string{line}};
               std::string key;
@@ -678,7 +678,7 @@ namespace Core::IO
             }
           }
           // All other processors get this info broadcasted
-          reader.get_comm().Broadcast(
+          input.get_comm().Broadcast(
               box_specifications.data(), static_cast<int>(box_specifications.size()), 0);
         }
 
@@ -753,7 +753,7 @@ namespace Core::IO
               (coords[2] <= bbox[2] || coords[2] >= bbox[5]))
             dnodes.insert(node->id());
         }
-        Core::LinAlg::gather_all(dnodes, reader.get_comm());
+        Core::LinAlg::gather_all(dnodes, input.get_comm());
         topology[dobj - 1].insert(dnodes.begin(), dnodes.end());
       }
 
@@ -780,11 +780,11 @@ namespace Core::IO
   //----------------------------------------------------------------------
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
-  void read_knots(DatFileReader& reader, const std::string& name,
+  void read_knots(InputFile& input, const std::string& name,
       Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
-    const int myrank = reader.get_comm().MyPID();
+    const int myrank = input.get_comm().MyPID();
 
     Teuchos::Time time("", true);
 
@@ -825,7 +825,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!reader.my_output_flag())
+      if (!input.my_output_flag())
       {
         Core::IO::cout << "Reading knot vectors for " << name << " discretization :\n";
         fflush(stdout);
@@ -847,7 +847,7 @@ namespace Core::IO
       // temporary string
       std::string tmp;
       // loop lines in file
-      for (const auto& line : reader.lines_in_section(sectionname))
+      for (const auto& line : input.lines_in_section(sectionname))
       {
         // count number of patches in knotvector section of
         // this discretisation
@@ -884,7 +884,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!reader.my_output_flag())
+      if (!input.my_output_flag())
       {
         printf("                        %8d patches", npatches);
         fflush(stdout);
@@ -939,7 +939,7 @@ namespace Core::IO
       std::vector<int> count_vals(nurbs_dim);
 
       // loop lines in file
-      for (const auto& line : reader.lines_in_section(sectionname))
+      for (const auto& line : input.lines_in_section(sectionname))
       {
         std::istringstream file{std::string{line}};
         file >> tmp;
@@ -1086,7 +1086,7 @@ namespace Core::IO
 
     if (myrank == 0)
     {
-      if (!reader.my_output_flag())
+      if (!input.my_output_flag())
       {
         Core::IO::cout << " in...." << time.totalElapsedTime(true) << " secs\n";
 
@@ -1100,7 +1100,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  void DatFileReader::read_generic()
+  void InputFile::read_generic()
   {
     if (comm_.MyPID() == 0)
     {
@@ -1262,7 +1262,7 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  bool DatFileReader::print_unknown_sections(std::ostream& out) const
+  bool InputFile::print_unknown_sections(std::ostream& out) const
   {
     const bool printout = std::any_of(
         knownsections_.begin(), knownsections_.end(), [](const auto& kv) { return !kv.second; });
@@ -1283,12 +1283,12 @@ namespace Core::IO
     return printout;
   }
 
-  void DatFileReader::record_section_used(const std::string& section_name)
+  void InputFile::record_section_used(const std::string& section_name)
   {
     knownsections_[section_name] = true;
   }
 
-  void DatFileReader::dump(std::ostream& output, DatFileReader::Format format) const
+  void InputFile::dump(std::ostream& output, InputFile::Format format) const
   {
     if (format == Format::dat)
     {

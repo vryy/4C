@@ -24,7 +24,7 @@ namespace Core::FE
 }  // namespace Core::FE
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 
   /*----------------------------------------------------------------------*/
   /*!
@@ -70,7 +70,7 @@ namespace Core::IO
     \param comm (i) our communicator
     \param sectionname (i) the section that contains the element lines
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname);
 
     /*!
@@ -83,7 +83,7 @@ namespace Core::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtype (i) element type name to read in this discretization
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname, std::string elementtype);
 
     /*!
@@ -96,7 +96,7 @@ namespace Core::IO
     \param sectionname (i) the section that contains the element lines
     \param elementtypes (i) element type names to read in this discretization
     */
-    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
+    ElementReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname, const std::set<std::string>& elementtypes);
 
     //! Destructor
@@ -154,7 +154,7 @@ namespace Core::IO
     std::string name_;
 
     /// the main dat file reader
-    Core::IO::DatFileReader& reader_;
+    Core::IO::InputFile& input_;
 
     /// my comm
     const Epetra_Comm& comm_;

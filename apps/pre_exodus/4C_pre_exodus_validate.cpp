@@ -12,7 +12,7 @@
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
 #include "4C_global_legacy_module.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_pre_exodus_reader.hpp"
 
@@ -27,8 +27,8 @@ void EXODUS::validate_input_file(const Teuchos::RCP<Epetra_Comm> comm, const std
   // access our problem instance
   Global::Problem* problem = Global::Problem::instance();
 
-  // create a DatFileReader
-  Core::IO::DatFileReader reader(datfile, *comm, 0);
+  // create a InputFile
+  Core::IO::InputFile reader(datfile, *comm, 0);
 
   // read and validate dynamic and solver sections
   std::cout << "...Read parameters" << std::endl;

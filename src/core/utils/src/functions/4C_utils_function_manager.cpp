@@ -8,7 +8,7 @@
 #include "4C_utils_function_manager.hpp"
 
 #include "4C_io_dat_file_utils.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_function.hpp"
@@ -140,7 +140,7 @@ void Core::Utils::FunctionManager::add_function_definition(
 }
 
 
-void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
+void Core::Utils::FunctionManager::read_input(Core::IO::InputFile& input)
 {
   functions_.clear();
 
@@ -156,7 +156,7 @@ void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
           {
             auto [parsed_lines, unparsed_lines] =
                 Core::IO::DatFileUtils::read_matching_lines_in_section(
-                    reader, "FUNCT" + std::to_string(funct_suffix), possible_lines);
+                    input, "FUNCT" + std::to_string(funct_suffix), possible_lines);
 
             // A convoluted way of saying that there are no lines in the section, thus, stop
             // parsing. This can only be refactored if the reading mechanism is overhauled in
@@ -176,7 +176,7 @@ void Core::Utils::FunctionManager::read_input(Core::IO::DatFileReader& reader)
           // If we end up here, the current sections function definition could not be parsed.
           {
             std::stringstream ss;
-            for (const auto& line : reader.lines_in_section("FUNCT" + std::to_string(funct_suffix)))
+            for (const auto& line : input.lines_in_section("FUNCT" + std::to_string(funct_suffix)))
             {
               ss << '\n' << line;
             }

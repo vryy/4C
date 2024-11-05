@@ -7,7 +7,7 @@
 
 #include "4C_io_dat_file_utils.hpp"
 
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -38,11 +38,11 @@ void Core::IO::DatFileUtils::print_section(std::ostream& out, const std::string&
 
 
 std::vector<Input::LineDefinition> Core::IO::DatFileUtils::read_all_lines_in_section(
-    Core::IO::DatFileReader& reader, const std::string& section,
+    Core::IO::InputFile& input, const std::string& section,
     const std::vector<Input::LineDefinition>& possible_lines)
 {
   auto [parsed_lines, unparsed_lines] =
-      read_matching_lines_in_section(reader, section, possible_lines);
+      read_matching_lines_in_section(input, section, possible_lines);
 
   // In this function, encountering unparsed lines is an error, so construct a nice message.
   if (unparsed_lines.size() > 0)
@@ -68,13 +68,13 @@ std::vector<Input::LineDefinition> Core::IO::DatFileUtils::read_all_lines_in_sec
 
 
 std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
-Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& reader,
+Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::InputFile& input,
     const std::string& section, const std::vector<Input::LineDefinition>& possible_lines)
 {
   std::vector<std::string> unparsed_lines;
   std::vector<Input::LineDefinition> parsed_lines;
 
-  Input::LineDefinition::ReadContext context{.input_file = reader.my_inputfile_name()};
+  Input::LineDefinition::ReadContext context{.input_file = input.my_inputfile_name()};
 
   const auto process_line = [&](const std::string& input_line)
   {
@@ -94,7 +94,7 @@ Core::IO::DatFileUtils::read_matching_lines_in_section(Core::IO::DatFileReader& 
     unparsed_lines.emplace_back(input_line);
   };
 
-  for (const auto& input_line : reader.lines_in_section(section))
+  for (const auto& input_line : input.lines_in_section(section))
   {
     process_line(std::string(input_line));
   }

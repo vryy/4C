@@ -31,18 +31,18 @@ namespace Core::IO::DatFileUtils
       const std::vector<Input::LineDefinition>& possible_lines);
 
   /**
-   * Read all lines in a @p section of @p reader that match the @p possible_lines.
+   * Read all lines in a @p section of @p input that match the @p possible_lines.
    * Every line in the @p section must be readable as one of the @p possible_lines. Otherwise, an
    * exception is thrown.
    *
    * @see read_matching_lines_in_section()
    */
-  std::vector<Input::LineDefinition> read_all_lines_in_section(Core::IO::DatFileReader& reader,
+  std::vector<Input::LineDefinition> read_all_lines_in_section(Core::IO::InputFile& input,
       const std::string& section, const std::vector<Input::LineDefinition>& possible_lines);
 
 
   /**
-   * Read only lines in a @p section of @p reader that match the @p possible_lines. This implies
+   * Read only lines in a @p section of @p input that match the @p possible_lines. This implies
    * that, potentially, no lines are read at all, resulting in an empty returned vector. In
    * addition to the vector of parsed lines, the second returned value contains all unparsed input
    * lines.
@@ -50,7 +50,7 @@ namespace Core::IO::DatFileUtils
    * @see read_all_lines_in_section()
    */
   std::pair<std::vector<Input::LineDefinition>, std::vector<std::string>>
-  read_matching_lines_in_section(Core::IO::DatFileReader& reader, const std::string& section,
+  read_matching_lines_in_section(Core::IO::InputFile& input, const std::string& section,
       const std::vector<Input::LineDefinition>& possible_lines);
 
 }  // namespace Core::IO::DatFileUtils

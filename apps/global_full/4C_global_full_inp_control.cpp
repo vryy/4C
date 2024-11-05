@@ -10,7 +10,7 @@
 #include "4C_global_data.hpp"
 #include "4C_global_data_read.hpp"
 #include "4C_global_legacy_module.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -34,7 +34,7 @@ void ntainp_ccadiscret(
   Core::Communication::NestedParallelismType npType = problem->get_communicators()->np_type();
 
   // and now the actual reading
-  Core::IO::DatFileReader reader(inputfile_name, *lcomm);
+  Core::IO::InputFile reader(inputfile_name, *lcomm);
 
   Global::read_parameter(*problem, reader);
 

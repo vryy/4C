@@ -18,7 +18,7 @@
 #include "4C_global_data_read.hpp"
 #include "4C_inpar_ssi.hpp"
 #include "4C_io_control.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_mat_par_bundle.hpp"
 #include "4C_membrane.hpp"

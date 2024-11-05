@@ -8,15 +8,12 @@
 #include "4C_io_domainreader.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
-#include "4C_comm_parobject.hpp"
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element_definition.hpp"
 #include "4C_io_gridgenerator.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_pstream.hpp"
-#include "4C_rebalance_binning_based.hpp"
 #include "4C_rebalance_print.hpp"
-#include "4C_utils_string.hpp"
 
 #include <Teuchos_Time.hpp>
 
@@ -73,10 +70,10 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DomainReader::DomainReader(Teuchos::RCP<Core::FE::Discretization> dis,
-      Core::IO::DatFileReader& reader, std::string sectionname)
+  DomainReader::DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
+      std::string sectionname)
       : name_(dis->name()),
-        reader_(reader),
+        input_(input),
         comm_(dis->get_comm()),
         sectionname_(sectionname),
         dis_(dis)
@@ -91,7 +88,7 @@ namespace Core::IO
 
     Teuchos::Time time("", true);
 
-    if (!reader_.my_output_flag() && myrank == 0)
+    if (!input_.my_output_flag() && myrank == 0)
       Core::IO::cout << "Entering domain generation mode for " << name_
                      << " discretization ...\nCreate and partition elements      in...."
                      << Core::IO::endl;
@@ -101,9 +98,9 @@ namespace Core::IO
     inputData.node_gid_of_first_new_node_ = nodeGIdOfFirstNewNode;
 
     Core::IO::GridGenerator::create_rectangular_cuboid_discretization(
-        *dis_, inputData, static_cast<bool>(reader_.my_output_flag()));
+        *dis_, inputData, static_cast<bool>(input_.my_output_flag()));
 
-    if (!myrank && reader_.my_output_flag() == 0)
+    if (!myrank && input_.my_output_flag() == 0)
       Core::IO::cout << "............................................... " << std::setw(10)
                      << std::setprecision(5) << std::scientific << time.totalElapsedTime(true)
                      << " secs" << Core::IO::endl;
@@ -121,7 +118,7 @@ namespace Core::IO
     {
       bool any_lines_read = false;
       // read domain info
-      for (const auto& line : reader_.lines_in_section(sectionname_))
+      for (const auto& line : input_.lines_in_section(sectionname_))
       {
         any_lines_read = true;
         std::istringstream t{std::string{line}};
@@ -186,14 +183,14 @@ namespace Core::IO
 
     Teuchos::Time time("", true);
 
-    if (!myrank && !reader_.my_output_flag())
+    if (!myrank && !input_.my_output_flag())
       Core::IO::cout << "Complete discretization " << std::left << std::setw(16) << name_
                      << " in...." << Core::IO::flush;
 
     int err = dis_->fill_complete(false, false, false);
     if (err) FOUR_C_THROW("dis_->fill_complete() returned %d", err);
 
-    if (!myrank && !reader_.my_output_flag())
+    if (!myrank && !input_.my_output_flag())
       Core::IO::cout << time.totalElapsedTime(true) << " secs" << Core::IO::endl;
 
     Core::Rebalance::Utils::print_parallel_distribution(*dis_);

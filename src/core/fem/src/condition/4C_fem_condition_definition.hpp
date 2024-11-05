@@ -32,7 +32,7 @@ namespace Core::FE
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }
 
 namespace Core::Conditions
@@ -88,10 +88,10 @@ namespace Core::Conditions
     /// read all conditions from my input file section
     /*!
       \param problem (i) global problem instance that manages the input
-      \param reader (i) the actual dat file reader that has access to the dat file
+      \param input (i) the input file
       \param cmap (o) the conditions we read here
      */
-    void read(Core::IO::DatFileReader& reader,
+    void read(Core::IO::InputFile& input,
         std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization

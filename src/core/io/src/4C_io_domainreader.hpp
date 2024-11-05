@@ -26,7 +26,7 @@ namespace Core::FE
 namespace Core::IO
 {
   class LineDefinition;
-  class DatFileReader;
+  class InputFile;
 
   namespace GridGenerator
   {
@@ -49,10 +49,10 @@ namespace Core::IO
       Create empty discretization and append it to given field.
 
       \param dis (i) the new discretization
-      \param reader (i) the dat file reader
+      \param input (i) the input file
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::DatFileReader& reader,
+    DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname);
 
     /// give the discretization this reader fills
@@ -86,8 +86,8 @@ namespace Core::IO
     /// discretization name
     std::string name_;
 
-    /// the main dat file reader
-    Core::IO::DatFileReader& reader_;
+    /// the main input file
+    Core::IO::InputFile& input_;
 
     /// my comm
     const Epetra_Comm& comm_;

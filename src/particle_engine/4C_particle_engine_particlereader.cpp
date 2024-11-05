@@ -7,7 +7,7 @@
 
 #include "4C_particle_engine_particlereader.hpp"
 
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_particle_engine_enums.hpp"
@@ -18,18 +18,18 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void PARTICLEENGINE::read_particles(Core::IO::DatFileReader& reader,
-    const std::string& section_name, std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
+void PARTICLEENGINE::read_particles(Core::IO::InputFile& input, const std::string& section_name,
+    std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles)
 {
-  const int myrank = reader.get_comm().MyPID();
+  const int myrank = input.get_comm().MyPID();
   if (myrank > 0) return;
 
   Teuchos::Time time("", true);
 
   bool any_particles_read = false;
-  for (const auto& particle_line : reader.lines_in_section(section_name))
+  for (const auto& particle_line : input.lines_in_section(section_name))
   {
-    if (!any_particles_read && !reader.my_output_flag())
+    if (!any_particles_read && !input.my_output_flag())
       Core::IO::cout << "Read and create particles\n" << Core::IO::flush;
     any_particles_read = true;
 
@@ -99,14 +99,14 @@ void PARTICLEENGINE::read_particles(Core::IO::DatFileReader& reader,
     }
 
     double t2 = time.totalElapsedTime(true);
-    if (!myrank && !reader.my_output_flag())
+    if (!myrank && !input.my_output_flag())
     {
       printf("reading %10.5e secs\n", t2 - t1);
       fflush(stdout);
     }
   }
 
-  if (any_particles_read && !reader.my_output_flag())
+  if (any_particles_read && !input.my_output_flag())
     printf("in............................................. %10.5e secs\n",
         time.totalElapsedTime(true));
 }

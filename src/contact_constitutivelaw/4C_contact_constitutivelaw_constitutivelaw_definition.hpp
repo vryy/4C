@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }  // namespace Core::IO
 
 namespace Core::FE
@@ -83,10 +83,10 @@ namespace CONTACT
       /** \brief read all materials from my input file section
        *
        * \param[in] problem global problem instance that manages the input
-       * \param[in] reader the actual dat file reader that has access to the dat file
+       * \param[in] input the input file
        * \params[inout] mmap map mapping IDs to parameters of the contact constitutive model
        */
-      void read(const Global::Problem& problem, Core::IO::DatFileReader& reader,
+      void read(const Global::Problem& problem, Core::IO::InputFile& input,
           CONTACT::CONSTITUTIVELAW::Bundle& bundle);
 
       /// print my DAT file section and possible contact constitutive laws

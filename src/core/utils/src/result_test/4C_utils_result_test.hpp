@@ -27,7 +27,7 @@ namespace Input
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }
 
 namespace Core::Utils
