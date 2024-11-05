@@ -30,7 +30,7 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit StructureTimeAdaJoint(Teuchos::RCP<Structure> structure);
+    explicit StructureTimeAdaJoint(std::shared_ptr<Structure> structure);
 
     //! Provide the name
     enum Inpar::Solid::TimAdaKind method_name() const override
@@ -64,10 +64,10 @@ namespace Adapter
     enum AdaEnum ada_;
 
     //! the auxiliary integrator
-    Teuchos::RCP<Solid::TimeInt::Base> sta_;
+    std::shared_ptr<Solid::TimeInt::Base> sta_;
 
     //! wrapper of the auxiliary integrator
-    Teuchos::RCP<Structure> sta_wrapper_;
+    std::shared_ptr<Structure> sta_wrapper_;
 
     /*! \brief Make one step with auxiliary scheme
      *

@@ -127,18 +127,18 @@ bool Core::GeometricSearch::MatchingOctree::search_closest_entity_on_this_proc(
     // the node is inside the bounding box. So maybe the closest one is
     // here on this proc -> search for it
 
-    if (octreeroot_ == Teuchos::null)
+    if (octreeroot_ == nullptr)
     {
       FOUR_C_THROW("No root for octree on proc");
     }
 
-    Teuchos::RCP<OctreeElement> octreeele = octreeroot_;
+    std::shared_ptr<OctreeElement> octreeele = octreeroot_;
 
     while (!octreeele->is_leaf())
     {
       octreeele = octreeele->return_child_containing_point(x);
 
-      if (octreeele == Teuchos::null)
+      if (octreeele == nullptr)
       {
         FOUR_C_THROW("Child is nullpointer");
       }
@@ -260,8 +260,8 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::RCP(Core::Communication::factory(data_buffer));
+      auto o = std::shared_ptr<Core::Communication::ParObject>(
+          Core::Communication::factory(data_buffer));
 
       // check type of ParObject, and return gid
       const int id = check_valid_entity_type(o);
@@ -272,7 +272,7 @@ void Core::GeometricSearch::MatchingOctree::create_global_entity_matching(
       if (!masterplanecoords_.empty())
       {
         std::array<double, 3> pointcoord;
-        calc_point_coordinate(o.getRawPtr(), pointcoord.data());
+        calc_point_coordinate(o.get(), pointcoord.data());
 
         // get its coordinates
         std::vector<double> x(3);
@@ -497,8 +497,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::RCP(Core::Communication::factory(data_buffer));
+      std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(data_buffer));
 
       // cast ParObject to specific type and return id
       const int id = check_valid_entity_type(o);
@@ -509,7 +508,7 @@ void Core::GeometricSearch::MatchingOctree::find_match(const Core::FE::Discretiz
       if (not masterplanecoords_.empty())
       {
         std::array<double, 3> pointcoord;
-        calc_point_coordinate(o.getRawPtr(), pointcoord.data());
+        calc_point_coordinate(o.get(), pointcoord.data());
 
         // get its coordinates
         std::vector<double> x(pointcoord.begin(), pointcoord.end());
@@ -651,8 +650,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
       // allocate an "empty node". Fill it with info from
       // extracted node data
       Communication::UnpackBuffer data_buffer(data);
-      Teuchos::RCP<Core::Communication::ParObject> o =
-          Teuchos::RCP(Core::Communication::factory(data_buffer));
+      std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(data_buffer));
 
       const int id = check_valid_entity_type(o);
 
@@ -662,7 +660,7 @@ void Core::GeometricSearch::MatchingOctree::fill_slave_to_master_gid_mapping(
       if (not masterplanecoords_.empty())
       {
         std::array<double, 3> pointcoord;
-        calc_point_coordinate(o.getRawPtr(), pointcoord.data());
+        calc_point_coordinate(o.get(), pointcoord.data());
 
         // get its coordinates
         std::vector<double> x(pointcoord.begin(), pointcoord.end());
@@ -786,7 +784,7 @@ void Core::GeometricSearch::NodeMatchingOctree::unpack_entity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int Core::GeometricSearch::NodeMatchingOctree::check_valid_entity_type(
-    Teuchos::RCP<Core::Communication::ParObject> o)
+    std::shared_ptr<Core::Communication::ParObject> o)
 {
   // cast ParObject to Node
   auto* actnode = dynamic_cast<Core::Nodes::Node*>(o.get());
@@ -797,12 +795,12 @@ int Core::GeometricSearch::NodeMatchingOctree::check_valid_entity_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+std::shared_ptr<Core::GeometricSearch::OctreeElement>
 Core::GeometricSearch::NodeMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::make_rcp<OctreeNodalElement>();
+  std::shared_ptr<Core::GeometricSearch::OctreeElement> newtreeelement =
+      std::make_shared<OctreeNodalElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -898,11 +896,10 @@ void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
     std::vector<char> nodedata;
     extract_from_pack(buffer, nodedata);
     Communication::UnpackBuffer nodedatabuffer(nodedata);
-    Teuchos::RCP<Core::Communication::ParObject> o =
-        Teuchos::RCP(Core::Communication::factory(nodedatabuffer));
-    Teuchos::RCP<Core::Nodes::Node> actnode = Teuchos::rcp_dynamic_cast<Core::Nodes::Node>(o);
-    if (actnode == Teuchos::null) FOUR_C_THROW("cast from ParObject to Node failed");
-    nodes_.insert(std::pair<int, Teuchos::RCP<Core::Nodes::Node>>(actnode->id(), actnode));
+    std::shared_ptr<Core::Communication::ParObject> o(Core::Communication::factory(nodedatabuffer));
+    std::shared_ptr<Core::Nodes::Node> actnode = std::dynamic_pointer_cast<Core::Nodes::Node>(o);
+    if (actnode == nullptr) FOUR_C_THROW("cast from ParObject to Node failed");
+    nodes_.insert(std::pair<int, std::shared_ptr<Core::Nodes::Node>>(actnode->id(), actnode));
   }
 
 }  // ElementMatchingOctree::unpack_entity
@@ -910,7 +907,7 @@ void Core::GeometricSearch::ElementMatchingOctree::unpack_entity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int Core::GeometricSearch::ElementMatchingOctree::check_valid_entity_type(
-    Teuchos::RCP<Core::Communication::ParObject> o)
+    std::shared_ptr<Core::Communication::ParObject> o)
 {
   // cast ParObject to element
   auto* actele = dynamic_cast<Core::Elements::Element*>(o.get());
@@ -924,12 +921,12 @@ int Core::GeometricSearch::ElementMatchingOctree::check_valid_entity_type(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+std::shared_ptr<Core::GeometricSearch::OctreeElement>
 Core::GeometricSearch::ElementMatchingOctree::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::make_rcp<OctreeElementElement>();
+  std::shared_ptr<Core::GeometricSearch::OctreeElement> newtreeelement =
+      std::make_shared<OctreeElementElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -959,12 +956,12 @@ void Core::GeometricSearch::OctreeNodalElement::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+std::shared_ptr<Core::GeometricSearch::OctreeElement>
 Core::GeometricSearch::OctreeNodalElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::make_rcp<OctreeNodalElement>();
+  std::shared_ptr<Core::GeometricSearch::OctreeElement> newtreeelement =
+      std::make_shared<OctreeNodalElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -998,12 +995,12 @@ void Core::GeometricSearch::OctreeElementElement::calc_point_coordinate(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+std::shared_ptr<Core::GeometricSearch::OctreeElement>
 Core::GeometricSearch::OctreeElementElement::create_octree_element(
     std::vector<int>& nodeidstoadd, Core::LinAlg::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
-  Teuchos::RCP<Core::GeometricSearch::OctreeElement> newtreeelement =
-      Teuchos::make_rcp<OctreeElementElement>();
+  std::shared_ptr<Core::GeometricSearch::OctreeElement> newtreeelement =
+      std::make_shared<OctreeElementElement>();
 
   newtreeelement->init(
       *discret_, nodeidstoadd, boundingboxtoadd, layer, maxtreenodesperleaf_, tol_);
@@ -1292,15 +1289,15 @@ bool Core::GeometricSearch::OctreeElement::is_point_in_bounding_box(const std::v
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::GeometricSearch::OctreeElement>
+std::shared_ptr<Core::GeometricSearch::OctreeElement>
 Core::GeometricSearch::OctreeElement::return_child_containing_point(const std::vector<double>& x)
 {
   check_is_init();
   check_is_setup();
 
-  Teuchos::RCP<OctreeElement> nextelement;
+  std::shared_ptr<OctreeElement> nextelement;
 
-  if (this->octreechild1_ == Teuchos::null || this->octreechild2_ == Teuchos::null)
+  if (this->octreechild1_ == nullptr || this->octreechild2_ == nullptr)
   {
     FOUR_C_THROW("Asked leaf element for further children.");
   }

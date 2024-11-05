@@ -101,7 +101,7 @@ Core::FE::Nurbs::Knotvector::Knotvector(const Core::FE::Nurbs::Knotvector& old)
     (knot_values_[np]).resize(dim_);
     for (int rr = 0; rr < dim_; ++rr)
     {
-      ((knot_values_[np])[rr]) = Teuchos::make_rcp<std::vector<double>>();
+      ((knot_values_[np])[rr]) = std::make_shared<std::vector<double>>();
       *((knot_values_[np])[rr]) = *((old.knot_values_[np])[rr]);
     }
   }
@@ -525,7 +525,7 @@ bool Core::FE::Nurbs::Knotvector::get_boundary_ele_and_parent_knots(
  *----------------------------------------------------------------------*/
 void Core::FE::Nurbs::Knotvector::set_knots(const int& direction, const int& npatch,
     const int& degree, const int& numknots, const std::string& knotvectortype,
-    Teuchos::RCP<std::vector<double>> directions_knots)
+    std::shared_ptr<std::vector<double>> directions_knots)
 {
   // filled is false now since new add new knots
   filled_ = false;
@@ -638,7 +638,7 @@ void Core::FE::Nurbs::Knotvector::finish_knots(const int smallest_gid_in_dis)
     for (int rr = 0; rr < dim_; ++rr)
     {
       // is the knotvector of this dimension nonempty?
-      if ((knot_values_[np])[rr] == Teuchos::null)
+      if ((knot_values_[np])[rr] == nullptr)
       {
         FOUR_C_THROW("no knotvector available in this direction\n");
       }
@@ -855,7 +855,7 @@ void Core::FE::Nurbs::Knotvector::unpack(Core::Communication::UnpackBuffer& buff
   {
     for (int rr = 0; rr < dim_; ++rr)
     {
-      (knot_values_[np])[rr] = Teuchos::make_rcp<std::vector<double>>((n_x_m_x_l_[np])[rr]);
+      (knot_values_[np])[rr] = std::make_shared<std::vector<double>>((n_x_m_x_l_[np])[rr]);
 
       extract_from_pack(buffer, (*((knot_values_[np])[rr])));
     }

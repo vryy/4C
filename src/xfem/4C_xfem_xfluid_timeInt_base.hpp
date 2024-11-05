@@ -344,27 +344,27 @@ namespace XFEM
    public:
     //! constructor
     explicit XfluidTimeintBase(
-        const Teuchos::RCP<Core::FE::Discretization> discret,      /// background discretization
-        const Teuchos::RCP<Core::FE::Discretization> boundarydis,  /// cut discretization
-        Teuchos::RCP<Cut::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
-        Teuchos::RCP<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
-        Teuchos::RCP<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
+        const std::shared_ptr<Core::FE::Discretization> discret,      /// background discretization
+        const std::shared_ptr<Core::FE::Discretization> boundarydis,  /// cut discretization
+        std::shared_ptr<Cut::CutWizard> wizard_old,    /// cut wizard w.r.t. old interface position
+        std::shared_ptr<Cut::CutWizard> wizard_new,    /// cut wizard w.r.t. new interface position
+        std::shared_ptr<XFEM::XFEMDofSet> dofset_old,  /// XFEM dofset w.r.t. old interface position
+        std::shared_ptr<XFEM::XFEMDofSet> dofset_new,  /// XFEM dofset w.r.t. new interface position
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
             oldVectors,  /// vector of col-vectors w.r.t. old interface position
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispn,   /// displacment n
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,  /// displacment n +1
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispn,   /// displacment n
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,  /// displacment n +1
         const Epetra_Map& olddofcolmap,  /// dofcolmap w.r.t. old interface position
         const Epetra_Map& newdofrowmap,  /// dofcolmap w.r.t. new interface position
-        const Teuchos::RCP<std::map<int, std::vector<int>>>
+        const std::shared_ptr<std::map<int, std::vector<int>>>
             pbcmap  /// map of periodic boundary conditions
     );
 
     //! destructor
     virtual ~XfluidTimeintBase() = default;
     //! perform the computation
-    virtual void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectorsn,
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectorsnp)
+    virtual void compute(std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newRowVectorsn,
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newRowVectorsnp)
     {
       FOUR_C_THROW("Unused function! Use a function of the derived classes");
     };
@@ -397,7 +397,7 @@ namespace XFEM
 
    protected:
     //! initialize data to be set in every computation
-    void handle_vectors(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn);
+    void handle_vectors(std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& newRowVectorsn);
 
     //! return the number of Epetra vectors which shall get new values for a given node with
     //! according data
@@ -567,30 +567,30 @@ namespace XFEM
     //! @name  data w.r.t old and new interface position
     /*========================================================================*/
 
-    Teuchos::RCP<Core::FE::Discretization> discret_;      //! background discretization
-    Teuchos::RCP<Core::FE::Discretization> boundarydis_;  //! cut discretization
+    std::shared_ptr<Core::FE::Discretization> discret_;      //! background discretization
+    std::shared_ptr<Core::FE::Discretization> boundarydis_;  //! cut discretization
 
-    Teuchos::RCP<Cut::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
-    Teuchos::RCP<Cut::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
+    std::shared_ptr<Cut::CutWizard> wizard_old_;  //! cut wizard w.r.t. old interface position
+    std::shared_ptr<Cut::CutWizard> wizard_new_;  //! cut wizard w.r.t. new interface position
 
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;  //! XFEM dofset w.r.t. old interface position
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;  //! XFEM dofset w.r.t. new interface position
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_old_;  //! XFEM dofset w.r.t. old interface position
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_new_;  //! XFEM dofset w.r.t. new interface position
 
     const Epetra_Map olddofcolmap_;  //! dofcolmap w.r.t. old interface position
     const Epetra_Map newdofrowmap_;  //! dofcolmap w.r.t. new interface position
 
-    const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
+    const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
         oldVectors_;  //! vector of col!-vectors w.r.t. old interface position
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
         newVectors_;  //! vector of row!-vectors w.r.t. new interface position (overwritten with
                       //! new information for non-predictor case and filled otherwise)
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         dispn_;  //! col!-displacement vector for timestep n w.r.t. old interface position
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         dispnp_;  //! col!-displacement vector for timestep n + 1 w.r.t. old interface position
 
-    Teuchos::RCP<std::vector<TimeIntData>>
+    std::shared_ptr<std::vector<TimeIntData>>
         timeIntData_;  //! data-vector containing all data for computation with help of sub-class
                        //! TimeIntData
 
@@ -600,7 +600,7 @@ namespace XFEM
     //! @name stuff for parallel communication
     /*========================================================================*/
 
-    const Teuchos::RCP<std::map<int, std::vector<int>>>
+    const std::shared_ptr<std::map<int, std::vector<int>>>
         pbcmap_;         //! map for master and slave elements of nodes
     const int myrank_;   //! current processor id
     const int numproc_;  //! number of processors
@@ -640,9 +640,9 @@ namespace XFEM
         const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
             reconstr_method,                      ///< reconstruction map for nodes and its dofsets
         Inpar::XFEM::XFluidTimeInt& timeIntType,  ///< type of time integration
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n
-        const double& dt,                                       ///< time step size
-        const bool initialize                                   ///< is initialization?
+        const std::shared_ptr<Core::LinAlg::Vector<double>> veln,  ///< velocity at time t^n
+        const double& dt,                                          ///< time step size
+        const bool initialize                                      ///< is initialization?
     );
 
     /*========================================================================*/
@@ -650,7 +650,8 @@ namespace XFEM
     /*========================================================================*/
 
     //! perform the computation
-    virtual void compute(std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn);
+    virtual void compute(
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& newRowVectorsn);
 
     /*========================================================================*/
     //! element based routines
@@ -673,7 +674,7 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 3>& vel_deriv,        ///< determine velocity derivatives at point
         double& pres,                                 ///< pressure
         Core::LinAlg::Matrix<1, 3>& pres_deriv,       ///< pressure gradient
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             vel_vec,               ///< vector used for interpolating at gp
         bool compute_deriv = true  ///< shall derivatives be computed?
     ) const;
@@ -688,7 +689,7 @@ namespace XFEM
         Core::LinAlg::Matrix<3, 3>& vel_deriv,   ///< determine velocity derivatives at point
         double& pres,                            ///< pressure
         Core::LinAlg::Matrix<1, 3>& pres_deriv,  ///< pressure gradient
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             vel_vec,               ///< vector used for interpolating at gp
         bool compute_deriv = true  ///< shall derivatives be computed?
     ) const;
@@ -697,10 +698,10 @@ namespace XFEM
     //!  04/12 *
     template <const int numnode>
     void extract_nodal_values_from_vector(
-        Core::LinAlg::Matrix<3, numnode>& evel,              ///< element velocities
-        Core::LinAlg::Matrix<numnode, 1>& epre,              ///< element pressure
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vel_vec,  ///< global vector
-        std::vector<int>& lm                                 ///< local map
+        Core::LinAlg::Matrix<3, numnode>& evel,                 ///< element velocities
+        Core::LinAlg::Matrix<numnode, 1>& epre,                 ///< element pressure
+        std::shared_ptr<Core::LinAlg::Vector<double>> vel_vec,  ///< global vector
+        std::vector<int>& lm                                    ///< local map
     )
     {
       const int nsd = 3;
@@ -709,7 +710,7 @@ namespace XFEM
       evel.clear();
       epre.clear();
 
-      if (vel_vec == Teuchos::null) FOUR_C_THROW("vector is null");
+      if (vel_vec == nullptr) FOUR_C_THROW("vector is null");
 
       // extract local values of the global vectors
       std::vector<double> mymatrix(lm.size());
@@ -946,7 +947,7 @@ namespace XFEM
     Inpar::XFEM::XFluidTimeInt
         timeIntType_;  //! which computation/reconstruction algorithm for standard dofs
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         veln_;  //! velocity w.r.t old interface position in column map
 
     const double dt_;  //! time step size

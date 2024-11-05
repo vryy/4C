@@ -12,6 +12,7 @@
 #include "4C_so3_nullspace.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -30,24 +31,24 @@ Core::Communication::ParObject* Discret::Elements::Torsion3Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Torsion3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Torsion3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TORSION3")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Torsion3>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Torsion3>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Torsion3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Torsion3Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Torsion3>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Torsion3>(id, owner);
   return ele;
 }
 
@@ -153,9 +154,9 @@ void Discret::Elements::Torsion3::unpack(Core::Communication::UnpackBuffer& buff
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             cyron 02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Torsion3::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Torsion3::lines()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -163,15 +164,15 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Torsion3::
 void Discret::Elements::Torsion3::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(
+        p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"));
   else
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::Torsion3::params_interface_ptr()
+std::shared_ptr<Core::Elements::ParamsInterface> Discret::Elements::Torsion3::params_interface_ptr()
 {
   return interface_ptr_;
 }

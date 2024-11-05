@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int dim>
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergent_patch_recovery(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergent_patch_recovery(
     Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& state,
     const std::string& statename, const int numvec, Teuchos::ParameterList& params)
 {
@@ -89,7 +89,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
   // centers (for linear elements the centers are the superconvergent sampling points!)
   dis.clear_state();
   // Set ALE displacements here
-  dis.set_state(statename, Teuchos::rcpFromRef(state));
+  dis.set_state(statename, Core::Utils::shared_ptr_from_ref(state));
 
   const Epetra_Map* elementrowmap = dis.element_row_map();
   Core::LinAlg::MultiVector<double> elevec_toberecovered(*elementrowmap, numvec, true);
@@ -541,12 +541,12 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
 
   // if no pbc are involved leave here
   if (noderowmap.PointSameAs(*fullnoderowmap))
-    return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(nodevec);
+    return std::make_shared<Core::LinAlg::MultiVector<double>>(nodevec);
 
   // solution vector based on full row map in which the solution of the master node is inserted into
   // slave nodes
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> fullnodevec =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*fullnoderowmap, numvec);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> fullnodevec =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*fullnoderowmap, numvec);
 
   for (int i = 0; i < fullnoderowmap->NumMyElements(); ++i)
   {
@@ -570,13 +570,13 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::FE::compute_superconvergen
   return fullnodevec;
 }
 
-template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+template std::shared_ptr<Core::LinAlg::MultiVector<double>>
 Core::FE::compute_superconvergent_patch_recovery<1>(Core::FE::Discretization&,
     const Core::LinAlg::Vector<double>&, const std::string&, const int, Teuchos::ParameterList&);
-template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+template std::shared_ptr<Core::LinAlg::MultiVector<double>>
 Core::FE::compute_superconvergent_patch_recovery<2>(Core::FE::Discretization&,
     const Core::LinAlg::Vector<double>&, const std::string&, const int, Teuchos::ParameterList&);
-template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+template std::shared_ptr<Core::LinAlg::MultiVector<double>>
 Core::FE::compute_superconvergent_patch_recovery<3>(Core::FE::Discretization&,
     const Core::LinAlg::Vector<double>&, const std::string&, const int, Teuchos::ParameterList&);
 

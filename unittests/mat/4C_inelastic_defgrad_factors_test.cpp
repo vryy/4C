@@ -67,7 +67,7 @@ namespace
       const double ref_conc(46456.0);
 
       // create linear shape evaluation object
-      linear_shape_ = Teuchos::make_rcp<Mat::InelasticDefgradLinearShape>(growth_fac, ref_conc);
+      linear_shape_ = std::make_shared<Mat::InelasticDefgradLinearShape>(growth_fac, ref_conc);
 
       // prepare variables needed to instantiate polynomial shape evaluation object
       std::vector<double> poly_coeffs{0.1051717305, -3.9012322937, 31.9658107225, -122.8624633232,
@@ -77,13 +77,13 @@ namespace
 
       // create polynomial shape evaluation object
       polynomial_shape_ =
-          Teuchos::make_rcp<Mat::InelasticDefgradPolynomialShape>(poly_coeffs, x_min, x_max);
+          std::make_shared<Mat::InelasticDefgradPolynomialShape>(poly_coeffs, x_min, x_max);
 
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_lin;
       // set up a dummy concentration vector and store it to the parameter list
-      auto gpconc_lin = Teuchos::RCP<std::vector<double>>(new std::vector<double>({44327.362}));
-      params_lin.set<Teuchos::RCP<std::vector<double>>>("scalars", gpconc_lin);
+      auto gpconc_lin = std::shared_ptr<std::vector<double>>(new std::vector<double>({44327.362}));
+      params_lin.set<std::shared_ptr<std::vector<double>>>("scalars", gpconc_lin);
 
       // create InelasticDefgradLinScalarIso object initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_scalar_data;
@@ -97,7 +97,7 @@ namespace
                   inelastic_defgrad_scalar_data)));
 
       // setup pointer to InelasticDefgradLinScalarIso object
-      lin_scalar_iso_ = Teuchos::make_rcp<Mat::InelasticDefgradLinScalarIso>(
+      lin_scalar_iso_ = std::make_shared<Mat::InelasticDefgradLinScalarIso>(
           params_inelastic_defgrad_lin_scalar_iso_.get());
 
       // call pre_evaluate to set the concentration value
@@ -119,7 +119,7 @@ namespace
                   inelastic_defgrad_lin_scalar_aniso_data)));
 
       // set up pointer to InelasticDefgradLinScalarAniso object
-      lin_scalar_aniso_ = Teuchos::make_rcp<Mat::InelasticDefgradLinScalarAniso>(
+      lin_scalar_aniso_ = std::make_shared<Mat::InelasticDefgradLinScalarAniso>(
           params_inelastic_defgrad_lin_scalar_aniso_.get());
 
       // call pre_evaluate to set the concentration value
@@ -157,7 +157,7 @@ namespace
       electrode_data.add("OCP_CSV", std::string(""));
 
       // make sure that the default parameters exist in the problem
-      Global::Problem::instance()->set_parameter_list(Teuchos::make_rcp<Teuchos::ParameterList>());
+      Global::Problem::instance()->set_parameter_list(std::make_shared<Teuchos::ParameterList>());
 
       // add actually required parameters to electrode material
       const double c_max(4.91375e4);
@@ -172,8 +172,8 @@ namespace
       // parameter list to be passed to pre_evaluate
       Teuchos::ParameterList params_poly;
       // set up a dummy concentration vector and store it to the parameter list
-      auto gpconc_poly = Teuchos::RCP<std::vector<double>>(new std::vector<double>({22641.893}));
-      params_poly.set<Teuchos::RCP<std::vector<double>>>("scalars", gpconc_poly);
+      auto gpconc_poly = std::shared_ptr<std::vector<double>>(new std::vector<double>({22641.893}));
+      params_poly.set<std::shared_ptr<std::vector<double>>>("scalars", gpconc_poly);
 
       // initialize container for material parameters
       Core::IO::InputParameterContainer inelastic_defgrad_poly_intercal_frac_data;
@@ -202,7 +202,7 @@ namespace
           polynomial_shape_->compute_polynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
-      poly_intercal_frac_iso_ = Teuchos::make_rcp<Mat::InelasticDefgradPolyIntercalFracIso>(
+      poly_intercal_frac_iso_ = std::make_shared<Mat::InelasticDefgradPolyIntercalFracIso>(
           params_inelastic_defgrad_poly_intercal_frac_.get());
 
       // call pre_evaluate to set the concentration value
@@ -233,7 +233,7 @@ namespace
           polynomial_shape_->compute_polynomial(x_ref));
 
       // set up pointer to InelasticDefgradPolyIntercalFracIso object
-      poly_intercal_frac_aniso_ = Teuchos::make_rcp<Mat::InelasticDefgradPolyIntercalFracAniso>(
+      poly_intercal_frac_aniso_ = std::make_shared<Mat::InelasticDefgradPolyIntercalFracAniso>(
           params_inelastic_defgrad_poly_intercal_frac_aniso_.get());
 
       // call pre_evaluate to set the concentration value
@@ -251,8 +251,7 @@ namespace
               inelastic_defgrad_temp_iso_data)));
 
       // setup pointer to InelasticDefgradLinScalarIso object
-      lin_temp_iso_ =
-          Teuchos::make_rcp<Mat::InelasticDefgradLinTempIso>(params_lin_temp_iso_.get());
+      lin_temp_iso_ = std::make_shared<Mat::InelasticDefgradLinTempIso>(params_lin_temp_iso_.get());
 
       // parameter list for pre_evaluate call with gp temerature
       Teuchos::ParameterList params_temp{};
@@ -289,31 +288,31 @@ namespace
     // reference solution of inverse inelastic deformation gradient using InelasticDefgradLinTempIso
     Core::LinAlg::Matrix<3, 3> iFin_lin_temp_iso_solution_;
     // pointer to object that evaluates a linear shape
-    Teuchos::RCP<Mat::InelasticDefgradLinearShape> linear_shape_;
+    std::shared_ptr<Mat::InelasticDefgradLinearShape> linear_shape_;
     // pointer to object that evaluates a polynomial shape
-    Teuchos::RCP<Mat::InelasticDefgradPolynomialShape> polynomial_shape_;
+    std::shared_ptr<Mat::InelasticDefgradPolynomialShape> polynomial_shape_;
     // pointer to InelasticDefgradLinScalarIso object
-    Teuchos::RCP<Mat::InelasticDefgradLinScalarIso> lin_scalar_iso_;
+    std::shared_ptr<Mat::InelasticDefgradLinScalarIso> lin_scalar_iso_;
     // pointer to parameters of InelasticDefgradScalar
     std::shared_ptr<Mat::PAR::InelasticDefgradLinScalar> params_inelastic_defgrad_lin_scalar_iso_;
-    Teuchos::RCP<Mat::PAR::InelasticDefgradScalar> params_inelastic_defgrad_scalar_;
+    std::shared_ptr<Mat::PAR::InelasticDefgradScalar> params_inelastic_defgrad_scalar_;
     // pointer to InelasticDefgradLinScalarAniso object
-    Teuchos::RCP<Mat::InelasticDefgradLinScalarAniso> lin_scalar_aniso_;
+    std::shared_ptr<Mat::InelasticDefgradLinScalarAniso> lin_scalar_aniso_;
     // pointer to parameters of InelasticDefgradScalar
     std::shared_ptr<Mat::PAR::InelasticDefgradLinScalarAniso>
         params_inelastic_defgrad_lin_scalar_aniso_;
     // pointer to InelasticDefgradPolyIntercalFracIso object
-    Teuchos::RCP<Mat::InelasticDefgradPolyIntercalFracIso> poly_intercal_frac_iso_;
+    std::shared_ptr<Mat::InelasticDefgradPolyIntercalFracIso> poly_intercal_frac_iso_;
     // pointer to parameters of InelasticDefgradIntercalFrac
     std::shared_ptr<Mat::PAR::InelasticDefgradPolyIntercalFrac>
         params_inelastic_defgrad_poly_intercal_frac_;
     // pointer to InelasticDefgradPolyIntercalFracAniso object
-    Teuchos::RCP<Mat::InelasticDefgradPolyIntercalFracAniso> poly_intercal_frac_aniso_;
+    std::shared_ptr<Mat::InelasticDefgradPolyIntercalFracAniso> poly_intercal_frac_aniso_;
     // pointer to parameters of InelasticDefgradPolyIntercalFracAniso
     std::shared_ptr<Mat::PAR::InelasticDefgradPolyIntercalFracAniso>
         params_inelastic_defgrad_poly_intercal_frac_aniso_;
     // pointer to InelasticDefgradLinTempIso
-    Teuchos::RCP<Mat::InelasticDefgradLinTempIso> lin_temp_iso_;
+    std::shared_ptr<Mat::InelasticDefgradLinTempIso> lin_temp_iso_;
     // pointer to parameters of InelasticDefgradLinTempIso
     std::shared_ptr<Mat::PAR::InelasticDefgradLinTempIso> params_lin_temp_iso_;
   };

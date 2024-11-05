@@ -25,7 +25,7 @@ Mat::PAR::FluidPoroViscosityLaw* Mat::PAR::FluidPoroViscosityLaw::create_viscosi
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)

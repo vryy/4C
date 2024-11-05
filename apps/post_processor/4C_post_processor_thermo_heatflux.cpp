@@ -92,7 +92,7 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
 
   std::vector<int> num_df_map() override { return std::vector<int>(1, numdf()); }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
@@ -105,10 +105,10 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     //--------------------------------------------------------------------
     // calculate nodal heatfluxes from gauss point heatfluxes
     //--------------------------------------------------------------------
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
 
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
 
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -122,13 +122,13 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     auto heatfluxx = Core::LinAlg::create_vector(*(dis->dof_row_map()), true);
     auto heatfluxy = Core::LinAlg::create_vector(*(dis->dof_row_map()), true);
     auto heatfluxz = Core::LinAlg::create_vector(*(dis->dof_row_map()), true);
-    dis->evaluate(p, Teuchos::null, Teuchos::null, heatfluxx, heatfluxy, heatfluxz);
+    dis->evaluate(p, nullptr, nullptr, heatfluxx, heatfluxy, heatfluxz);
 
     // change the dis from a dof_row_map to a NodeRowMap, because Paraview can only visualize
     // nodebased date
     const Epetra_Map* nodemap = dis->node_row_map();
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodal_heatfluxes =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodemap, numdf);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> nodal_heatfluxes =
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodemap, numdf);
 
     const int numnodes = dis->num_my_row_nodes();
     const unsigned numdofpernode = 1;
@@ -219,7 +219,7 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
 
   std::vector<int> num_df_map() override { return std::vector<int>(1, numdf()); }
 
-  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& name) override
   {
@@ -232,8 +232,8 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     //--------------------------------------------------------------------
     // calculate element center heatfluxes from gauss point heatfluxes
     //--------------------------------------------------------------------
-    const Teuchos::RCP<Core::FE::Discretization> dis = result.field()->discretization();
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> data =
+    const std::shared_ptr<Core::FE::Discretization> dis = result.field()->discretization();
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> data =
         result.read_result_serialdensematrix(groupname);
     // create the parameters for the discretization
     Teuchos::ParameterList p;
@@ -242,11 +242,11 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     p.set("heatfluxtype", "cxyz");
     p.set("gpheatfluxmap", data);
     p.set("total time", -1.0);
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> eleheatflux =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), numdf);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> eleheatflux =
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*(dis->element_row_map()), numdf);
     p.set("eleheatflux", eleheatflux);
-    dis->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
-    if (eleheatflux == Teuchos::null)
+    dis->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
+    if (eleheatflux == nullptr)
     {
       FOUR_C_THROW("vector containing element center heatfluxes/tempgradients not available");
     }

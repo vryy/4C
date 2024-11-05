@@ -23,42 +23,43 @@ template <class MatrixType, class VectorType>
 Core::LinearSolver::DirectSolver<MatrixType, VectorType>::DirectSolver(std::string solvertype)
     : solvertype_(solvertype),
       factored_(false),
-      solver_(Teuchos::null),
-      reindexer_(Teuchos::null),
-      projector_(Teuchos::null)
+      solver_(nullptr),
+      reindexer_(nullptr),
+      projector_(nullptr)
 {
-  linear_problem_ = Teuchos::make_rcp<Epetra_LinearProblem>();
+  linear_problem_ = std::make_shared<Epetra_LinearProblem>();
 }
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
-    Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-    const bool refactor, const bool reset, Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
+    std::shared_ptr<MatrixType> matrix, std::shared_ptr<VectorType> x,
+    std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
+  std::shared_ptr<Epetra_CrsMatrix> crsA = std::dynamic_pointer_cast<Epetra_CrsMatrix>(matrix);
 
   // 1. merge the block system matrix into a standard sparse matrix if necessary
-  if (crsA.is_null())
+  if (!crsA)
   {
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Ablock =
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Ablock =
+        std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(matrix);
 
     int matrixDim = Ablock->full_range_map().NumGlobalElements();
     if (matrixDim > 50000)
       std::cout << "\n WARNING: Direct linear solver is merging matrix, this is very expensive! \n";
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->merge();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Ablock_merged = Ablock->merge();
     crsA = Ablock_merged->epetra_matrix();
   }
 
   // 2. project the linear system if close to being singular and set the final matrix and vectors
   projector_ = projector;
-  if (projector_ != Teuchos::null)
+  if (projector_ != nullptr)
   {
     Core::LinAlg::SparseMatrix A_view(crsA, Core::LinAlg::View);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A2 = projector_->project(A_view);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A2 = projector_->project(A_view);
 
     crsA = A2->epetra_matrix();
     projector_->apply_pt(*b);
@@ -73,23 +74,23 @@ void Core::LinearSolver::DirectSolver<MatrixType, VectorType>::setup(
   linear_problem_->SetLHS(x_->get_ptr_of_Epetra_MultiVector().get());
   linear_problem_->SetOperator(a_.get());
 
-  if (not reindexer_.is_null() and not(reset or refactor)) reindexer_->fwd();
+  if (reindexer_ and not(reset or refactor)) reindexer_->fwd();
 
   if (reset or refactor or not is_factored())
   {
-    reindexer_ = Teuchos::make_rcp<EpetraExt::LinearProblem_Reindex2>(nullptr);
+    reindexer_ = std::make_shared<EpetraExt::LinearProblem_Reindex2>(nullptr);
 
     if (solvertype_ == "umfpack")
     {
-      solver_ = Teuchos::make_rcp<Amesos_Umfpack>((*reindexer_)(*linear_problem_));
+      solver_ = std::make_shared<Amesos_Umfpack>((*reindexer_)(*linear_problem_));
     }
     else if (solvertype_ == "superlu")
     {
-      solver_ = Teuchos::make_rcp<Amesos_Superludist>((*reindexer_)(*linear_problem_));
+      solver_ = std::make_shared<Amesos_Superludist>((*reindexer_)(*linear_problem_));
     }
     else
     {
-      solver_ = Teuchos::make_rcp<Amesos_Klu>((*reindexer_)(*linear_problem_));
+      solver_ = std::make_shared<Amesos_Klu>((*reindexer_)(*linear_problem_));
     }
 
     factored_ = false;
@@ -110,7 +111,7 @@ int Core::LinearSolver::DirectSolver<MatrixType, VectorType>::solve()
 
   solver_->Solve();
 
-  if (projector_ != Teuchos::null) projector_->apply_p(*x_);
+  if (projector_ != nullptr) projector_->apply_p(*x_);
 
   return 0;
 }

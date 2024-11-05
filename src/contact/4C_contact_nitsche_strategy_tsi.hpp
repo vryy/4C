@@ -32,8 +32,8 @@ namespace CONTACT
     //! Standard constructor
     NitscheStrategyTsi(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(
               dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           fix_redistribution_(true)
@@ -41,20 +41,20 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    NitscheStrategyTsi(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyTsi(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
         const Teuchos::ParameterList& params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        std::shared_ptr<const Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof),
           fix_redistribution_(true)
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor) override
     {
       FOUR_C_THROW("not implemented");
@@ -76,16 +76,16 @@ namespace CONTACT
     void set_parent_state(const enum Mortar::StateType& statename,
         const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt,
         const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //! [derived]
-    bool redistribute_contact(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override
+    bool redistribute_contact(std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override
     {
       if (fix_redistribution_) return false;
       return CONTACT::AbstractStrategy::redistribute_contact(dis, vel);
@@ -99,26 +99,26 @@ namespace CONTACT
 
    protected:
     // create an appropriate vector for the RHS
-    Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
+    std::shared_ptr<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
-    void complete_matrix_block_ptr(
-        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
+    void complete_matrix_block_ptr(const enum CONTACT::MatBlockType& bt,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kc) override;
 
     // do not reditribute (during constructor phase)
     bool fix_redistribution_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> curr_state_temp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> curr_state_temp_;
 
-    Teuchos::RCP<Epetra_FEVector> ft_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ktt_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ktd_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdt_;
+    std::shared_ptr<Epetra_FEVector> ft_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ktt_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ktd_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kdt_;
   };
 }  // namespace CONTACT
 

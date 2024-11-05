@@ -69,13 +69,13 @@ namespace Solid
 
     //! Constructor
     TimIntImpl(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& ioparams,              //!< ioflags
-        const Teuchos::ParameterList& sdynparams,            //!< input parameters
-        const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+        const Teuchos::ParameterList& ioparams,               //!< ioflags
+        const Teuchos::ParameterList& sdynparams,             //!< input parameters
+        const Teuchos::ParameterList& xparams,                //!< extra flags
+        std::shared_ptr<Core::FE::Discretization> actdis,     //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,         //!< the solver
+        std::shared_ptr<Core::LinAlg::Solver> contactsolver,  //!< the solver for contact meshtying
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     /*! \brief Initialize this object
@@ -100,8 +100,8 @@ namespace Solid
     \date 08/16
     \author rauch  */
     void init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+        std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -250,25 +250,24 @@ namespace Solid
     virtual void evaluate_force_residual() = 0;
 
     //! Apply external force, its stiffness at state
-    void apply_force_stiff_external(const double time,          //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,   //!< old displacement state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,  //!< new displacement state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,   // velocity state
-        Core::LinAlg::Vector<double>& fext,                     //!< external force
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& fextlin     //!< linearization of external force
+    void apply_force_stiff_external(const double time,             //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> dis,   //!< old displacement state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> disn,  //!< new displacement state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vel,   // velocity state
+        Core::LinAlg::Vector<double>& fext,                        //!< external force
+        std::shared_ptr<Core::LinAlg::SparseOperator>& fextlin  //!< linearization of external force
     );
 
     //! Evaluate ordinary internal force, its stiffness at state
-    void apply_force_stiff_internal(const double time,          //!< evaluation time
-        const double dt,                                        //!< step size
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,   //!< displacement state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disi,  //!< residual displacements
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,   // velocity state
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,        //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,       //!< stiffness matrix
+    void apply_force_stiff_internal(const double time,             //!< evaluation time
+        const double dt,                                           //!< step size
+        const std::shared_ptr<Core::LinAlg::Vector<double>> dis,   //!< displacement state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> disi,  //!< residual displacements
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vel,   // velocity state
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,        //!< internal force
+        std::shared_ptr<Core::LinAlg::SparseOperator> stiff,       //!< stiffness matrix
         Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
-        Teuchos::RCP<Core::LinAlg::SparseOperator> damp =
-            Teuchos::null  //!< material damping matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator> damp = nullptr  //!< material damping matrix
     );
 
     //! Evaluate internal and inertia forces and their linearizations
@@ -276,14 +275,14 @@ namespace Solid
         const double dt,                                             //!< step size
         const double timintfac_dis,  //!< time integration factor for d(Res) / d dis
         const double timintfac_vel,  //!< time integration factor for d(Res) / d vel
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,   //!< displacement state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disi,  //!< residual displacements
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vel,   //! velocity state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> acc,   //! acceleration state
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,        //!< internal force
-        Teuchos::RCP<Core::LinAlg::Vector<double>> finert,      //!< inertia force
-        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,       //!< stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseOperator> mass,        //!< mass matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>> dis,   //!< displacement state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> disi,  //!< residual displacements
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vel,   //! velocity state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> acc,   //! acceleration state
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,        //!< internal force
+        std::shared_ptr<Core::LinAlg::Vector<double>> finert,      //!< inertia force
+        std::shared_ptr<Core::LinAlg::SparseOperator> stiff,       //!< stiffness matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator> mass,        //!< mass matrix
         Teuchos::ParameterList& params,  //!< parameters from nonlinear solver
         const double beta = 1000.0,      //!< time integration parameters for element-wise time
                                      //!< integration (necessary for time integration of rotations)
@@ -297,19 +296,19 @@ namespace Solid
     );
 
     //! Evaluate forces due to constraints
-    void apply_force_stiff_constraint(const double time,        //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> dis,   //!< last evaluated displacements
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,  //!< evaluation displacements
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fint,       //!< forces are added onto
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,      //!< stiffness is added onto
+    void apply_force_stiff_constraint(const double time,           //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> dis,   //!< last evaluated displacements
+        const std::shared_ptr<Core::LinAlg::Vector<double>> disn,  //!< evaluation displacements
+        std::shared_ptr<Core::LinAlg::Vector<double>>& fint,       //!< forces are added onto
+        std::shared_ptr<Core::LinAlg::SparseOperator>& stiff,      //!< stiffness is added onto
         Teuchos::ParameterList pcon  //!< parameter list containing scale factors for matrix entries
     );
 
     //! Evaluate forces due to Cardiovascular0D BCs
-    void apply_force_stiff_cardiovascular0_d(const double time,  //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> disn,   //!< evaluation displacements
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fint,        //!< forces are added onto
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,       //!< stiffness is added onto
+    void apply_force_stiff_cardiovascular0_d(const double time,    //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> disn,  //!< evaluation displacements
+        std::shared_ptr<Core::LinAlg::Vector<double>>& fint,       //!< forces are added onto
+        std::shared_ptr<Core::LinAlg::SparseOperator>& stiff,      //!< stiffness is added onto
         Teuchos::ParameterList
             pwindk  //!< parameter list containing scale factors for matrix entries
     );
@@ -317,10 +316,10 @@ namespace Solid
 
     //! Evaluate forces and stiffness due to contact / meshtying
     void apply_force_stiff_contact_meshtying(
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& stiff,  //!< stiffness is modified
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fres,   //!< residual forces are modified
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dis,    //!< current displacement state
-        bool predict                                        //!< flag indicating predictor step
+        std::shared_ptr<Core::LinAlg::SparseOperator>& stiff,  //!< stiffness is modified
+        std::shared_ptr<Core::LinAlg::Vector<double>>& fres,   //!< residual forces are modified
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dis,    //!< current displacement state
+        bool predict                                           //!< flag indicating predictor step
     );
 
     //! Evaluate forces and stiffness due to beam contact
@@ -338,11 +337,11 @@ namespace Solid
 
     //! Evaluate forces and stiffness due to spring dash-pot boundary condition
     void apply_force_stiff_spring_dashpot(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  //!< stiffness is modified
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,   //!< internal forces are modified
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,    //!< current displacement state
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vel,    //!< current velocity state
-        bool predict,                                      //!< flag indicating predictor step
+        std::shared_ptr<Core::LinAlg::SparseOperator> stiff,  //!< stiffness is modified
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,   //!< internal forces are modified
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis,    //!< current displacement state
+        std::shared_ptr<Core::LinAlg::Vector<double>> vel,    //!< current velocity state
+        bool predict,                                         //!< flag indicating predictor step
         Teuchos::ParameterList
             psprdash  //!< parameter list containing scale factors for matrix entries
     );
@@ -593,15 +592,15 @@ namespace Solid
     );
 
     //! Create solver parameters for  non-linear solution with NOX
-    Teuchos::RCP<Teuchos::ParameterList> nox_create_solver_parameters();
+    std::shared_ptr<Teuchos::ParameterList> nox_create_solver_parameters();
 
     //! Create printing parameters for non-linear solution with NOX
-    Teuchos::RCP<Teuchos::ParameterList> nox_create_print_parameters(
+    std::shared_ptr<Teuchos::ParameterList> nox_create_print_parameters(
         const bool verbose = false  //!< verbosity level
     ) const;
 
     //! Create the linear system that is passed into NOX
-    Teuchos::RCP<::NOX::Epetra::LinearSystem> nox_create_linear_system(
+    std::shared_ptr<::NOX::Epetra::LinearSystem> nox_create_linear_system(
         Teuchos::ParameterList& nlParams,  ///< parameter list
         ::NOX::Epetra::Vector& noxSoln,    ///< solution vector to operate on
         ::NOX::Utils& utils                ///< printing utilities
@@ -637,7 +636,7 @@ namespace Solid
 
     //! Update iteration incrementally with prescribed residual
     //! displacements
-    void update_iter_incrementally(const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void update_iter_incrementally(const std::shared_ptr<const Core::LinAlg::Vector<double>>
             disi  //!< input residual displacements
     );
 
@@ -715,16 +714,19 @@ namespace Solid
     bool have_spring_dashpot() override;
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override { return conman_; }
+    std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() override
+    {
+      return conman_;
+    }
 
     //! Return Teuchos::rcp to Cardiovascular0DManager cardvasc0dman_
-    Teuchos::RCP<FourC::Utils::Cardiovascular0DManager> get_cardiovascular0_d_manager()
+    std::shared_ptr<FourC::Utils::Cardiovascular0DManager> get_cardiovascular0_d_manager()
     {
       return cardvasc0dman_;
     }
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
+    std::shared_ptr<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
       return springman_;
     }
@@ -733,7 +735,7 @@ namespace Solid
     Inpar::Solid::StcScale get_stc_algo() override { return stcscale_; }
 
     //! Access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
       if (!stccompl_) compute_stc_matrix();
       stccompl_ = true;
@@ -743,13 +745,13 @@ namespace Solid
     //! Update iteration
     //! Add residual increment to Lagrange multipliers stored in Constraint manager
     void update_iter_incr_constr(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
+        std::shared_ptr<Core::LinAlg::Vector<double>> lagrincr  ///< Lagrange multiplier increment
         ) override;
 
     //! Update iteration
     //! Add residual increment to pressures stored in Cardiovascular0D manager
     void update_iter_incr_cardiovascular0_d(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincr  ///< pressure increment
+        std::shared_ptr<Core::LinAlg::Vector<double>> cv0ddofincr  ///< pressure increment
         ) override;
 
     //@}
@@ -758,15 +760,15 @@ namespace Solid
     //@{
 
     //! switch structure field to block matrix in fsi simulations
-    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
+    void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
 
     //! Evaluate/define the residual force vector #fres_ for
     //! relaxation solution with solve_relaxation_linear
     virtual void evaluate_force_stiff_residual_relax(Teuchos::ParameterList& params) = 0;
 
     //! Linear structure solve with just an interface load
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solve_relaxation_linear() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override;
 
     //! check, if according to divercont flag time step size can be increased
     void check_for_time_step_increase(Inpar::Solid::ConvergenceStatus& status);
@@ -791,10 +793,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override = 0;
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_new() override = 0;
 
     /*! \brief Return reaction forces
      *
@@ -806,31 +808,31 @@ namespace Solid
      *  components. The reaction force resultant is not affected by this
      *  operation.
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override { return freact_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact() override { return freact_; }
 
     //! Read and set external forces from file
     void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override = 0;
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     //! Called from the previous adapters as initial_guess()
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override { return disi_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override { return disi_; }
 
     //! Prepare time step
     void prepare_time_step() override;
 
     //! Update state incrementally for coupled problems with monolithic approach
     void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override
     {
       update_iter_incrementally(disiterinc);
       return;
     }
 
     //! Evaluate routine for coupled problems with monolithic approach
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override
     {
       update_iter_incrementally(disiterinc);
 
@@ -876,15 +878,15 @@ namespace Solid
         ) override;
 
     //! Set residual displacements \f$\Delta D_{n+1}^{<k>}\f$
-    void set_dis_residual(const Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void set_dis_residual(const std::shared_ptr<const Core::LinAlg::Vector<double>>
             disi  //!< input residual displacements
     )
     {
-      if (disi != Teuchos::null) disi_->Update(1.0, *disi, 0.0);
+      if (disi != nullptr) disi_->Update(1.0, *disi, 0.0);
     }
 
     //! Return the rhs-vector (negative sign for Newton is already included.)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return fres_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return fres_; }
 
     //@}
 
@@ -1010,37 +1012,37 @@ namespace Solid
 
 
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         disi_;  //!< residual displacements (and pressure) \f$\Delta{D}^{<k>}_{n+1}\f$
 
     //@}
 
     //! @name Various global forces
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fres_;    //!< force residual used for solution
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact_;  //!< reaction force
+    std::shared_ptr<Core::LinAlg::Vector<double>> fres_;    //!< force residual used for solution
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact_;  //!< reaction force
     //@}
 
     //! @name NOX variables
     //@{
     Teuchos::RCP<::NOX::StatusTest::Combo>
         noxstatustest_;  //!< NOX status test for convergence check
-    Teuchos::RCP<Teuchos::ParameterList>
-        noxparams_;                        //!< NOX parameter list to configure the NOX solver
-    Teuchos::RCP<::NOX::Utils> noxutils_;  //!< NOX utils for printing
+    std::shared_ptr<Teuchos::ParameterList>
+        noxparams_;                           //!< NOX parameter list to configure the NOX solver
+    std::shared_ptr<::NOX::Utils> noxutils_;  //!< NOX utils for printing
     //@}
 
     //! @name Krylov projection variables
     bool updateprojection_;  //!< bool triggering update of Krylov projection
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;  //!< Krylov projector himself
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;  //!< Krylov projector himself
     //@}
 
     //! @name STC Scaling for thin shell structures
     //@{
-    enum Inpar::Solid::StcScale stcscale_;             //!< scale thickness of shells?
-    double stcfact_;                                   //!< scaling factor for STC
-    int stclayer_;                                     //! number of layers for multilayered case
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stcmat_;  //!< scaling matrix for STC
+    enum Inpar::Solid::StcScale stcscale_;                //!< scale thickness of shells?
+    double stcfact_;                                      //!< scaling factor for STC
+    int stclayer_;                                        //! number of layers for multilayered case
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stcmat_;  //!< scaling matrix for STC
     bool stccompl_;  //!< keep track if stc matrix has been evaluated
     //@}
 

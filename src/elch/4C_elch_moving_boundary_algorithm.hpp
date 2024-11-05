@@ -77,19 +77,19 @@ namespace ElCh
     const double molarvolume_;
 
     /// interface displacement at time t^{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispn_;
 
     /// interface displacement at time t^{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispnp_;
 
     /// fluid velocity at interface (always zero!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iveln_;
 
     /// old flux
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fluxn_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> fluxn_;
 
     /// current flux
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fluxnp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> fluxnp_;
 
     /// maximum iteration steps for outer loop
     const int itmax_;

@@ -173,22 +173,22 @@ Solid::ModelEvaluator::Data::Data()
       corr_type_(NOX::Nln::CorrectionType::vague),
       timintfactor_disp_(-1.0),
       timintfactor_vel_(-1.0),
-      stressdata_ptr_(Teuchos::null),
-      stressdata_postprocessed_nodal_ptr_(Teuchos::null),
-      stressdata_postprocessed_element_ptr_(Teuchos::null),
-      straindata_ptr_(Teuchos::null),
-      straindata_postprocessed_nodal_ptr_(Teuchos::null),
-      straindata_postprocessed_element_ptr_(Teuchos::null),
-      plastic_straindata_ptr_(Teuchos::null),
-      couplstressdata_ptr_(Teuchos::null),
-      gauss_point_data_manager_ptr_(Teuchos::null),
-      sdyn_ptr_(Teuchos::null),
-      io_ptr_(Teuchos::null),
-      gstate_ptr_(Teuchos::null),
-      timint_ptr_(Teuchos::null),
-      comm_ptr_(Teuchos::null),
-      beam_data_ptr_(Teuchos::null),
-      contact_data_ptr_(Teuchos::null),
+      stressdata_ptr_(nullptr),
+      stressdata_postprocessed_nodal_ptr_(nullptr),
+      stressdata_postprocessed_element_ptr_(nullptr),
+      straindata_ptr_(nullptr),
+      straindata_postprocessed_nodal_ptr_(nullptr),
+      straindata_postprocessed_element_ptr_(nullptr),
+      plastic_straindata_ptr_(nullptr),
+      couplstressdata_ptr_(nullptr),
+      gauss_point_data_manager_ptr_(nullptr),
+      sdyn_ptr_(nullptr),
+      io_ptr_(nullptr),
+      gstate_ptr_(nullptr),
+      timint_ptr_(nullptr),
+      comm_ptr_(nullptr),
+      beam_data_ptr_(nullptr),
+      contact_data_ptr_(nullptr),
       model_ptr_(nullptr)
 {
   // empty
@@ -196,7 +196,8 @@ Solid::ModelEvaluator::Data::Data()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::ModelEvaluator::Data::init(const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
+void Solid::ModelEvaluator::Data::init(
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr)
 {
   sdyn_ptr_ = timint_ptr->get_data_sdyn_ptr();
   io_ptr_ = timint_ptr->get_data_io_ptr();
@@ -221,15 +222,15 @@ void Solid::ModelEvaluator::Data::setup()
     {
       case Inpar::Solid::model_contact:
       {
-        contact_data_ptr_ = Teuchos::make_rcp<ContactData>();
-        contact_data_ptr_->init(Teuchos::rcpFromRef(*this));
+        contact_data_ptr_ = std::make_shared<ContactData>();
+        contact_data_ptr_->init(Core::Utils::shared_ptr_from_ref(*this));
         contact_data_ptr_->setup();
         break;
       }
       case Inpar::Solid::model_browniandyn:
       {
-        browniandyn_data_ptr_ = Teuchos::make_rcp<BrownianDynData>();
-        browniandyn_data_ptr_->init(Teuchos::rcpFromRef(*this));
+        browniandyn_data_ptr_ = std::make_shared<BrownianDynData>();
+        browniandyn_data_ptr_->init(Core::Utils::shared_ptr_from_ref(*this));
         browniandyn_data_ptr_->setup();
         break;
       }
@@ -245,7 +246,7 @@ void Solid::ModelEvaluator::Data::setup()
    * the applied beam elements have non-additive rotation vector DOFs */
   if (sdyn_ptr_->have_ele_tech(Inpar::Solid::EleTech::rotvec))
   {
-    beam_data_ptr_ = Teuchos::make_rcp<BeamData>();
+    beam_data_ptr_ = std::make_shared<BeamData>();
     beam_data_ptr_->init();
     beam_data_ptr_->setup();
   }
@@ -265,14 +266,14 @@ void Solid::ModelEvaluator::Data::fill_norm_type_maps()
 
   // --- check if the nox nln solver is active ---------------------------------
   bool isnox = false;
-  Teuchos::RCP<const Solid::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
-  Teuchos::RCP<const Solid::TimeInt::Implicit> timint_impl_ptr =
-      Teuchos::rcp_dynamic_cast<const Solid::TimeInt::Implicit>(timint_ptr_);
-  if (not timint_impl_ptr.is_null())
+  std::shared_ptr<const Solid::Nln::SOLVER::Nox> nox_nln_ptr = nullptr;
+  std::shared_ptr<const Solid::TimeInt::Implicit> timint_impl_ptr =
+      std::dynamic_pointer_cast<const Solid::TimeInt::Implicit>(timint_ptr_);
+  if (timint_impl_ptr)
   {
-    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const Solid::Nln::SOLVER::Nox>(
+    nox_nln_ptr = std::dynamic_pointer_cast<const Solid::Nln::SOLVER::Nox>(
         timint_impl_ptr->get_nln_solver_ptr());
-    if (not nox_nln_ptr.is_null()) isnox = true;
+    if (nox_nln_ptr) isnox = true;
   }
 
   // --- get the normtypes for the different quantities -------------------------
@@ -511,7 +512,7 @@ enum Inpar::Solid::DampKind Solid::ModelEvaluator::Data::get_damping_type() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::stress_data_ptr()
+std::shared_ptr<std::vector<char>>& Solid::ModelEvaluator::Data::stress_data_ptr()
 {
   check_init_setup();
   return stressdata_ptr_;
@@ -521,7 +522,7 @@ Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::stress_data_ptr()
  *----------------------------------------------------------------------------*/
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Data::current_element_volume_data() const
 {
-  FOUR_C_ASSERT(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
+  FOUR_C_ASSERT(elevolumes_ptr_, "Undefined reference to element volume data!");
   return *elevolumes_ptr_;
 }
 
@@ -529,13 +530,13 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Data::current_element
  *----------------------------------------------------------------------------*/
 const std::vector<char>& Solid::ModelEvaluator::Data::stress_data() const
 {
-  FOUR_C_ASSERT(!stressdata_ptr_.is_null(), "Undefined reference to the stress data!");
+  FOUR_C_ASSERT(stressdata_ptr_, "Undefined reference to the stress data!");
   return *stressdata_ptr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::strain_data_ptr()
+std::shared_ptr<std::vector<char>>& Solid::ModelEvaluator::Data::strain_data_ptr()
 {
   check_init_setup();
   return straindata_ptr_;
@@ -545,13 +546,13 @@ Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::strain_data_ptr()
  *----------------------------------------------------------------------------*/
 const std::vector<char>& Solid::ModelEvaluator::Data::strain_data() const
 {
-  FOUR_C_ASSERT(!straindata_ptr_.is_null(), "Undefined reference to the strain data!");
+  FOUR_C_ASSERT(straindata_ptr_, "Undefined reference to the strain data!");
   return *straindata_ptr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::plastic_strain_data_ptr()
+std::shared_ptr<std::vector<char>>& Solid::ModelEvaluator::Data::plastic_strain_data_ptr()
 {
   check_init_setup();
   return plastic_straindata_ptr_;
@@ -561,14 +562,13 @@ Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::plastic_strain_dat
  *----------------------------------------------------------------------------*/
 const std::vector<char>& Solid::ModelEvaluator::Data::plastic_strain_data() const
 {
-  FOUR_C_ASSERT(
-      !plastic_straindata_ptr_.is_null(), "Undefined reference to the plastic strain data!");
+  FOUR_C_ASSERT(plastic_straindata_ptr_, "Undefined reference to the plastic strain data!");
   return *plastic_straindata_ptr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::coupling_stress_data_ptr()
+std::shared_ptr<std::vector<char>>& Solid::ModelEvaluator::Data::coupling_stress_data_ptr()
 {
   check_init_setup();
   return couplstressdata_ptr_;
@@ -578,13 +578,13 @@ Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::coupling_stress_da
  *----------------------------------------------------------------------------*/
 const std::vector<char>& Solid::ModelEvaluator::Data::coupling_stress_data() const
 {
-  FOUR_C_ASSERT(!couplstressdata_ptr_.is_null(), "Undefined reference to the stress data!");
+  FOUR_C_ASSERT(couplstressdata_ptr_, "Undefined reference to the stress data!");
   return *couplstressdata_ptr_;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::opt_quantity_data_ptr()
+std::shared_ptr<std::vector<char>>& Solid::ModelEvaluator::Data::opt_quantity_data_ptr()
 {
   check_init_setup();
   return optquantitydata_ptr_;
@@ -594,8 +594,7 @@ Teuchos::RCP<std::vector<char>>& Solid::ModelEvaluator::Data::opt_quantity_data_
  *----------------------------------------------------------------------------*/
 const std::vector<char>& Solid::ModelEvaluator::Data::opt_quantity_data() const
 {
-  FOUR_C_ASSERT(
-      !optquantitydata_ptr_.is_null(), "Undefined reference to the optional quantity data!");
+  FOUR_C_ASSERT(optquantitydata_ptr_, "Undefined reference to the optional quantity data!");
   return *optquantitydata_ptr_;
 }
 
@@ -639,7 +638,7 @@ enum Inpar::Solid::OptQuantityType Solid::ModelEvaluator::Data::get_opt_quantity
   return io_ptr_->get_opt_quantity_output_type();
 }
 
-Teuchos::RCP<Solid::ModelEvaluator::GaussPointDataOutputManager>&
+std::shared_ptr<Solid::ModelEvaluator::GaussPointDataOutputManager>&
 Solid::ModelEvaluator::Data::gauss_point_data_output_manager_ptr()
 {
   check_init_setup();
@@ -723,18 +722,18 @@ int Solid::ModelEvaluator::Data::get_nln_iter() const
   if (is_predictor()) return 0;
 
   bool isnox = false;
-  Teuchos::RCP<const Solid::Nln::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
+  std::shared_ptr<const Solid::Nln::SOLVER::Nox> nox_nln_ptr = nullptr;
   const Solid::TimeInt::Implicit* timint_impl_ptr =
       dynamic_cast<const Solid::TimeInt::Implicit*>(&tim_int());
   if (timint_impl_ptr != nullptr)
   {
-    Teuchos::RCP<const Solid::Nln::SOLVER::Generic> nlnsolver_ptr =
+    std::shared_ptr<const Solid::Nln::SOLVER::Generic> nlnsolver_ptr =
         timint_impl_ptr->get_nln_solver_ptr();
     /* If we are still in the setup process we return -1. This will happen
      * for the equilibrate_initial_state() call in dynamic simulations. */
-    if (nlnsolver_ptr.is_null()) return -1;
-    nox_nln_ptr = Teuchos::rcp_dynamic_cast<const Solid::Nln::SOLVER::Nox>(nlnsolver_ptr);
-    if (not nox_nln_ptr.is_null()) isnox = true;
+    if (!nlnsolver_ptr) return -1;
+    nox_nln_ptr = std::dynamic_pointer_cast<const Solid::Nln::SOLVER::Nox>(nlnsolver_ptr);
+    if (nox_nln_ptr) isnox = true;
   }
   if (not isnox)
     FOUR_C_THROW(

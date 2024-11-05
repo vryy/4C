@@ -71,7 +71,7 @@ namespace
 
   void apply_nurbs_initial_condition_solve(Core::FE::Discretization& dis,
       Core::LinAlg::Solver& solver, const Core::Utils::FunctionOfSpaceTime& start_function,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> initialvals)
+      std::shared_ptr<Core::LinAlg::Vector<double>> initialvals)
   {
     // try to cast dis to a nurbs discretisation --- if possible, proceed
     // with setting initial conditions. Otherwise return.
@@ -84,7 +84,7 @@ namespace
     }
 
     // get the knotvector from nurbs discretisation
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
+    std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = nurbsdis->get_knot_vector();
 
     // get the processor ID from the communicator
     const int myrank = dis.get_comm().MyPID();
@@ -106,13 +106,14 @@ namespace
     // -------------------------------------------------------------------
     // create empty mass matrix
     // -------------------------------------------------------------------
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> massmatrix =
+        std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
 
     // -------------------------------------------------------------------
     // create empty right hand side vector
     // -------------------------------------------------------------------
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*dofrowmap, true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs =
+        Core::LinAlg::create_vector(*dofrowmap, true);
 
     // -------------------------------------------------------------------
     // call elements to calculate massmatrix and righthandside
@@ -123,8 +124,8 @@ namespace
       if (!nurbsdis->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
       // see what we have for input
-      bool assemblemat = massmatrix != Teuchos::null;
-      bool assemblevec = rhs != Teuchos::null;
+      bool assemblemat = massmatrix != nullptr;
+      bool assemblevec = rhs != nullptr;
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elemass;
@@ -557,7 +558,7 @@ namespace
 void Core::FE::Nurbs::apply_nurbs_initial_condition(Core::FE::Discretization& dis,
     const Teuchos::ParameterList& solverparams,
     const Core::Utils::FunctionOfSpaceTime& start_function,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initialvals)
+    std::shared_ptr<Core::LinAlg::Vector<double>> initialvals)
 {
   // try to cast dis to a nurbs discretisation --- if possible, proceed
   // with setting initial conditions. Otherwise return.

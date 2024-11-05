@@ -39,7 +39,7 @@ namespace Mat
        * \param fiber_id Id of the fiber to be used for the fiber (0 for FIBER1)
        */
       CoupAnisoExpoAnisotropyExtension(int init_mode, double gamma, bool adapt_angle,
-          const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy,
+          const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy,
           int fiber_id);
 
       /*!
@@ -83,7 +83,7 @@ namespace Mat
         /// standard constructor
         explicit CoupAnisoExpo(const Core::Mat::PAR::Parameter::Data& matdata);
 
-        Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+        std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
         /// @name material parameters
         //@{

@@ -23,7 +23,7 @@ template <typename ScalarType, typename Line, typename Volume>
 GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjection<ScalarType, Line,
     Volume>::GeometryPairLineToVolumeGaussPointProjection(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
+    const std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data)
     : GeometryPairLineToVolume<ScalarType, Line, Volume>(element1, element2, evaluation_data)
 {
   // Check if a projection tracking vector exists for this line element. If not a new one is

@@ -148,16 +148,17 @@ void Discret::Elements::Wall1Poro<distype>::unpack(Core::Communication::UnpackBu
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1Poro<distype>::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Wall1Poro<distype>::lines()
 {
   return Core::Communication::element_boundary_factory<Wall1Line, Wall1Poro>(
       Core::Communication::buildLines, *this);
 }
 
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Wall1Poro<distype>::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::Wall1Poro<distype>::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 template <Core::FE::CellType distype>
@@ -176,9 +177,8 @@ bool Discret::Elements::Wall1Poro<distype>::read_element(const std::string& elet
   Wall1::read_element(eletype, eledistype, container);
 
   // setup poro material
-  Teuchos::RCP<Mat::StructPoro> poromat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-  if (poromat == Teuchos::null)
-    FOUR_C_THROW("material assigned to poro element is not a poro material!");
+  std::shared_ptr<Mat::StructPoro> poromat = std::dynamic_pointer_cast<Mat::StructPoro>(material());
+  if (poromat == nullptr) FOUR_C_THROW("material assigned to poro element is not a poro material!");
   poromat->poro_setup(numgpt_, container);
 
   read_anisotropic_permeability_directions_from_element_line_definition(container);
@@ -219,10 +219,10 @@ template <Core::FE::CellType distype>
 void Discret::Elements::Wall1Poro<distype>::get_materials()
 {
   // get structure material
-  if (struct_mat_ == Teuchos::null)
+  if (struct_mat_ == nullptr)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-    if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
+    struct_mat_ = std::dynamic_pointer_cast<Mat::StructPoro>(material());
+    if (struct_mat_ == nullptr) FOUR_C_THROW("cast to poro material failed");
 
     if (struct_mat_->material_type() != Core::Materials::m_structporo and
         struct_mat_->material_type() != Core::Materials::m_structpororeaction and
@@ -231,13 +231,13 @@ void Discret::Elements::Wall1Poro<distype>::get_materials()
   }
 
   // get fluid material
-  if (fluid_mat_ == Teuchos::null)
+  if (fluid_mat_ == nullptr)
   {
     // access second material in structure element
     if (num_material() > 1)
     {
-      fluid_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoro>(material(1));
-      if (fluid_mat_ == Teuchos::null) return;
+      fluid_mat_ = std::dynamic_pointer_cast<Mat::FluidPoro>(material(1));
+      if (fluid_mat_ == nullptr) return;
       // FOUR_C_THROW("cast to fluid poro material failed");
       if (fluid_mat_->material_type() != Core::Materials::m_fluidporo)
         FOUR_C_THROW("invalid fluid material for poroelasticity");
@@ -251,10 +251,10 @@ template <Core::FE::CellType distype>
 void Discret::Elements::Wall1Poro<distype>::get_materials_pressure_based()
 {
   // get structure material
-  if (struct_mat_ == Teuchos::null)
+  if (struct_mat_ == nullptr)
   {
-    struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
-    if (struct_mat_ == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
+    struct_mat_ = std::dynamic_pointer_cast<Mat::StructPoro>(material());
+    if (struct_mat_ == nullptr) FOUR_C_THROW("cast to poro material failed");
 
     if (struct_mat_->material_type() != Core::Materials::m_structporo and
         struct_mat_->material_type() != Core::Materials::m_structpororeaction and
@@ -263,14 +263,13 @@ void Discret::Elements::Wall1Poro<distype>::get_materials_pressure_based()
   }
 
   // Get Fluid-multiphase-Material
-  if (fluidmulti_mat_ == Teuchos::null)
+  if (fluidmulti_mat_ == nullptr)
   {
     // access second material in structure element
     if (num_material() > 1)
     {
-      fluidmulti_mat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(material(1));
-      if (fluidmulti_mat_ == Teuchos::null)
-        FOUR_C_THROW("cast to multiphase fluid poro material failed");
+      fluidmulti_mat_ = std::dynamic_pointer_cast<Mat::FluidPoroMultiPhase>(material(1));
+      if (fluidmulti_mat_ == nullptr) FOUR_C_THROW("cast to multiphase fluid poro material failed");
       if (fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase and
           fluidmulti_mat_->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
         FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");

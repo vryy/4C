@@ -120,7 +120,7 @@ void test_geometry_distance()
   Cut::PositionFactory::specify_general_dist_floattype(Cut::floattype_cln);    // use cln
   Cut::PositionFactory::specify_general_pos_floattype(Cut::floattype_double);  // use
                                                                                // double
-  Teuchos::RCP<Cut::Position> pos = Cut::Position::create(xyze, xyz, Core::FE::CellType::tri3);
+  std::shared_ptr<Cut::Position> pos = Cut::Position::create(xyze, xyz, Core::FE::CellType::tri3);
   if (pos->compute())
   {
   }
@@ -146,7 +146,7 @@ void test_geometry_distance2()
   Cut::PositionFactory::specify_general_dist_floattype(Cut::floattype_cln);    // use cln
   Cut::PositionFactory::specify_general_pos_floattype(Cut::floattype_double);  // use
                                                                                // double
-  Teuchos::RCP<Cut::Position> pos = Cut::Position::create(xyze, xyz, Core::FE::CellType::quad4);
+  std::shared_ptr<Cut::Position> pos = Cut::Position::create(xyze, xyz, Core::FE::CellType::quad4);
   if (pos->compute())
   {
   }
@@ -173,7 +173,7 @@ void test_geometry_distance3()
   Cut::PositionFactory::specify_general_dist_floattype(Cut::floattype_cln);    // use cln
   Cut::PositionFactory::specify_general_pos_floattype(Cut::floattype_double);  // use
                                                                                // double
-  Teuchos::RCP<Cut::Position> pos = Cut::Position::create(xyze, xyz, Core::FE::CellType::quad4);
+  std::shared_ptr<Cut::Position> pos = Cut::Position::create(xyze, xyz, Core::FE::CellType::quad4);
   if (pos->compute())
   {
   }

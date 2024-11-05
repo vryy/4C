@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /* Constructor */
 Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
     const Teuchos::ParameterList& tap,                           //!< adaptive input flags
-    Teuchos::RCP<TimInt> tis                                     //!< marching time integrator
+    std::shared_ptr<TimInt> tis                                  //!< marching time integrator
     )
     : sti_(tis),
       discret_(tis->discretization()),
@@ -59,7 +59,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
       timestep_(0),
       stepsizepre_(stepsizeinitial_),
       stepsize_(timeparams.get<double>("TIMESTEP")),
-      locerrdisn_(Teuchos::null),
+      locerrdisn_(nullptr),
       adaptstep_(0),
       //
       outsys_(false),
@@ -75,7 +75,7 @@ Solid::TimAda::TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input 
       outstrtime_(timeinitial_ + outstrperiod_),
       outenetime_(timeinitial_ + outeneperiod_),
       outresttime_(timeinitial_ + outrestperiod_),
-      outsizefile_(Teuchos::null)
+      outsizefile_(nullptr)
 {
   // allocate displacement local error vector
   locerrdisn_ = Core::LinAlg::create_vector(*(discret_->dof_row_map()), true);
@@ -251,8 +251,8 @@ void Solid::TimAda::evaluate_local_error_dis()
   }
 
   // blank Dirichlet DOFs since they always carry the exact solution
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zeros =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(locerrdisn_->Map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> zeros =
+      std::make_shared<Core::LinAlg::Vector<double>>(locerrdisn_->Map(), true);
   Core::LinAlg::apply_dirichlet_to_system(
       *locerrdisn_, *zeros, *(sti_->get_dbc_map_extractor()->cond_map()));
 }
@@ -505,11 +505,11 @@ void Solid::TimAda::print(std::ostream& str) const
 /* Attach file handle for step size file #outsizefile_                  */
 void Solid::TimAda::attach_file_step_size()
 {
-  if (outsizefile_.is_null())
+  if (!outsizefile_)
   {
     std::string filename =
         Global::Problem::instance()->output_control_file()->file_name() + ".stepsize";
-    outsizefile_ = Teuchos::make_rcp<std::ofstream>(filename.c_str());
+    outsizefile_ = std::make_shared<std::ofstream>(filename.c_str());
     (*outsizefile_) << "# timestep time step-size adaptations" << std::endl;
   }
 

@@ -35,9 +35,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 04/14 |
  *----------------------------------------------------------------------*/
-FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-    Teuchos::RCP<FLD::Utils::StressManager> wssmanager)
+FLD::XWall::XWall(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
+    std::shared_ptr<Teuchos::ParameterList>& params,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
+    std::shared_ptr<FLD::Utils::StressManager> wssmanager)
     : discret_(dis), params_(params), mystressmanager_(wssmanager), iter_(0)
 {
   // get the processor ID from the communicator
@@ -177,18 +178,17 @@ FLD::XWall::XWall(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
   setup();
 
   turbulent_inflow_condition_ =
-      Teuchos::make_rcp<TransferTurbulentInflowConditionNodal>(discret_, dbcmaps);
+      std::make_shared<TransferTurbulentInflowConditionNodal>(discret_, dbcmaps);
 
   if (turbulent_inflow_condition_->is_active())
   {
-    oldtauw_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
-    oldinctauw_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
+    oldtauw_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
+    oldinctauw_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
   }
   else
   {
-    oldtauw_ = Teuchos::null;
-    oldinctauw_ = Teuchos::null;
+    oldtauw_ = nullptr;
+    oldinctauw_ = nullptr;
   }
 }
 
@@ -245,19 +245,18 @@ void FLD::XWall::setup()
 
   setup_x_wall_dis();
 
-  tauw_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
-  inctauw_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
+  tauw_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
+  inctauw_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
 
   // initialize for first call or for constant tauw setting
   tauw_->PutScalar(constant_tauw_);
 
-  wdistxwdis_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
+  wdistxwdis_ = std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
   Core::LinAlg::export_to(*walldist_, *wdistxwdis_);
 
-  tauwxwdis_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
+  tauwxwdis_ = std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
   inctauwxwdis_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
 
   // initialize for first call or for constant tauw setting
   tauwxwdis_->PutScalar(constant_tauw_);
@@ -270,13 +269,12 @@ void FLD::XWall::setup()
     // the value for linear elements is 1/3
     // initialize just in case
     mkxwstate_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->element_col_map()), true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->element_col_map()), true);
     mkxwstate_->PutScalar(0.33333333333);
-    mkstate_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->element_col_map()), true);
+    mkstate_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->element_col_map()), true);
     mkstate_->PutScalar(0.33333333333);
 
-    restart_wss_ = Teuchos::null;
+    restart_wss_ = nullptr;
   }
 
   return;
@@ -313,7 +311,7 @@ void FLD::XWall::init_x_wall_maps()
       if (enriched) rowvec.push_back(xwallgid);
     }
 
-    xwallrownodemap_ = Teuchos::make_rcp<Epetra_Map>(
+    xwallrownodemap_ = std::make_shared<Epetra_Map>(
         -1, (int)rowvec.size(), rowvec.data(), 0, discret_->get_comm());
   }
 
@@ -340,7 +338,7 @@ void FLD::XWall::init_x_wall_maps()
     int gcount;
     (discret_->get_comm()).SumAll(&count, &gcount, 1);
     dircolnodemap_ =
-        Teuchos::make_rcp<Epetra_Map>(gcount, count, testcollect.data(), 0, discret_->get_comm());
+        std::make_shared<Epetra_Map>(gcount, count, testcollect.data(), 0, discret_->get_comm());
   }  // end loop this conditions
   else
     FOUR_C_THROW("You need DESIGN FLUID STRESS CALC SURF CONDITIONS for xwall");
@@ -366,16 +364,16 @@ void FLD::XWall::init_wall_dist()
   if (myrank_ == 0) std::cout << "- calculate wall distance...                            ";
 
   tauwcouplingmattrans_ =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*xwallrownodemap_, 2, false, false);
-  wdist_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
-  walldist_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*xwallrownodemap_, 2, false, false);
+  wdist_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
+  walldist_ = std::make_shared<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
 
   // build a new discretization which lies on all procs
-  Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::RCP(discret_->get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> newcomm(discret_->get_comm().Clone());
 
   // this is very expensive in terms of memory
   // we will delete it as soon as we are ready here
-  Teuchos::RCP<Core::FE::Discretization> commondis = Teuchos::make_rcp<Core::FE::Discretization>(
+  std::shared_ptr<Core::FE::Discretization> commondis = std::make_shared<Core::FE::Discretization>(
       (std::string) "Commondis", newcomm, Global::Problem::instance()->n_dim());
 
   // loop over all column nodes of underlying problem discret and add
@@ -383,7 +381,7 @@ void FLD::XWall::init_wall_dist()
   {
     Core::Nodes::Node* node = discret_->l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-    Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::RCP(node->clone());
+    std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
     commondis->add_node(newnode);
   }
   // loop over all column elements of underlying problem discret and add
@@ -391,11 +389,11 @@ void FLD::XWall::init_wall_dist()
   {
     Core::Elements::Element* node = discret_->l_col_element(i);
     if (!node) FOUR_C_THROW("Cannot find ele with lid %", i);
-    Teuchos::RCP<Core::Elements::Element> newnode = Teuchos::RCP(node->clone());
+    std::shared_ptr<Core::Elements::Element> newnode(node->clone());
     commondis->add_element(newnode);
   }
 
-  Teuchos::RCP<Epetra_Map> testrednodecolmap =
+  std::shared_ptr<Epetra_Map> testrednodecolmap =
       Core::LinAlg::allreduce_e_map(*(discret_->node_row_map()));
   commondis->export_column_nodes(*testrednodecolmap);
 
@@ -427,7 +425,7 @@ void FLD::XWall::init_wall_dist()
   int count = (int)colvec.size();
 
   xwallcolnodemap_ =
-      Teuchos::make_rcp<Epetra_Map>(count, count, colvec.data(), 0, discret_->get_comm());
+      std::make_shared<Epetra_Map>(count, count, colvec.data(), 0, discret_->get_comm());
 
   for (int j = 0; j < xwallcolnodemap_->NumMyElements(); ++j)
   {
@@ -493,7 +491,7 @@ void FLD::XWall::init_wall_dist()
 
   if (myrank_ == 0) std::cout << "done!  " << std::endl;
 
-  commondis = Teuchos::null;
+  commondis = nullptr;
   return;
 }
 
@@ -504,10 +502,10 @@ void FLD::XWall::init_toggle_vector()
 {
   if (myrank_ == 0) std::cout << "- build enriched/blending toggle vector for elements... ";
 
-  xwalltoggle_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
+  xwalltoggle_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_col_map()), true);
   xwalltogglexwdis_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
-  xtoggleloc_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
+  xtoggleloc_ = std::make_shared<Core::LinAlg::Vector<double>>(*xwallrownodemap_, true);
   int count = 0;
   for (int j = 0; j < xwallrownodemap_->NumMyElements(); ++j)
   {
@@ -571,9 +569,9 @@ void FLD::XWall::init_toggle_vector()
 void FLD::XWall::setup_x_wall_dis()
 {
   // build a new discretization
-  Teuchos::RCP<Epetra_Comm> newcomm = Teuchos::RCP(discret_->get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> newcomm(discret_->get_comm().Clone());
 
-  xwdiscret_ = Teuchos::make_rcp<Core::FE::Discretization>(
+  xwdiscret_ = std::make_shared<Core::FE::Discretization>(
       (std::string) "xwalldis", newcomm, Global::Problem::instance()->n_dim());
 
   // loop over all xwall row nodes and add
@@ -585,7 +583,7 @@ void FLD::XWall::setup_x_wall_dis()
     {
       Core::Nodes::Node* node = discret_->l_col_node(i);
       if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
-      Teuchos::RCP<Core::Nodes::Node> newnode = Teuchos::RCP(node->clone());
+      std::shared_ptr<Core::Nodes::Node> newnode(node->clone());
       xwdiscret_->add_node(newnode);
     }
   }
@@ -599,7 +597,7 @@ void FLD::XWall::setup_x_wall_dis()
 
     if (!xwallele) continue;
 
-    Teuchos::RCP<Core::Elements::Element> newele = Teuchos::RCP(ele->clone());
+    std::shared_ptr<Core::Elements::Element> newele(ele->clone());
     xwdiscret_->add_element(newele);
   }
 
@@ -629,8 +627,8 @@ void FLD::XWall::setup_x_wall_dis()
   bool parallel = (xwdiscret_->get_comm().NumProc() == 1) ? false : true;
 
   // dofs of the original discretization are used to set same dofs for the new discretization
-  Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-      Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(discret_, parallel);
+  std::shared_ptr<Core::DOFSets::DofSet> newdofset =
+      std::make_shared<Core::DOFSets::TransparentDofSet>(discret_, parallel);
 
   xwdiscret_->replace_dof_set(newdofset);
   xwdiscret_->fill_complete(true, true, true);
@@ -640,9 +638,9 @@ void FLD::XWall::setup_x_wall_dis()
   {
     // redistribute
     Epetra_Map elemap(*xwdiscret_->element_row_map());
-    Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(discret_->get_comm().Clone());
+    std::shared_ptr<Epetra_Comm> comm(discret_->get_comm().Clone());
 
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph =
+    std::shared_ptr<const Epetra_CrsGraph> nodegraph =
         Core::Rebalance::build_graph(*xwdiscret_, elemap);
 
     Teuchos::ParameterList rebalanceParams;
@@ -711,36 +709,34 @@ void FLD::XWall::setup_l2_projection()
       }
     }
 
-    enrdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(
+    enrdofrowmap_ = std::make_shared<Epetra_Map>(
         -1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->get_comm());
 
-    massmatrix_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*enrdofrowmap_, 108, false, true);
+    massmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*enrdofrowmap_, 108, false, true);
 
-    incveln_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
-    incvelnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
-    incaccn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+    incveln_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+    incvelnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+    incaccn_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
 
-    stateveln_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
+    stateveln_ = std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
     statevelnp_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
-    stateaccn_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
+    stateaccn_ = std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
 
-    mergedmap_ = Teuchos::null;
-    lagrdofrowmap_ = Teuchos::null;
+    mergedmap_ = nullptr;
+    lagrdofrowmap_ = nullptr;
   }
   else
   {
-    massmatrix_ = Teuchos::null;
-    incveln_ = Teuchos::null;
-    incvelnp_ = Teuchos::null;
-    incaccn_ = Teuchos::null;
-    stateveln_ = Teuchos::null;
-    statevelnp_ = Teuchos::null;
-    stateaccn_ = Teuchos::null;
-    enrdofrowmap_ = Teuchos::null;
-    lagrdofrowmap_ = Teuchos::null;
+    massmatrix_ = nullptr;
+    incveln_ = nullptr;
+    incvelnp_ = nullptr;
+    incaccn_ = nullptr;
+    stateveln_ = nullptr;
+    statevelnp_ = nullptr;
+    stateaccn_ = nullptr;
+    enrdofrowmap_ = nullptr;
+    lagrdofrowmap_ = nullptr;
   }
 
   // setup solver
@@ -754,7 +750,7 @@ void FLD::XWall::setup_l2_projection()
     const auto solvertype =
         Teuchos::getIntegralValue<Core::LinearSolver::SolverType>(solverparams, "SOLVER");
 
-    solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(solverparams, xwdiscret_->get_comm(),
+    solver_ = std::make_shared<Core::LinAlg::Solver>(solverparams, xwdiscret_->get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
             Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -788,15 +784,15 @@ void FLD::XWall::setup_l2_projection()
             mllist_ptr = &((solver_->params()).sublist("ML Parameters"));
             Teuchos::ParameterList& mllist = *mllist_ptr;  // solveparams.sublist("ML Parameters");
 
-            Teuchos::RCP<std::vector<double>> ns =
-                mllist.get<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
-            if (ns != Teuchos::null) break;
+            std::shared_ptr<std::vector<double>> ns =
+                mllist.get<std::shared_ptr<std::vector<double>>>("nullspace", nullptr);
+            if (ns != nullptr) break;
 
             // no, we have not previously computed the nullspace
             // -> compute nullspace
-            ns = Teuchos::null;
+            ns = nullptr;
 
-            mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", Teuchos::null);
+            mllist.set<std::shared_ptr<std::vector<double>>>("nullspace", nullptr);
             // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
             mllist.set<bool>("ML validate parameter list", false);
 
@@ -807,9 +803,9 @@ void FLD::XWall::setup_l2_projection()
 
             // allocate dimns times the local length of the rowmap
             const int lrows = enrdofrowmap_->NumMyElements();
-            ns = Teuchos::make_rcp<std::vector<double>>(3 * lrows);
+            ns = std::make_shared<std::vector<double>>(3 * lrows);
             double* nullsp = ns->data();
-            mllist.set<Teuchos::RCP<std::vector<double>>>("nullspace", ns);
+            mllist.set<std::shared_ptr<std::vector<double>>>("nullspace", ns);
             mllist.set("null space: vectors", nullsp);
 
             // now compute the nullspace
@@ -863,10 +859,10 @@ void FLD::XWall::setup_l2_projection()
 /*----------------------------------------------------------------------*
  |  Routine to update Tauw                                     bk 07/14 |
  *----------------------------------------------------------------------*/
-void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual,
-    int itnum, Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln)
+void FLD::XWall::update_tau_w(int step, std::shared_ptr<Core::LinAlg::Vector<double>> trueresidual,
+    int itnum, std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln)
 {
   iter_ = 0;
 
@@ -874,15 +870,15 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
 
   Core::LinAlg::Vector<double> newtauw(*xwallrownodemap_, true);
   // calculate wall stress
-  Teuchos::RCP<Core::LinAlg::Vector<double>> wss;
-  if (restart_wss_ != Teuchos::null)
+  std::shared_ptr<Core::LinAlg::Vector<double>> wss;
+  if (restart_wss_ != nullptr)
   {
     wss = restart_wss_;
   }
   else if (((tauwcalctype_ == Inpar::FLUID::gradient_to_residual && step >= switch_step_) ||
                (tauwcalctype_ != Inpar::FLUID::gradient_to_residual && step > 1)))
   {
-    if (mystressmanager_ == Teuchos::null) FOUR_C_THROW("wssmanager not available in xwall");
+    if (mystressmanager_ == nullptr) FOUR_C_THROW("wssmanager not available in xwall");
     // fix nodal forces on dirichlet inflow surfaces if desired
     wss = mystressmanager_->get_pre_calc_wall_shear_stresses(*fix_dirichlet_inflow(*trueresidual));
   }
@@ -940,7 +936,7 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
     if (myrank_ == 0) std::cout << "  L2-project... ";
     if (tauwtype_ == Inpar::FLUID::between_steps)
     {
-      l2_project_vector(*veln, Teuchos::null, accn);
+      l2_project_vector(*veln, nullptr, accn);
 
       // at the beginning of this time step they are equal -> calculate only one of them
       velnp->Update(1.0, *veln, 0.0);
@@ -956,7 +952,7 @@ void FLD::XWall::update_tau_w(int step, Teuchos::RCP<Core::LinAlg::Vector<double
   calc_mk();
 
   // destruct vector so that we don't use it next time
-  if (restart_wss_ != Teuchos::null) restart_wss_ = Teuchos::null;
+  if (restart_wss_ != nullptr) restart_wss_ = nullptr;
 
   return;
 }
@@ -1011,8 +1007,8 @@ void FLD::XWall::calc_tau_w(
   {
     // necessary to set right state (the maps of the state vector and discretization have to be
     // equal)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> statevel =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> statevel =
+        std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->dof_row_map()), true);
     Core::LinAlg::Vector<double> newtauwxwdis(*(xwdiscret_->node_row_map()), true);
     Core::LinAlg::export_to(velnp, *statevel);
 
@@ -1134,8 +1130,8 @@ void FLD::XWall::calc_tau_w(
  |  L2-project enriched dofs of vector                         bk 07/14 |
  *----------------------------------------------------------------------*/
 void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accn)
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> accn)
 {
   if (not veln.Map().SameAs(*discret_->dof_row_map()))
     FOUR_C_THROW("input map is not the dof row map of the fluid discretization");
@@ -1143,27 +1139,27 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
   massmatrix_->zero();
 
   incveln_->PutScalar(0.0);
-  if (accn != Teuchos::null) incaccn_->PutScalar(0.0);
-  if (velnp != Teuchos::null) incvelnp_->PutScalar(0.0);
+  if (accn != nullptr) incaccn_->PutScalar(0.0);
+  if (velnp != nullptr) incvelnp_->PutScalar(0.0);
 
   Core::LinAlg::export_to(veln, *stateveln_);
-  if (accn != Teuchos::null) Core::LinAlg::export_to(*accn, *stateaccn_);
-  if (velnp != Teuchos::null) Core::LinAlg::export_to(*velnp, *statevelnp_);
+  if (accn != nullptr) Core::LinAlg::export_to(*accn, *stateaccn_);
+  if (velnp != nullptr) Core::LinAlg::export_to(*velnp, *statevelnp_);
 
   // number of right hand sides during solving
   // is the number of velocity components that is solved for
   // 3 since we are in 3D
   int numberofrhs = 0;
-  if (velnp == Teuchos::null && accn == Teuchos::null)
+  if (velnp == nullptr && accn == nullptr)
     numberofrhs = 1;
-  else if (velnp == Teuchos::null || accn == Teuchos::null)
+  else if (velnp == nullptr || accn == nullptr)
     numberofrhs = 2;
   else
     numberofrhs = 3;
 
   xwdiscret_->set_state("veln", stateveln_);
-  if (accn != Teuchos::null) xwdiscret_->set_state("accn", stateaccn_);
-  if (velnp != Teuchos::null) xwdiscret_->set_state("velnp", statevelnp_);
+  if (accn != nullptr) xwdiscret_->set_state("accn", stateaccn_);
+  if (velnp != nullptr) xwdiscret_->set_state("velnp", statevelnp_);
 
   // set action in order to project nodal enriched values to new shape functions
   Teuchos::ParameterList params;
@@ -1171,8 +1167,8 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
   params.set<FLD::Action>("action", FLD::xwall_l2_projection);
 
   // create empty right hand side
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> rhsassemble =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*enrdofrowmap_, numberofrhs);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> rhsassemble =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*enrdofrowmap_, numberofrhs);
 
   std::vector<int> lm;
   std::vector<int> lmowner;
@@ -1245,8 +1241,8 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
   massmatrix_->complete();
 
   // solution vector
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> resultvec =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*enrdofrowmap_, numberofrhs);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> resultvec =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*enrdofrowmap_, numberofrhs);
 
   // solve for 1, 2 or 3 right hand sides at the same time --> thanks to Belos
   Core::LinAlg::SolverParams solver_params;
@@ -1261,8 +1257,8 @@ void FLD::XWall::l2_project_vector(Core::LinAlg::Vector<double>& veln,
   if (numberofrhs > 2) Core::LinAlg::export_to(((*resultvec)(2)), *incvelnp_);
 
   veln.Update(1.0, *incveln_, 1.0);
-  if (accn != Teuchos::null) accn->Update(1.0, *incaccn_, 1.0);
-  if (velnp != Teuchos::null) velnp->Update(1.0, *incvelnp_, 1.0);
+  if (accn != nullptr) accn->Update(1.0, *incaccn_, 1.0);
+  if (velnp != nullptr) velnp->Update(1.0, *incvelnp_, 1.0);
 
 
   return;
@@ -1341,11 +1337,11 @@ void FLD::XWall::calc_mk()
 /*----------------------------------------------------------------------*
  |  Write enriched dofs in standard dofs for output            bk 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::get_output_vector(
+std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::get_output_vector(
     Core::LinAlg::Vector<double>& vel)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velenr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> velenr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
   for (int i = 0; i < xwallrownodemap_->NumMyElements(); ++i)
   {
     int xwallgid = xwallrownodemap_->GID(i);
@@ -1367,7 +1363,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::get_output_vector(
 /*----------------------------------------------------------------------*
  |  transfer tauw for turbulent inflow channel                 bk 09/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::get_tauw() { return tauw_; }
+std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::get_tauw() { return tauw_; }
 
 /*----------------------------------------------------------------------*
  |  transfer tauw for turbulent inflow channel                 bk 09/14 |
@@ -1431,13 +1427,13 @@ void FLD::XWall::overwrite_transferred_values()
  *----------------------------------------------------------------------*/
 void FLD::XWall::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tauw =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> tauw =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()), true);
   reader.read_vector(tauw, "xwall_tauw");
   Core::LinAlg::export_to(*tauw, *tauw_);
   Core::LinAlg::export_to(*tauw, *tauwxwdis_);
 
-  restart_wss_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+  restart_wss_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
   reader.read_vector(restart_wss_, "wss");
   return;
 }
@@ -1447,12 +1443,12 @@ void FLD::XWall::read_restart(Core::IO::DiscretizationReader& reader)
 /*----------------------------------------------------------------------*
  |  treat Dirichlet inflow                                     bk 04/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
+std::shared_ptr<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
     Core::LinAlg::Vector<double>& trueresidual)
 {
   // copy for safety reasons
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fixedtrueresidual =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fixedtrueresidual =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()), true);
   fixedtrueresidual->Update(1.0, trueresidual, 0.0);
 
   // fix nodal forces on dirichlet inflow surfaces
@@ -1601,15 +1597,16 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::XWall::fix_dirichlet_inflow(
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 01/15 |
  *----------------------------------------------------------------------*/
-FLD::XWallAleFSI::XWallAleFSI(Teuchos::RCP<Core::FE::Discretization> dis, int nsd,
-    Teuchos::RCP<Teuchos::ParameterList>& params, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps,
-    Teuchos::RCP<FLD::Utils::StressManager> wssmanager,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gridv)
+FLD::XWallAleFSI::XWallAleFSI(std::shared_ptr<Core::FE::Discretization> dis, int nsd,
+    std::shared_ptr<Teuchos::ParameterList>& params,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
+    std::shared_ptr<FLD::Utils::StressManager> wssmanager,
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> gridv)
     : XWall(dis, nsd, params, dbcmaps, wssmanager), mydispnp_(dispnp), mygridv_(gridv)
 {
   incwdistxwdis_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*(xwdiscret_->node_col_map()), true);
   return;
 }
 
@@ -1704,10 +1701,10 @@ void FLD::XWallAleFSI::set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparam
   XWall::set_x_wall_params_xw_dis(eleparams);
   // params required for the shape functions
   eleparams.set("incwalldist", incwdistxwdis_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xwdisdispnp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> xwdisdispnp =
       Core::LinAlg::create_vector(*(xwdiscret_->dof_row_map()), true);
   Core::LinAlg::export_to(*mydispnp_, *xwdisdispnp);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xwdisgridv =
+  std::shared_ptr<Core::LinAlg::Vector<double>> xwdisgridv =
       Core::LinAlg::create_vector(*(xwdiscret_->dof_row_map()), true);
   Core::LinAlg::export_to(*mygridv_, *xwdisgridv);
 
@@ -1721,10 +1718,10 @@ void FLD::XWallAleFSI::set_x_wall_params_xw_dis(Teuchos::ParameterList& eleparam
  |  Routine to update Tauw                                     bk 07/14 |
  *----------------------------------------------------------------------*/
 void FLD::XWallAleFSI::update_tau_w(int step,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual, int itnum,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln)
+    std::shared_ptr<Core::LinAlg::Vector<double>> trueresidual, int itnum,
+    std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln)
 {
   update_w_dist_wale();
   FLD::XWall::update_tau_w(step, trueresidual, itnum, accn, velnp, veln);
@@ -1734,7 +1731,7 @@ void FLD::XWallAleFSI::update_tau_w(int step,
     {
       if (myrank_ == 0) std::cout << "  L2-project... ";
 
-      l2_project_vector(*veln, Teuchos::null, accn);
+      l2_project_vector(*veln, nullptr, accn);
 
       // at the beginning of this time step they are equal -> calculate only one of them
       velnp->Update(1.0, *veln, 0.0);

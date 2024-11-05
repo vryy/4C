@@ -223,7 +223,7 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     template <typename T>
     void set_filament_binding_spot_positions(
-        Teuchos::RCP<Core::FE::Discretization> discret, T& params)
+        std::shared_ptr<Core::FE::Discretization> discret, T& params)
     {
       // todo: set somewhere else
       double const tol = Core::Geo::TOL7;
@@ -592,7 +592,8 @@ namespace BEAMINTERACTION
         const Core::FE::Discretization& discret, std::vector<int> const& elegid,
         std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
+        std::shared_ptr<Epetra_FEVector> fe_sysvec,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat)
     {
       // the entries of elevecX  belong to the Dofs of the element with GID elegidX
       // the rows    of elematXY belong to the Dofs of the element with GID elegidX
@@ -611,14 +612,14 @@ namespace BEAMINTERACTION
       ele2->location_vector(discret, lmrow2, lmrowowner2, lmstride);
 
       // assemble both element vectors into global system vector
-      if (fe_sysvec != Teuchos::null)
+      if (fe_sysvec != nullptr)
       {
         fe_sysvec->SumIntoGlobalValues(elevec[0].length(), lmrow1.data(), elevec[0].values());
         fe_sysvec->SumIntoGlobalValues(elevec[1].length(), lmrow2.data(), elevec[1].values());
       }
 
       // and finally also assemble stiffness contributions
-      if (fe_sysmat != Teuchos::null)
+      if (fe_sysmat != nullptr)
       {
         fe_sysmat->fe_assemble(elemat[0][0], lmrow1, lmrow1);
         fe_sysmat->fe_assemble(elemat[0][1], lmrow1, lmrow2);
@@ -1215,8 +1216,9 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void setup_ele_type_map_extractor(Teuchos::RCP<const Core::FE::Discretization> const& discret,
-        Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& eletypeextractor)
+    void setup_ele_type_map_extractor(
+        std::shared_ptr<const Core::FE::Discretization> const& discret,
+        std::shared_ptr<Core::LinAlg::MultiMapExtractor>& eletypeextractor)
     {
       std::vector<std::set<int>> eletypeset(3);
 
@@ -1245,27 +1247,27 @@ namespace BEAMINTERACTION
         }
       }
 
-      std::vector<Teuchos::RCP<const Epetra_Map>> maps(eletypeset.size());
+      std::vector<std::shared_ptr<const Epetra_Map>> maps(eletypeset.size());
       for (int i = 0; i < static_cast<int>(eletypeset.size()); ++i)
       {
         std::vector<int> mapvec(eletypeset[i].begin(), eletypeset[i].end());
         eletypeset[i].clear();
         maps[i] =
-            Teuchos::make_rcp<Epetra_Map>(-1, mapvec.size(), mapvec.data(), 0, discret->get_comm());
+            std::make_shared<Epetra_Map>(-1, mapvec.size(), mapvec.data(), 0, discret->get_comm());
       }
 
-      eletypeextractor->setup(*discret()->element_row_map(), maps);
+      eletypeextractor->setup(*discret->element_row_map(), maps);
     }
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void update_dof_map_of_vector(Core::FE::Discretization& discret,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dofmapvec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> old)
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dofmapvec,
+        std::shared_ptr<Core::LinAlg::Vector<double>> old)
     {
-      if (dofmapvec != Teuchos::null)
+      if (dofmapvec != nullptr)
       {
-        if (old == Teuchos::null) old = dofmapvec;
+        if (old == nullptr) old = dofmapvec;
         dofmapvec = Core::LinAlg::create_vector(*discret.dof_row_map(), true);
         Core::LinAlg::export_to(*old, *dofmapvec);
       }
@@ -1339,9 +1341,9 @@ namespace BEAMINTERACTION
     // explicit template instantiation (to please every compiler)
     //-----------------------------------------------------------------------------
     template void set_filament_binding_spot_positions(
-        Teuchos::RCP<Core::FE::Discretization>, BEAMINTERACTION::CrosslinkingParams&);
+        std::shared_ptr<Core::FE::Discretization>, BEAMINTERACTION::CrosslinkingParams&);
     template void set_filament_binding_spot_positions(
-        Teuchos::RCP<Core::FE::Discretization>, BEAMINTERACTION::SphereBeamLinkingParams&);
+        std::shared_ptr<Core::FE::Discretization>, BEAMINTERACTION::SphereBeamLinkingParams&);
 
     template void apply_binding_spot_force_to_parent_elements<Discret::Elements::Beam3Base,
         Discret::Elements::Beam3Base>(Core::FE::Discretization const&,

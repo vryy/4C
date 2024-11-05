@@ -192,7 +192,7 @@ namespace Solid
        *  state variable. */
       //! @{
       //! modified acceleration vector acc_{mod;n}
-      Teuchos::RCP<Core::LinAlg::Vector<double>> accn_mod_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> accn_mod_;
 
       //! @}
     };

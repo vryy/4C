@@ -14,22 +14,24 @@
 #include "4C_io_discretization_visualization_writer_mesh.hpp"
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_utils_parameter_list.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output)
+FLD::TimInt::TimInt(const std::shared_ptr<Core::FE::Discretization>& discret,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output)
     : discret_(discret),
       solver_(solver),
       params_(params),
       output_(output),
-      runtime_output_writer_(Teuchos::null),
+      runtime_output_writer_(nullptr),
       runtime_output_params_(),
       time_(0.0),
       step_(0),
@@ -45,8 +47,8 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
           Teuchos::getIntegralValue<Inpar::FLUID::PhysicalType>(*params_, "Physical Type")),
       myrank_(discret_->get_comm().MyPID()),
       updateprojection_(false),
-      projector_(Teuchos::null),
-      kspsplitter_(Teuchos::null)
+      projector_(nullptr),
+      kspsplitter_(nullptr)
 {
   // check for special fluid output which is to be handled by an own writer object
   const Teuchos::ParameterList fluid_runtime_output_list(
@@ -64,16 +66,16 @@ FLD::TimInt::TimInt(const Teuchos::RCP<Core::FE::Discretization>& discret,
     // However, this is called before the restart is read and someone with knowledge on the module
     // has to refactor the code. The only implication is that in restarted simulations the .pvd file
     // does not contain the steps of the simulation that is restarted from
-    runtime_output_writer_ = Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterMesh>(
+    runtime_output_writer_ = std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
         discret_, Core::IO::visualization_parameters_factory(
                       Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
                       *Global::Problem::instance()->output_control_file(), time_));
   }
 }
 
-Teuchos::RCP<const Epetra_Map> FLD::TimInt::dof_row_map(unsigned nds)
+std::shared_ptr<const Epetra_Map> FLD::TimInt::dof_row_map(unsigned nds)
 {
-  return Teuchos::rcpFromRef(*discretization()->dof_row_map(nds));
+  return Core::Utils::shared_ptr_from_ref(*discretization()->dof_row_map(nds));
 }
 
 

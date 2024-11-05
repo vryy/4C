@@ -44,8 +44,8 @@ template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& global_lambda,
     const Core::LinAlg::Vector<double>& displacement_vector)
 {
@@ -114,7 +114,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
       get_beam_to_surface_pair_gid_combined<Beam>(discret, *this->element1(), *this->face_element_);
 
   // Add the terms to the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(potential.dx(i_dof).dx(j_dof)),
@@ -134,7 +134,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam,
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair. Only do this once for meshtying.
   if (!this->meshtying_is_evaluated_)
@@ -466,8 +466,8 @@ template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
 void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface,
     Mortar>::evaluate_and_assemble(const Core::FE::Discretization& discret,
     const BeamToSolidMortarManager* mortar_manager,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
     const Core::LinAlg::Vector<double>& global_lambda,
     const Core::LinAlg::Vector<double>& displacement_vector)
 {
@@ -478,7 +478,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
   if (this->line_to_3D_segments_.size() == 0) return;
 
   // This pair only gives contributions to the stiffness matrix.
-  if (stiffness_matrix == Teuchos::null) return;
+  if (stiffness_matrix == nullptr) return;
 
   // Get the beam triad interpolation schemes.
   LargeRotations::TriadInterpolationLocalRotationVectors<3, double> triad_interpolation_scheme;
@@ -734,7 +734,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
     Core::LinAlg::SparseMatrix& global_force_solid_lin_lambda, Epetra_FEVector& global_constraint,
     Epetra_FEVector& global_kappa, Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
     Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   base_class::evaluate_and_assemble_mortar_contributions(discret, mortar_manager,
       global_constraint_lin_beam, global_constraint_lin_solid, global_force_beam_lin_lambda,
@@ -999,7 +999,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarTyp
  *
  */
 template <typename ScalarType, typename Beam, typename Surface, typename Mortar>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_rotation(
     const bool rotational_coupling)
 {
@@ -1007,18 +1007,18 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_rotation(
   using namespace GEOMETRYPAIR;
 
   if (!rotational_coupling)
-    return Teuchos::RCP(
-        new BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface, Mortar>());
+    return std::make_shared<
+        BeamToSolidSurfaceMeshtyingPairMortarFAD<ScalarType, Beam, Surface, Mortar>>();
   else
-    return Teuchos::RCP(
-        new BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface, Mortar>());
+    return std::make_shared<
+        BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<ScalarType, Beam, Surface, Mortar>>();
 }
 
 /**
  *
  */
 template <typename Mortar>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar(
     const Core::FE::CellType surface_shape, const bool rotational_coupling)
 {
@@ -1048,7 +1048,7 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar(
           Mortar>(rotational_coupling);
     default:
       FOUR_C_THROW("Wrong element type for surface element.");
-      return Teuchos::null;
+      return nullptr;
   }
 }
 
@@ -1056,7 +1056,7 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar(
  *
  */
 template <typename Mortar>
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_x_volume(
     const Core::FE::CellType surface_shape, const bool rotational_coupling)
 {
@@ -1079,14 +1079,14 @@ beam_to_solid_surface_meshtying_pair_mortar_fad_factory_mortar_x_volume(
           Mortar>(rotational_coupling);
     default:
       FOUR_C_THROW("Wrong element type for surface element.");
-      return Teuchos::null;
+      return nullptr;
   }
 }
 
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
     const Core::FE::CellType surface_shape,
     const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction,
@@ -1138,7 +1138,7 @@ BEAMINTERACTION::beam_to_solid_surface_meshtying_pair_mortar_fad_factory(
   else
     FOUR_C_THROW("Surface normal strategy not recognized.");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -32,16 +32,16 @@ Discret::Elements::So3Plast<distype>::So3Plast(int id, int owner)
       dDp_last_iter_(std::vector<Core::LinAlg::SerialDenseVector>(0)),
       dDp_inc_(std::vector<Core::LinAlg::SerialDenseVector>(0)),
       plspintype_(plspin),
-      KaaInv_(Teuchos::null),
-      Kad_(Teuchos::null),
-      KaT_(Teuchos::null),
-      KdT_eas_(Teuchos::null),
-      feas_(Teuchos::null),
-      Kba_(Teuchos::null),
-      alpha_eas_(Teuchos::null),
-      alpha_eas_last_timestep_(Teuchos::null),
-      alpha_eas_delta_over_last_timestep_(Teuchos::null),
-      alpha_eas_inc_(Teuchos::null),
+      KaaInv_(nullptr),
+      Kad_(nullptr),
+      KaT_(nullptr),
+      KdT_eas_(nullptr),
+      feas_(nullptr),
+      Kba_(nullptr),
+      alpha_eas_(nullptr),
+      alpha_eas_last_timestep_(nullptr),
+      alpha_eas_delta_over_last_timestep_(nullptr),
+      alpha_eas_inc_(nullptr),
       eastype_(soh8p_easnone),
       neas_(0),
       tsi_(false),
@@ -242,7 +242,7 @@ int Discret::Elements::So3Plast<distype>::num_line() const
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::So3Plast<distype>::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::So3Plast<distype>::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(
       Core::Communication::buildLines, *this);
@@ -252,7 +252,8 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::So3Plast<d
  |                                                          seitz 05/14 |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::So3Plast<distype>::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::So3Plast<distype>::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
       Core::Communication::buildSurfaces, *this);
@@ -356,10 +357,10 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   tsi_ = (bool)extract_int(buffer);
   if (tsi_)
   {
-    dFintdT_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>>(numgpt_);
-    KbT_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+    dFintdT_ = std::make_shared<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>>(numgpt_);
+    KbT_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
-    temp_last_ = Teuchos::make_rcp<std::vector<double>>(numgpt_);
+    temp_last_ = std::make_shared<std::vector<double>>(numgpt_);
     int size = extract_int(buffer);
     for (int i = 0; i < size; i++)
     {
@@ -376,34 +377,34 @@ void Discret::Elements::So3Plast<distype>::unpack(Core::Communication::UnpackBuf
   // no EAS
   if (eastype_ == soh8p_easnone)
   {
-    KaaInv_ = Teuchos::null;
-    Kad_ = Teuchos::null;
-    KaT_ = Teuchos::null;
-    KdT_eas_ = Teuchos::null;
-    feas_ = Teuchos::null;
-    Kba_ = Teuchos::null;
-    alpha_eas_ = Teuchos::null;
-    alpha_eas_last_timestep_ = Teuchos::null;
-    alpha_eas_delta_over_last_timestep_ = Teuchos::null;
-    alpha_eas_inc_ = Teuchos::null;
+    KaaInv_ = nullptr;
+    Kad_ = nullptr;
+    KaT_ = nullptr;
+    KdT_eas_ = nullptr;
+    feas_ = nullptr;
+    Kba_ = nullptr;
+    alpha_eas_ = nullptr;
+    alpha_eas_last_timestep_ = nullptr;
+    alpha_eas_delta_over_last_timestep_ = nullptr;
+    alpha_eas_inc_ = nullptr;
   }
   else
   {
-    KaaInv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
-    Kad_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
+    KaaInv_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, neas_, true);
+    Kad_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, numdofperelement_, true);
     if (tsi_)
     {
-      KaT_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
-      KdT_eas_ = Teuchos::make_rcp<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
+      KaT_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
+      KdT_eas_ = std::make_shared<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
     }
-    feas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    Kba_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+    feas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    Kba_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseMatrix>>(
         numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, neas_, true));
-    alpha_eas_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_last_timestep_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_last_timestep_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
     alpha_eas_delta_over_last_timestep_ =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
-    alpha_eas_inc_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(neas_, true);
+        std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
+    alpha_eas_inc_ = std::make_shared<Core::LinAlg::SerialDenseVector>(neas_, true);
   }
 
   KbbInv_.resize(numgpt_, Core::LinAlg::SerialDenseMatrix(plspintype_, plspintype_, true));
@@ -573,7 +574,7 @@ bool Discret::Elements::So3Plast<distype>::read_element(const std::string& elety
 
   set_material(0, Mat::factory(material_id));
 
-  Teuchos::RCP<Mat::So3Material> so3mat = solid_material();
+  std::shared_ptr<Mat::So3Material> so3mat = solid_material();
   so3mat->setup(numgpt_, container);
   so3mat->valid_kinematics(Inpar::Solid::KinemType::nonlinearTotLag);
 
@@ -629,7 +630,7 @@ bool Discret::Elements::So3Plast<distype>::read_element(const std::string& elety
   Teuchos::ParameterList plparams = Global::Problem::instance()->semi_smooth_plast_params();
   Core::Utils::add_enum_class_to_parameter_list(
       "Core::ProblemType", Global::Problem::instance()->get_problem_type(), plparams);
-  read_parameter_list(Teuchos::rcpFromRef<Teuchos::ParameterList>(plparams));
+  read_parameter_list(Core::Utils::shared_ptr_from_ref<Teuchos::ParameterList>(plparams));
 
 
   return true;
@@ -719,7 +720,7 @@ bool Discret::Elements::So3Plast<distype>::vis_data(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::So3Plast<distype>::read_parameter_list(
-    Teuchos::RCP<Teuchos::ParameterList> plparams)
+    std::shared_ptr<Teuchos::ParameterList> plparams)
 {
   double cpl = plparams->get<double>("SEMI_SMOOTH_CPL");
   double s = plparams->get<double>("STABILIZATION_S");
@@ -748,20 +749,20 @@ void Discret::Elements::So3Plast<distype>::read_parameter_list(
     plmat->setup_tsi(numgpt_, numdofperelement_, (eastype_ != soh8p_easnone), mode);
 
     // setup element data
-    dFintdT_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>>(numgpt_);
-    temp_last_ = Teuchos::make_rcp<std::vector<double>>(numgpt_, plmat->init_temp());
-    KbT_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseVector>>(
+    dFintdT_ = std::make_shared<std::vector<Core::LinAlg::Matrix<numdofperelement_, 1>>>(numgpt_);
+    temp_last_ = std::make_shared<std::vector<double>>(numgpt_, plmat->init_temp());
+    KbT_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseVector>>(
         numgpt_, Core::LinAlg::SerialDenseVector(plspintype_, true));
 
     if (eastype_ != soh8p_easnone)
     {
-      KaT_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
-      KdT_eas_ = Teuchos::make_rcp<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
+      KaT_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(neas_, nen_, true);
+      KdT_eas_ = std::make_shared<Core::LinAlg::Matrix<numdofperelement_, nen_>>();
     }
     else
     {
-      KaT_ = Teuchos::null;
-      KdT_eas_ = Teuchos::null;
+      KaT_ = nullptr;
+      KdT_eas_ = nullptr;
     }
   }
 }

@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 
 bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
     const Core::LinAlg::Vector<double>& displacement_vector,
-    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> me_force_ptr)
+    std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> me_stiff_ptr,
+    std::shared_ptr<Core::LinAlg::Vector<double>> me_force_ptr)
 {
-  if (me_stiff_ptr == Teuchos::null && me_force_ptr == Teuchos::null)
+  if (me_stiff_ptr == nullptr && me_force_ptr == nullptr)
     FOUR_C_THROW("Both stiffness and force point are null");
 
-  if (me_stiff_ptr != Teuchos::null)
+  if (me_stiff_ptr != nullptr)
   {
     if (!(Q_Ld_->filled() && Q_dd_->filled() && Q_dL_->filled()))
       FOUR_C_THROW("Call evaluate_coupling_terms() first.");
@@ -44,7 +44,7 @@ bool CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_force_stiff(
     me_stiff_ptr->add(*sme_stiff_ptr, false, 1., 1.);
   }
 
-  if (me_force_ptr != Teuchos::null)
+  if (me_force_ptr != nullptr)
   {
     //  Calculate force contribution
     Core::LinAlg::Vector<double> r_pen(stiff_ptr_->row_map(), true);
@@ -62,18 +62,18 @@ void CONSTRAINTS::SUBMODELEVALUATOR::ConstraintBase::evaluate_coupling_terms(
   for (const auto& mpc : listMPCs_) ncon_ += mpc->get_number_of_mp_cs();
 
   // ToDo: Add an offset to the contraint dof map.
-  n_condition_map_ = Teuchos::make_rcp<Epetra_Map>(ncon_, 0, stiff_ptr_->Comm());
+  n_condition_map_ = std::make_shared<Epetra_Map>(ncon_, 0, stiff_ptr_->Comm());
 
   // initialise all global coupling objects
-  constraint_vector_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*n_condition_map_, true);
-  Q_Ld_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*n_condition_map_, 4);
-  Q_dL_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_ptr_->row_map(), 4);
-  Q_dd_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_ptr_->row_map(), 0);
+  constraint_vector_ = std::make_shared<Core::LinAlg::Vector<double>>(*n_condition_map_, true);
+  Q_Ld_ = std::make_shared<Core::LinAlg::SparseMatrix>(*n_condition_map_, 4);
+  Q_dL_ = std::make_shared<Core::LinAlg::SparseMatrix>(stiff_ptr_->row_map(), 4);
+  Q_dd_ = std::make_shared<Core::LinAlg::SparseMatrix>(stiff_ptr_->row_map(), 0);
 
   // set Q_dd to zero as default
   Q_dd_->zero();
   // Evaluate the Constraint Pairs / equations objects
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dis_np = gstate.get_dis_np();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dis_np = gstate.get_dis_np();
   for (const auto& obj : listMPCs_)
   {
     obj->evaluate_equation(*Q_dd_, *Q_dL_, *Q_Ld_, *constraint_vector_, *dis_np);

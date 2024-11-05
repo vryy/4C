@@ -65,12 +65,12 @@ namespace Adapter
     virtual const Teuchos::ParameterList& algo_parameters() { return params_; }
 
     /// interpolate fluid quantity to a scatra one (e.g. via volmortar)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_to_scatra(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidvector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_to_scatra(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> fluidvector) const;
 
     /// interpolate scatra quantity to a fluid one (e.g. via volmortar)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scatra_to_fluid(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> scatravector) const;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scatra_to_fluid(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> scatravector) const;
 
    private:
     /// setup adapters for transport on boundary if necessary
@@ -80,7 +80,7 @@ namespace Adapter
     Inpar::ScaTra::FieldCoupling fieldcoupling_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_fluidscatra_;
 
     /// problem-specific parameter list
     const Teuchos::ParameterList& params_;

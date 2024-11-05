@@ -113,7 +113,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class GrowthRemodelElastHyper
 
@@ -197,9 +197,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<GrowthRemodelElastHyper>(*this);
+      return std::make_shared<GrowthRemodelElastHyper>(*this);
     }
 
     /// material mass density
@@ -461,16 +461,16 @@ namespace Mat
     Mat::PAR::GrowthRemodelElastHyper* params_;
 
     /// Map to remodelfiber material summands
-    std::vector<Teuchos::RCP<Mat::Elastic::RemodelFiber>> potsumrf_;
+    std::vector<std::shared_ptr<Mat::Elastic::RemodelFiber>> potsumrf_;
 
     /// Map to elastin 3d matrix material summands
-    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsumeliso_;
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumeliso_;
 
     /// Map to membrane elastin material summands
-    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsumelmem_;
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsumelmem_;
 
     /// Map to penalty elastin matrix material summands
-    Teuchos::RCP<Mat::Elastic::Summand> potsumelpenalty_;
+    std::shared_ptr<Mat::Elastic::Summand> potsumelpenalty_;
 
     /// Current individual mass density of elastin
     std::vector<double> cur_rho_el_;

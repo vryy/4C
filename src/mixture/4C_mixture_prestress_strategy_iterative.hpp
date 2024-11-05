@@ -71,11 +71,11 @@ namespace Mixture
         int eleGID) override;
 
     void evaluate_prestress(const MixtureRule& mixtureRule,
-        const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+        const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, Core::LinAlg::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void update(const Teuchos::RCP<const Mat::CoordinateSystemProvider> anisotropy,
+    void update(const std::shared_ptr<const Mat::CoordinateSystemProvider> anisotropy,
         Mixture::MixtureConstituent& constituent, const Core::LinAlg::Matrix<3, 3>& F,
         Core::LinAlg::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 

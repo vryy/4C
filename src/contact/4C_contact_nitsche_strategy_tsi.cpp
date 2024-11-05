@@ -27,9 +27,9 @@ void CONTACT::NitscheStrategyTsi::set_state(
   if (statename == Mortar::state_temperature)
   {
     double inf_delta = 0.;
-    if (curr_state_temp_ == Teuchos::null)
+    if (curr_state_temp_ == nullptr)
     {
-      curr_state_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(vec);
+      curr_state_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(vec);
       inf_delta = 1.e12;
     }
     else
@@ -44,8 +44,9 @@ void CONTACT::NitscheStrategyTsi::set_state(
     {
       curr_state_eval_ = false;
       (*curr_state_temp_) = vec;
-      Teuchos::RCP<Core::FE::Discretization> disT = Global::Problem::instance()->get_dis("thermo");
-      if (disT.is_null()) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
+      std::shared_ptr<Core::FE::Discretization> disT =
+          Global::Problem::instance()->get_dis("thermo");
+      if (!disT) FOUR_C_THROW("set state temperature, but no thermo-discretization???");
       set_parent_state(statename, vec, *disT);
     }
   }
@@ -98,7 +99,7 @@ void CONTACT::NitscheStrategyTsi::setup(bool redistributed, bool init)
 {
   CONTACT::NitscheStrategy::setup(redistributed, init);
 
-  curr_state_temp_ = Teuchos::null;
+  curr_state_temp_ = nullptr;
 }
 
 void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
@@ -118,23 +119,23 @@ void CONTACT::NitscheStrategyTsi::update_trace_ineq_etimates()
   }
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
+std::shared_ptr<Epetra_FEVector> CONTACT::NitscheStrategyTsi::setup_rhs_block_vec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
   {
     case CONTACT::VecBlockType::temp:
-      return Teuchos::make_rcp<Epetra_FEVector>(
+      return std::make_shared<Epetra_FEVector>(
           *Global::Problem::instance()->get_dis("thermo")->dof_row_map());
     default:
       return CONTACT::NitscheStrategy::setup_rhs_block_vec(bt);
   }
 }
 
-Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr(
+std::shared_ptr<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategyTsi::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
-  if (bt == CONTACT::VecBlockType::constraint) return Teuchos::null;
+  if (bt == CONTACT::VecBlockType::constraint) return nullptr;
 
   if (!curr_state_eval_)
     FOUR_C_THROW(
@@ -143,34 +144,33 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategyTsi::ge
   switch (bt)
   {
     case CONTACT::VecBlockType::temp:
-      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ft_);
+      return std::make_shared<Core::LinAlg::Vector<double>>(*ft_);
     default:
       return CONTACT::NitscheStrategy::get_rhs_block_ptr(bt);
   }
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::setup_matrix_block_ptr(
+std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::setup_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_temp:
-      return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      return std::make_shared<Core::LinAlg::SparseMatrix>(
           *Global::Problem::instance()->get_dis("structure")->dof_row_map(), 100, true, false,
           Core::LinAlg::SparseMatrix::FE_MATRIX);
     case CONTACT::MatBlockType::temp_displ:
     case CONTACT::MatBlockType::temp_temp:
-      return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          *Teuchos::rcpFromRef<const Epetra_Map>(
-              *Global::Problem::instance()->get_dis("thermo")->dof_row_map()),
-          100, true, false, Core::LinAlg::SparseMatrix::FE_MATRIX);
+      return std::make_shared<Core::LinAlg::SparseMatrix>(
+          *Global::Problem::instance()->get_dis("thermo")->dof_row_map(), 100, true, false,
+          Core::LinAlg::SparseMatrix::FE_MATRIX);
     default:
       return CONTACT::NitscheStrategy::setup_matrix_block_ptr(bt);
   }
 }
 
 void CONTACT::NitscheStrategyTsi::complete_matrix_block_ptr(
-    const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc)
+    const enum CONTACT::MatBlockType& bt, std::shared_ptr<Core::LinAlg::SparseMatrix> kc)
 {
   switch (bt)
   {
@@ -200,7 +200,7 @@ void CONTACT::NitscheStrategyTsi::complete_matrix_block_ptr(
   }
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::get_matrix_block_ptr(
+std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategyTsi::get_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, const ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");

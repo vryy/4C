@@ -47,24 +47,24 @@ Core::Communication::ParObject* Discret::Elements::RigidsphereType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::RigidsphereType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::RigidsphereType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RIGIDSPHERE")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Rigidsphere>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Rigidsphere>(id, owner);
     return (ele);
   }
-  return (Teuchos::null);
+  return (nullptr);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::RigidsphereType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::RigidsphereType::create(
     const int id, const int owner)
 {
-  return (Teuchos::make_rcp<Rigidsphere>(id, owner));
+  return (std::make_shared<Rigidsphere>(id, owner));
 }
 
 /*----------------------------------------------------------------------*
@@ -120,9 +120,9 @@ Discret::Elements::Rigidsphere::Rigidsphere(const Discret::Elements::Rigidsphere
   {
     for (auto const& iter : old.mybondstobeams_)
     {
-      if (iter.second != Teuchos::null)
+      if (iter.second != nullptr)
         mybondstobeams_[iter.first] =
-            Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(iter.second->clone());
+            std::dynamic_pointer_cast<BEAMINTERACTION::BeamLinkPinJointed>(iter.second->clone());
       else
         FOUR_C_THROW("something went wrong, I am sorry. Please go debugging.");
     }
@@ -206,11 +206,11 @@ void Discret::Elements::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
     std::vector<char> tmp;
     extract_from_pack(buffer, tmp);
     Core::Communication::UnpackBuffer tmp_buffer(tmp);
-    Teuchos::RCP<Core::Communication::ParObject> object =
-        Teuchos::RCP(Core::Communication::factory(tmp_buffer), true);
-    Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> link =
-        Teuchos::rcp_dynamic_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
-    if (link == Teuchos::null) FOUR_C_THROW("Received object is not a beam to beam linkage");
+    std::shared_ptr<Core::Communication::ParObject> object(
+        Core::Communication::factory(tmp_buffer));
+    std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> link =
+        std::dynamic_pointer_cast<BEAMINTERACTION::BeamLinkPinJointed>(object);
+    if (link == nullptr) FOUR_C_THROW("Received object is not a beam to beam linkage");
     mybondstobeams_[link->id()] = link;
   }
 
@@ -221,9 +221,9 @@ void Discret::Elements::Rigidsphere::unpack(Core::Communication::UnpackBuffer& b
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             meier 02/14|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Rigidsphere::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Rigidsphere::lines()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 
@@ -237,15 +237,16 @@ int Discret::Elements::RigidsphereType::initialize(Core::FE::Discretization& dis
 void Discret::Elements::Rigidsphere::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(
+        p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"));
   else
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::ParamsInterface> Discret::Elements::Rigidsphere::params_interface_ptr()
+std::shared_ptr<Core::Elements::ParamsInterface>
+Discret::Elements::Rigidsphere::params_interface_ptr()
 {
   return interface_ptr_;
 }

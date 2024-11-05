@@ -35,7 +35,7 @@ namespace Core::Communication
   };
 
   //! create a local and a global communicator for the problem
-  Teuchos::RCP<Communicators> create_comm(std::vector<std::string> argv);
+  std::shared_ptr<Communicators> create_comm(std::vector<std::string> argv);
 
   /*! \brief debug routine to compare vectors from different parallel 4C runs
    *
@@ -75,7 +75,7 @@ namespace Core::Communication
    * the same position in the code.
    *
    * \note From Core::LinAlg::SparseOperator to CrsMatrix, just do:
-   * Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
+   * std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(yoursparseoperator)->EpetraMatrix()
    *
    * \param communicators (in): communicators containing local and global comm
    * \param matrix        (in): matrix to compare
@@ -86,16 +86,16 @@ namespace Core::Communication
   bool are_distributed_sparse_matrices_identical(const Communicators& communicators,
       Epetra_CrsMatrix& matrix, const char* name, double tol = 1.0e-14);
 
-  //! transform Epetra_Comm to Teuchos::Comm, Teuchos::RCP version
+  //! transform Epetra_Comm to Teuchos::Comm, std::shared_ptr version
   template <class Datatype>
-  Teuchos::RCP<const Teuchos::Comm<Datatype>> to_teuchos_comm(const Epetra_Comm& comm)
+  std::shared_ptr<const Teuchos::Comm<Datatype>> to_teuchos_comm(const Epetra_Comm& comm)
   {
     try
     {
       const Epetra_MpiComm& mpiComm = dynamic_cast<const Epetra_MpiComm&>(comm);
-      Teuchos::RCP<Teuchos::MpiComm<Datatype>> mpicomm =
-          Teuchos::make_rcp<Teuchos::MpiComm<Datatype>>(Teuchos::opaqueWrapper(mpiComm.Comm()));
-      return Teuchos::rcp_dynamic_cast<const Teuchos::Comm<Datatype>>(mpicomm);
+      std::shared_ptr<Teuchos::MpiComm<Datatype>> mpicomm =
+          std::make_shared<Teuchos::MpiComm<Datatype>>(Teuchos::opaqueWrapper(mpiComm.Comm()));
+      return std::dynamic_pointer_cast<const Teuchos::Comm<Datatype>>(mpicomm);
     }
     catch (std::bad_cast& b)
     {
@@ -106,7 +106,7 @@ namespace Core::Communication
     FOUR_C_THROW(
         "Something went wrong with converting an Epetra_Comm to a Teuchos communicator! You should "
         "not be here!");
-    return Teuchos::null;
+    return nullptr;
   }
 
 
@@ -114,7 +114,7 @@ namespace Core::Communication
   {
    public:
     Communicators(int groupId, int ngroup, std::map<int, int> lpidgpid,
-        Teuchos::RCP<Epetra_Comm> lcomm, Teuchos::RCP<Epetra_Comm> gcomm,
+        std::shared_ptr<Epetra_Comm> lcomm, std::shared_ptr<Epetra_Comm> gcomm,
         NestedParallelismType npType);
 
     /// return group id
@@ -133,16 +133,16 @@ namespace Core::Communication
     int lpid(int GPID);
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> local_comm() const { return lcomm_; }
+    std::shared_ptr<Epetra_Comm> local_comm() const { return lcomm_; }
 
     /// return local communicator
-    Teuchos::RCP<Epetra_Comm> global_comm() const { return gcomm_; }
+    std::shared_ptr<Epetra_Comm> global_comm() const { return gcomm_; }
 
     /// set a sub group communicator
-    void set_sub_comm(Teuchos::RCP<Epetra_Comm> subcomm);
+    void set_sub_comm(std::shared_ptr<Epetra_Comm> subcomm);
 
     /// return sub group communicator
-    Teuchos::RCP<Epetra_Comm> sub_comm() const { return subcomm_; }
+    std::shared_ptr<Epetra_Comm> sub_comm() const { return subcomm_; }
 
     /// return nested parallelism type
     NestedParallelismType np_type() const { return np_type_; }
@@ -158,13 +158,13 @@ namespace Core::Communication
     std::map<int, int> lpidgpid_;
 
     /// local communicator
-    Teuchos::RCP<Epetra_Comm> lcomm_;
+    std::shared_ptr<Epetra_Comm> lcomm_;
 
     /// global communicator
-    Teuchos::RCP<Epetra_Comm> gcomm_;
+    std::shared_ptr<Epetra_Comm> gcomm_;
 
     /// sub communicator
-    Teuchos::RCP<Epetra_Comm> subcomm_;
+    std::shared_ptr<Epetra_Comm> subcomm_;
 
     /// nested parallelism type
     NestedParallelismType np_type_;

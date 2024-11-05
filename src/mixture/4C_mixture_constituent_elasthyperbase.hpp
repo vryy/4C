@@ -118,9 +118,9 @@ namespace Mixture
     /*!
      * \brief Returns a reference to all summands
      *
-     * \return const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& Reference to the summands
+     * \return const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& Reference to the summands
      */
-    [[nodiscard]] const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& summands() const
+    [[nodiscard]] const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& summands() const
     {
       return potsum_;
     }
@@ -192,7 +192,7 @@ namespace Mixture
     Mixture::PAR::MixtureConstituentElastHyperBase* params_;
 
     /// map to materials/potential summands
-    std::vector<Teuchos::RCP<Mat::Elastic::Summand>> potsum_;
+    std::vector<std::shared_ptr<Mat::Elastic::Summand>> potsum_;
 
     /// Prestretch of the constituent
     std::vector<Core::LinAlg::Matrix<3, 3>> prestretch_;

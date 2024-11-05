@@ -112,11 +112,11 @@ namespace Solid
 
       //! @name Model specific interfaces
       //! @{
-      virtual Teuchos::RCP<BrownianDynamics::ParamsInterface> get_brownian_dyn_param_interface()
+      virtual std::shared_ptr<BrownianDynamics::ParamsInterface> get_brownian_dyn_param_interface()
           const = 0;
 
       //! get pointer to special parameter interface for beam elements
-      virtual Teuchos::RCP<BeamParamsInterface> get_beam_params_interface_ptr() const = 0;
+      virtual std::shared_ptr<BeamParamsInterface> get_beam_params_interface_ptr() const = 0;
       //! @}
 
       //! @name Access control parameters for the handling of element internal variables (e.g.
@@ -149,15 +149,15 @@ namespace Solid
 
       //! @name output related functions
       //! @{
-      virtual Teuchos::RCP<std::vector<char>>& stress_data_ptr() = 0;
+      virtual std::shared_ptr<std::vector<char>>& stress_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& strain_data_ptr() = 0;
+      virtual std::shared_ptr<std::vector<char>>& strain_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& plastic_strain_data_ptr() = 0;
+      virtual std::shared_ptr<std::vector<char>>& plastic_strain_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& coupling_stress_data_ptr() = 0;
+      virtual std::shared_ptr<std::vector<char>>& coupling_stress_data_ptr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& opt_quantity_data_ptr() = 0;
+      virtual std::shared_ptr<std::vector<char>>& opt_quantity_data_ptr() = 0;
 
       //! get the current stress type
       virtual enum Inpar::Solid::StressType get_stress_output_type() const = 0;
@@ -171,7 +171,7 @@ namespace Solid
       //! get the current coupling stress type
       virtual enum Inpar::Solid::StressType get_coupling_stress_output_type() const = 0;
 
-      virtual Teuchos::RCP<ModelEvaluator::GaussPointDataOutputManager>&
+      virtual std::shared_ptr<ModelEvaluator::GaussPointDataOutputManager>&
       gauss_point_data_output_manager_ptr() = 0;
 
       //! add contribution to energy of specified type
@@ -234,11 +234,11 @@ namespace BrownianDynamics
         const = 0;
 
     //! get vector holding periodic bounding box object
-    virtual Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& get_periodic_bounding_box()
+    virtual std::shared_ptr<Core::Geo::MeshFree::BoundingBox> const& get_periodic_bounding_box()
         const = 0;
 
     //! get the current step length
-    virtual const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& get_random_forces() const = 0;
+    virtual const std::shared_ptr<Core::LinAlg::MultiVector<double>>& get_random_forces() const = 0;
   };
 }  // namespace BrownianDynamics
 

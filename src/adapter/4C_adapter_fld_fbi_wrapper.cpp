@@ -11,19 +11,20 @@
 #include "4C_io_control.hpp"
 #include "4C_linalg_sparseoperator.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidFBI::FluidFBI(std::shared_ptr<Fluid> fluid,
+    std::shared_ptr<Core::FE::Discretization> dis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond)
 {
   // make sure
-  if (Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true) == Teuchos::null)
+  if (std::dynamic_pointer_cast<FLD::FluidImplicitTimeInt>(fluid_) == nullptr)
     FOUR_C_THROW("Failed to create the correct underlying fluid adapter");
   return;
 }
@@ -32,10 +33,9 @@ Adapter::FluidFBI::FluidFBI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Di
 /*----------------------------------------------------------------------*/
 
 void Adapter::FluidFBI::set_coupling_contributions(
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> matrix)
+    std::shared_ptr<const Core::LinAlg::SparseOperator> matrix)
 {
-  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)
-      ->set_coupling_contributions(matrix);
+  std::dynamic_pointer_cast<FLD::FluidImplicitTimeInt>(fluid_)->set_coupling_contributions(matrix);
 }
 
 /*----------------------------------------------------------------------*/
@@ -43,15 +43,15 @@ void Adapter::FluidFBI::set_coupling_contributions(
 
 void Adapter::FluidFBI::reset_external_forces()
 {
-  Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->reset_external_forces();
+  std::dynamic_pointer_cast<FLD::FluidImplicitTimeInt>(fluid_)->reset_external_forces();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-Teuchos::RCP<const FLD::Meshtying> Adapter::FluidFBI::get_meshtying()
+std::shared_ptr<const FLD::Meshtying> Adapter::FluidFBI::get_meshtying()
 {
-  return Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(fluid_, true)->get_meshtying();
+  return std::dynamic_pointer_cast<FLD::FluidImplicitTimeInt>(fluid_)->get_meshtying();
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -25,9 +25,9 @@ Mat::PAR::MatListChemoReac::MatListChemoReac(const Core::Mat::PAR::Parameter::Da
 }
 
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemoReac::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MatListChemoReac::create_material()
 {
-  return Teuchos::make_rcp<Mat::MatListChemoReac>(this);
+  return std::make_shared<Mat::MatListChemoReac>(this);
 }
 
 
@@ -132,7 +132,7 @@ void Mat::MatListChemoReac::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid(-1);
   extract_from_pack(buffer, matid);
   paramsreachemo_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

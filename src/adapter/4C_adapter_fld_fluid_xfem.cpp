@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Adapter::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn, std::string condname)
-    : fluid_(Teuchos::make_rcp<Adapter::FluidBaseAlgorithm>(
+    : fluid_(std::make_shared<Adapter::FluidBaseAlgorithm>(
           prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false)
                  ->fluid_field())
 {
@@ -30,7 +30,7 @@ Adapter::FluidXFEM::FluidXFEM(const Teuchos::ParameterList& prbdyn, std::string 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::discretization()
+std::shared_ptr<Core::FE::Discretization> Adapter::FluidXFEM::discretization()
 {
   // returns the boundary discretization
   // REMARK:
@@ -43,7 +43,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretization()
+std::shared_ptr<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretization()
 {
   // returns the boundary discretization
   // REMARK:
@@ -51,7 +51,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretizati
   // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of Adapter::FluidALE
 
-  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
+  std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
 
   return xfluid->boundary_discretization();
 }
@@ -60,7 +60,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidXFEM::boundary_discretizati
 /*----------------------------------------------------------------------*/
 /// communication object at the struct interface
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FluidXFEM::struct_interface()
+std::shared_ptr<FLD::Utils::MapExtractor> const& Adapter::FluidXFEM::struct_interface()
 {
   // returns the boundary discretization
   // REMARK:
@@ -68,7 +68,7 @@ Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FluidXFEM::struct_interfa
   // (see FSI::Partitioned::Partitioned(const Epetra_Comm& comm) ) therefore return the boundary dis
   // this is similar to the matching of fluid dis and ale dis in case of Adapter::FluidALE
 
-  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
+  std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
 
   return xfluid->struct_interface();
 }
@@ -99,22 +99,22 @@ double Adapter::FluidXFEM::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidXFEM::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
+void Adapter::FluidXFEM::nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel)
 {
   // if we have values at the interface we need to apply them
 
-  // REMARK: for XFLUID idisp = Teuchos::null, ivel = Teuchos::null (called by fsi_fluid_xfem with
-  // default Teuchos::null)
-  //         for XFSI   idisp != Teuchos::null
+  // REMARK: for XFLUID idisp = nullptr, ivel = nullptr (called by fsi_fluid_xfem with
+  // default nullptr)
+  //         for XFSI   idisp != nullptr
 
-  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
+  std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
 
   // set idispnp in Xfluid
-  if (idisp != Teuchos::null) xfluid->apply_struct_mesh_displacement(idisp);
+  if (idisp != nullptr) xfluid->apply_struct_mesh_displacement(idisp);
 
   // set ivelnp in Xfluid
-  if (ivel != Teuchos::null) xfluid->apply_struct_interface_velocities(ivel);
+  if (ivel != nullptr) xfluid->apply_struct_interface_velocities(ivel);
 
   fluid_field()->solve();
 }
@@ -122,8 +122,8 @@ void Adapter::FluidXFEM::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<doubl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::relaxation_solve(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt)
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::relaxation_solve(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt)
 {
   std::cout << "WARNING: RelaxationSolve for XFEM useful?" << std::endl;
 
@@ -136,34 +136,34 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::relaxation_solve(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::extract_interface_forces()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::extract_interface_forces()
 {
-  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
+  std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
   return xfluid->extract_struct_interface_forces();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::extract_interface_velnp()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
-  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
+  std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
   return xfluid->extract_struct_interface_velnp();
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::extract_interface_veln()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::extract_interface_veln()
 {
-  Teuchos::RCP<XFluidFSI> xfluid = Teuchos::rcp_dynamic_cast<XFluidFSI>(fluid_field(), true);
+  std::shared_ptr<XFluidFSI> xfluid = std::dynamic_pointer_cast<XFluidFSI>(fluid_field());
   return xfluid->extract_struct_interface_veln();
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::integrate_interface_shape()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }
@@ -171,7 +171,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidXFEM::integrate_interfa
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidXFEM::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Adapter::FluidXFEM::create_field_test()
 {
   return fluid_field()->create_field_test();
 }

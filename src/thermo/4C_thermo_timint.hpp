@@ -79,12 +79,12 @@ namespace Thermo
     void logo();
 
     //! Constructor
-    TimInt(const Teuchos::ParameterList& ioparams,           //!< ioflags
-        const Teuchos::ParameterList& tdynparams,            //!< input parameters
-        const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+    TimInt(const Teuchos::ParameterList& ioparams,              //!< ioflags
+        const Teuchos::ParameterList& tdynparams,               //!< input parameters
+        const Teuchos::ParameterList& xparams,                  //!< extra flags
+        std::shared_ptr<Core::FE::Discretization> actdis,       //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,           //!< the solver
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Empty constructor
@@ -107,27 +107,28 @@ namespace Thermo
     void determine_capa_consist_temp_rate();
 
     //! Apply Dirichlet boundary conditions on provided state vectors
-    void apply_dirichlet_bc(const double time,            //!< at time
-        Teuchos::RCP<Core::LinAlg::Vector<double>> temp,  //!< temperatures
-                                                          //!< (may be Teuchos::null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rate,  //!< temperature rate
-                                                          //!< (may be Teuchos::null)
-        bool recreatemap                                  //!< recreate mapextractor/toggle-vector
-                                                          //!< which stores the DOF IDs subjected
-                                                          //!< to Dirichlet BCs
-        //!< This needs to be true if the bounded DOFs
-        //!< have been changed.
+    void apply_dirichlet_bc(const double time,               //!< at time
+        std::shared_ptr<Core::LinAlg::Vector<double>> temp,  //!< temperatures
+                                                             //!< (may be nullptr)
+        std::shared_ptr<Core::LinAlg::Vector<double>> rate,  //!< temperature rate
+                                                             //!< (may be nullptr)
+        bool recreatemap  //!< recreate mapextractor/toggle-vector
+                          //!< which stores the DOF IDs subjected
+                          //!< to Dirichlet BCs
+                          //!< This needs to be true if the bounded DOFs
+                          //!< have been changed.
     );
 
     //! prepare thermal contact
-    void set_nitsche_contact_strategy(Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) override
+    void set_nitsche_contact_strategy(
+        std::shared_ptr<CONTACT::NitscheStrategyTsi> strategy) override
     {
       contact_strategy_nitsche_ = strategy;
     }
 
     //! prepare thermal contact parameters
     void set_nitsche_contact_parameters(
-        Teuchos::RCP<CONTACT::ParamsInterface> params_interface) override
+        std::shared_ptr<CONTACT::ParamsInterface> params_interface) override
     {
       contact_params_interface_ = params_interface;
     }
@@ -153,7 +154,7 @@ namespace Thermo
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override = 0;
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi) override = 0;
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
@@ -179,7 +180,7 @@ namespace Thermo
     void update() override = 0;
 
     //! update Newton step
-    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override = 0;
+    void update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi) override = 0;
 
     //! Reset configuration after time step
     //!
@@ -237,7 +238,7 @@ namespace Thermo
     void output_energy();
 
     //! Write internal and external forces (if necessary for restart)
-    virtual void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) = 0;
+    virtual void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) = 0;
 
     //! Check wether energy output file is attached
     bool attached_energy_file()
@@ -275,7 +276,7 @@ namespace Thermo
     void prepare_partition_step() override = 0;
 
     //! thermal result test
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
     //@}
 
@@ -283,18 +284,18 @@ namespace Thermo
     //@{
 
     //! Apply external force
-    void apply_force_external(const double time,                //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,  //!< temperature state
-        Core::LinAlg::Vector<double>& fext                      //!< external force
+    void apply_force_external(const double time,                   //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,  //!< temperature state
+        Core::LinAlg::Vector<double>& fext                         //!< external force
     );
 
     //! Apply convective boundary conditions force
     void apply_force_external_conv(Teuchos::ParameterList& p,
-        const double time,                                       //!< evaluation time
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempn,  //!< old temperature state T_n
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& fext,        //!< external force
-        Teuchos::RCP<Core::LinAlg::SparseOperator> tang          //!< tangent at time n+1
+        const double time,                                          //!< evaluation time
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempn,  //!< old temperature state T_n
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
+        std::shared_ptr<Core::LinAlg::Vector<double>>& fext,        //!< external force
+        std::shared_ptr<Core::LinAlg::SparseOperator> tang          //!< tangent at time n+1
     );
 
     //! Evaluate ordinary internal force, its tangent at state
@@ -302,10 +303,10 @@ namespace Thermo
         Teuchos::ParameterList& p,  //!< parameter list handed down to elements
         const double time,          //!< evaluation time
         const double dt,            //!< step size
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,         //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,         //!< internal force
+        std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force, its tangent and the stored force at state
@@ -313,11 +314,11 @@ namespace Thermo
         Teuchos::ParameterList& p,  //!< parameter list handed down to elements
         const double time,          //!< evaluation time
         const double dt,            //!< step size
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fcap,         //!< capacity force
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,         //!< internal force
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
+        std::shared_ptr<Core::LinAlg::Vector<double>> fcap,         //!< capacity force
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,         //!< internal force
+        std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
     );
 
     //! Evaluate ordinary internal force
@@ -335,9 +336,9 @@ namespace Thermo
         Teuchos::ParameterList& p,  //!< parameter list handed down to elements
         const double time,          //!< evaluation time
         const double dt,            //!< step size
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint          //!< internal force
+        const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state
+        const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint          //!< internal force
     );
 
     //@}
@@ -347,7 +348,7 @@ namespace Thermo
 
     //! Set external loads (heat flux) due to tfsi interface
     void set_force_interface(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ithermoload  //!< thermal interface load
+        std::shared_ptr<Core::LinAlg::Vector<double>> ithermoload  //!< thermal interface load
         ) override;
 
     //@}
@@ -383,30 +384,30 @@ namespace Thermo
     //@{
 
     //! Access dicretisation
-    Teuchos::RCP<Core::FE::Discretization> discretization() override { return discret_; }
+    std::shared_ptr<Core::FE::Discretization> discretization() override { return discret_; }
 
     //! non-overlapping DOF map for multiple dofsets
-    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
+    std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) override
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
-      return Teuchos::make_rcp<Epetra_Map>(*dofrowmap);
+      return std::make_shared<Epetra_Map>(*dofrowmap);
     }
 
     //! non-overlapping DOF map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override
+    std::shared_ptr<const Epetra_Map> dof_row_map() override
     {
       const Epetra_Map* dofrowmap = discret_->dof_row_map();
-      return Teuchos::make_rcp<Epetra_Map>(*dofrowmap);
+      return std::make_shared<Epetra_Map>(*dofrowmap);
     }
 
     //! Access solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver() { return solver_; }
+    std::shared_ptr<Core::LinAlg::Solver> solver() { return solver_; }
 
     //! get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override { return solver_; }
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override { return solver_; }
 
     //! Access output object
-    Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override { return output_; }
+    std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer() override { return output_; }
 
     //! prepare output (do nothing)
     void prepare_output() override { ; }
@@ -422,41 +423,44 @@ namespace Thermo
     virtual void read_restart_force() = 0;
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp() { return (*temp_)(0); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> temp() { return (*temp_)(0); }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_tempn() override { return (*temp_)(0); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_tempn() override
+    {
+      return (*temp_)(0);
+    }
 
     //! Return temperatures \f$T_{n}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn() override { return (*temp_)(0); }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tempn() override { return (*temp_)(0); }
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override = 0;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override = 0;
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_tempnp() override { return tempn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_tempnp() override { return tempn_; }
 
     //! Return temperatures \f$T_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp() override { return tempn_; }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp() override { return tempn_; }
 
     //! Return temperature rates \f$R_{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rate() { return (*rate_)(0); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> rate() { return (*rate_)(0); }
 
     //! Return temperature rates \f$R_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rate_new() { return raten_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> rate_new() { return raten_; }
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fext() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fext() = 0;
 
     //! Return reaction forces
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> freact() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> freact() = 0;
 
     //! right-hand side alias the dynamic thermal residual
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override = 0;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override = 0;
 
     //! Return tangent, i.e. thermal residual differentiated by temperatures
     //! (system_matrix()/stiff_ in STR)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override { return tang_; }
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override { return tang_; }
 
     //! Return domain map
     const Epetra_Map& get_domain_map() { return tang_->domain_map(); }
@@ -498,19 +502,19 @@ namespace Thermo
     virtual inline const Epetra_Comm& get_comm() const { return discret_->get_comm(); }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const
     {
       return dbcmaps_;
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return dbcmaps_;
     }
 
     //! Return thermal contact manager
-    Teuchos::RCP<CONTACT::NitscheStrategyTsi> nitsche_contact_strategy()
+    std::shared_ptr<CONTACT::NitscheStrategyTsi> nitsche_contact_strategy()
     {
       return contact_strategy_nitsche_;
     }
@@ -519,29 +523,29 @@ namespace Thermo
 
    protected:
     //! evaluate error compared to analytical solution
-    Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol();
+    std::shared_ptr<std::vector<double>> evaluate_error_compared_to_analytical_sol();
 
     //! @name General purpose algorithm members
     //@{
 
-    Teuchos::RCP<Core::FE::Discretization> discret_;        //!< attached discretisation
-    Teuchos::RCP<Core::FE::Discretization> discretstruct_;  //!< structural discretisation
+    std::shared_ptr<Core::FE::Discretization> discret_;        //!< attached discretisation
+    std::shared_ptr<Core::FE::Discretization> discretstruct_;  //!< structural discretisation
 
-    int myrank_;                                        //!< ID of actual processor in parallel
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver
-    bool solveradapttol_;                               //!< adapt solver tolerance
-    double solveradaptolbetter_;                        //!< tolerance to which is adpated ????
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  //!< map extractor object
-                                                        //!< containing non-overlapping
-                                                        //!< map of global DOFs on Dirichlet
-                                                        //!< boundary conditions
+    int myrank_;                                           //!< ID of actual processor in parallel
+    std::shared_ptr<Core::LinAlg::Solver> solver_;         //!< linear algebraic solver
+    bool solveradapttol_;                                  //!< adapt solver tolerance
+    double solveradaptolbetter_;                           //!< tolerance to which is adpated ????
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;  //!< map extractor object
+                                                           //!< containing non-overlapping
+                                                           //!< map of global DOFs on Dirichlet
+                                                           //!< boundary conditions
     //@}
 
     //! @name Printing and output
     //@{
 
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output
-    bool printlogo_;                                       //!< true: enjoy your cuppa
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;  //!< binary output
+    bool printlogo_;                                          //!< true: enjoy your cuppa
     int printscreen_;        //!< print infos to standard out every n steps
     bool printiter_;         //!< print intermediate iterations during solution
     int writerestartevery_;  //!< write restart every given step;
@@ -559,14 +563,14 @@ namespace Thermo
     //! @name General control parameters
     //@{
 
-    Teuchos::RCP<TimeStepping::TimIntMStep<double>>
+    std::shared_ptr<TimeStepping::TimIntMStep<double>>
         time_;      //!< time \f$t_{n}\f$ of last converged step
     double timen_;  //!< target time \f$t_{n+1}\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
-    double timemax_;                                      //!< final time \f$t_\text{fin}\f$
-    int stepmax_;                                         //!< final step \f$N\f$
-    int step_;                                            //!< time step index \f$n\f$
-    int stepn_;                                           //!< time step index \f$n+1\f$
+    std::shared_ptr<TimeStepping::TimIntMStep<double>> dt_;  //!< time step size \f$\Delta t\f$
+    double timemax_;                                         //!< final time \f$t_\text{fin}\f$
+    int stepmax_;                                            //!< final step \f$N\f$
+    int step_;                                               //!< time step index \f$n\f$
+    int stepn_;                                              //!< time step index \f$n+1\f$
     bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
     bool lumpcapa_;          //!< flag for lumping the capacity matrix, default: false
 
@@ -575,7 +579,7 @@ namespace Thermo
     //! @name Global vectors
     //@{
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
 
     //@}
 
@@ -584,21 +588,21 @@ namespace Thermo
     //@{
 
     //! global temperatures \f${T}_{n}, T_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> temp_;
+    std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> temp_;
     //! global temperature rates \f${R}_{n}, R_{n-1}, ...\f$
-    Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> rate_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tempn_;  //!< global temperatures
-                                                        //!< \f${T}_{n+1}\f$
-                                                        //!< at \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> raten_;  //!< global temperature rates
-                                                        //!< \f${R}_{n+1}\f$
-                                                        //!< at \f$t_{n+1}\f$
+    std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> rate_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tempn_;  //!< global temperatures
+                                                           //!< \f${T}_{n+1}\f$
+                                                           //!< at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> raten_;  //!< global temperature rates
+                                                           //!< \f${R}_{n+1}\f$
+                                                           //!< at \f$t_{n+1}\f$
     //@}
 
     //! @name Interface stuff
     //@{
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fifc_;  //!< external interface loads
+    std::shared_ptr<Core::LinAlg::Vector<double>> fifc_;  //!< external interface loads
 
     //@}
 
@@ -606,9 +610,9 @@ namespace Thermo
     //@{
 
     //! holds eventually effective tangent (STR: stiff_)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tang_;
     //! capacity matrix (constant)
-    // Teuchos::RCP<Core::LinAlg::SparseMatrix> capa_;
+    // std::shared_ptr<Core::LinAlg::SparseMatrix> capa_;
 
     //@}
 
@@ -616,10 +620,10 @@ namespace Thermo
     //@{
 
     // thermo contact manager
-    Teuchos::RCP<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
+    std::shared_ptr<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
 
     // thermo contact parameters
-    Teuchos::RCP<CONTACT::ParamsInterface> contact_params_interface_;
+    std::shared_ptr<CONTACT::ParamsInterface> contact_params_interface_;
 
     //@}
 

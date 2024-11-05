@@ -13,7 +13,7 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -60,16 +60,16 @@ namespace Lubrication
     virtual ~LubricationBaseAlgorithm() = default;
 
     /// access to the Lubrication field solver
-    Teuchos::RCP<Lubrication::TimIntImpl> lubrication_field() { return lubrication_; }
+    std::shared_ptr<Lubrication::TimIntImpl> lubrication_field() { return lubrication_; }
 
     /// create result test for Lubrication field
-    Teuchos::RCP<Core::Utils::ResultTest> create_lubrication_field_test();
+    std::shared_ptr<Core::Utils::ResultTest> create_lubrication_field_test();
 
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer();
+    virtual std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer();
 
    private:
     /// Lubrication field solver
-    Teuchos::RCP<Lubrication::TimIntImpl> lubrication_;
+    std::shared_ptr<Lubrication::TimIntImpl> lubrication_;
 
   };  // class LubricationBaseAlgorithm
 

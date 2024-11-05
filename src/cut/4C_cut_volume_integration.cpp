@@ -107,7 +107,8 @@ Core::LinAlg::SerialDenseVector Cut::VolumeIntegration::compute_rhs_moment()
 *-----------------------------------------------------------------------------*/
 bool Cut::VolumeIntegration::compute_gaussian_points(int numeach)
 {
-  Teuchos::RCP<BoundingBox> box1 = Teuchos::RCP(BoundingBox::create(*volcell_, elem1_));
+  std::shared_ptr<BoundingBox> box1 =
+      std::shared_ptr<BoundingBox>(BoundingBox::create(*volcell_, elem1_));
   double minn[3], maxx[3];
   minn[0] = box1->minx();
   maxx[0] = box1->maxx();

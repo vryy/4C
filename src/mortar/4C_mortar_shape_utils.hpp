@@ -643,7 +643,7 @@ namespace Mortar
         case Mortar::Element::lindual1D:
         {
           // use element-based dual shape functions if no coefficient matrix is stored
-          if (ele.mo_data().dual_shape() == Teuchos::null)
+          if (ele.mo_data().dual_shape() == nullptr)
           {
             funct(0) = 0.5 * (1 - 3.0 * r);
             funct(1) = 0.5 * (1 + 3.0 * r);
@@ -1415,7 +1415,7 @@ namespace Mortar
         // *********************************************************************
         case Mortar::Element::lindual2D:
         {
-          if (ele.mo_data().dual_shape() == Teuchos::null)
+          if (ele.mo_data().dual_shape() == nullptr)
           {
             funct(0) = 3.0 - 4.0 * xi0 - 4.0 * xi1;
             funct(1) = 4.0 * xi0 - 1.0;
@@ -1460,7 +1460,7 @@ namespace Mortar
           Core::LinAlg::Matrix<nnodes, 1> stdval;
 
           // no pre-computed dual shape functions
-          if (ele.mo_data().dual_shape() == Teuchos::null)
+          if (ele.mo_data().dual_shape() == nullptr)
           {
             // establish fundamental data
             double detg = 0.0;

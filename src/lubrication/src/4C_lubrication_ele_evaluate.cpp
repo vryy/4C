@@ -84,11 +84,11 @@ int Discret::Elements::Lubrication::evaluate_neumann(Teuchos::ParameterList& par
 |  Call the element to set all basic parameter             wirtz 10/15 |
 *----------------------------------------------------------------------*/
 void Discret::Elements::LubricationType::pre_evaluate(Core::FE::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<FourC::Lubrication::Action>(p, "action");
 

@@ -14,8 +14,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <vector>
@@ -38,15 +37,16 @@ namespace BEAMINTERACTION
      * @param condition_line_2 (in) The other line condition containing the beam elements.
      */
     BeamToBeamContactCondition(
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_1,
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_2);
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_line_1,
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_line_2);
 
     /**
      * \brief Build the ID sets for this condition.
      *
      * The BuildIdSets method from the base class is called to build the beam IDs.
      */
-    void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization) override;
+    void build_id_sets(
+        const std::shared_ptr<const Core::FE::Discretization>& discretization) override;
 
     /**
      * \brief Check if a combination of beam and beam id is in this condition.
@@ -61,7 +61,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Create the beam to beam pairs needed for this condition (derived).
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) override;
 
    protected:
@@ -75,10 +75,10 @@ namespace BEAMINTERACTION
 
    private:
     //! Pointer to the other line condition.
-    Teuchos::RCP<const Core::Conditions::Condition> condition_other_;
+    std::shared_ptr<const Core::Conditions::Condition> condition_other_;
 
     //! Vector containing all beam contact pairs created by this condition.
-    std::vector<Teuchos::RCP<BeamContactPair>> condition_contact_pairs_;
+    std::vector<std::shared_ptr<BeamContactPair>> condition_contact_pairs_;
 
     //! Set containing the other line element IDs.
     std::set<int> other_line_ids_;

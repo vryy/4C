@@ -95,11 +95,11 @@ int Discret::Elements::PoroFluidMultiPhase::evaluate_neumann(Teuchos::ParameterL
 |  Call the element to set all basic parameter             vuong 08/16 |
 *----------------------------------------------------------------------*/
 void Discret::Elements::PoroFluidMultiPhaseType::pre_evaluate(Core::FE::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<POROFLUIDMULTIPHASE::Action>(p, "action");
 

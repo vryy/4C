@@ -15,9 +15,9 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <iostream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace Arteries
       \brief Standard Constructor
       */
       ArtWriteGnuplotWrapper(
-          Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
+          std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params);
 
       /*!
       \brief Destructor
@@ -60,12 +60,12 @@ namespace Arteries
       /*!
       \brief all single artery write conditions
      */
-      std::map<const int, Teuchos::RCP<class ArtWriteGnuplot>> agmap_;
+      std::map<const int, std::shared_ptr<class ArtWriteGnuplot>> agmap_;
       std::map<const int, const std::vector<int>*> agnode_map_;
 
 
       //! 1d artery discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
     };  // class ArtWriteGnuplotWrapper
 
@@ -109,7 +109,7 @@ namespace Arteries
 
      private:
       //! An epetra wrapper for Dense matrix solver
-      Teuchos::RCP<std::ofstream> fout_;
+      std::shared_ptr<std::ofstream> fout_;
 
       //! the Artery number
       int artery_num_;

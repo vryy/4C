@@ -64,9 +64,9 @@ void scatra_cardiac_monodomain_dyn(int restart)
   const Teuchos::ParameterList& scatradyn = problem->scalar_transport_dynamic_params();
 
   // access the fluid discretization
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
   // access the scatra discretization
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // ensure that all dofs are assigned in the right order; this creates dof numbers with
   //       fluid dof < scatra dof
@@ -99,8 +99,8 @@ void scatra_cardiac_monodomain_dyn(int restart)
           scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-          Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+      std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+          std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
               Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
@@ -134,14 +134,14 @@ void scatra_cardiac_monodomain_dyn(int restart)
         if (scatradis->get_comm().NumProc() > 1)
         {
           // create vector of discr.
-          std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+          std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
           dis.push_back(scatradis);
 
           // binning strategy for parallel redistribution
-          Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy;
+          std::shared_ptr<Core::Binstrategy::BinningStrategy> binningstrategy;
 
-          std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
-          std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
+          std::vector<std::shared_ptr<Epetra_Map>> stdelecolmap;
+          std::vector<std::shared_ptr<Epetra_Map>> stdnodecolmap;
 
           // binning strategy is created and parallel redistribution is performed
           Teuchos::ParameterList binning_params =
@@ -149,7 +149,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
           Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
               "spatial_approximation_type",
               Global::Problem::instance()->spatial_approximation_type(), binning_params);
-          binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
+          binningstrategy = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
               Global::Problem::instance()->output_control_file(), scatradis->get_comm(),
               scatradis->get_comm().MyPID(), nullptr, nullptr, dis);
           binningstrategy

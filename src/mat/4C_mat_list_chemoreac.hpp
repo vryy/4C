@@ -35,7 +35,7 @@ namespace Mat
       MatListChemoReac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
 
@@ -115,9 +115,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MatListChemoReac>(*this);
+      return std::make_shared<MatListChemoReac>(*this);
     }
 
     /// Return quick accessible material parameter data

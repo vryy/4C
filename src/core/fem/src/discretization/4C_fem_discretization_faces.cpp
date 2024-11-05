@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                    schott 03/12|
  *----------------------------------------------------------------------*/
 Core::FE::DiscretizationFaces::DiscretizationFaces(
-    const std::string name, Teuchos::RCP<Epetra_Comm> comm, const unsigned int n_dim)
+    const std::string name, std::shared_ptr<Epetra_Comm> comm, const unsigned int n_dim)
     : Discretization(name, comm, n_dim),  // use base class constructor
       extension_filled_(false),
       doboundaryfaces_(false){};
@@ -237,7 +237,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
   //    -> the owner of this node will be the owner for the face
   //       (this criterion is working in the same way on all procs holding this face)
 
-  std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>> faces;
+  std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>> faces;
 
   // get pbcs
   std::map<int, std::vector<int>>* col_pbcmapmastertoslave = get_all_pbc_coupled_col_nodes();
@@ -880,19 +880,18 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
           nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fn(&Core::Nodes::Node::id));
 
       // create the internal face element
-      Teuchos::RCP<Core::Elements::FaceElement> surf =
-          Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-              parent_master->create_face_element(parent_slave, nodeids.size(), nodeids.data(),
-                  nodes.data(), face_it->second.get_l_surface_master(),
-                  face_it->second.get_l_surface_slave(), face_it->second.get_local_numbering_map()),
-              true);
-      FOUR_C_ASSERT(surf != Teuchos::null,
+      std::shared_ptr<Core::Elements::FaceElement> surf =
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(parent_master->create_face_element(
+              parent_slave, nodeids.size(), nodeids.data(), nodes.data(),
+              face_it->second.get_l_surface_master(), face_it->second.get_l_surface_slave(),
+              face_it->second.get_local_numbering_map()));
+      FOUR_C_ASSERT(surf != nullptr,
           "Creating a face element failed. Check overloading of CreateFaceElement");
 
       // create a clone (the internally created element does not exist anymore when all
-      // Teuchos::RCP's finished)
-      Teuchos::RCP<Core::Elements::FaceElement> surf_clone =
-          Teuchos::RCP(dynamic_cast<Core::Elements::FaceElement*>(surf->clone()));
+      // std::shared_ptr's finished)
+      std::shared_ptr<Core::Elements::FaceElement> surf_clone(
+          dynamic_cast<Core::Elements::FaceElement*>(surf->clone()));
       if (surf_clone.get() == nullptr)
         FOUR_C_THROW("Invalid element detected. Expected face element");
 
@@ -905,7 +904,7 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
       surf_clone->set_owner(owner);
 
       // insert the newly created element
-      faces.insert(std::pair<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>(
+      faces.insert(std::pair<std::vector<int>, std::shared_ptr<Core::Elements::Element>>(
           face_it->first, surf_clone));
 
       // set face to elements
@@ -920,12 +919,12 @@ void Core::FE::DiscretizationFaces::build_faces(const bool verbose)
   // if the discretization has been redistributed (combustion module), we have to
   // rebuild the faces and therefore we have to be sure that the map faces_ is clear
   // therefore, the old faces are deleted and replaced by new ones
-  std::map<int, Teuchos::RCP<Core::Elements::Element>> finalFaces;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> finalFaces;
   assign_global_i_ds(get_comm(), faces, finalFaces);
-  for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator faceit = finalFaces.begin();
+  for (std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator faceit =
+           finalFaces.begin();
        faceit != finalFaces.end(); ++faceit)
-    faces_[faceit->first] =
-        Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(faceit->second, true);
+    faces_[faceit->first] = std::dynamic_pointer_cast<Core::Elements::FaceElement>(faceit->second);
 
   if (verbose and comm_->MyPID() == 0)
   {
@@ -944,7 +943,7 @@ void Core::FE::DiscretizationFaces::build_face_row_map()
 {
   const int myrank = get_comm().MyPID();
   int nummyeles = 0;
-  std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::iterator curr;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
@@ -958,7 +957,7 @@ void Core::FE::DiscretizationFaces::build_face_row_map()
       ++count;
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of internal faces");
-  facerowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
+  facerowmap_ = std::make_shared<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
   return;
 }
 
@@ -971,7 +970,7 @@ void Core::FE::DiscretizationFaces::build_face_col_map()
   int nummyeles = (int)faces_.size();
   std::vector<int> eleids(nummyeles);
   facecolptr_.resize(nummyeles);
-  std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::iterator curr;
   int count = 0;
   for (curr = faces_.begin(); curr != faces_.end(); ++curr)
   {
@@ -981,7 +980,7 @@ void Core::FE::DiscretizationFaces::build_face_col_map()
     ++count;
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  facecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
+  facecolmap_ = std::make_shared<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
   return;
 }
 
@@ -1066,7 +1065,7 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
   else
   {
     int nummyfaces = 0;
-    std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::const_iterator ecurr;
+    std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::const_iterator ecurr;
     for (ecurr = faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->owner() == get_comm().MyPID()) nummyfaces++;
 
@@ -1093,7 +1092,7 @@ void Core::FE::DiscretizationFaces::print_faces(std::ostream& os) const
     if (proc == get_comm().MyPID())
     {
       if ((int)faces_.size()) os << "-------------------------- Proc " << proc << " :\n";
-      std::map<int, Teuchos::RCP<Core::Elements::FaceElement>>::const_iterator curr;
+      std::map<int, std::shared_ptr<Core::Elements::FaceElement>>::const_iterator curr;
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);

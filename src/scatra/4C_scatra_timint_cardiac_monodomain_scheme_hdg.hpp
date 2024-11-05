@@ -23,11 +23,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    TimIntCardiacMonodomainHDG(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntCardiacMonodomainHDG(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     //! setup time integration scheme
@@ -45,7 +46,7 @@ namespace ScaTra
     void write_restart() const override;
 
     void collect_problem_specific_runtime_output_data(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPhi) override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedPhi) override;
 
     //! adapt material
     void pack_material() override;
@@ -58,14 +59,14 @@ namespace ScaTra
 
     //! read restart
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
    private:
     //! activation time
-    Teuchos::RCP<Core::LinAlg::Vector<double>> activation_time_interpol_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> activation_time_interpol_;
 
     //! element data
-    Teuchos::RCP<std::vector<char>> data_;
+    std::shared_ptr<std::vector<char>> data_;
 
 
   };  // class TimIntCardiacMonodomainHDG

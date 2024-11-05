@@ -47,12 +47,12 @@ Discret::Elements::ScaTraEleUtilsElchScl<distype>::ScaTraEleUtilsElchScl(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElchScl<distype>::mat_elch_mat(
-    Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
-    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
+    std::shared_ptr<const Core::Mat::Material> material, const std::vector<double>& concentrations,
+    const double temperature, std::shared_ptr<ScaTraEleDiffManagerElchScl> diffmanager,
     Inpar::ElCh::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte material
-  const auto elchmat = Teuchos::rcp_static_cast<const Mat::ElchMat>(material);
+  const auto elchmat = std::static_pointer_cast<const Mat::ElchMat>(material);
 
   // safety check
   if (elchmat->num_phase() != 1)
@@ -71,11 +71,11 @@ void Discret::Elements::ScaTraEleUtilsElchScl<distype>::mat_elch_mat(
 }
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElchScl<distype>::mat_scl(
-    Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
-    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager)
+    std::shared_ptr<const Core::Mat::Material> material, const double concentration,
+    const double temperature, std::shared_ptr<ScaTraEleDiffManagerElchScl> diffmanager)
 {
   // cast material to Scl material
-  const auto matscl = Teuchos::rcp_static_cast<const Mat::Scl>(material);
+  const auto matscl = std::static_pointer_cast<const Mat::Scl>(material);
 
   // valence of ionic species
   diffmanager->set_valence(matscl->valence(), 0);
@@ -124,12 +124,12 @@ void Discret::Elements::ScaTraEleUtilsElchScl<distype>::mat_scl(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElchScl<distype>::mat_elch_phase(
-    Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
-    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,
+    std::shared_ptr<const Core::Mat::Material> material, const std::vector<double>& concentrations,
+    const double temperature, std::shared_ptr<ScaTraEleDiffManagerElchScl> diffmanager,
     Inpar::ElCh::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte phase
-  const auto matelchphase = Teuchos::rcp_static_cast<const Mat::ElchPhase>(material);
+  const auto matelchphase = std::static_pointer_cast<const Mat::ElchPhase>(material);
 
   // set porosity
   diffmanager->set_phase_poro(matelchphase->epsilon(), 0);

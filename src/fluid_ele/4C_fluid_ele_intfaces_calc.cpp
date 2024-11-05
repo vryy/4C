@@ -95,15 +95,15 @@ Discret::Elements::FluidIntFaceImpl<distype>::FluidIntFaceImpl()
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidIntFaceImpl<distype>::assemble_internal_faces_using_neighbor_data(
-    Discret::Elements::FluidIntFace* intface,     ///< internal face element
-    Teuchos::RCP<Core::Mat::Material>& material,  ///< material for face stabilization
-    std::vector<int>& nds_master,                 ///< nodal dofset w.r.t. master element
-    std::vector<int>& nds_slave,                  ///< nodal dofset w.r.t. slave element
-    const Inpar::XFEM::FaceType& face_type,       ///< which type of face std, ghost, ghost-penalty
-    Teuchos::ParameterList& params,               ///< parameter list
-    Core::FE::DiscretizationFaces& discretization,           ///< faces discretization
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+    Discret::Elements::FluidIntFace* intface,        ///< internal face element
+    std::shared_ptr<Core::Mat::Material>& material,  ///< material for face stabilization
+    std::vector<int>& nds_master,                    ///< nodal dofset w.r.t. master element
+    std::vector<int>& nds_slave,                     ///< nodal dofset w.r.t. slave element
+    const Inpar::XFEM::FaceType& face_type,  ///< which type of face std, ghost, ghost-penalty
+    Teuchos::ParameterList& params,          ///< parameter list
+    Core::FE::DiscretizationFaces& discretization,              ///< faces discretization
+    std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: assemble_internal_faces_using_neighbor_data");
@@ -118,8 +118,8 @@ void Discret::Elements::FluidIntFaceImpl<distype>::assemble_internal_faces_using
   if (!discretization.filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discretization.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
-  const bool assemblemat = systemmatrix != Teuchos::null;
-  const bool assemblevec = systemvector != Teuchos::null;
+  const bool assemblemat = systemmatrix != nullptr;
+  const bool assemblevec = systemvector != nullptr;
 
   //--------------------------------------------------------
   /// number of space dimensions of the FluidIntFace element
@@ -133,7 +133,7 @@ void Discret::Elements::FluidIntFaceImpl<distype>::assemble_internal_faces_using
 
 
   //---------------------- check for PBCS ------------------
-  Teuchos::RCP<std::map<int, int>> pbcconnectivity =
+  std::shared_ptr<std::map<int, int>> pbcconnectivity =
       discretization.get_pbc_slave_to_master_node_connectivity();
 
   //----------------------- create patchlm -----------------
@@ -341,14 +341,14 @@ void Discret::Elements::FluidIntFaceImpl<distype>::assemble_internal_faces_using
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidIntFaceImpl<distype>::evaluate_internal_faces(
-    Discret::Elements::FluidIntFace* intface,     ///< internal face element
-    Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-    Teuchos::ParameterList& params,               ///< parameter list
-    Core::FE::Discretization& discretization,     ///< discretization
-    std::vector<int>& patchlm,                    ///< patch local map
-    std::vector<int>& lm_masterToPatch,           ///< local map between master dofs and patchlm
-    std::vector<int>& lm_slaveToPatch,            ///< local map between slave dofs and patchlm
-    std::vector<int>& lm_faceToPatch,             ///< local map between face dofs and patchlm
+    Discret::Elements::FluidIntFace* intface,        ///< internal face element
+    std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+    Teuchos::ParameterList& params,                  ///< parameter list
+    Core::FE::Discretization& discretization,        ///< discretization
+    std::vector<int>& patchlm,                       ///< patch local map
+    std::vector<int>& lm_masterToPatch,              ///< local map between master dofs and patchlm
+    std::vector<int>& lm_slaveToPatch,               ///< local map between slave dofs and patchlm
+    std::vector<int>& lm_faceToPatch,                ///< local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
     std::vector<Core::LinAlg::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks

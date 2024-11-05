@@ -21,9 +21,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <fstream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -67,10 +66,10 @@ namespace EleMag
   {
    public:
     /// Constructor.
-    ElemagTimeInt(const Teuchos::RCP<Core::FE::DiscretizationHDG>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output);
+    ElemagTimeInt(const std::shared_ptr<Core::FE::DiscretizationHDG>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output);
 
     /// Virtual destructor.
     virtual ~ElemagTimeInt() = default;
@@ -127,17 +126,17 @@ namespace EleMag
     \brief Import initial electric field from scatra solution
     */
     void set_initial_electric_field(
-        Core::LinAlg::Vector<double>& phi, Teuchos::RCP<Core::FE::Discretization>& scatradis);
+        Core::LinAlg::Vector<double>& phi, std::shared_ptr<Core::FE::Discretization>& scatradis);
 
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseVector> compute_error();
+    virtual std::shared_ptr<Core::LinAlg::SerialDenseVector> compute_error();
 
     /*!
     \brief Print the computed errors to screen.
     */
-    virtual void print_errors(Teuchos::RCP<Core::LinAlg::SerialDenseVector>& errors);
+    virtual void print_errors(std::shared_ptr<Core::LinAlg::SerialDenseVector>& errors);
     /*!
     \brief ProjectfieldTest is used for debugging purposes.
 
@@ -241,8 +240,7 @@ namespace EleMag
     */
     Epetra_CrsMatrix system_matrix()
     {
-      return (
-          *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->epetra_matrix());
+      return (*std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_)->epetra_matrix());
     };
 
     /*!
@@ -281,19 +279,19 @@ namespace EleMag
     /*!
     \brief returns pointer to the discretization
     */
-    Teuchos::RCP<Core::FE::Discretization> discretization();
+    std::shared_ptr<Core::FE::Discretization> discretization();
 
     /*!
     \brief create result test
     */
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test();
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test();
 
    protected:
     /// discretization, solver, parameter list and output
-    Teuchos::RCP<Core::FE::DiscretizationHDG> discret_;
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
-    Teuchos::RCP<Teuchos::ParameterList> params_;
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+    std::shared_ptr<Core::FE::DiscretizationHDG> discret_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;
 
     Inpar::EleMag::DynamicType elemagdyna_;  /// time integration scheme
 
@@ -327,19 +325,19 @@ namespace EleMag
     Core::LinAlg::EquilibrationMethod equilibration_method_;  /// equilibration method
 
     /// system matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat_;
 
     /// residual vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
 
     /// all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<Core::LinAlg::EquilibrationSparse> equilibration_;
+    std::shared_ptr<Core::LinAlg::EquilibrationSparse> equilibration_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// vector of zeros to be used for enforcing zero Dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
 
     //  The fomulation relies on the variables:
@@ -348,16 +346,16 @@ namespace EleMag
     //  o   \Lambda (hybrid varible)
 
     /// Trace vector to be solved at every iteration
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trace_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> trace_;
 
     /// Output vectors
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> electric;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> electric_post;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> magnetic;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> trace;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> conductivity;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> permittivity;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> permeability;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> electric;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> electric_post;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> magnetic;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> trace;
+    std::shared_ptr<Core::LinAlg::Vector<double>> conductivity;
+    std::shared_ptr<Core::LinAlg::Vector<double>> permittivity;
+    std::shared_ptr<Core::LinAlg::Vector<double>> permeability;
   };
 
 }  // namespace EleMag

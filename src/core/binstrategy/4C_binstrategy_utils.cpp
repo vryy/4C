@@ -130,11 +130,11 @@ namespace Core::Binstrategy::Utils
           extract_from_pack(buffer, data);
           Communication::UnpackBuffer data_buffer(data);
           // this Teuchos::rcp holds the memory of the node
-          Teuchos::RCP<Core::Communication::ParObject> object =
-              Teuchos::RCP(Core::Communication::factory(data_buffer), true);
-          Teuchos::RCP<Core::Elements::Element> element =
-              Teuchos::rcp_dynamic_cast<Core::Elements::Element>(object);
-          if (element == Teuchos::null) FOUR_C_THROW("Received object is not a element");
+          auto object = std::shared_ptr<Core::Communication::ParObject>(
+              Core::Communication::factory(data_buffer));
+          std::shared_ptr<Core::Elements::Element> element =
+              std::dynamic_pointer_cast<Core::Elements::Element>(object);
+          if (element == nullptr) FOUR_C_THROW("Received object is not a element");
 
           // safety check
           if (discret.have_global_element(element->id()) != true)
@@ -241,9 +241,9 @@ namespace Core::Binstrategy::Utils
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
   void get_current_node_pos(const Core::FE::Discretization& discret, Core::Nodes::Node const* node,
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> const disnp, double* currpos)
+      std::shared_ptr<const Core::LinAlg::Vector<double>> const disnp, double* currpos)
   {
-    if (disnp != Teuchos::null)
+    if (disnp != nullptr)
     {
       const int gid = discret.dof(node, 0);
       const int lid = disnp->Map().LID(gid);

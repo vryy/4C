@@ -20,8 +20,9 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -82,8 +83,8 @@ namespace MultiScale
     \brief Read restart
 
     */
-    void read_restart(int step, Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
+    void read_restart(int step, std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
         std::string name);
 
     /// get corresponding time to step
@@ -136,7 +137,7 @@ namespace MultiScale
     \brief Write restart
 
     */
-    void write_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output, const double time,
+    void write_restart(std::shared_ptr<Core::IO::DiscretizationWriter> output, const double time,
         const int step, const double dt);
 
     /*!
@@ -156,14 +157,15 @@ namespace MultiScale
     \brief Set old state given from micromaterialgp
 
     */
-    void set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disn, Teuchos::RCP<std::vector<char>> stress,
-        Teuchos::RCP<std::vector<char>> strain, Teuchos::RCP<std::vector<char>> plstrain,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv,
-        Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda);
+    void set_state(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+        std::shared_ptr<std::vector<char>> stress, std::shared_ptr<std::vector<char>> strain,
+        std::shared_ptr<std::vector<char>> plstrain,
+        std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha,
+        std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldalpha,
+        std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldfeas,
+        std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKaainv,
+        std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKda);
 
     /*!
     \brief Set time and step
@@ -247,8 +249,8 @@ namespace MultiScale
     MicroStatic operator=(const MicroStatic& old);
     MicroStatic(const MicroStatic& old);
 
-    Teuchos::RCP<Core::FE::Discretization> discret_;
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
     int myrank_;
     int maxentriesperrow_;
 
@@ -292,33 +294,34 @@ namespace MultiScale
     double normchardis_;
     double normdisi_;
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_dirich_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_dirich_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dirichtoggle_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> invtoggle_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>> dirichtoggle_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> invtoggle_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         dis_;  //!< displacements at t_{n} (needed for convergence check only)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disn_;  //!< displacements at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disi_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fresn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freactn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> disn_;  //!< displacements at t_{n+1}
+    std::shared_ptr<Core::LinAlg::Vector<double>> disi_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fresn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> freactn_;
 
-    Teuchos::RCP<std::vector<char>> stress_;
-    Teuchos::RCP<std::vector<char>> strain_;
-    Teuchos::RCP<std::vector<char>> plstrain_;
+    std::shared_ptr<std::vector<char>> stress_;
+    std::shared_ptr<std::vector<char>> strain_;
+    std::shared_ptr<std::vector<char>> plstrain_;
 
     // EAS history data
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldalpha_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldfeas_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKaainv_;
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> oldKda_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> lastalpha_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldalpha_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldfeas_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKaainv_;
+    std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>> oldKda_;
 
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> D_;  //!< D Matrix following Miehe et al., 2002
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+    std::shared_ptr<Core::LinAlg::MultiVector<double>>
+        D_;  //!< D Matrix following Miehe et al., 2002
+    std::shared_ptr<Core::LinAlg::MultiVector<double>>
         rhs_;  //!< exported transpose of D (pdof -> dofrowmap)
 
     int microdisnum_;  //!< number of RVE
@@ -326,14 +329,14 @@ namespace MultiScale
     double V0_;       //!< initial volume of RVE
     double density_;  //!< initial density of RVE
 
-    int ndof_;                                       //!< number of dofs overall
-    int np_;                                         //!< number of boundary dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Xp_;  //!< vector containing material
-                                                     //!< coordinates of boundary nodes
-    Teuchos::RCP<Epetra_Map> pdof_;                  //!< prescribed dofs
-    Teuchos::RCP<Epetra_Map> fdof_;                  //!< free dofs
-    Teuchos::RCP<Epetra_Import> importp_;
-    Teuchos::RCP<Epetra_Import> importf_;
+    int ndof_;                                          //!< number of dofs overall
+    int np_;                                            //!< number of boundary dofs
+    std::shared_ptr<Core::LinAlg::Vector<double>> Xp_;  //!< vector containing material
+                                                        //!< coordinates of boundary nodes
+    std::shared_ptr<Epetra_Map> pdof_;                  //!< prescribed dofs
+    std::shared_ptr<Epetra_Map> fdof_;                  //!< free dofs
+    std::shared_ptr<Epetra_Import> importp_;
+    std::shared_ptr<Epetra_Import> importf_;
   };
 
 

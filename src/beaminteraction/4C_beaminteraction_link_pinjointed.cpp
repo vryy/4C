@@ -17,7 +17,7 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -107,19 +107,19 @@ void BEAMINTERACTION::BeamLinkPinJointed::reset_state(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::create(
+std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> BEAMINTERACTION::BeamLinkPinJointed::create(
     Inpar::BEAMINTERACTION::JointType type)
 {
   if (type == Inpar::BEAMINTERACTION::beam3r_line2_pin)
-    return Teuchos::make_rcp<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>();
+    return std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>();
   else if (type == Inpar::BEAMINTERACTION::truss)
-    return Teuchos::make_rcp<BEAMINTERACTION::BeamLinkTruss>();
+    return std::make_shared<BEAMINTERACTION::BeamLinkTruss>();
   else
     FOUR_C_THROW(
         "instantiation of new BeamLinkPinJointed object failed due to "
         "unknown type of linker");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

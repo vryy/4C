@@ -20,7 +20,7 @@ bool Discret::Elements::SoTet4::read_element(const std::string& eletype, const s
   int material_id = container.get<int>("MAT");
   set_material(0, Mat::factory(material_id));
 
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   solid_material()->setup(NUMGPT_SOTET4, container);
 

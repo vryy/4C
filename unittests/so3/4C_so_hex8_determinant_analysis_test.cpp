@@ -16,11 +16,11 @@ namespace
   class SoHex8DetermAnalys : public ::testing::Test
   {
    protected:
-    Teuchos::RCP<Discret::Elements::SoHex8DeterminantAnalysis> analyser_;
+    std::shared_ptr<Discret::Elements::SoHex8DeterminantAnalysis> analyser_;
     // Set up testing environment.
     void SetUp() override { analyser_ = Discret::Elements::SoHex8DeterminantAnalysis::create(); }
     // Delete pointers.
-    void TearDown() override { analyser_ = Teuchos::null; }
+    void TearDown() override { analyser_ = nullptr; }
   };
 
   TEST_F(SoHex8DetermAnalys, TestElementUndeformed)

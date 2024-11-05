@@ -21,10 +21,10 @@ namespace FLD
   {
    public:
     //! Standard Constructor
-    TimIntPoro(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntPoro(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -62,7 +62,7 @@ namespace FLD
 
     */
     void update_iter_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< input residual velocities
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel  //!< input residual velocities
         ) override;
 
     /*!
@@ -113,7 +113,7 @@ namespace FLD
 
    protected:
     //! initial porosity (poroelasticity)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> init_porosity_field_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> init_porosity_field_;
 
    private:
   };

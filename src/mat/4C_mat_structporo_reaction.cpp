@@ -24,9 +24,9 @@ Mat::PAR::StructPoroReaction::StructPoroReaction(const Core::Mat::PAR::Parameter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::StructPoroReaction::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::StructPoroReaction::create_material()
 {
-  return Teuchos::make_rcp<Mat::StructPoroReaction>(this);
+  return std::make_shared<Mat::StructPoroReaction>(this);
 }
 
 /*----------------------------------------------------------------------*/
@@ -99,7 +99,7 @@ void Mat::StructPoroReaction::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -133,8 +133,8 @@ void Mat::StructPoroReaction::compute_porosity(Teuchos::ParameterList& params, d
   // TODO: do not read from parameter list!
   if (params.isParameter("scalar"))
   {
-    Teuchos::RCP<std::vector<double>> scalars =
-        params.get<Teuchos::RCP<std::vector<double>>>("scalar");
+    std::shared_ptr<std::vector<double>> scalars =
+        params.get<std::shared_ptr<std::vector<double>>>("scalar");
     reaction(porosity, J, scalars, params);
   }
 
@@ -159,8 +159,8 @@ void Mat::StructPoroReaction::constitutive_derivatives(Teuchos::ParameterList& p
   // TODO: do not read from parameter list!
   if (params.isParameter("scalar"))
   {
-    Teuchos::RCP<std::vector<double>> scalars =
-        params.get<Teuchos::RCP<std::vector<double>>>("scalar");
+    std::shared_ptr<std::vector<double>> scalars =
+        params.get<std::shared_ptr<std::vector<double>>>("scalar");
     reaction(porosity, J, scalars, params);
   }
 
@@ -174,7 +174,7 @@ void Mat::StructPoroReaction::constitutive_derivatives(Teuchos::ParameterList& p
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mat::StructPoroReaction::reaction(const double porosity, const double J,
-    Teuchos::RCP<std::vector<double>> scalars, Teuchos::ParameterList& params)
+    std::shared_ptr<std::vector<double>> scalars, Teuchos::ParameterList& params)
 {
   // double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time", -1.0);

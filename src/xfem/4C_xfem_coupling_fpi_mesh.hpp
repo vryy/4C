@@ -46,10 +46,10 @@ namespace XFEM
 
     //! constructor
     explicit MeshCouplingFPI(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -62,8 +62,8 @@ namespace XFEM
 
     bool is_bj() const { return full_bj_; }
 
-    void set_full_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> pres)
+    void set_full_state(std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> pres)
     {
       fulldispnp_ = dispnp;
       fullpres_ = pres;
@@ -79,8 +79,8 @@ namespace XFEM
             "initialize_struc_pres_map: (pfmap->NumGlobalElements() != "
             "psmap->NumGlobalElements())!");
 
-      Teuchos::RCP<Epetra_Map> fullpfmap = Core::LinAlg::allreduce_e_map(pfmap);
-      Teuchos::RCP<Epetra_Map> fullpsmap = Core::LinAlg::allreduce_e_map(psmap);
+      std::shared_ptr<Epetra_Map> fullpfmap = Core::LinAlg::allreduce_e_map(pfmap);
+      std::shared_ptr<Epetra_Map> fullpsmap = Core::LinAlg::allreduce_e_map(psmap);
 
       if (fullpfmap->NumMyElements() != fullpsmap->NumMyElements())
         FOUR_C_THROW(
@@ -121,10 +121,10 @@ namespace XFEM
     void read_restart(const int step) override;
 
     // interface foces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_true_residual() { return itrueresidual_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_true_residual() { return itrueresidual_; }
 
     // for assembly of fluid interface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
 
     //! Caluculate the Porosity for this FaceElement Gausspoint
     double calc_porosity(
@@ -137,15 +137,15 @@ namespace XFEM
     double get_fpi_pcontact_fullfraction() { return fpsi_contact_fullpcfraction_; }
 
     /// Assign communicator to contact to mesh coupling object
-    void assign_contact_comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
+    void assign_contact_comm(std::shared_ptr<XFEM::XFluidContactComm> xf_c_comm)
     {
       xf_c_comm_ = xf_c_comm;
     }
 
     /// Get communicator to contact
-    Teuchos::RCP<XFEM::XFluidContactComm> get_contact_comm()
+    std::shared_ptr<XFEM::XFluidContactComm> get_contact_comm()
     {
-      if (xf_c_comm_ == Teuchos::null)
+      if (xf_c_comm_ == nullptr)
         FOUR_C_THROW("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
       return xf_c_comm_;
     }
@@ -157,10 +157,10 @@ namespace XFEM
     void reconnect_parent_pointers();
 
     /// Initialize Fluid State
-    bool initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-        Teuchos::RCP<Teuchos::ParameterList> fluidparams);
+    bool initialize_fluid_state(std::shared_ptr<Cut::CutWizard> cutwizard,
+        std::shared_ptr<Core::FE::Discretization> fluiddis,
+        std::shared_ptr<XFEM::ConditionManager> condition_manager,
+        std::shared_ptr<Teuchos::ParameterList> fluidparams);
 
    private:
     void output(const int step, const double time, const bool write_restart_data) override;
@@ -228,9 +228,9 @@ namespace XFEM
 
     //------------------------------- vectors -----------------------------
     //! @name cutter-dis state vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         itrueresidual_;  //! interface forces acting on the structural surface (= -iforcenp)
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         iforcecol_;  //! interface forces acting on the fluid surface (column vector assembly)
     //@}
 
@@ -242,8 +242,8 @@ namespace XFEM
     bool full_bj_;
     bool sub_tang_;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fulldispnp_;
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fullpres_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fulldispnp_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fullpres_;
 
     //! map from structural x dof to pres dof of a node!
     std::map<int, int> lm_struct_x_lm_pres_;
@@ -261,7 +261,7 @@ namespace XFEM
     double fpsi_contact_fullpcfraction_;
 
     //! Xfluid Contact Communicator
-    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
+    std::shared_ptr<XFEM::XFluidContactComm> xf_c_comm_;
 
     //@}
   };

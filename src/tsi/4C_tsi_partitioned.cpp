@@ -35,13 +35,13 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     : Algorithm(comm),
-      tempincnp_(Teuchos::null),
-      dispincnp_(Teuchos::null),
-      disp_(Teuchos::null),
-      vel_(Teuchos::null),
-      temp_(Teuchos::null),
-      del_(Teuchos::null),
-      delhist_(Teuchos::null),
+      tempincnp_(nullptr),
+      dispincnp_(nullptr),
+      disp_(nullptr),
+      vel_(nullptr),
+      temp_(nullptr),
+      del_(nullptr),
+      delhist_(nullptr),
       mu_(0.0)
 {
   // call the TSI parameter list
@@ -72,10 +72,10 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
                   Inpar::Solid::dyna_statics);
 
   // initialise internal variables with values
-  tempincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(thermo_field()->tempnp()));
-  dispincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispnp()));
-  disp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
-  temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(thermo_field()->tempn()));
+  tempincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(thermo_field()->tempnp()));
+  dispincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(structure_field()->dispnp()));
+  disp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
+  temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(thermo_field()->tempn()));
   // set internal variables to pointer of current velocities
   vel_ = structure_field()->write_access_velnp();
 
@@ -220,7 +220,7 @@ void TSI::Partitioned::time_loop_one_way()
 {
   if (displacementcoupling_)  // (temperature change due to deformation)
   {
-    if (contact_strategy_nitsche_ != Teuchos::null)
+    if (contact_strategy_nitsche_ != nullptr)
     {
       // update the structure field with temperature from the thermal field.
       // It is important for TSI contact in the first step
@@ -455,7 +455,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // get structure variables of old time step (d_n, v_n)
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp =
+      std::shared_ptr<Core::LinAlg::Vector<double>> dispnp =
           Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
       if (step() == 1)
       {
@@ -625,7 +625,7 @@ void TSI::Partitioned::outer_iteration_loop()
       // get structure variables of old time step (d_n, v_n)
       // d^p_n+1 = d_n, v^p_n+1 = v_n
       // initialise new time step n+1 with values of old time step n
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp =
+      std::shared_ptr<Core::LinAlg::Vector<double>> dispnp =
           Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
       if (step() == 1)
       {
@@ -643,7 +643,7 @@ void TSI::Partitioned::outer_iteration_loop()
         if ((maxomega > 0.0) and (maxomega < (1 - mu_))) mu_ = 1 - maxomega;
 
         // reset in every new time step
-        if (del_ != Teuchos::null)
+        if (del_ != nullptr)
         {
           del_->PutScalar(1.0e20);
         }
@@ -750,7 +750,7 @@ void TSI::Partitioned::outer_iteration_loop()
           // initialise increment vector with solution of last iteration (i)
           // update del_ with current residual vector
           // difference of last two solutions
-          if (del_ == Teuchos::null)  // first iteration, itnum==1
+          if (del_ == nullptr)  // first iteration, itnum==1
           {
             del_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
             delhist_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
@@ -856,7 +856,7 @@ void TSI::Partitioned::outer_iteration_loop()
         if ((maxomega > 0.0) and (maxomega < 1 - mu_)) mu_ = 1 - maxomega;
 
         // reset in every new time step
-        if (del_ != Teuchos::null)
+        if (del_ != nullptr)
         {
           del_->PutScalar(1.0e20);
         }
@@ -977,7 +977,7 @@ void TSI::Partitioned::outer_iteration_loop()
           // initialise increment vector with solution of last iteration (i)
           // update del_ with current residual vector
           // difference of last two solutions
-          if (del_ == Teuchos::null)  // first iteration, itnum==1
+          if (del_ == nullptr)  // first iteration, itnum==1
           {
             del_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
             delhist_ = Core::LinAlg::create_vector(*(thermo_field()->dof_row_map(0)), true);
@@ -1312,7 +1312,7 @@ void TSI::Partitioned::prepare_contact_strategy()
 {
   TSI::Algorithm::prepare_contact_strategy();
 
-  if (contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != nullptr)
   {
     const auto& model_eval = structure_field()->model_evaluator(Inpar::Solid::model_structure);
     const auto cparams = model_eval.eval_data().contact_ptr();
@@ -1330,7 +1330,7 @@ void TSI::Partitioned::update()
 {
   structure_field()->update();
   thermo_field()->update();
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
     contact_strategy_lagrange_->update((structure_field()->dispnp()));
 }
 

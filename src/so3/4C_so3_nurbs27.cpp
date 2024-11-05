@@ -36,24 +36,24 @@ Core::Communication::ParObject* Discret::Elements::Nurbs::SoNurbs27Type::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::SoNurbs27Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::SoNurbs27Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == get_element_type_string())
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Nurbs::SoNurbs27>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Nurbs::SoNurbs27>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Nurbs::SoNurbs27Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Nurbs::SoNurbs27Type::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Nurbs::SoNurbs27>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Nurbs::SoNurbs27>(id, owner);
   return ele;
 }
 
@@ -95,9 +95,9 @@ Discret::Elements::Nurbs::SoNurbs27::SoNurbs27(int id, int owner) : SoBase(id, o
   invJ_.resize(NUMGPT_SONURBS27, Core::LinAlg::Matrix<NUMDIM_SONURBS27, NUMDIM_SONURBS27>(true));
   detJ_.resize(NUMGPT_SONURBS27, 0.0);
 
-  Teuchos::RCP<const Teuchos::ParameterList> params =
+  std::shared_ptr<const Teuchos::ParameterList> params =
       Global::Problem::instance()->get_parameter_list();
-  if (params != Teuchos::null)
+  if (params != nullptr)
   {
     Discret::Elements::Utils::throw_error_fd_material_tangent(
         Global::Problem::instance()->structural_dynamic_params(), get_element_type_string());
@@ -205,7 +205,8 @@ void Discret::Elements::Nurbs::SoNurbs27::print(std::ostream& os) const
 |  get vector of surfaces (public)                                      |
 |  surface normals always point outward                                 |
 *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::SoNurbs27::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::Nurbs::SoNurbs27::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, SoNurbs27>(
       Core::Communication::buildSurfaces, *this);
@@ -214,7 +215,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::SoN
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Nurbs::SoNurbs27::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Nurbs::SoNurbs27::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, SoNurbs27>(
       Core::Communication::buildLines, *this);

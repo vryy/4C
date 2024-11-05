@@ -26,20 +26,20 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplLineBased(Teuchos::RCP<Core::FE::Discretization> arterydis,
-        Teuchos::RCP<Core::FE::Discretization> contdis,
+    PoroMultiPhaseScaTraArtCouplLineBased(std::shared_ptr<Core::FE::Discretization> arterydis,
+        std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& couplingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! set-up linear system of equations of coupled problem
-    void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
+    void setup_system(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_art,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art,
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_cont,
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
     void setup() override;
@@ -48,7 +48,7 @@ namespace PoroMultiPhaseScaTra
     void apply_mesh_movement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() override;
 
    private:
     //! pre-evaluate the pairs and sort out duplicates
@@ -68,7 +68,7 @@ namespace PoroMultiPhaseScaTra
 
     //! fill the GID to segment vector
     void fill_gid_to_segment_vector(
-        const std::vector<Teuchos::RCP<
+        const std::vector<std::shared_ptr<
             PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         std::map<int, std::vector<double>>& gid_to_seglength);
 
@@ -93,9 +93,9 @@ namespace PoroMultiPhaseScaTra
      * @param this_connected_comp : current connected component
      */
     void depth_first_search_util(Core::Nodes::Node* actnode,
-        Teuchos::RCP<Core::LinAlg::Vector<int>> visited,
-        Teuchos::RCP<Core::FE::Discretization> artconncompdis,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> ele_diams_artery_full_overlap,
+        std::shared_ptr<Core::LinAlg::Vector<int>> visited,
+        std::shared_ptr<Core::FE::Discretization> artconncompdis,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> ele_diams_artery_full_overlap,
         std::vector<int>& this_connected_comp);
 
     /*!
@@ -127,7 +127,7 @@ namespace PoroMultiPhaseScaTra
      * @param[in,out]   rhs_art_with_collapsed right hand side of artery subpart
      * @returns dbcmap, also containing additional boundary condition for collapsed eles
      */
-    Teuchos::RCP<Epetra_Map> get_additional_dbc_for_collapsed_eles(
+    std::shared_ptr<Epetra_Map> get_additional_dbc_for_collapsed_eles(
         const Core::LinAlg::MapExtractor& dbcmap_art,
         Core::LinAlg::Vector<double>& rhs_art_with_collapsed);
 
@@ -136,21 +136,21 @@ namespace PoroMultiPhaseScaTra
         const int& ele2gid, const double& integrated_diam,
         std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) override;
+        std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs) override;
 
     //! get the segment lengths of element 'artelegid'
     std::vector<double> get_ele_segment_lengths(const int artelegid) override;
 
     //! check for duplicate segment
     bool is_duplicate_segment(
-        const std::vector<Teuchos::RCP<
+        const std::vector<std::shared_ptr<
             PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase& possible_duplicate);
 
     //! check for identical segment
     bool is_identical_segment(
-        const std::vector<Teuchos::RCP<
+        const std::vector<std::shared_ptr<
             PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>>& coupl_elepairs,
         const int& ele1gid, const double& etaA, const double& etaB, int& elepairID);
 
@@ -167,27 +167,27 @@ namespace PoroMultiPhaseScaTra
     int maxnumsegperartele_;
 
     //! length of artery elements unaffected by deformation
-    Teuchos::RCP<Epetra_FEVector> unaffected_seg_lengths_artery_;
+    std::shared_ptr<Epetra_FEVector> unaffected_seg_lengths_artery_;
 
     //! length of artery elements in current configuration
-    Teuchos::RCP<Epetra_FEVector> current_seg_lengths_artery_;
+    std::shared_ptr<Epetra_FEVector> current_seg_lengths_artery_;
 
     //! diameter of the artery element integrated over the length of the artery element (row format
     //! and FE vector due to non-local assembly)
-    Teuchos::RCP<Epetra_FEVector> integrated_diams_artery_row_;
+    std::shared_ptr<Epetra_FEVector> integrated_diams_artery_row_;
 
     //! diameter of artery element integrated over the length of the artery element (col format)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrated_diams_artery_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrated_diams_artery_col_;
 
     //! diameter of artery element (col format)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_diams_artery_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_diams_artery_col_;
 
     //! unaffected diameter integrated over the length of the artery element
     //! (protruding elements for which diameter does not change)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> unaffected_integrated_diams_artery_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> unaffected_integrated_diams_artery_col_;
 
     //! volume fraction of blood vessels (for output)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> bloodvesselvolfrac_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> bloodvesselvolfrac_;
 
     //! gid to segment: stores [GID; [eta_a eta_b]_1, [eta_a eta_b]_2, ..., [eta_a eta_b]_n]
     //!  of artery elements in column format, i.e. fully overlapping

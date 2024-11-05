@@ -26,8 +26,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIPenaltyConstraintenforcer::setup(
-    Teuchos::RCP<Adapter::FSIStructureWrapper> structure,
-    Teuchos::RCP<Adapter::FluidMovingBoundary> fluid)
+    std::shared_ptr<Adapter::FSIStructureWrapper> structure,
+    std::shared_ptr<Adapter::FluidMovingBoundary> fluid)
 {
   Adapter::FBIConstraintenforcer::setup(structure, fluid);
   std::ofstream log;
@@ -47,7 +47,7 @@ void Adapter::FBIPenaltyConstraintenforcer::setup(
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseOperator>
+std::shared_ptr<const Core::LinAlg::SparseOperator>
 Adapter::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_matrix() const
 {
   // Get coupling contributions to the fluid stiffness matrix
@@ -56,37 +56,37 @@ Adapter::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_matrix() const
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+std::shared_ptr<const Core::LinAlg::SparseMatrix>
 Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_matrix() const
 {
   // For the classical partitioned algorithm we do not have any contributions to the stiffness
   // matrix of the structure field
-  return Teuchos::null;
+  return nullptr;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 Adapter::FBIPenaltyConstraintenforcer::assemble_fluid_coupling_residual() const
 {
-  Teuchos::rcp_dynamic_cast<Adapter::FBIConstraintBridgePenalty>(bridge(), true)
+  std::dynamic_pointer_cast<Adapter::FBIConstraintBridgePenalty>(bridge())
       ->scale_penalty_fluid_contributions();
   // Get the force acting on the fluid field, scale it with -1 to get the
   // correct direction
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  std::shared_ptr<Core::LinAlg::Vector<double>> f = std::make_shared<Core::LinAlg::Vector<double>>(
       (bridge()->get_fluid_coupling_residual())->Map());
   f->Update(-1.0, *(bridge()->get_fluid_coupling_residual()), 0.0);
   return f;
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>>
+std::shared_ptr<Core::LinAlg::Vector<double>>
 Adapter::FBIPenaltyConstraintenforcer::assemble_structure_coupling_residual() const
 {
-  Teuchos::rcp_dynamic_cast<Adapter::FBIConstraintBridgePenalty>(bridge(), true)
+  std::dynamic_pointer_cast<Adapter::FBIConstraintBridgePenalty>(bridge())
       ->scale_penalty_structure_contributions();
   // Get the force acting on the structure field, scale it with the penalty factor and -1 to get the
   // correct direction
-  Teuchos::RCP<Core::LinAlg::Vector<double>> f = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  std::shared_ptr<Core::LinAlg::Vector<double>> f = std::make_shared<Core::LinAlg::Vector<double>>(
       bridge()->get_structure_coupling_residual()->Map());
   f->Update(-1.0, *(bridge()->get_structure_coupling_residual()), 0.0);
 
@@ -115,15 +115,14 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
   {
     double penalty_parameter = bridge()->get_params()->get_penalty_parameter();
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> violation = Core::LinAlg::create_vector(
-        Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp()->Map());
+    std::shared_ptr<Core::LinAlg::Vector<double>> violation = Core::LinAlg::create_vector(
+        std::dynamic_pointer_cast<Adapter::FBIFluidMB>(get_fluid())->velnp()->Map());
 
-    int err =
-        Teuchos::rcp_dynamic_cast<const Adapter::FBIConstraintBridgePenalty>(get_bridge(), true)
-            ->get_cff()
-            ->multiply(false,
-                *(Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp()),
-                *violation);
+    int err = std::dynamic_pointer_cast<const Adapter::FBIConstraintBridgePenalty>(get_bridge())
+                  ->get_cff()
+                  ->multiply(false,
+                      *(std::dynamic_pointer_cast<Adapter::FBIFluidMB>(get_fluid())->velnp()),
+                      *violation);
 
     if (err != 0) FOUR_C_THROW(" Matrix vector product threw error code %i ", err);
 
@@ -134,13 +133,13 @@ void Adapter::FBIPenaltyConstraintenforcer::print_violation(double time, int ste
 
     get_velocity_pressure_splitter()
         ->extract_other_vector(
-            *Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(get_fluid(), true)->velnp())
+            *std::dynamic_pointer_cast<Adapter::FBIFluidMB>(get_fluid())->velnp())
         ->MaxValue(&norm_vel);
 
     violation->MaxValue(&norm);
     if (norm_vel > 1e-15) normf = norm / norm_vel;
 
-    Teuchos::rcp_dynamic_cast<const Adapter::FBIStructureWrapper>(get_structure(), true)
+    std::dynamic_pointer_cast<const Adapter::FBIStructureWrapper>(get_structure())
         ->velnp()
         ->MaxValue(&norm_vel);
     if (norm_vel > 1e-15) norms = norm / norm_vel;

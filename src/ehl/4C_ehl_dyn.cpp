@@ -94,17 +94,17 @@ void ehl_dyn()
       Teuchos::getIntegralValue<Inpar::EHL::SolutionSchemeOverFields>(ehlparams, "COUPALGO");
 
   // 3.- Creation of Lubrication + Structure problem. (discretization called inside)
-  Teuchos::RCP<EHL::Base> ehl = Teuchos::null;
+  std::shared_ptr<EHL::Base> ehl = nullptr;
 
   // 3.1 choose algorithm depending on solution type
   switch (coupling)
   {
     case Inpar::EHL::ehl_IterStagg:
-      ehl = Teuchos::make_rcp<EHL::Partitioned>(
+      ehl = std::make_shared<EHL::Partitioned>(
           comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication");
       break;
     case Inpar::EHL::ehl_Monolithic:
-      ehl = Teuchos::make_rcp<EHL::Monolithic>(
+      ehl = std::make_shared<EHL::Monolithic>(
           comm, ehlparams, lubricationdyn, sdyn, "structure", "lubrication");
       break;
     default:

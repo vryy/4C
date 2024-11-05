@@ -31,8 +31,8 @@ namespace CONTACT
    public:
     //! Standard constructor
     NitscheStrategyPoro(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<CONTACT::Interface>> interface,
-        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+        Teuchos::ParameterList params, std::vector<std::shared_ptr<CONTACT::Interface>> interface,
+        int dim, std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(
               dof_row_map, NodeRowMap, params, std::move(interface), dim, comm, alphaf, maxdof),
           no_penetration_(params.get<bool>("CONTACTNOPEN"))
@@ -40,19 +40,19 @@ namespace CONTACT
     }
 
     //! Shared data constructor
-    NitscheStrategyPoro(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    NitscheStrategyPoro(const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        Teuchos::RCP<const Epetra_Comm> comm, double alphaf, int maxdof)
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        std::shared_ptr<const Epetra_Comm> comm, double alphaf, int maxdof)
         : NitscheStrategy(data_ptr, dof_row_map, NodeRowMap, params, std::move(interface), dim,
               comm, alphaf, maxdof),
           no_penetration_(params.get<bool>("CONTACTNOPEN"))
     {
     }
 
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor) override;
 
     //  void Integrate(CONTACT::ParamsInterface& cparams);
@@ -62,10 +62,10 @@ namespace CONTACT
     void set_parent_state(const enum Mortar::StateType& statename,
         const Core::LinAlg::Vector<double>& vec, const Core::FE::Discretization& dis) override;
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bp) const override;
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bp) const;
 
 
@@ -78,23 +78,23 @@ namespace CONTACT
 
    protected:
     // create an appropriate vector for the RHS
-    Teuchos::RCP<Epetra_FEVector> setup_rhs_block_vec(
+    std::shared_ptr<Epetra_FEVector> setup_rhs_block_vec(
         const enum CONTACT::VecBlockType& bt) const override;
 
     // create an appropriate matrix block
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> setup_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) override;
 
     // complete matrix block with correct maps
-    void complete_matrix_block_ptr(
-        const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) override;
+    void complete_matrix_block_ptr(const enum CONTACT::MatBlockType& bt,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kc) override;
 
     bool no_penetration_;
 
-    Teuchos::RCP<Epetra_FEVector> fp_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kpp_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kpd_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kdp_;
+    std::shared_ptr<Epetra_FEVector> fp_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kpp_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kpd_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kdp_;
   };
 }  // namespace CONTACT
 

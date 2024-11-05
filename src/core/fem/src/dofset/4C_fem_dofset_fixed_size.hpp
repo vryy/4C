@@ -14,9 +14,9 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -60,7 +60,7 @@ namespace Core::DOFSets
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<FixedSizeDofSet>(*this); }
+    std::shared_ptr<DofSet> clone() override { return std::make_shared<FixedSizeDofSet>(*this); }
 
     /// Get maximum GID of degree of freedom row map
     int max_all_gid() const override { return min_all_gid() + numMyReservedDofs_; }

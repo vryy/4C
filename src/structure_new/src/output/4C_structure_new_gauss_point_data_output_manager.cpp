@@ -108,8 +108,8 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_nodal_data_vect
     const int size = name_and_size.second;
 
     data_nodes_[name] =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(node_col_map, size, true);
-    data_nodes_count_[name] = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(node_col_map, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(node_col_map, size, true);
+    data_nodes_count_[name] = std::make_shared<Core::LinAlg::Vector<int>>(node_col_map, true);
   }
 }
 
@@ -122,7 +122,7 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_element_center_
     const int size = name_and_size.second;
 
     data_element_center_[name] =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(element_col_map, size, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(element_col_map, size, true);
   }
 }
 
@@ -134,13 +134,15 @@ void Solid::ModelEvaluator::GaussPointDataOutputManager::prepare_gauss_point_dat
     const std::string& name = name_and_size.first;
     const int size = name_and_size.second;
 
-    data_gauss_point_.emplace(name, std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>());
-    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& gp_data = data_gauss_point_[name];
+    data_gauss_point_.emplace(
+        name, std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>());
+    std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& gp_data =
+        data_gauss_point_[name];
 
     gp_data.resize(max_num_gp_);
     for (auto& data_i : gp_data)
     {
-      data_i = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(element_col_map, size, true);
+      data_i = std::make_shared<Core::LinAlg::MultiVector<double>>(element_col_map, size, true);
     }
   }
 }

@@ -40,20 +40,20 @@ namespace Adapter
   {
    public:
     //! constructor
-    explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
+    explicit PASIStructureWrapper(std::shared_ptr<Structure> structure);
 
     //! set pointer to model evaluator
-    void set_model_evaluator_ptr(Teuchos::RCP<Solid::ModelEvaluator::PartitionedPASI> me)
+    void set_model_evaluator_ptr(std::shared_ptr<Solid::ModelEvaluator::PartitionedPASI> me)
     {
       pasi_model_evaluator_ = me;
       return;
     }
 
     //! communication object at the interface
-    virtual Teuchos::RCP<const Solid::MapExtractor> interface() const { return interface_; }
+    virtual std::shared_ptr<const Solid::MapExtractor> interface() const { return interface_; }
 
     //! apply interface force to structure interface
-    void apply_interface_force(Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforce);
+    void apply_interface_force(std::shared_ptr<const Core::LinAlg::Vector<double>> intfforce);
 
    protected:
     //! The structural model evaluator object.
@@ -61,16 +61,16 @@ namespace Adapter
     //! If this method is related to the structural field,
     //! a corresponding method in the model evaluator may be
     //! called, if necessary.
-    Teuchos::RCP<Solid::ModelEvaluator::PartitionedPASI> pasi_model_evaluator_;
+    std::shared_ptr<Solid::ModelEvaluator::PartitionedPASI> pasi_model_evaluator_;
 
     //! access the pasi model evaluator
-    Teuchos::RCP<Solid::ModelEvaluator::PartitionedPASI> pasi_model_evaluator()
+    std::shared_ptr<Solid::ModelEvaluator::PartitionedPASI> pasi_model_evaluator()
     {
       return pasi_model_evaluator_;
     };
 
     //! the interface map setup for interface <-> full translation
-    Teuchos::RCP<Solid::MapExtractor> interface_;
+    std::shared_ptr<Solid::MapExtractor> interface_;
   };
 
 }  // namespace Adapter

@@ -52,12 +52,12 @@ namespace Adapter
     //! @name Misc
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> discretization() = 0;
 
-    virtual const Teuchos::RCP<Adapter::Fluid>& fluid_field() = 0;
+    virtual const std::shared_ptr<Adapter::Fluid>& fluid_field() = 0;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const = 0;
+    virtual std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const = 0;
 
     //@}
 
@@ -67,7 +67,7 @@ namespace Adapter
     virtual void prepare_time_step() = 0;
 
     /// evaluate elements with given displacement
-    // virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) = 0;
+    // virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> vel) = 0;
 
     /// update at time step end
     virtual void update() = 0;
@@ -83,34 +83,34 @@ namespace Adapter
     //! @name Solver calls
 
     /// nonlinear solve
-    virtual void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null) = 0;
+    virtual void nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp = nullptr,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel = nullptr) = 0;
 
     /// nonlinear solve
     virtual void apply_interface_values(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null)
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp = nullptr,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel = nullptr)
     {
       FOUR_C_THROW("Not implemented in base class");
     }
 
     /// linear fluid solve with just a interface load
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt) = 0;
 
     //@}
 
     //! @name Extract interface forces
 
     /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() = 0;
 
     //@}
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() = 0;
 
     /// extract old velocities
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() = 0;
 
     //! @name Number of Newton iterations
     //! For simplified FD MFNK solve we want to temporally limit the
@@ -122,10 +122,10 @@ namespace Adapter
     //@}
 
     /// integrate FSI interface shape functions
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() = 0;
 
     /// create result test for encapulated fluid algorithm
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test() = 0;
   };
 
 
@@ -140,11 +140,11 @@ namespace Adapter
     /// virtual destructor to support polymorph destruction
     virtual ~FluidMovingBoundaryBaseAlgorithm() = default;
     /// fluid field solver
-    const Teuchos::RCP<FluidMovingBoundary>& mb_fluid_field() { return fluid_; }
+    const std::shared_ptr<FluidMovingBoundary>& mb_fluid_field() { return fluid_; }
 
    private:
     /// fluid field solver
-    Teuchos::RCP<FluidMovingBoundary> fluid_;
+    std::shared_ptr<FluidMovingBoundary> fluid_;
   };
 }  // namespace Adapter
 

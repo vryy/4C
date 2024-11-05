@@ -15,6 +15,7 @@
 #include "4C_scatra_ele_parameter_lsreinit.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
 #define USE_PHIN_FOR_VEL
@@ -52,10 +53,10 @@ Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::ScaTraEleCalcLsRein
           Discret::Elements::ScaTraEleParameterLsReinit::instance(disname))  // parameter class
 {
   // set appropriate diffusion manager
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerLsReinit<nsd_>>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerLsReinit<nsd_>>(my::numscal_);
   // set appropriate internal variable manager
   my::scatravarmanager_ =
-      Teuchos::make_rcp<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(my::numscal_);
+      std::make_shared<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(my::numscal_);
 
   // safety checks
   if (my::scatrapara_->rb_sub_gr_vel())
@@ -91,8 +92,8 @@ int Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::evaluate(
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phinp'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector 'phinp'");
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phinp, my::ephinp_, lm);
 
   eval_reinitialization(*phinp, lm, ele, params, discretization, elemat1_epetra, elevec1_epetra);
@@ -145,13 +146,13 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
 
       // check the type: ToDo change to FOUR_C_ASSERT
       if (not params.INVALID_TEMPLATE_QUALIFIER
-                  isType<Teuchos::RCP<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>>(
+                  isType<std::shared_ptr<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>>(
                       "boundary cells"))
         FOUR_C_THROW("The given boundary cells have the wrong type!");
 
-      const Teuchos::RCP<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>& allcells =
-          params.get<Teuchos::RCP<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>>(
-              "boundary cells", Teuchos::null);
+      const std::shared_ptr<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>& allcells =
+          params.get<std::shared_ptr<const std::map<int, Core::Geo::BoundaryIntCellPtrs>>>(
+              "boundary cells", nullptr);
 
       // ----------------------------------------------------------------------
       // check if the current element is a cut element
@@ -165,13 +166,12 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
         FOUR_C_THROW(
             "Currently unsupported, since the variation of the "
             "l2-projected gradient is missing. -- hiermeier 12/2016");
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& gradphi =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("gradphi");
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& gradphi =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("gradphi");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, *gradphi, nsd_);
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> l2_proj_sys_diag =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> l2_proj_sys_diag =
             discretization.get_state("l2_proj_system_mat_diag");
-        if (l2_proj_sys_diag.is_null())
-          FOUR_C_THROW("Could not find the l2 projection system diagonal!");
+        if (!l2_proj_sys_diag) FOUR_C_THROW("Could not find the l2 projection system diagonal!");
         Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(
             *l2_proj_sys_diag, el2sysmat_diag_inv, lm);
         el2sysmat_diag_inv.reciprocal(el2sysmat_diag_inv);
@@ -355,11 +355,11 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
     case Inpar::ScaTra::reinitaction_sussman:
     {
       // extract local values from the global vectors
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phizero =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> hist = discretization.get_state("hist");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phizero =
           discretization.get_state("phizero");
-      if (hist == Teuchos::null || phin == Teuchos::null || phizero == Teuchos::null)
+      if (hist == nullptr || phin == nullptr || phizero == nullptr)
         FOUR_C_THROW("Cannot get state vector 'hist' and/or 'phin' and/or 'phizero'");
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, lm);
       Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phizero, ephizero_, lm);
@@ -368,8 +368,8 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       if (lsreinitparams_->use_projected_vel())
       {
         // get velocity at nodes (pre-computed via L2 projection)
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>> velocity =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>> velocity =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
                 "reinitialization velocity field");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, *velocity, nsd_);
       }
@@ -384,9 +384,9 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
       // define empty list
       Core::Geo::BoundaryIntCellPtrs boundaryIntCells = Core::Geo::BoundaryIntCellPtrs(0);
 
-      Teuchos::RCP<std::map<int, Core::Geo::BoundaryIntCells>> allcells =
-          params.get<Teuchos::RCP<std::map<int, Core::Geo::BoundaryIntCells>>>(
-              "boundary cells", Teuchos::null);
+      std::shared_ptr<std::map<int, Core::Geo::BoundaryIntCells>> allcells =
+          params.get<std::shared_ptr<std::map<int, Core::Geo::BoundaryIntCells>>>(
+              "boundary cells", nullptr);
 
       std::map<int, Core::Geo::BoundaryIntCells>::iterator cit_map = allcells->find(my::eid_);
       if (cit_map != allcells->end())
@@ -395,14 +395,14 @@ void Discret::Elements::ScaTraEleCalcLsReinit<distype, prob_dim>::eval_reinitial
         Core::Geo::BoundaryIntCells::iterator cit_vec;
         for (cit_vec = cit_map->second.begin(); cit_vec != cit_map->second.end(); ++cit_vec)
         {
-          boundaryIntCells.push_back(Teuchos::rcpFromRef((*cit_vec)));
+          boundaryIntCells.push_back(Core::Utils::shared_ptr_from_ref((*cit_vec)));
         }
       }
 
       if (lsreinitparams_->project())
       {
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphi =
-            params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("gradphi");
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>> gradphi =
+            params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("gradphi");
         Core::FE::extract_my_node_based_values(ele, my::econvelnp_, *gradphi, nsd_);
       }
 

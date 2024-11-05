@@ -46,7 +46,7 @@ Discret::Elements::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
 {
   // replace elch internal variable manager by internal variable manager for Nernst-Planck
   // formulation
-  my::scatravarmanager_ = Teuchos::RCP(
+  my::scatravarmanager_ = std::shared_ptr<ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>>(
       new ScaTraEleInternalVariableManagerElchNP<nsd_, nen_>(my::numscal_, myelch::elchparams_));
 
   return;
@@ -950,7 +950,7 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::correction_for_flux_across
       (myelch::elchparams_->equ_pot() == Inpar::ElCh::equpot_enc_pde_elim))
   {
     // get dirichlet toggle from the discretization
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dctoggle =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dctoggle =
         discretization.get_state("dctoggle");
     std::vector<double> mydctoggle(lm.size());
     Core::FE::extract_my_values(*dctoggle, mydctoggle, lm);
@@ -1009,18 +1009,18 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::get_material_params(
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() < my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -1037,9 +1037,9 @@ void Discret::Elements::ScaTraEleCalcElchNP<distype>::get_material_params(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcElchNP<distype>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity

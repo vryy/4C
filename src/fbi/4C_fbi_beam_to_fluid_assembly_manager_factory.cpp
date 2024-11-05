@@ -19,13 +19,13 @@ FOUR_C_NAMESPACE_OPEN
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
+std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
 BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
-    Teuchos::RCP<const Core::FE::Discretization> discretization1,
-    Teuchos::RCP<const Core::FE::Discretization> discretization2,
-    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
-    const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
-    Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
+    std::shared_ptr<const Core::FE::Discretization> discretization1,
+    std::shared_ptr<const Core::FE::Discretization> discretization2,
+    std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
+    const std::shared_ptr<FBI::BeamToFluidMeshtyingParams> params_ptr,
+    std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
 {
   // Get the meshtying discretization method.
   Inpar::FBI::BeamToFluidDiscretization meshtying_discretization =
@@ -34,20 +34,20 @@ BEAMINTERACTION::BeamToFluidAssemblyManagerFactory::create_assembly_manager(
   switch (meshtying_discretization)
   {
     case Inpar::FBI::BeamToFluidDiscretization::mortar:
-      return Teuchos::make_rcp<
+      return std::make_shared<
           BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerIndirect>(
 
           interaction_pairs, discretization1, discretization2, params_ptr);
       break;
     case Inpar::FBI::BeamToFluidDiscretization::gauss_point_to_segment:
-      return Teuchos::make_rcp<
+      return std::make_shared<
           BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect>(
 
           interaction_pairs, assemblystrategy);
       break;
     default:
       FOUR_C_THROW("Beam To Fluid Meshtying discretization Type not supported!");
-      return Teuchos::null;
+      return nullptr;
   }
 }
 

@@ -28,7 +28,7 @@ namespace Mat
 
 
       //! create instance of Newman multi-scale material
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! electronic conductivity
       double electronic_cond() const { return electronic_cond_; }
@@ -122,9 +122,9 @@ namespace Mat
     };
 
     //! clone Newman multi-scale material
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<NewmanMultiScale>(*this);
+      return std::make_shared<NewmanMultiScale>(*this);
     };
 
     //! compute electronic conductivity and scale by function evaluated at @p gp

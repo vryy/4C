@@ -51,12 +51,12 @@ Discret::Elements::ScaTraEleCalcRefConcReac<distype>::instance(
  *---------------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleCalcRefConcReac<distype>::set_advanced_reaction_terms(
-    const int k,                                            //!< index of current scalar
-    const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
-    const double* gpcoord                                   //!< current Gauss-point coordinates
+    const int k,                                               //!< index of current scalar
+    const std::shared_ptr<Mat::MatListReactions> matreaclist,  //!< index of current scalar
+    const double* gpcoord                                      //!< current Gauss-point coordinates
 )
 {
-  const Teuchos::RCP<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
+  const std::shared_ptr<ScaTraEleReaManagerAdvReac> remanager = advreac::rea_manager();
 
   remanager->add_to_rea_body_force(
       matreaclist->calc_rea_body_force_term(k, my::scatravarmanager_->phinp(), gpcoord, 1.0 / j_) *

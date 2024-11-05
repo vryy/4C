@@ -39,12 +39,12 @@ namespace Thermo
     //@{
 
     //! constructor
-    TimIntExpl(const Teuchos::ParameterList& ioparams,       //!< ioflags
-        const Teuchos::ParameterList& tdynparams,            //!< input parameters
-        const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+    TimIntExpl(const Teuchos::ParameterList& ioparams,          //!< ioflags
+        const Teuchos::ParameterList& tdynparams,               //!< input parameters
+        const Teuchos::ParameterList& xparams,                  //!< extra flags
+        std::shared_ptr<Core::FE::Discretization> actdis,       //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,           //!< the solver
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Empty constructor
@@ -74,7 +74,7 @@ namespace Thermo
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi) override
     {
       FOUR_C_THROW("not implemented for explicit time integration");
       return;
@@ -115,7 +115,7 @@ namespace Thermo
     void update() override;
 
     //! update Newton step
-    void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) override
+    void update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi) override
     {
       FOUR_C_THROW("not needed for explicit time integration");
       return;
@@ -175,34 +175,34 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact() override
     {
       FOUR_C_THROW("Not impl.");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override
     {
       FOUR_C_THROW("not needed for explicit time integration");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! right-hand side alias the dynamic force residual
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override
     {
       FOUR_C_THROW("not needed for explicit time integration");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! Read and set external forces from file
     void read_restart_force() override = 0;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override = 0;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override = 0;
 
     //@}
 

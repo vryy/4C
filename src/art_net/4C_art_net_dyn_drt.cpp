@@ -33,11 +33,11 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void dyn_art_net_drt() { dyn_art_net_drt(false); }
 
-Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
+std::shared_ptr<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
 {
   if (Global::Problem::instance()->does_exist_dis("artery") == false)
   {
-    return Teuchos::null;
+    return nullptr;
   }
 
   // define the discretization names
@@ -50,7 +50,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> actdis = nullptr;
 
   actdis = problem->get_dis(artery_disname);
 
@@ -64,13 +64,13 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   if (actdis->num_global_elements() < 1)
   {
-    return Teuchos::null;
+    return nullptr;
   }
 
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -98,7 +98,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       std::cout << "<  ARTERY:  ScaTra coupling present  >" << std::endl;
       std::cout << "<<<<<<<<<<<<<<<<<<<>>>>>>>>>>>>>>>>>>>" << std::endl;
     }
-    Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
+    std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
     // fill scatra discretization by cloning artery discretization
     Core::FE::clone_discretization<Arteries::ArteryScatraCloneStrategy>(
         *actdis, *scatradis, Global::Problem::instance()->cloning_material_map());
@@ -107,7 +107,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
     // the problem is one way coupled, scatra needs only artery
 
     // build a proxy of the structure discretization for the scatra field
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> arterydofset = actdis->get_dof_set_proxy();
+    std::shared_ptr<Core::DOFSets::DofSetInterface> arterydofset = actdis->get_dof_set_proxy();
 
     // check if ScatraField has 2 discretizations, so that coupling is possible
     if (scatradis->add_dof_set(arterydofset) != 1)
@@ -133,7 +133,7 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
       Teuchos::getIntegralValue<Inpar::ArtDyn::TimeIntegrationScheme>(artdyn, "DYNAMICTYP");
 
   // build art net time integrator
-  Teuchos::RCP<Adapter::ArtNet> artnettimint = Arteries::Utils::create_algorithm(
+  std::shared_ptr<Adapter::ArtNet> artnettimint = Arteries::Utils::create_algorithm(
       timintscheme, actdis, linsolvernumber, artdyn, artdyn, *output);
 
   // initialize
@@ -166,14 +166,14 @@ Teuchos::RCP<Adapter::ArtNet> dyn_art_net_drt(bool CoupledTo3D)
   if (!CoupledTo3D)
   {
     // call time-integration (or stationary) scheme
-    Teuchos::RCP<Teuchos::ParameterList> param_temp;
+    std::shared_ptr<Teuchos::ParameterList> param_temp;
     artnettimint->integrate(CoupledTo3D, param_temp);
 
     // result test
     artnettimint->test_results();
 
     return artnettimint;
-    //    return  Teuchos::null;
+    //    return  nullptr;
   }
   else
   {

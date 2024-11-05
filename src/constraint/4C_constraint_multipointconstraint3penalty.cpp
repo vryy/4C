@@ -27,8 +27,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
-    Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
-    const std::string& CondName                    ///< Name of condition to create constraint from
+    std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+    const std::string& CondName  ///< Name of condition to create constraint from
     )
     : MPConstraint(discr, CondName)
 {
@@ -52,16 +52,16 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
     constraintdis_ = create_discretization_from_condition(
         actdisc_, constrcond_, "ConstrDisc", "CONSTRELE3", startID);
 
-    std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discriter;
+    std::map<int, std::shared_ptr<Core::FE::Discretization>>::iterator discriter;
     for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
     {
-      Teuchos::RCP<Epetra_Map> newcolnodemap =
+      std::shared_ptr<Epetra_Map> newcolnodemap =
           Core::Rebalance::compute_node_col_map(*actdisc_, *discriter->second);
       actdisc_->redistribute(*(actdisc_->node_row_map()), *newcolnodemap);
-      Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
-          Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(actdisc_);
+      std::shared_ptr<Core::DOFSets::DofSet> newdofset =
+          std::make_shared<Core::DOFSets::TransparentDofSet>(actdisc_);
       (discriter->second)->replace_dof_set(newdofset);
-      newdofset = Teuchos::null;
+      newdofset = nullptr;
       (discriter->second)->fill_complete();
     }
 
@@ -72,12 +72,12 @@ CONSTRAINTS::MPConstraint3Penalty::MPConstraint3Penalty(
       nummyele = numele;
     }
     // initialize maps and importer
-    errormap_ = Teuchos::make_rcp<Epetra_Map>(numele, nummyele, 0, actdisc_->get_comm());
+    errormap_ = std::make_shared<Epetra_Map>(numele, nummyele, 0, actdisc_->get_comm());
     rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
-    errorexport_ = Teuchos::make_rcp<Epetra_Export>(*rederrormap_, *errormap_);
-    errorimport_ = Teuchos::make_rcp<Epetra_Import>(*rederrormap_, *errormap_);
-    acterror_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
-    initerror_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*rederrormap_);
+    errorexport_ = std::make_shared<Epetra_Export>(*rederrormap_, *errormap_);
+    errorimport_ = std::make_shared<Epetra_Import>(*rederrormap_, *errormap_);
+    acterror_ = std::make_shared<Core::LinAlg::Vector<double>>(*rederrormap_);
+    initerror_ = std::make_shared<Core::LinAlg::Vector<double>>(*rederrormap_);
   }
 }
 
@@ -106,7 +106,7 @@ void CONSTRAINTS::MPConstraint3Penalty::initialize(const double& time)
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint3Penalty::initialize(
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector)
+    Teuchos::ParameterList& params, std::shared_ptr<Core::LinAlg::Vector<double>> systemvector)
 {
   FOUR_C_THROW("method not used for penalty formulation!");
 }
@@ -148,11 +148,11 @@ void CONSTRAINTS::MPConstraint3Penalty::initialize(Teuchos::ParameterList& param
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   switch (type())
   {
@@ -167,7 +167,7 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
   }
 
   acterror_->PutScalar(0.0);
-  std::map<int, Teuchos::RCP<Core::FE::Discretization>>::iterator discriter;
+  std::map<int, std::shared_ptr<Core::FE::Discretization>>::iterator discriter;
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
 
     evaluate_error(*discriter->second, params, *acterror_);
@@ -194,14 +194,14 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-std::map<int, Teuchos::RCP<Core::FE::Discretization>>
+std::map<int, std::shared_ptr<Core::FE::Discretization>>
 CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
-    Teuchos::RCP<Core::FE::Discretization> actdisc,
+    std::shared_ptr<Core::FE::Discretization> actdisc,
     std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
   // start with empty map
-  std::map<int, Teuchos::RCP<Core::FE::Discretization>> newdiscmap;
+  std::map<int, std::shared_ptr<Core::FE::Discretization>> newdiscmap;
 
   if (!actdisc->filled())
   {
@@ -220,9 +220,9 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
   for (conditer = constrcondvec.begin(); conditer != constrcondvec.end(); conditer++)
   {
     // initialize a new discretization
-    Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(actdisc->get_comm().Clone());
-    Teuchos::RCP<Core::FE::Discretization> newdis =
-        Teuchos::make_rcp<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
+    std::shared_ptr<Epetra_Comm> com(actdisc->get_comm().Clone());
+    std::shared_ptr<Core::FE::Discretization> newdis =
+        std::make_shared<Core::FE::Discretization>(discret_name, com, actdisc->n_dim());
     const int myrank = newdis->get_comm().MyPID();
     std::set<int> rownodeset;
     std::set<int> colnodeset;
@@ -284,13 +284,13 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
         if (rownodeset.find(gid) != rownodeset.end())
         {
           const Core::Nodes::Node* standardnode = actdisc->l_row_node(i);
-          newdis->add_node(Teuchos::make_rcp<Core::Nodes::Node>(gid, standardnode->x(), myrank));
+          newdis->add_node(std::make_shared<Core::Nodes::Node>(gid, standardnode->x(), myrank));
         }
       }
 
       if (myrank == 0)
       {
-        Teuchos::RCP<Core::Elements::Element> constraintele =
+        std::shared_ptr<Core::Elements::Element> constraintele =
             Core::Communication::factory(element_name, "Polynomial", nodeiter + startID, myrank);
         // set the same global node ids to the ale element
         constraintele->set_node_ids(ngid_ele.size(), ngid_ele.data());
@@ -337,12 +337,12 @@ CONSTRAINTS::MPConstraint3Penalty::create_discretization_from_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
-    Teuchos::RCP<Core::FE::Discretization> disc, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    std::shared_ptr<Core::FE::Discretization> disc, Teuchos::ParameterList& params,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   if (!(disc->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!(disc->have_dofs())) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -368,7 +368,8 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
     Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
+    params.set<std::shared_ptr<Core::Conditions::Condition>>(
+        "condition", Core::Utils::shared_ptr_from_ref(*cond));
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)
@@ -377,13 +378,13 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_constraint(
       if (activecons_.find(condID)->second == false)
       {
         const std::string action = params.get<std::string>("action");
-        Teuchos::RCP<Core::LinAlg::Vector<double>> displast =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("old disp");
+        std::shared_ptr<Core::LinAlg::Vector<double>> displast =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("old disp");
         set_constr_state("displacement", *displast);
         // last converged step is used reference
         initialize(params);
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disp =
-            params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("new disp");
+        std::shared_ptr<Core::LinAlg::Vector<double>> disp =
+            params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("new disp");
         set_constr_state("displacement", *disp);
         params.set("action", action);
       }
@@ -458,7 +459,8 @@ void CONSTRAINTS::MPConstraint3Penalty::evaluate_error(Core::FE::Discretization&
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
     Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
+    params.set<std::shared_ptr<Core::Conditions::Condition>>(
+        "condition", Core::Utils::shared_ptr_from_ref(*cond));
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;

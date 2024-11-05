@@ -33,9 +33,9 @@ void FPSI::FpsiBase::redistribute_interface()
   if (comm.NumProc() >
       1)  // if we have more than one processor, we need to redistribute at the FPSI interface
   {
-    Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap =
+    std::shared_ptr<std::map<int, int>> Fluid_PoroFluid_InterfaceMap =
         FPSI_UTILS->get_fluid_poro_fluid_interface_map();
-    Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap =
+    std::shared_ptr<std::map<int, int>> PoroFluid_Fluid_InterfaceMap =
         FPSI_UTILS->get_poro_fluid_fluid_interface_map();
 
     FPSI_UTILS->redistribute_interface(

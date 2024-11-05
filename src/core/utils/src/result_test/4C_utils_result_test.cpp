@@ -127,7 +127,7 @@ bool Core::Utils::ResultTest::match(const Core::IO::InputParameterContainer& con
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Utils::ResultTestManager::add_field_test(Teuchos::RCP<ResultTest> test)
+void Core::Utils::ResultTestManager::add_field_test(std::shared_ptr<ResultTest> test)
 {
   fieldtest_.push_back(test);
 }

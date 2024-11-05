@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
     : isinit_(false),
       issetup_(false),
-      pot_law_exponents_(Teuchos::null),
-      pot_law_prefactors_(Teuchos::null),
+      pot_law_exponents_(nullptr),
+      pot_law_prefactors_(nullptr),
       potential_type_(Inpar::BEAMPOTENTIAL::beampot_vague),
       strategy_(Inpar::BEAMPOTENTIAL::strategy_vague),
       cutoff_radius_(0.0),
@@ -34,7 +34,7 @@ BEAMINTERACTION::BeamPotentialParams::BeamPotentialParams()
       use_fad_(false),
       choice_master_slave_(Inpar::BEAMPOTENTIAL::MasterSlaveChoice::choice_master_slave_vague),
       visualization_output_(false),
-      params_runtime_visualization_output_btb_potential_(Teuchos::null),
+      params_runtime_visualization_output_btb_potential_(nullptr),
       potential_reduction_length_(0.0)
 {
   // empty constructor
@@ -54,8 +54,8 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
   // get and check required parameters
   /****************************************************************************/
 
-  pot_law_prefactors_ = Teuchos::make_rcp<std::vector<double>>();
-  pot_law_exponents_ = Teuchos::make_rcp<std::vector<double>>();
+  pot_law_prefactors_ = std::make_shared<std::vector<double>>();
+  pot_law_exponents_ = std::make_shared<std::vector<double>>();
   pot_law_prefactors_->clear();
   pot_law_exponents_->clear();
   // read potential law parameters from input and check
@@ -180,7 +180,7 @@ void BEAMINTERACTION::BeamPotentialParams::init(const double restart_time)
   if (visualization_output_)
   {
     params_runtime_visualization_output_btb_potential_ =
-        Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>(restart_time);
+        std::make_shared<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>(restart_time);
 
     params_runtime_visualization_output_btb_potential_->init(
         beam_potential_params_list.sublist("RUNTIME VTK OUTPUT"));

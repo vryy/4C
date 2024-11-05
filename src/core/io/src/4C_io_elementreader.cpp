@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(
-    Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input, std::string sectionname)
+Core::IO::ElementReader::ElementReader(std::shared_ptr<Core::FE::Discretization> dis,
+    Core::IO::InputFile& input, std::string sectionname)
     : name_(dis->name()),
       input_(input),
       comm_(dis->get_comm()),
@@ -31,7 +31,7 @@ Core::IO::ElementReader::ElementReader(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
+Core::IO::ElementReader::ElementReader(std::shared_ptr<Core::FE::Discretization> dis,
     Core::IO::InputFile& input, std::string sectionname, std::string elementtype)
     : name_(dis->name()),
       input_(input),
@@ -45,7 +45,7 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
+Core::IO::ElementReader::ElementReader(std::shared_ptr<Core::FE::Discretization> dis,
     Core::IO::InputFile& input, std::string sectionname, const std::set<std::string>& elementtypes)
     : name_(dis->name()),
       input_(input),
@@ -75,7 +75,7 @@ void Core::IO::ElementReader::read_and_distribute()
     {
       // If the element section is empty, we create an empty input and return
       coleles_ = roweles_ = colnodes_ = rownodes_ =
-          Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, comm_);
+          std::make_shared<Epetra_Map>(-1, 0, nullptr, 0, comm_);
 
       return;
     }
@@ -90,7 +90,7 @@ void Core::IO::ElementReader::read_and_distribute()
     if (myrank == numproc - 1) mysize = numele - (numproc - 1) * bsize;
 
     // construct the map
-    roweles_ = Teuchos::make_rcp<Epetra_Map>(-1, mysize, &eids[myrank * bsize], 0, comm_);
+    roweles_ = std::make_shared<Epetra_Map>(-1, mysize, &eids[myrank * bsize], 0, comm_);
   }
 
   // define blocksizes for blocks of elements we read
@@ -191,9 +191,9 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
       if (elementtypes_.size() == 0 or elementtypes_.count(eletype) > 0)
       {
         // let the factory create a matching empty element
-        Teuchos::RCP<Core::Elements::Element> ele =
+        std::shared_ptr<Core::Elements::Element> ele =
             Core::Communication::factory(eletype, distype, elenumber, 0);
-        if (ele.is_null()) FOUR_C_THROW("element creation failed");
+        if (!ele) FOUR_C_THROW("element creation failed");
 
         // For the time being we support old and new input facilities. To
         // smooth transition.

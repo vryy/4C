@@ -14,7 +14,7 @@
 #include "4C_red_airways_implicitintegration.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,25 +50,25 @@ namespace Airway
         const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
-    /// Teuchos::RCP to scalar transport discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
-    /// Teuchos::RCP to nodal solution vector containing pressure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mynodesol_pressure_;
-    /// Teuchos::RCP to nodal solution vector containing flow in
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mynodesol_flow_in_;
-    /// Teuchos::RCP to nodal solution vector containing flow out
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mynodesol_flow_out_;
+    /// std::shared_ptr to scalar transport discretization
+    std::shared_ptr<Core::FE::Discretization> dis_;
+    /// std::shared_ptr to nodal solution vector containing pressure
+    std::shared_ptr<Core::LinAlg::Vector<double>> mynodesol_pressure_;
+    /// std::shared_ptr to nodal solution vector containing flow in
+    std::shared_ptr<Core::LinAlg::Vector<double>> mynodesol_flow_in_;
+    /// std::shared_ptr to nodal solution vector containing flow out
+    std::shared_ptr<Core::LinAlg::Vector<double>> mynodesol_flow_out_;
 
-    /// Teuchos::RCP to element solution vector containing external pressure of element
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_pressure_external_;
-    /// Teuchos::RCP to element solution vector containing acinus volume
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_acinivol_;
-    /// Teuchos::RCP to element solution vector containing airway volume
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_airwayvol_;
-    /// Teuchos::RCP to element solution vector containing open status of airway
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_open_;
-    /// Teuchos::RCP to element solution vector containing opening trajectory of airway
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myelemsol_opening_trajectory_;
+    /// std::shared_ptr to element solution vector containing external pressure of element
+    std::shared_ptr<Core::LinAlg::Vector<double>> myelemsol_pressure_external_;
+    /// std::shared_ptr to element solution vector containing acinus volume
+    std::shared_ptr<Core::LinAlg::Vector<double>> myelemsol_acinivol_;
+    /// std::shared_ptr to element solution vector containing airway volume
+    std::shared_ptr<Core::LinAlg::Vector<double>> myelemsol_airwayvol_;
+    /// std::shared_ptr to element solution vector containing open status of airway
+    std::shared_ptr<Core::LinAlg::Vector<double>> myelemsol_open_;
+    /// std::shared_ptr to element solution vector containing opening trajectory of airway
+    std::shared_ptr<Core::LinAlg::Vector<double>> myelemsol_opening_trajectory_;
   };
 
 }  // namespace Airway

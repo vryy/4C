@@ -16,7 +16,7 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -91,18 +91,18 @@ class Beam3ContactOctTree
    * \param elecolid   (in)  element column map Id
    * \param bboxlimits (out) limits of the bounding box*/
   void create_aabb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits = nullptr);
   /*!\brief create coylindrical oriented bounding boxes
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id
    * \param bboxlimits (out) limits of the bounding box*/
   void create_cobb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits = nullptr);
   /*! \brief create spherical bounding boxes for crosslinker
    * \param coord      (in)  coordinates of the element's nodes
    * \param elecolid   (in)  element column map Id*/
   void create_spbb(Core::LinAlg::SerialDenseMatrix& coord, const int& elecolid,
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits = nullptr);
 
 
   //!\brief base call for octree build. Returns false if no bounding boxes exist
@@ -152,17 +152,17 @@ class Beam3ContactOctTree
    * existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs) \param
    * bboxlimits (in) limits of the bounding box */
   bool intersection_aabb(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits = nullptr);
   /*!\brief intersection method applying cylindrical oriented bounding boxes when both boxes belong
    * to existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
    * \param bboxlimits (in) limits of the bounding box */
   bool intersection_cobb(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits = nullptr);
   /* !\brief intersection method applying spherical bounding boxes for crosslinker when both boxes
    * belong to existing elements \param bboxIDs    (in) vector with bounding box Ids (element GIDs)
    *  \param bboxlimits (in) limits of the bounding box */
   bool intersection_spbb(const std::vector<int>& bboxIDs,
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> bboxlimits = Teuchos::null);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> bboxlimits = nullptr);
 
   /*! \brief communicate Vector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -244,7 +244,7 @@ class Beam3ContactOctTree
   bool btsol_;
 
   //!\brief vector holding the edge lengths of the cuboid periodic volume
-  Teuchos::RCP<std::vector<double>> periodlength_;
+  std::shared_ptr<std::vector<double>> periodlength_;
 
   //!\brief Matrix holding the spatial limits of the root box
   Core::LinAlg::Matrix<6, 1> rootbox_;
@@ -268,26 +268,26 @@ class Beam3ContactOctTree
   int minbboxesinoctant_;
 
   //!\brief scalar extrusion values for additive or multiplicative extrusion of the bounding box
-  Teuchos::RCP<std::vector<double>> extrusionvalue_;
+  std::shared_ptr<std::vector<double>> extrusionvalue_;
 
   //!\brief diameters of all beam elements
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diameter_;
+  std::shared_ptr<Core::LinAlg::Vector<double>> diameter_;
 
   //!\brief stores the IDs and the coordinates of all bounding boxes
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> allbboxes_;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> allbboxes_;
 
   //!\brief vector listing the bounding boxes located in the octants
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> bboxesinoctants_;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> bboxesinoctants_;
 
   //!\brief mapping bounding boxes to octants they lie in
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> bbox2octant_;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> bbox2octant_;
 
   //!\brief storage vector for octree octant limits
   std::vector<Core::LinAlg::Matrix<6, 1>> octreelimits_;
 
   //!\brief vector holding information on how many times a bounding box is shifted due to periodic
   //! boundary conditions
-  Teuchos::RCP<Core::LinAlg::Vector<double>> numshifts_;
+  std::shared_ptr<Core::LinAlg::Vector<double>> numshifts_;
 
   //!\brief Bounding Box type
   Beam3ContactOctTree::BboxType boundingbox_;

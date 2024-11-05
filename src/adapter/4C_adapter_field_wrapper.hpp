@@ -34,7 +34,7 @@ namespace Adapter
 
     /// constructor
     explicit FieldWrapper(
-        Teuchos::RCP<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false)
+        std::shared_ptr<Field> field, FieldWrapper::Fieldtype type, bool NOXCorrection = false)
         : field_(field), type_(type), nox_correction_(NOXCorrection)
     {
     }
@@ -44,7 +44,7 @@ namespace Adapter
     //@{
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return field_->rhs(); }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return field_->rhs(); }
 
     //@}
 
@@ -52,16 +52,16 @@ namespace Adapter
     //@{
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return field_->dof_row_map(); }
+    std::shared_ptr<const Epetra_Map> dof_row_map() override { return field_->dof_row_map(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return field_->system_matrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return field_->block_system_matrix();
     }
@@ -77,16 +77,16 @@ namespace Adapter
 
     /// update state with given increment vector
     void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
         ) override;
 
     /// update state and evaluate elements
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override;
 
 
     /// update state and evaluate elements
     void evaluate(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc, bool firstiter) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc, bool firstiter) override;
 
     /// update at time step end
     void update() override { field_->update(); }
@@ -109,7 +109,7 @@ namespace Adapter
     //@}
 
    protected:
-    Teuchos::RCP<Field> field_;              ///< underlying field time integration
+    std::shared_ptr<Field> field_;           ///< underlying field time integration
     Adapter::FieldWrapper::Fieldtype type_;  ///< type of underlying field
 
    private:
@@ -117,7 +117,7 @@ namespace Adapter
     virtual void reset_stepinc();
 
     /// Get Iteration Increment from Step Increment
-    virtual void get_iterinc(Teuchos::RCP<const Core::LinAlg::Vector<double>>& stepinc);
+    virtual void get_iterinc(std::shared_ptr<const Core::LinAlg::Vector<double>>& stepinc);
 
     const bool nox_correction_;  ///< if (true) adapter gets stepincrements!
 
@@ -128,7 +128,7 @@ namespace Adapter
     /// x^n+1_i+1 = x^n+1_i + iterinc  (also referred to as residual increment)
     ///
     /// x^n+1_i+1 = x^n     + stepinc
-    Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> stepinc_;
   };
 }  // namespace Adapter
 

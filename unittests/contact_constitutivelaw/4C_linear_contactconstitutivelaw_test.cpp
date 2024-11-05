@@ -20,8 +20,8 @@ namespace
     LinearConstitutiveLawTest()
     {
       // initialize container for material parameters
-      const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
+          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
               1, Inpar::CONTACT::ConstitutiveLawType::colaw_linear, "Linear Constitutivelaw");
 
       // add parameters to container
@@ -29,14 +29,14 @@ namespace
       container->add("B", 0.0);
       container->add("Offset", 0.5);
 
-      const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> linearcoconstlaw =
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> linearcoconstlaw =
           CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = linearcoconstlaw;
     }
 
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
-    Teuchos::RCP<CONTACT::Node> cnode;
+    std::shared_ptr<CONTACT::Node> cnode;
   };
 
   //! test member function Evaluate

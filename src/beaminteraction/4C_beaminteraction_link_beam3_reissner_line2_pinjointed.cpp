@@ -17,7 +17,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -42,7 +42,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkBeam3rLine2PinJointedTy
 BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed()
     : BeamLinkPinJointed(),
       triad_(true),
-      linkele_(Teuchos::null),
+      linkele_(nullptr),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
 }
@@ -55,20 +55,20 @@ BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::BeamLinkBeam3rLine2PinJointed(
       triad_(old.triad_),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
-  if (linkele_ != Teuchos::null)
-    linkele_ = Teuchos::rcp_dynamic_cast<Discret::Elements::Beam3r>(
-        Teuchos::RCP(old.linkele_->clone(), true));
+  if (linkele_ != nullptr)
+    linkele_ = std::dynamic_pointer_cast<Discret::Elements::Beam3r>(
+        std::shared_ptr<Core::Elements::Element>(old.linkele_->clone()));
   else
-    linkele_ = Teuchos::null;
+    linkele_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::clone()
+std::shared_ptr<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::clone()
     const
 {
-  Teuchos::RCP<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed> newlinker =
-      Teuchos::make_rcp<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>(*this);
+  std::shared_ptr<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed> newlinker =
+      std::make_shared<BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed>(*this);
   return newlinker;
 }
 
@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::setup(const int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::make_rcp<Discret::Elements::Beam3r>(-1, 0);
+  linkele_ = std::make_shared<Discret::Elements::Beam3r>(-1, 0);
 
   // set material
   linkele_->set_material(0, Mat::factory(matnum));
@@ -272,7 +272,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::pack(
   BeamLinkPinJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != Teuchos::null) linkele_->pack(data);
+  if (linkele_ != nullptr) linkele_->pack(data);
 
   return;
 }
@@ -301,10 +301,10 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::unpack(
     Discret::Elements::Beam3r* linkele = dynamic_cast<Discret::Elements::Beam3r*>(object);
     if (linkele == nullptr)
       FOUR_C_THROW("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");
-    linkele_ = Teuchos::RCP(linkele);
+    linkele_ = std::shared_ptr<Discret::Elements::Beam3r>(linkele);
   }
   else
-    linkele_ = Teuchos::null;
+    linkele_ = nullptr;
 
   return;
 }

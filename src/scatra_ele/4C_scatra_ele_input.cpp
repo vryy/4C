@@ -81,7 +81,7 @@ bool Discret::Elements::Transport::read_element(const std::string& eletype,
 
   if (material()->material_type() == Core::Materials::m_myocard)
   {
-    Teuchos::RCP<Mat::Myocard> myocard = Teuchos::rcp_dynamic_cast<Mat::Myocard>(material());
+    std::shared_ptr<Mat::Myocard> myocard = std::dynamic_pointer_cast<Mat::Myocard>(material());
     myocard->setup(container);
   }
 

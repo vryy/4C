@@ -59,7 +59,7 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // access the discretization(s)
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> actdis = nullptr;
   actdis = Global::Problem::instance()->get_dis(fluid_disname);
 
   // possible interaction partners as seen from the artery elements
@@ -68,7 +68,7 @@ void porofluidmultiphase_dyn(int restart)
 
   if (Global::Problem::instance()->does_exist_dis(artery_disname))
   {
-    Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;
+    std::shared_ptr<Core::FE::Discretization> arterydis = nullptr;
     arterydis = Global::Problem::instance()->get_dis(artery_disname);
     // get the coupling method
     auto arterycoupl =
@@ -100,8 +100,8 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // assign dof set for solid pressures
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, false);
   const int nds_solidpressure = actdis->add_dof_set(dofsetaux);
 
   // -------------------------------------------------------------------
@@ -112,7 +112,7 @@ void porofluidmultiphase_dyn(int restart)
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // -------------------------------------------------------------------
@@ -123,7 +123,7 @@ void porofluidmultiphase_dyn(int restart)
       porodyn, "TIMEINTEGR");
 
   // build poro fluid time integrator
-  Teuchos::RCP<Adapter::PoroFluidMultiphase> algo = POROFLUIDMULTIPHASE::Utils::create_algorithm(
+  std::shared_ptr<Adapter::PoroFluidMultiphase> algo = POROFLUIDMULTIPHASE::Utils::create_algorithm(
       timintscheme, actdis, linsolvernumber, porodyn, porodyn, output);
 
   // initialize

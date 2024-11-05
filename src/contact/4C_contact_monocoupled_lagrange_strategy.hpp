@@ -32,17 +32,18 @@ namespace CONTACT
     \brief Standard Constructor
 
     */
-    MonoCoupledLagrangeStrategy(const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    MonoCoupledLagrangeStrategy(
+        const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
         const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-        std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-        Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+        std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+        std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof);
 
 
     // Overload CONTACT::AbstractStrategy::apply_force_stiff_cmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    void apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& kt,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    void apply_force_stiff_cmt(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
         bool predictor) override
     {
       if (has_to_evaluate_ && 0)
@@ -56,7 +57,7 @@ namespace CONTACT
 
     // Overload CONTACT::LagrangeStrategy::recover as this is called in the structure --> no
     // enought information available for monolithically coupled algorithms!
-    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) override
+    void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) override
     {
       if (has_to_recover_ && 0)
         FOUR_C_THROW(
@@ -73,18 +74,18 @@ namespace CONTACT
 
     // Alternative Method to CONTACT::AbstractStrategy::apply_force_stiff_cmt for monolithically
     // coupled algorithms
-    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
-        std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*> k_sx,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
+    virtual void apply_force_stiff_cmt_coupled(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& k_ss,
+        std::map<int, std::shared_ptr<Core::LinAlg::SparseOperator>*> k_sx,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
         bool predictor);
 
     // Alternative Method to CONTACT::AbstractStrategy::apply_force_stiff_cmt for monolithically
     // coupled algorithms
-    virtual void apply_force_stiff_cmt_coupled(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
-        Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
+    virtual void apply_force_stiff_cmt_coupled(std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& k_ss,
+        std::shared_ptr<Core::LinAlg::SparseOperator>& k_sx,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
         bool predictor);
 
     // Alternative Method to CONTACT::LagrangeStrategy::recover as this is called in the structure
@@ -96,13 +97,13 @@ namespace CONTACT
     statically condensated during the setup of the global problem!
     Optionally satisfaction or violation of the contact boundary
     conditions can be checked, too.*/
-    virtual void recover_coupled(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
-        std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> inc);
+    virtual void recover_coupled(std::shared_ptr<Core::LinAlg::Vector<double>> disi,
+        std::map<int, std::shared_ptr<Core::LinAlg::Vector<double>>> inc);
 
-    virtual void recover_coupled(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> inc);
+    virtual void recover_coupled(std::shared_ptr<Core::LinAlg::Vector<double>> disi,
+        std::shared_ptr<Core::LinAlg::Vector<double>> inc);
 
-    void evaluate_off_diag_contact(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
+    void evaluate_off_diag_contact(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
         int Column_Block_Id);  // condensation for all off diagonal matrixes k_s? in monolithically
                                // coupled problems!
 
@@ -111,20 +112,20 @@ namespace CONTACT
     MonoCoupledLagrangeStrategy operator=(const MonoCoupledLagrangeStrategy& old) = delete;
     MonoCoupledLagrangeStrategy(const MonoCoupledLagrangeStrategy& old) = delete;
 
-    void save_coupling_matrices(Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> invda) override;
+    void save_coupling_matrices(std::shared_ptr<Core::LinAlg::SparseMatrix> dhat,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> mhataam,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> invda) override;
 
-    std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>>
+    std::map<int, std::shared_ptr<Core::LinAlg::SparseOperator>>
         csx_s_;  // offdiagonal coupling stiffness blocks on slave side!
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invda_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dhat_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mhataam_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> invda_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lambda_;  // current vector of Lagrange multipliers(for poro no pen.) at t_n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lambdaold_;  // old vector of Lagrange multipliers(for poro no pen.) at t_n
 
     //! pure useage safty flags

@@ -45,8 +45,8 @@ namespace XFEM
     /*!
       \brief Standard Constructor
      */
-    explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<Core::FE::Discretization> sourcedis,
-        bool parallel, Teuchos::RCP<Cut::CutWizard> wizard);
+    explicit XFEMTransparentIndependentDofSet(std::shared_ptr<Core::FE::Discretization> sourcedis,
+        bool parallel, std::shared_ptr<Cut::CutWizard> wizard);
 
 
 
@@ -55,7 +55,7 @@ namespace XFEM
 
 
    private:
-    Teuchos::RCP<Cut::CutWizard> wizard_;
+    std::shared_ptr<Cut::CutWizard> wizard_;
   };
 }  // namespace XFEM
 

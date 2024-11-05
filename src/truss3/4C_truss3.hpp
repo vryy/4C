@@ -40,10 +40,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       int initialize(Core::FE::Discretization& dis) override;
 
@@ -131,7 +131,7 @@ namespace Discret
       //! get internal (elastic) energy of element
       double get_internal_energy() const { return eint_; };
 
-      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (interface_ptr_ != nullptr); }
 
       //! cross section area
       double cross_section() const { return crosssec_; }
@@ -156,7 +156,7 @@ namespace Discret
         return curr_nodal_coords(col) / curr_nodal_coords.norm2() * M_SQRT1_2;
       }
 
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       // TODO: remove once truss3 element is fixed and no longer expects more dofs (6) than it can
       // inherently handle (3)...
@@ -178,7 +178,7 @@ namespace Discret
 
       void pack(Core::Communication::PackBuffer& data) const override;
 
-      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
+      std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
       bool read_element(const std::string& eletype, const std::string& distype,
           const Core::IO::InputParameterContainer& container) override;
@@ -308,7 +308,7 @@ namespace Discret
       Core::LinAlg::Matrix<1, 3> diff_disp_ref_;
 
       //!  data exchange between the element and the time integrator.
-      Teuchos::RCP<FourC::Solid::Elements::ParamsInterface> interface_ptr_;
+      std::shared_ptr<FourC::Solid::Elements::ParamsInterface> interface_ptr_;
 
       //! variable saving whether element has already been initialized (then isinit_ == true)
       bool isinit_;

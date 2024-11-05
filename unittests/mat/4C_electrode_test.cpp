@@ -24,7 +24,7 @@ namespace
       Core::IO::InputParameterContainer container;
 
       // create dummy elch parameter list and add dummy value for gas constant
-      auto parameter_list = Teuchos::make_rcp<Teuchos::ParameterList>();
+      auto parameter_list = std::make_shared<Teuchos::ParameterList>();
       auto elch_params = parameter_list->sublist("ELCH CONTROL", false);
       elch_params.set<double>("GAS_CONSTANT", -1.0);
 
@@ -62,11 +62,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_csv_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_cathode_csv_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
-      cathode_csv_ = Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_csv_.get());
+      cathode_csv_ = std::make_shared<Mat::Electrode>(parameters_cathode_csv_.get());
 
       // define sample concentration values for cathode material
       // cf. master thesis by Alexander Rupp (2017)
@@ -107,12 +107,12 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_redlichkister_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_anode_redlichkister_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize anode material
       anode_redlichkister_ =
-          Teuchos::make_rcp<Mat::Electrode>(parameters_anode_redlichkister_.get());
+          std::make_shared<Mat::Electrode>(parameters_anode_redlichkister_.get());
 
       // define sample concentration values for anode material
       // cf. Goldin et al., Electrochimica Acta 64 (2012) 118-129
@@ -156,12 +156,12 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_redlichkister_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_cathode_redlichkister_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
       cathode_redlichkister_ =
-          Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_redlichkister_.get());
+          std::make_shared<Mat::Electrode>(parameters_cathode_redlichkister_.get());
 
       // define sample concentration values for cathode material
       // cf. Goldin et al., Electrochimica Acta 64 (2012) 118-129
@@ -193,11 +193,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_taralov_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_anode_taralov_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize anode material
-      anode_taralov_ = Teuchos::make_rcp<Mat::Electrode>(parameters_anode_taralov_.get());
+      anode_taralov_ = std::make_shared<Mat::Electrode>(parameters_anode_taralov_.get());
 
       // define sample concentration values for anode material
       // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
@@ -228,11 +228,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_taralov_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_cathode_taralov_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
-      cathode_taralov_ = Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_taralov_.get());
+      cathode_taralov_ = std::make_shared<Mat::Electrode>(parameters_cathode_taralov_.get());
 
       // define sample concentration values for cathode material
       // cf. Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
@@ -255,11 +255,11 @@ namespace
       container.add("X_MAX", -1.0);
 
       // initialize parameter class for anode material
-      parameters_anode_polynomial_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_anode_polynomial_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize anode material
-      anode_polynomial_ = Teuchos::make_rcp<Mat::Electrode>(parameters_anode_polynomial_.get());
+      anode_polynomial_ = std::make_shared<Mat::Electrode>(parameters_anode_polynomial_.get());
 
       // define fictitious sample concentration values for anode material
       concentrations_anode_polynomial_.resize(3, 0.0);
@@ -283,11 +283,11 @@ namespace
       container.add("X_MAX", 1.0);
 
       // initialize parameter class for cathode material
-      parameters_cathode_polynomial_ = Teuchos::make_rcp<Mat::PAR::Electrode>(
+      parameters_cathode_polynomial_ = std::make_shared<Mat::PAR::Electrode>(
           Core::Mat::PAR::Parameter::Data{.parameters = container});
 
       // initialize cathode material
-      cathode_polynomial_ = Teuchos::make_rcp<Mat::Electrode>(parameters_cathode_polynomial_.get());
+      cathode_polynomial_ = std::make_shared<Mat::Electrode>(parameters_cathode_polynomial_.get());
 
       // define sample concentration values for cathode material
       // cf. Ji et al., Journal of The Electrochemical Society 160 (4) (2013) A636-A649
@@ -310,55 +310,55 @@ namespace
 
     //! cathode material based on half cell open circuit potential obtained from cubic spline
     //! interpolation of *.csv data points
-    Teuchos::RCP<const Mat::Electrode> cathode_csv_;
+    std::shared_ptr<const Mat::Electrode> cathode_csv_;
 
     //! anode material based on half cell open circuit potential according to Redlich-Kister
     //! expansion
-    Teuchos::RCP<const Mat::Electrode> anode_redlichkister_;
+    std::shared_ptr<const Mat::Electrode> anode_redlichkister_;
 
     //! cathode material based on half cell open circuit potential according to Redlich-Kister
     //! expansion
-    Teuchos::RCP<const Mat::Electrode> cathode_redlichkister_;
+    std::shared_ptr<const Mat::Electrode> cathode_redlichkister_;
 
     //! anode material based on half cell open circuit potential according to Taralov, Taralova,
     //! Popov, Iliev, Latz, and Zausch (2012)
-    Teuchos::RCP<const Mat::Electrode> anode_taralov_;
+    std::shared_ptr<const Mat::Electrode> anode_taralov_;
 
     //! cathode material based on half cell open circuit potential according to Taralov, Taralova,
     //! Popov, Iliev, Latz, and Zausch (2012)
-    Teuchos::RCP<const Mat::Electrode> cathode_taralov_;
+    std::shared_ptr<const Mat::Electrode> cathode_taralov_;
 
     //! anode material based on polynomial half cell open circuit potential
-    Teuchos::RCP<const Mat::Electrode> anode_polynomial_;
+    std::shared_ptr<const Mat::Electrode> anode_polynomial_;
 
     //! cathode material based on polynomial half cell open circuit potential
-    Teuchos::RCP<const Mat::Electrode> cathode_polynomial_;
+    std::shared_ptr<const Mat::Electrode> cathode_polynomial_;
 
     //! parameters for cathode material based on half cell open circuit potential obtained from
     //! cubic spline interpolation of *.csv data points
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_cathode_csv_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_cathode_csv_;
 
     //! parameters for anode material based on half cell open circuit potential according to
     //! Redlich-Kister expansion
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_anode_redlichkister_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_anode_redlichkister_;
 
     //! parameters for cathode material based on half cell open circuit potential according to
     //! Redlich-Kister expansion
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_cathode_redlichkister_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_cathode_redlichkister_;
 
     //! parameters for anode material based on half cell open circuit potential according to
     //! Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_anode_taralov_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_anode_taralov_;
 
     //! parameters for cathode material based on half cell open circuit potential according to
     //! Taralov, Taralova, Popov, Iliev, Latz, and Zausch (2012)
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_cathode_taralov_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_cathode_taralov_;
 
     //! parameters for anode material based on polynomial half cell open circuit potential
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_anode_polynomial_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_anode_polynomial_;
 
     //! parameters for cathode material based on polynomial half cell open circuit potential
-    Teuchos::RCP<Mat::PAR::Electrode> parameters_cathode_polynomial_;
+    std::shared_ptr<Mat::PAR::Electrode> parameters_cathode_polynomial_;
 
     //! sample concentration values for cathode material based on half cell open circuit potential
     //! obtained from cubic spline interpolation of *.csv data points

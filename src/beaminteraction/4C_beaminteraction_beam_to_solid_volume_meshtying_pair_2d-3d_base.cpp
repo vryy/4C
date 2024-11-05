@@ -22,11 +22,11 @@ template <typename ScalarType, typename Beam, typename Solid>
 void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
     Solid>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+    const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Cast the geometry evaluation data to the correct format.
-  auto line_to_3d_evaluation_data = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(
-      geometry_evaluation_data_ptr, true);
+  auto line_to_3d_evaluation_data =
+      std::dynamic_pointer_cast<GEOMETRYPAIR::LineTo3DEvaluationData>(geometry_evaluation_data_ptr);
 
   // Explicitly create the cross section projection geometry pair here and check that the correct
   // parameter is set in the input file.
@@ -35,9 +35,9 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPair2D3DBase<ScalarType, Beam,
     FOUR_C_THROW(
         "The 2D-3D beam-to-volume mesh tying pair only works with the cross section projection "
         "geometry pair. This has to be specified in the input file.");
-  this->geometry_pair_ = Teuchos::RCP(
-      new GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam,
-          Solid>(element1, element2, line_to_3d_evaluation_data));
+  this->geometry_pair_ = std::make_shared<
+      GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam, Solid>>(
+      element1, element2, line_to_3d_evaluation_data);
 }
 
 /**

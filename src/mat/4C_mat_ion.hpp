@@ -46,7 +46,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class Ion
 
@@ -118,9 +118,9 @@ namespace Mat
     Core::Materials::MaterialType material_type() const override { return Core::Materials::m_ion; }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Ion>(*this);
+      return std::make_shared<Ion>(*this);
     }
 
     /// valence (= charge number)

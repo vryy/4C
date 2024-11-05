@@ -55,9 +55,10 @@ namespace Solid
       NoxInterface();
 
       //! Init function
-      virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<Solid::Integrator>& int_ptr, const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
-          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
+      virtual void init(const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const std::shared_ptr<Solid::Integrator>& int_ptr,
+          const std::shared_ptr<Solid::Dbc>& dbc_ptr,
+          const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr);
 
       virtual void setup();
 
@@ -173,7 +174,7 @@ namespace Solid
           std::vector<Inpar::Solid::ModelType>& constraint_models) const;
 
       //! calculate norm in Get*Norms functions
-      double calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
+      double calculate_norm(std::shared_ptr<Epetra_Vector> quantity,
           const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const;
 
      protected:
@@ -185,13 +186,13 @@ namespace Solid
 
      private:
       //! global state data container
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
-      Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
+      std::shared_ptr<const Solid::TimeInt::Base> timint_ptr_;
 
-      Teuchos::RCP<Solid::Integrator> int_ptr_;
+      std::shared_ptr<Solid::Integrator> int_ptr_;
 
-      Teuchos::RCP<Solid::Dbc> dbc_ptr_;
+      std::shared_ptr<Solid::Dbc> dbc_ptr_;
     };  // class nox_interface
   }     // namespace TimeInt
 }  // namespace Solid

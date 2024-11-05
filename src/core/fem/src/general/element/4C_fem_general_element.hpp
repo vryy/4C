@@ -19,8 +19,6 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <memory>
 #include <variant>
 
@@ -371,7 +369,7 @@ namespace Core::Elements
 
 
     /*!
-    \brief Get vector of Teuchos::RCPs to the lines of this element
+    \brief Get vector of std::shared_ptrs to the lines of this element
 
     This is a base class dummy routine that always returns nullptr.
     The derived element class is expected to allocate and store
@@ -387,16 +385,16 @@ namespace Core::Elements
     \note Do not store line elements inside parent elements since the nodes
 might become invalid after a redistribution of the discretization.
     */
-    virtual std::vector<Teuchos::RCP<Element>> lines()
+    virtual std::vector<std::shared_ptr<Element>> lines()
     {
-      return std::vector<Teuchos::RCP<Element>>(0);
+      return std::vector<std::shared_ptr<Element>>(0);
     }
 
     // virtual const Element*const* Lines() const { FOUR_C_THROW("unexpected base method called.");
     // return nullptr; }
 
     /*!
-    \brief Get vector of Teuchos::RCPs to the surfaces of this element
+    \brief Get vector of std::shared_ptrs to the surfaces of this element
 
     This is a base class dummy routine that always returns nullptr.
     The derived element class is expected to allocate and store
@@ -412,9 +410,9 @@ might become invalid after a redistribution of the discretization.
     \note Do not store surface elements inside parent elements since the nodes
 might become invalid after a redistribution of the discretization.
     */
-    virtual std::vector<Teuchos::RCP<Element>> surfaces()
+    virtual std::vector<std::shared_ptr<Element>> surfaces()
     {
-      return std::vector<Teuchos::RCP<Element>>(0);
+      return std::vector<std::shared_ptr<Element>>(0);
     }
 
     /*!
@@ -424,16 +422,16 @@ might become invalid after a redistribution of the discretization.
     virtual bool is_face_element() const { return false; }
 
     /*!
-    \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
+    \brief Get vector of std::shared_ptrs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<FaceElement>* faces() { return face_.empty() ? nullptr : face_.data(); }
+    std::shared_ptr<FaceElement>* faces() { return face_.empty() ? nullptr : face_.data(); }
 
     /*!
-    \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
+    \brief Get vector of std::shared_ptrs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<FaceElement> const* faces() const
+    std::shared_ptr<FaceElement> const* faces() const
     {
       return face_.empty() ? nullptr : face_.data();
     }
@@ -458,7 +456,7 @@ might become invalid after a redistribution of the discretization.
 
     \author schott 03/12
     */
-    virtual Teuchos::RCP<Element> create_face_element(
+    virtual std::shared_ptr<Element> create_face_element(
         Element* parent_slave,                 //!< parent slave element
         int nnode,                             //!< number of nodes
         const int* nodeids,                    //!< node ids
@@ -468,7 +466,7 @@ might become invalid after a redistribution of the discretization.
         const std::vector<int>& localtrafomap  //!< local trafo map
     )
     {
-      Teuchos::RCP<FaceElement> face;
+      std::shared_ptr<Element> face;
       return face;
     }
 
@@ -591,7 +589,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nummat (in): number of requested material
     */
-    virtual Teuchos::RCP<Core::Mat::Material> material(int nummat = 0) const
+    virtual std::shared_ptr<Core::Mat::Material> material(int nummat = 0) const
     {
       FOUR_C_ASSERT(nummat < (int)mat_.size(), "invalid material number");
       return mat_[nummat];
@@ -763,7 +761,7 @@ might become invalid after a redistribution of the discretization.
     \param faceindex   : index of the given face
     \param faceelement : face object
     */
-    void set_face(const int faceindex, Teuchos::RCP<FaceElement> faceelement);
+    void set_face(const int faceindex, std::shared_ptr<FaceElement> faceelement);
 
     /// @brief Set specific element material
     /*!
@@ -774,7 +772,7 @@ might become invalid after a redistribution of the discretization.
       @param index index in material list
       @param mat pointer to the Material instance to set
      */
-    virtual void set_material(const int index, Teuchos::RCP<Core::Mat::Material> mat);
+    virtual void set_material(const int index, std::shared_ptr<Core::Mat::Material> mat);
 
     /// Add element material
     /*!
@@ -785,7 +783,7 @@ might become invalid after a redistribution of the discretization.
       \param mat: material to be added
       \param nummat (out):  number of materials the element holds
      */
-    int add_material(Teuchos::RCP<Core::Mat::Material> mat);
+    int add_material(std::shared_ptr<Core::Mat::Material> mat);
 
     /// Number of materials of the element
     /*!
@@ -815,10 +813,10 @@ might become invalid after a redistribution of the discretization.
              NOT be overwritten but stored twice in the element
 
     */
-    void set_condition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    void set_condition(const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
     {
       condition_.insert(
-          std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
+          std::pair<std::string, std::shared_ptr<Core::Conditions::Condition>>(name, cond));
       return;
     }
 
@@ -1116,7 +1114,7 @@ might become invalid after a redistribution of the discretization.
 
     \param nodes (in): A map of all nodes of a discretization
     */
-    virtual bool build_nodal_pointers(std::map<int, Teuchos::RCP<Core::Nodes::Node>>& nodes);
+    virtual bool build_nodal_pointers(std::map<int, std::shared_ptr<Core::Nodes::Node>>& nodes);
 
     /*!
     \brief Build pointer vector from vector of nodal pointers
@@ -1145,7 +1143,7 @@ might become invalid after a redistribution of the discretization.
 
     \param elements (in): A map of all elements of a discretization
     */
-    virtual bool build_element_pointers(std::map<int, Teuchos::RCP<Element>>& elements)
+    virtual bool build_element_pointers(std::map<int, std::shared_ptr<Element>>& elements)
     {
       return true;
     }
@@ -1177,12 +1175,12 @@ might become invalid after a redistribution of the discretization.
     /*!
     \brief get access to the interface pointer
     */
-    virtual Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr()
+    virtual std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr()
     {
       FOUR_C_THROW(
           "This is a dummy function. Please implement the function in the derived classes, if "
           "necessary.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     /**
@@ -1273,13 +1271,13 @@ might become invalid after a redistribution of the discretization.
 
     //! \brief List of my faces, length NumFace(). Only filled if face elements are created, when
     //! using DiscretizationFaces
-    std::vector<Teuchos::RCP<FaceElement>> face_;
+    std::vector<std::shared_ptr<FaceElement>> face_;
 
     //! \brief Some conditions e.g. BCs
-    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> condition_;
+    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>> condition_;
 
     //! vector of material objects of element
-    std::vector<Teuchos::RCP<Core::Mat::Material>> mat_;
+    std::vector<std::shared_ptr<Core::Mat::Material>> mat_;
   };  // class Element
 
 

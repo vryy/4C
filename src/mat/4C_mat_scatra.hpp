@@ -32,7 +32,7 @@ namespace Mat
       ScatraMat(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       enum Matparamnames
       {
@@ -71,7 +71,7 @@ namespace Mat
       }
 
      private:
-      std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> matparams_;
+      std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> matparams_;
 
     };  // class Scatra
 
@@ -149,9 +149,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraMat>(*this);
+      return std::make_shared<ScatraMat>(*this);
     }
 
     /// diffusivity

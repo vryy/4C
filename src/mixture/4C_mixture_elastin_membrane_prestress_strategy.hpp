@@ -54,7 +54,7 @@ namespace Mixture
      * \return double Fraction of the elastin membrane contribution to the total elastin response
      */
     virtual double evaluate_mue_frac(MixtureRule& mixtureRule,
-        const Teuchos::RCP<const Mat::CoordinateSystemProvider> cosy,
+        const std::shared_ptr<const Mat::CoordinateSystemProvider> cosy,
         Mixture::MixtureConstituent& constituent, ElastinMembraneEvaluation& membraneEvaluation,
         Teuchos::ParameterList& params, int gp, int eleGID) const = 0;
   };

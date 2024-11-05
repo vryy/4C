@@ -108,7 +108,7 @@ void Cut::Impl::SimplePointGraph1D::Graph::find_cycles(
 Cut::Impl::SimplePointGraph2D::SimplePointGraph2D(Mesh &mesh, Element *element, Side *side,
     PointGraph::Location location, PointGraph::Strategy strategy)
     : PointGraph::PointGraph(mesh, element, side, location, strategy),
-      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(graph_ptr(), true))
+      graph_2d_(std::dynamic_pointer_cast<SimplePointGraph2D::Graph>(graph_ptr()))
 {
   if (element->n_dim() != 2) FOUR_C_THROW("This class is only meaningful for 2-D elements!");
   /* intentionally left blank, the work is done in the base class */
@@ -190,7 +190,7 @@ void Cut::Impl::SimplePointGraph2D::Graph::split_main_cycles_into_line_cycles()
  *----------------------------------------------------------------------------*/
 Cut::Impl::SimplePointGraph2D::SimplePointGraph2D()
     : Cut::Impl::PointGraph(2),
-      graph_2d_(Teuchos::rcp_dynamic_cast<SimplePointGraph2D::Graph>(graph_ptr(), true))
+      graph_2d_(std::dynamic_pointer_cast<SimplePointGraph2D::Graph>(graph_ptr()))
 {
   /* intentionally left blank */
 }

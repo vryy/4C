@@ -135,11 +135,11 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (disp == Teuchos::null || res == Teuchos::null)
+      if (disp == nullptr || res == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -164,11 +164,11 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_internalforce:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (disp == Teuchos::null || res == Teuchos::null)
+      if (disp == nullptr || res == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -201,11 +201,11 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (disp == Teuchos::null || res == Teuchos::null)
+      if (disp == nullptr || res == nullptr)
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -232,21 +232,21 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
     // evaluate stresses and strains at gauss points
     case Core::Elements::struct_calc_stress:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      Teuchos::RCP<std::vector<char>> stressdata =
-          params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-      Teuchos::RCP<std::vector<char>> straindata =
-          params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
-      Teuchos::RCP<std::vector<char>> plstraindata =
-          params.get<Teuchos::RCP<std::vector<char>>>("plstrain", Teuchos::null);
+      std::shared_ptr<std::vector<char>> stressdata =
+          params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
+      std::shared_ptr<std::vector<char>> straindata =
+          params.get<std::shared_ptr<std::vector<char>>>("strain", nullptr);
+      std::shared_ptr<std::vector<char>> plstraindata =
+          params.get<std::shared_ptr<std::vector<char>>>("plstrain", nullptr);
 
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'dB_ans_locisplacement'");
-      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get stress 'data'");
-      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get strain 'data'");
-      if (plstraindata == Teuchos::null) FOUR_C_THROW("Cannot get plastic strain 'data'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'dB_ans_locisplacement'");
+      if (stressdata == nullptr) FOUR_C_THROW("Cannot get stress 'data'");
+      if (straindata == nullptr) FOUR_C_THROW("Cannot get strain 'data'");
+      if (plstraindata == nullptr) FOUR_C_THROW("Cannot get plastic strain 'data'");
 
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
@@ -399,7 +399,7 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
     // read restart of microscale
     case Core::Elements::multi_readrestart:
     {
-      Teuchos::RCP<Core::Mat::Material> mat = material();
+      std::shared_ptr<Core::Mat::Material> mat = material();
 
       if (mat->material_type() == Core::Materials::m_struct_multiscale) soh8_read_restart_multi();
     }
@@ -449,9 +449,9 @@ int Discret::Elements::SoSh8::evaluate(Teuchos::ParameterList& params,
       }
 
       // get displacements of this processor
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state displacement vector");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state displacement vector");
 
       // get displacements of this element
       std::vector<double> mydisp(lm.size());
@@ -1590,7 +1590,7 @@ void Discret::Elements::SoSh8::sosh8_get_deformationgradient(const unsigned gp,
 
   // calculate deformation gradient consistent with modified GL strain tensor
   if ((eastype_ != soh8_easnone || anstype_ == ansnone) &&
-      (Teuchos::rcp_static_cast<Mat::So3Material>(material())->needs_defgrd()))
+      (std::static_pointer_cast<Mat::So3Material>(material())->needs_defgrd()))
     calc_consistent_defgrd(defgrd, glstrain, defgrd);
 }
 

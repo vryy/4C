@@ -350,8 +350,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->get_vel_col() != Teuchos::null or
-        walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr or walldatastate->get_force_col() != nullptr)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2d(
@@ -371,9 +370,9 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     // get material parameters of wall element
     {
       // cast material to particle wall material
-      const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
-      if (particlewallmaterial == Teuchos::null)
+      const std::shared_ptr<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
+          std::dynamic_pointer_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
+      if (particlewallmaterial == nullptr)
         FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
       // get adhesion surface energy
@@ -386,7 +385,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->get_vel_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
@@ -433,7 +432,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
 
     // calculation of wall adhesion force
     double walladhesionforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != nullptr)
     {
       Utils::vec_set_scale(
           walladhesionforce, -adhesionhistory_ij.adhesion_force_, particlewallpair.e_ji_);
@@ -459,7 +458,7 @@ void ParticleInteraction::DEMAdhesion::evaluate_particle_wall_adhesion()
     }
 
     // assemble adhesion force acting on wall element
-    if (walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_force_col() != nullptr)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);

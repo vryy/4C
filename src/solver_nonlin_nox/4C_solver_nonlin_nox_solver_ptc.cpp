@@ -846,8 +846,7 @@ void NOX::Nln::LinSystem::PrePostOp::PseudoTransient::modify_jacobian(
       // Scale v with scaling factor
       v.Scale(deltaInv * scaleFactor);
       // get the diagonal terms of the jacobian
-      Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
-          Core::LinAlg::create_vector(jac.row_map(), false);
+      auto diag = Core::LinAlg::create_vector(jac.row_map(), false);
       jac.extract_diagonal_copy(*diag);
       diag->Update(1.0, v, 1.0);
       // Finally modify the jacobian
@@ -920,8 +919,8 @@ NOX::Nln::GROUP::PrePostOp::PseudoTransient::eval_pseudo_transient_f_update(
   {
     case NOX::Nln::Solver::PseudoTransient::scale_op_identity:
     {
-      ::NOX::Epetra::Vector v =
-          ::NOX::Epetra::Vector(scaling_diag_op_ptr_->get_ptr_of_Epetra_Vector());
+      ::NOX::Epetra::Vector v = ::NOX::Epetra::Vector(
+          Teuchos::rcpFromRef(*scaling_diag_op_ptr_->get_ptr_of_Epetra_Vector()));
       v.scale(ptcsolver_.get_inverse_pseudo_time_step());
       xUpdate->scale(v);
 

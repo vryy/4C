@@ -21,13 +21,13 @@ FOUR_C_NAMESPACE_OPEN
 PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 {
   if (field->problem()->filter() == "ensight")
-    writer_ = Teuchos::make_rcp<EnsightWriter>(field, name);
+    writer_ = std::make_shared<EnsightWriter>(field, name);
   else if (field->problem()->filter() == "vtu")
-    writer_ = Teuchos::make_rcp<PostVtuWriter>(field, name);
+    writer_ = std::make_shared<PostVtuWriter>(field, name);
   else if (field->problem()->filter() == "vti")
-    writer_ = Teuchos::make_rcp<PostVtiWriter>(field, name);
+    writer_ = std::make_shared<PostVtiWriter>(field, name);
   else if (field->problem()->filter() == "vtu_node_based")
-    writer_ = Teuchos::make_rcp<PostVtuWriterNode>(field, name);
+    writer_ = std::make_shared<PostVtuWriterNode>(field, name);
   else
     FOUR_C_THROW("Unsupported filter");
 }
@@ -36,7 +36,7 @@ PostFilterBase::PostFilterBase(PostField* field, const std::string& name)
 
 void PostFilterBase::write_files()
 {
-  FOUR_C_ASSERT(writer_ != Teuchos::null, "No writer has been set! Fatal error");
+  FOUR_C_ASSERT(writer_ != nullptr, "No writer has been set! Fatal error");
   writer_->write_files(*this);
 }
 

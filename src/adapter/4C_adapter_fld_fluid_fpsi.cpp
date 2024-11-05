@@ -16,11 +16,12 @@ FOUR_C_NAMESPACE_OPEN
 
 
 /* constructor */
-Adapter::FluidFPSI::FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
+Adapter::FluidFPSI::FluidFPSI(std::shared_ptr<Fluid> fluid,
+    std::shared_ptr<Core::FE::Discretization> dis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond)
     : FluidFSI(fluid, dis, solver, params, output, isale, dirichletcond),
-      fpsiinterface_(Teuchos::make_rcp<FLD::Utils::MapExtractor>())
+      fpsiinterface_(std::make_shared<FLD::Utils::MapExtractor>())
 {
   return;
 }  // constructor
@@ -51,11 +52,11 @@ void Adapter::FluidFPSI::setup_interface(const int nds_master)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Adapter::FluidFPSI::use_block_matrix(
-    bool splitmatrix, Teuchos::RCP<FPSI::Utils::MapExtractor> const& shapederivSplitter)
+    bool splitmatrix, std::shared_ptr<FPSI::Utils::MapExtractor> const& shapederivSplitter)
 {
-  Teuchos::RCP<std::set<int>> condelements =
+  std::shared_ptr<std::set<int>> condelements =
       interface()->conditioned_element_map(*discretization());
-  Teuchos::RCP<std::set<int>> condelements_shape =
+  std::shared_ptr<std::set<int>> condelements_shape =
       shapederivSplitter->conditioned_element_map(*discretization());
   fluidimpl_->use_block_matrix(condelements, *interface(), *interface(), condelements_shape,
       *shapederivSplitter, *shapederivSplitter, splitmatrix);
@@ -65,7 +66,7 @@ void Adapter::FluidFPSI::use_block_matrix(
  *----------------------------------------------------------------------*/
 void Adapter::FluidFPSI::use_block_matrix(bool splitmatrix)
 {
-  Teuchos::RCP<std::set<int>> condelements =
+  std::shared_ptr<std::set<int>> condelements =
       interface()->conditioned_element_map(*discretization());
   fluidimpl_->use_block_matrix(condelements, *interface(), *interface(), condelements, *interface(),
       *interface(), splitmatrix);

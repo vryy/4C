@@ -128,7 +128,7 @@ namespace EHL
     void apply_dbc();
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> system_matrix() const
     {
       return systemmatrix_;
     }
@@ -138,9 +138,9 @@ namespace EHL
 
     //! Evaluate lubrication-mechanical system matrix
     void apply_lubrication_coupl_matrix(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
+        std::shared_ptr<Core::LinAlg::SparseMatrix>
             matheight,  //!< lubrication matrix associated with linearization wrt height
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>
+        std::shared_ptr<Core::LinAlg::SparseMatrix>
             matvel  //!< lubrication matrix associated with linearization wrt velocities
     );
 
@@ -160,7 +160,7 @@ namespace EHL
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> stepinc);
+    virtual void evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> stepinc);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
@@ -224,14 +224,14 @@ namespace EHL
       \param sx (o) structural vector (e.g. displacements)
       \param lx (o) lubrication vector (e.g. pressures)
       */
-    virtual void extract_field_vectors(Teuchos::RCP<Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& lx);
+    virtual void extract_field_vectors(std::shared_ptr<Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& lx);
 
     //! @name Access methods for subclasses
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const;
+    std::shared_ptr<const Epetra_Map> dof_row_map() const;
 
     //! set full monolithic dof row map
     /*!
@@ -239,14 +239,14 @@ namespace EHL
      defines the number of blocks, their maps and the block order. The block
      maps must be row maps by themselves and must not contain identical GIDs.
     */
-    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void set_dof_row_maps(const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     //! combined DBC map
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<Epetra_Map> combined_dbc_map();
+    std::shared_ptr<Epetra_Map> combined_dbc_map();
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor() const { return blockrowdofmap_; }
 
     //! setup list with default parameters
     void set_default_parameters();
@@ -256,9 +256,9 @@ namespace EHL
     //! @name General purpose algorithm members
     //@{
 
-    bool solveradapttol_;                        //!< adapt solver tolerance
-    double solveradaptolbetter_;                 //!< tolerance to which is adpated ????
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                           //!< adapt solver tolerance
+    double solveradaptolbetter_;                    //!< tolerance to which is adpated ????
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -270,7 +270,7 @@ namespace EHL
     //@}
 
     //! @name Global vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
     //@}
 
     //! enum for STR time integartion
@@ -281,22 +281,22 @@ namespace EHL
     const Teuchos::ParameterList& ehldynmono_;  //!< monolithic EHL dynamic parameter list
 
     //! dofrowmap splitted in (field) blocks
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             sv,  //!< vector containing only structural dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             lv  //!< vector containing only lubrication dofs
     );
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! off diagonal matrixes
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_sl_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> k_ls_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_sl_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> k_ls_;
 
     //! @name iterative solution technique
 
@@ -348,22 +348,22 @@ namespace EHL
     //! @name Various global forces
 
     //! rhs of EHL system
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
     //! increment between Newton steps k and k+1 \f$\Delta{x}^{<k>}_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iterinc_;
 
     //@}
 
     //! @name infnorm scaling
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         srowsum_;  //!< sum of absolute values of the rows of the structural block
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         scolsum_;  //!< sum of absolute values of the column of the structural block
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lrowsum_;  //!< sum of absolute values of the rows of the lubrication block
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         lcolsum_;  //!< sum of absolute values of the column of the lubrication block
 
     //@}

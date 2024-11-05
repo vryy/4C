@@ -126,12 +126,12 @@ void Arteries::ArteryResultTest::test_element(
       // test result value of single scalar field
       if (quantity == "volflow")
       {
-        if (myelevolflow_ == Teuchos::null) FOUR_C_THROW("Element volume flow not available");
+        if (myelevolflow_ == nullptr) FOUR_C_THROW("Element volume flow not available");
         result = (*myelevolflow_)[dis_->element_row_map()->LID(actelement->id())];
       }
       else if (quantity == "radius")
       {
-        if (myeleradius_ == Teuchos::null) FOUR_C_THROW("Element radius not available");
+        if (myeleradius_ == nullptr) FOUR_C_THROW("Element radius not available");
         result = (*myeleradius_)[dis_->element_row_map()->LID(actelement->id())];
       }
       else

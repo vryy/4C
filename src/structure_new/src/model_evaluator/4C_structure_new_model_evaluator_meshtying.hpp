@@ -52,11 +52,11 @@ namespace Solid
        * @param timint_ptr
        * @param dof_offset
        */
-      void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-          const Teuchos::RCP<Solid::Integrator>& int_ptr,
-          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr,
+      void init(const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+          const std::shared_ptr<Solid::Integrator>& int_ptr,
+          const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr,
           const int& dof_offset) override;
 
       //! setup class variables [derived]
@@ -132,13 +132,13 @@ namespace Solid
       void reset_step_state() override{};
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! [derived]
@@ -163,7 +163,7 @@ namespace Solid
       //! @name Call-back routines
       //!@{
 
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_jacobian_block(
+      std::shared_ptr<const Core::LinAlg::SparseMatrix> get_jacobian_block(
           const Solid::MatBlockType bt) const;
 
       /** \brief Assemble the structural right-hand side vector
@@ -173,13 +173,13 @@ namespace Solid
        *  \param[in] apply_dbc             Apply Dirichlet boundary conditions
        *
        *  \author hiermeier \date 08/17 */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> assemble_force_of_models(
+      std::shared_ptr<Core::LinAlg::Vector<double>> assemble_force_of_models(
           const std::vector<Inpar::Solid::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
-      virtual Teuchos::RCP<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const
+      virtual std::shared_ptr<Core::LinAlg::SparseOperator> get_aux_displ_jacobian() const
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
       void evaluate_weighted_gap_gradient_error();
@@ -203,7 +203,7 @@ namespace Solid
 
       @param[in] Xslavemod Vector with modified nodal positions
       */
-      void apply_mesh_initialization(Teuchos::RCP<const Core::LinAlg::Vector<double>> Xslavemod);
+      void apply_mesh_initialization(std::shared_ptr<const Core::LinAlg::Vector<double>> Xslavemod);
 
       //!@}
 
@@ -211,7 +211,7 @@ namespace Solid
       //!@{
 
       //! Returns a pointer to the underlying meshtying strategy object
-      const Teuchos::RCP<CONTACT::MtAbstractStrategy>& strategy_ptr();
+      const std::shared_ptr<CONTACT::MtAbstractStrategy>& strategy_ptr();
 
       //! Returns the underlying meshtying strategy object
       CONTACT::MtAbstractStrategy& strategy();
@@ -225,10 +225,10 @@ namespace Solid
       void set_time_integration_info(CONTACT::MtAbstractStrategy& strategy) const;
 
       //! meshtying strategy
-      Teuchos::RCP<CONTACT::MtAbstractStrategy> strategy_ptr_;
+      std::shared_ptr<CONTACT::MtAbstractStrategy> strategy_ptr_;
 
       //! Mesh relocation for conservation of angular momentum
-      Teuchos::RCP<Core::LinAlg::Vector<double>> mesh_relocation_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> mesh_relocation_;
     };  // namespace ModelEvaluator
 
   }  // namespace ModelEvaluator

@@ -27,10 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Solid::ModelEvaluator::SpringDashpot::SpringDashpot()
-    : disnp_ptr_(Teuchos::null),
-      velnp_ptr_(Teuchos::null),
-      stiff_spring_ptr_(Teuchos::null),
-      fspring_np_ptr_(Teuchos::null)
+    : disnp_ptr_(nullptr), velnp_ptr_(nullptr), stiff_spring_ptr_(nullptr), fspring_np_ptr_(nullptr)
 {
   // empty
 }
@@ -42,21 +39,21 @@ void Solid::ModelEvaluator::SpringDashpot::setup()
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
   // get all spring dashpot conditions
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> springdashpots;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> springdashpots;
   discret().get_condition("RobinSpringDashpot", springdashpots);
 
   // new instance of spring dashpot BC for each condition
   for (auto& springdashpot : springdashpots)
     springs_.emplace_back(
-        Teuchos::make_rcp<CONSTRAINTS::SpringDashpot>(discret_ptr(), springdashpot));
+        std::make_shared<CONSTRAINTS::SpringDashpot>(discret_ptr(), springdashpot));
 
   // setup the displacement pointer
   disnp_ptr_ = global_state().get_dis_np();
   velnp_ptr_ = global_state().get_vel_np();
 
   fspring_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
-  stiff_spring_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
+  stiff_spring_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
 
   // set flag
@@ -91,7 +88,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force()
   Teuchos::ParameterList springdashpotparams;
   // loop over all spring dashpot conditions and evaluate them
   fspring_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view());
   for (const auto& spring : springs_)
   {
     const CONSTRAINTS::SpringDashpot::SpringType stype = spring->get_spring_type();
@@ -100,8 +97,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force()
         stype == CONSTRAINTS::SpringDashpot::refsurfnormal)
     {
       springdashpotparams.set("total time", global_state().get_time_np());
-      spring->evaluate_robin(
-          Teuchos::null, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
+      spring->evaluate_robin(nullptr, fspring_np_ptr_, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
@@ -120,7 +116,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_stiff()
   check_init_setup();
 
   fspring_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -140,7 +136,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_stiff()
     {
       springdashpotparams.set("total time", global_state().get_time_np());
       spring->evaluate_robin(
-          stiff_spring_ptr_, Teuchos::null, disnp_ptr_, velnp_ptr_, springdashpotparams);
+          stiff_spring_ptr_, nullptr, disnp_ptr_, velnp_ptr_, springdashpotparams);
     }
     if (stype == CONSTRAINTS::SpringDashpot::cursurfnormal)
     {
@@ -163,7 +159,7 @@ bool Solid::ModelEvaluator::SpringDashpot::evaluate_force_stiff()
 
   // get displacement DOFs
   fspring_np_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map(), true);
 
   // factors from time-integrator for derivative of d(v_{n+1}) / d(d_{n+1})
   // needed for stiffness contribution from dashpot
@@ -213,7 +209,7 @@ bool Solid::ModelEvaluator::SpringDashpot::assemble_force(
 bool Solid::ModelEvaluator::SpringDashpot::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
   jac_dd_ptr->add(*stiff_spring_ptr_, false, timefac_np, 1.0);
   // no need to keep it
   stiff_spring_ptr_->zero();
@@ -227,10 +223,10 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
     Core::IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const
 {
   // row maps for export
-  Teuchos::RCP<Core::LinAlg::Vector<double>> springoffsetprestr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_row_map());
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> springoffsetprestr_old =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(discret().node_row_map()), 3, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> springoffsetprestr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret().dof_row_map());
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> springoffsetprestr_old =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*(discret().node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   for (const auto& spring : springs_)
@@ -255,10 +251,10 @@ void Solid::ModelEvaluator::SpringDashpot::write_restart(
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::DiscretizationReader& ioreader)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_row_map());
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> tempvecold =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(discret().node_row_map()), 3, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> tempvec =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret().dof_row_map());
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> tempvecold =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*(discret().node_row_map()), 3, true);
 
   ioreader.read_vector(tempvec, "springoffsetprestr");
   ioreader.read_multi_vector(tempvecold, "springoffsetprestr_old");
@@ -281,7 +277,8 @@ void Solid::ModelEvaluator::SpringDashpot::read_restart(Core::IO::Discretization
 void Solid::ModelEvaluator::SpringDashpot::update_step_state(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
+      global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary
@@ -309,8 +306,8 @@ void Solid::ModelEvaluator::SpringDashpot::output_step_state(
     Core::IO::DiscretizationWriter& iowriter) const
 {
   // row maps for export
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret().node_row_map()), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> gap =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret().node_row_map()), true);
   Core::LinAlg::MultiVector<double> normals(*(discret().node_row_map()), 3, true);
   Core::LinAlg::MultiVector<double> springstress(*(discret().node_row_map()), 3, true);
 
@@ -351,7 +348,7 @@ void Solid::ModelEvaluator::SpringDashpot::reset_step_state()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::SpringDashpot::get_block_dof_row_map_ptr()
+std::shared_ptr<const Epetra_Map> Solid::ModelEvaluator::SpringDashpot::get_block_dof_row_map_ptr()
     const
 {
   check_init_setup();
@@ -360,20 +357,20 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::SpringDashpot::get_block_d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::SpringDashpot::get_current_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::SpringDashpot::get_last_time_step_solution_ptr() const
 {
   // there are no model specific solution entries
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

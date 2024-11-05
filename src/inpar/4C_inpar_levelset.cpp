@@ -201,15 +201,15 @@ void Inpar::LevelSet::set_valid_parameters(Teuchos::ParameterList& list)
 
 
 void Inpar::LevelSet::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // Taylor Galerkin outflow Boundaries for level set transport equation
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfOutflowTaylorGalerkin =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfOutflowTaylorGalerkin =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "TAYLOR GALERKIN OUTFLOW SURF CONDITIONS", "TaylorGalerkinOutflow",
           "Surface Taylor Galerkin Outflow", Core::Conditions::TaylorGalerkinOutflow, true,
           Core::Conditions::geometry_type_surface);
@@ -218,8 +218,8 @@ void Inpar::LevelSet::set_valid_conditions(
 
   /*--------------------------------------------------------------------*/
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfneumanninflowTaylorGalerkin =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfneumanninflowTaylorGalerkin =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "TAYLOR GALERKIN NEUMANN INFLOW SURF CONDITIONS", "TaylorGalerkinNeumannInflow",
           "Surface Taylor Galerkin Neumann Inflow", Core::Conditions::TaylorGalerkinNeumannInflow,
           true, Core::Conditions::geometry_type_surface);
@@ -230,8 +230,8 @@ void Inpar::LevelSet::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // Characteristic Galerkin Boundaries for LevelSet-reinitialization
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfreinitializationtaylorgalerkin =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfreinitializationtaylorgalerkin =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "REINITIALIZATION TAYLOR GALERKIN SURF CONDITIONS", "ReinitializationTaylorGalerkin",
           "Surface reinitialization Taylor Galerkin",
           Core::Conditions::ReinitializationTaylorGalerkin, true,
@@ -242,13 +242,13 @@ void Inpar::LevelSet::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // level-set condition for contact points
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linelscontact =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linelscontact =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE LEVEL SET CONTACT CONDITION", "LsContact",
           "level-set condition for contact points", Core::Conditions::LsContact, false,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointlscontact =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointlscontact =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT LEVEL SET CONTACT CONDITION", "LsContact",
           "level-set condition for contact points", Core::Conditions::LsContact, false,
           Core::Conditions::geometry_type_point);

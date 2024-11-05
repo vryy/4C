@@ -50,21 +50,21 @@ Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::ScaTraEleUtilsElchDiffCo
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_mat(
-    Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
+    std::shared_ptr<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, const Inpar::ElCh::EquPot equpot, const double ffrt,
-    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,
+    std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanager,
     Inpar::ElCh::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte material
-  const Teuchos::RCP<const Mat::ElchMat> elchmat =
-      Teuchos::rcp_static_cast<const Mat::ElchMat>(material);
+  const std::shared_ptr<const Mat::ElchMat> elchmat =
+      std::static_pointer_cast<const Mat::ElchMat>(material);
 
   // safety check
   if (elchmat->num_phase() != 1)
     FOUR_C_THROW("Can only have a single electrolyte phase at the moment!");
 
   // extract electrolyte phase
-  const Teuchos::RCP<const Core::Mat::Material> elchphase =
+  const std::shared_ptr<const Core::Mat::Material> elchphase =
       elchmat->phase_by_id(elchmat->phase_id(0));
 
   if (elchphase->material_type() == Core::Materials::m_elchphase)
@@ -80,14 +80,14 @@ void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_mat(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_phase(
-    Teuchos::RCP<const Core::Mat::Material> material, const std::vector<double>& concentrations,
+    std::shared_ptr<const Core::Mat::Material> material, const std::vector<double>& concentrations,
     const double temperature, const Inpar::ElCh::EquPot& equpot, const double& ffrt,
-    Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager,
+    std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanager,
     Inpar::ElCh::DiffCondMat& diffcondmat)
 {
   // cast material to electrolyte phase
-  const Teuchos::RCP<const Mat::ElchPhase> matelchphase =
-      Teuchos::rcp_static_cast<const Mat::ElchPhase>(material);
+  const std::shared_ptr<const Mat::ElchPhase> matelchphase =
+      std::static_pointer_cast<const Mat::ElchPhase>(material);
 
   // set porosity
   diffmanager->set_phase_poro(matelchphase->epsilon(), 0);
@@ -98,7 +98,7 @@ void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_phase(
   // loop over materials within electrolyte phase
   for (int imat = 0; imat < matelchphase->num_mat(); ++imat)
   {
-    const Teuchos::RCP<const Core::Mat::Material> elchPhaseMaterial =
+    const std::shared_ptr<const Core::Mat::Material> elchPhaseMaterial =
         matelchphase->mat_by_id(matelchphase->mat_id(imat));
 
     switch (elchPhaseMaterial->material_type())
@@ -151,12 +151,12 @@ void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_elch_phase(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>::mat_newman(
-    Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
-    const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanager)
+    std::shared_ptr<const Core::Mat::Material> material, const double concentration,
+    const double temperature, std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanager)
 {
   // cast material to Newman material
-  const Teuchos::RCP<const Mat::Newman> matnewman =
-      Teuchos::rcp_static_cast<const Mat::Newman>(material);
+  const std::shared_ptr<const Mat::Newman> matnewman =
+      std::static_pointer_cast<const Mat::Newman>(material);
 
   // valence of ionic species
   diffmanager->set_valence(matnewman->valence(), 0);

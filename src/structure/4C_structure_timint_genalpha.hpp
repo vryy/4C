@@ -56,10 +56,10 @@ namespace Solid
         const Teuchos::ParameterList& ioparams,               //!< ioflags
         const Teuchos::ParameterList& sdynparams,             //!< input parameters
         const Teuchos::ParameterList& xparams,                //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,        //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,            //!< the solver
-        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,     //!< the solver for contact meshtying
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output   //!< the output
+        std::shared_ptr<Core::FE::Discretization> actdis,     //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,         //!< the solver
+        std::shared_ptr<Core::LinAlg::Solver> contactsolver,  //!< the solver for contact meshtying
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -87,8 +87,8 @@ namespace Solid
     \date 08/16
     \author rauch  */
     void init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+        std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -272,7 +272,7 @@ namespace Solid
     void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -280,10 +280,10 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fext_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_new() override { return fextn_; }
 
     //@}
 
@@ -345,34 +345,34 @@ namespace Solid
     //@{
 
     //! mid-displacements \f$D_m = D_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dism_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dism_;
 
     //! mid-velocities \f$V_m = V_{n+1-\alpha_f}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velm_;
 
     //! mid-accelerations \f$A_m = A_{n+1-\alpha_m}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> accm_;
 
     //@}
 
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint_;   //!< internal force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintm_;  //!< internal mid-force
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint_;   //!< internal force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintm_;  //!< internal mid-force
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_;   //!< external force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextm_;  //!< external mid-force
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_;   //!< external force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fextm_;  //!< external mid-force
+    std::shared_ptr<Core::LinAlg::Vector<double>> fextn_;  //!< external force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finert_;   //!< inertia force at \f$t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finertm_;  //!< inertia mid-force
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finertn_;  //!< inertia force at \f$t_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> finert_;   //!< inertia force at \f$t_n\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> finertm_;  //!< inertia mid-force
+    std::shared_ptr<Core::LinAlg::Vector<double>> finertn_;  //!< inertia force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fviscm_;  //!< viscous force
+    std::shared_ptr<Core::LinAlg::Vector<double>> fviscm_;  //!< viscous force
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         fint_str_;  //!< pure structural global internal force at \f$t_n\f$
                     //!< i.e. no condensation of EAS,pasticity,...
     //@}

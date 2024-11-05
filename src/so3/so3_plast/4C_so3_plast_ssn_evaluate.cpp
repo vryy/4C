@@ -84,9 +84,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
-      if ((disp == Teuchos::null))
+      if ((disp == nullptr))
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
@@ -106,18 +106,18 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
               discretization.get_state(0, "velocity");
-          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+          if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::extract_my_values(*vel, myvel, la[0].lm_);
         }
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
               discretization.get_state(1, "temperature");
-          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+          if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
@@ -150,9 +150,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       Core::LinAlg::Matrix<numdofperelement_, 1> elevec1(elevec1_epetra.values(), true);
 
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
@@ -169,9 +169,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
               discretization.get_state(0, "velocity");
-          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+          if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::extract_my_values(*vel, myvel, la[0].lm_);
@@ -179,9 +179,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
               discretization.get_state(1, "temperature");
-          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+          if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
@@ -207,9 +207,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_nlnstifflmass:
     {
       // need current displacement and residual forces
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
       // stiffness
@@ -234,18 +234,18 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
               discretization.get_state(0, "velocity");
-          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+          if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::extract_my_values(*vel, myvel, la[0].lm_);
         }
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
               discretization.get_state(1, "temperature");
-          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+          if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
@@ -281,10 +281,10 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
-      Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
-      Teuchos::RCP<std::vector<char>> straindata = Teuchos::null;
+      std::shared_ptr<std::vector<char>> stressdata = nullptr;
+      std::shared_ptr<std::vector<char>> straindata = nullptr;
       Inpar::Solid::StressType iostress = Inpar::Solid::stress_none;
       Inpar::Solid::StrainType iostrain = Inpar::Solid::strain_none;
       if (is_params_interface())
@@ -297,14 +297,14 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       }
       else
       {
-        stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-        straindata = params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+        stressdata = params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
+        straindata = params.get<std::shared_ptr<std::vector<char>>>("strain", nullptr);
         iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
         iostrain = params.get<Inpar::Solid::StrainType>("iostrain", Inpar::Solid::strain_none);
       }
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
-      if (stressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'stress' data");
-      if (straindata == Teuchos::null) FOUR_C_THROW("Cannot get 'strain' data");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (stressdata == nullptr) FOUR_C_THROW("Cannot get 'stress' data");
+      if (straindata == nullptr) FOUR_C_THROW("Cannot get 'strain' data");
 
       std::vector<double> mydisp((la[0].lm_).size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
@@ -323,18 +323,18 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
         if (discretization.has_state(0, "velocity"))
         {
           // get the velocities
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
               discretization.get_state(0, "velocity");
-          if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+          if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
           // extract the velocities
           myvel.resize((la[0].lm_).size());
           Core::FE::extract_my_values(*vel, myvel, la[0].lm_);
         }
         if (discretization.has_state(1, "temperature"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
               discretization.get_state(1, "temperature");
-          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+          if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
@@ -405,7 +405,7 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
     case Core::Elements::struct_calc_energy:
     {
       // need current displacement
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
       std::vector<double> mydisp(la[0].lm_.size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
@@ -413,9 +413,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       std::vector<double> mytempnp(0);
       if (discretization.has_state(1, "temperature"))
       {
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the dimension of the
         // problem
@@ -443,10 +443,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
 
     case Core::Elements::struct_calc_recover:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state("residual displacement");
-      if (res == Teuchos::null)
-        FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
+      if (res == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> myres((la[0].lm_).size());
       Core::FE::extract_my_values(*res, myres, la[0].lm_);
       Core::LinAlg::Matrix<nen_ * nsd_, 1> res_d(myres.data(), true);
@@ -457,9 +456,9 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
       if (discretization.num_dof_sets() > 1)
         if (discretization.has_state(1, "residual temperature"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempres =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> tempres =
               discretization.get_state(1, "residual temperature");
-          if (tempres == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempres'");
+          if (tempres == nullptr) FOUR_C_THROW("Cannot get state vector 'tempres'");
 
           // the temperature field has only one dof per node, disregarded by the dimension of the
           // problem
@@ -539,7 +538,7 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
             case Inpar::Solid::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
-              Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
+              std::shared_ptr<Core::LinAlg::MultiVector<double>> global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_element_center_data()
@@ -550,7 +549,7 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
             }
             case Inpar::Solid::GaussPointDataOutputType::nodes:
             {
-              Teuchos::RCP<Core::LinAlg::MultiVector<double>> global_data =
+              std::shared_ptr<Core::LinAlg::MultiVector<double>> global_data =
                   str_params_interface().gauss_point_data_output_manager_ptr()->get_nodal_data().at(
                       quantity_name);
 
@@ -583,7 +582,7 @@ int Discret::Elements::So3Plast<distype>::evaluate(Teuchos::ParameterList& param
             }
             case Inpar::Solid::GaussPointDataOutputType::gauss_points:
             {
-              std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data =
+              std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& global_data =
                   str_params_interface()
                       .gauss_point_data_output_manager_ptr()
                       ->get_gauss_point_data()
@@ -966,7 +965,7 @@ void Discret::Elements::So3Plast<distype>::nln_stiffmass(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
-    solve_for_inverseKaa.setMatrix(KaaInv_);
+    solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(*KaaInv_));
     solve_for_inverseKaa.invert();
 
     Core::LinAlg::SerialDenseMatrix kdakaai(numdofperelement_, neas_);
@@ -1091,7 +1090,7 @@ void Discret::Elements::So3Plast<distype>::nln_kd_t_tsi(
   // EAS part
   if (eastype_ != soh8p_easnone)
   {
-    if (KdT_eas_ == Teuchos::null)
+    if (KdT_eas_ == nullptr)
       FOUR_C_THROW("for TSI with EAS the block KdT_eas_ should be acessible here");
     k_dT->update(1., *KdT_eas_, 1.);
   }
@@ -1722,7 +1721,7 @@ void Discret::Elements::So3Plast<distype>::condense_plasticity(
     fbeta_[gp].scale(plmat->cpl());
     Kbd_[gp].putScalar(0.0);
     if (eastype_ != soh8p_easnone) Kba_->at(gp).shape(spintype, neas_);
-    if (KbT_ != Teuchos::null) KbT_->at(gp).putScalar(0.0);
+    if (KbT_ != nullptr) KbT_->at(gp).putScalar(0.0);
   }
 
   return;
@@ -1826,7 +1825,7 @@ void Discret::Elements::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, numdofperelement_, 1>(
             1.0, feas_->values(), 1.0, Kad_->values(), res_d->data());
-        if (KaT_ != Teuchos::null && res_T != nullptr)
+        if (KaT_ != nullptr && res_T != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double,
               PlastEasTypeToNumEas<Discret::Elements::soh8p_easmild>::neas, nen_, 1>(
               1., feas_->values(), 1., KaT_->values(), res_T->values());
@@ -1842,7 +1841,7 @@ void Discret::Elements::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::Elements::soh8p_easfull>::neas, numdofperelement_, 1>(
             1.0, feas_->values(), 1.0, Kad_->values(), res_d->values());
-        if (KaT_ != Teuchos::null && res_T != nullptr)
+        if (KaT_ != nullptr && res_T != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double,
               PlastEasTypeToNumEas<Discret::Elements::soh8p_easfull>::neas, nen_, 1>(
               1., feas_->values(), 1., KaT_->values(), res_T->values());
@@ -1858,7 +1857,7 @@ void Discret::Elements::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, numdofperelement_, 1>(
             1.0, feas_->values(), 1.0, Kad_->values(), res_d->values());
-        if (KaT_ != Teuchos::null && res_T != nullptr)
+        if (KaT_ != nullptr && res_T != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double,
               PlastEasTypeToNumEas<Discret::Elements::soh8p_eassosh8>::neas, nen_, 1>(
               1., feas_->values(), 1., KaT_->values(), res_T->values());
@@ -1874,7 +1873,7 @@ void Discret::Elements::So3Plast<distype>::recover_eas(
         Core::LinAlg::DenseFunctions::multiply<double,
             PlastEasTypeToNumEas<Discret::Elements::soh18p_eassosh18>::neas, numdofperelement_, 1>(
             1.0, feas_->values(), 1.0, Kad_->values(), res_d->values());
-        if (KaT_ != Teuchos::null && res_T != nullptr)
+        if (KaT_ != nullptr && res_T != nullptr)
           Core::LinAlg::DenseFunctions::multiply<double,
               PlastEasTypeToNumEas<Discret::Elements::soh18p_eassosh18>::neas, nen_, 1>(
               1., feas_->values(), 1., KaT_->values(), res_T->values());
@@ -1933,7 +1932,7 @@ void Discret::Elements::So3Plast<distype>::recover_plasticity(
       1., dDp_inc_[gp].values(), -1., tmp_m.values(), res_d->values());
 
   // thermal part
-  if (KbT_ != Teuchos::null)
+  if (KbT_ != nullptr)
     if (res_t)
     {
       Core::LinAlg::DenseFunctions::multiply<double, spintype, spintype, 1>(
@@ -3159,8 +3158,8 @@ void Discret::Elements::So3Plast<distype>::heat_flux(const std::vector<double>& 
   invalid_ele_data();
 
   if (num_material() < 2) FOUR_C_THROW("where's my second material");
-  Teuchos::RCP<Mat::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(material(1), true);
+  std::shared_ptr<Mat::FourierIso> mat_thr =
+      std::dynamic_pointer_cast<Mat::FourierIso>(material(1));
   const double k0 = mat_thr->conductivity();
 
   std::vector<double> vel(0);

@@ -21,8 +21,9 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -114,14 +115,14 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (interface_ptr_ != nullptr); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
-      virtual Teuchos::RCP<BrownianDynamics::ParamsInterface> brownian_dyn_params_interface_ptr()
+      std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr() override;
+      virtual std::shared_ptr<BrownianDynamics::ParamsInterface> brownian_dyn_params_interface_ptr()
           const;
 
       //! computes the number of different random numbers required in each time step for
@@ -689,9 +690,9 @@ namespace Discret
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_;
+      std::shared_ptr<Solid::Elements::ParamsInterface> interface_ptr_;
 
-      Teuchos::RCP<BrownianDynamics::ParamsInterface> browndyn_interface_ptr_;
+      std::shared_ptr<BrownianDynamics::ParamsInterface> browndyn_interface_ptr_;
 
       /*!
       \brief Default Constructor must not be called

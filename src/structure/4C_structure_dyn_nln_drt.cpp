@@ -68,7 +68,7 @@ void dyn_nlnstructural_drt()
   // get input lists
   const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
   // access the structural discretization
-  Teuchos::RCP<Core::FE::Discretization> structdis =
+  std::shared_ptr<Core::FE::Discretization> structdis =
       Global::Problem::instance()->get_dis("structure");
 
   // connect degrees of freedom for periodic boundary conditions
@@ -82,7 +82,7 @@ void dyn_nlnstructural_drt()
   }
 
   // create an adapterbase and adapter
-  Teuchos::RCP<Adapter::Structure> structadapter = Teuchos::null;
+  std::shared_ptr<Adapter::Structure> structadapter = nullptr;
   // FixMe The following switch is just a temporal hack, such we can jump between the new and the
   // old structure implementation. Has to be deleted after the clean-up has been finished!
   const auto intstrat =
@@ -105,7 +105,7 @@ void dyn_nlnstructural_drt()
     // -------------------------------------------------------------------
     default:
     {
-      Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
+      std::shared_ptr<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
           Adapter::build_structure_algorithm(sdyn);
       adapterbase_ptr->init(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
       adapterbase_ptr->setup();
@@ -154,9 +154,9 @@ void dyn_nlnstructural_drt()
   Global::Problem::instance()->test_all(structadapter->dof_row_map()->Comm());
 
   // print monitoring of time consumption
-  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+  std::shared_ptr<const Teuchos::Comm<int>> TeuchosComm =
       Core::Communication::to_teuchos_comm<int>(structdis->get_comm());
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, true);
+  Teuchos::TimeMonitor::summarize(Teuchos::Ptr(TeuchosComm.get()), std::cout, false, true, true);
 
   // time to go home...
   return;

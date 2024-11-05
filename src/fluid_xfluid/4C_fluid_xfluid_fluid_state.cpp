@@ -23,15 +23,15 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor for XFluidFluidState                         kruse 01/15 |
  *----------------------------------------------------------------------*/
 FLD::XFluidFluidState::XFluidFluidState(
-    const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-    const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-    const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-    const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap,
-    const Teuchos::RCP<const Epetra_Map>& embfluiddofrowmap)
+    const std::shared_ptr<XFEM::ConditionManager>& condition_manager,
+    const std::shared_ptr<Cut::CutWizard>& wizard, const std::shared_ptr<XFEM::XFEMDofSet>& dofset,
+    const std::shared_ptr<const Epetra_Map>& xfluiddofrowmap,
+    const std::shared_ptr<const Epetra_Map>& xfluiddofcolmap,
+    const std::shared_ptr<const Epetra_Map>& embfluiddofrowmap)
     : XFluidState(condition_manager, wizard, dofset, xfluiddofrowmap, xfluiddofcolmap),
       xffluiddofrowmap_(Core::LinAlg::merge_map(xfluiddofrowmap, embfluiddofrowmap, false)),
-      xffluidsplitter_(Teuchos::make_rcp<FLD::Utils::XFluidFluidMapExtractor>()),
-      xffluidvelpressplitter_(Teuchos::make_rcp<Core::LinAlg::MapExtractor>()),
+      xffluidsplitter_(std::make_shared<FLD::Utils::XFluidFluidMapExtractor>()),
+      xffluidvelpressplitter_(std::make_shared<Core::LinAlg::MapExtractor>()),
       embfluiddofrowmap_(embfluiddofrowmap)
 {
   xffluidsplitter_->setup(*xffluiddofrowmap_, xfluiddofrowmap, embfluiddofrowmap);
@@ -48,7 +48,7 @@ void FLD::XFluidFluidState::init_system_matrix()
   // the combined fluid system matrix is not of FECrs-type - it is solely composed out of
   // fully assembled submatrices
   xffluidsysmat_ =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*xffluiddofrowmap_, 108, false, true);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*xffluiddofrowmap_, 108, false, true);
 }
 
 /*----------------------------------------------------------------------*
@@ -67,9 +67,9 @@ void FLD::XFluidFluidState::init_state_vectors()
 /*----------------------------------------------------------------------*
  |  Access system matrix                                    kruse 01/15 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluidFluidState::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> FLD::XFluidFluidState::system_matrix()
 {
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(xffluidsysmat_);
+  return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(xffluidsysmat_);
 }
 
 /*----------------------------------------------------------------------*
@@ -77,13 +77,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> FLD::XFluidFluidState::system_matrix()
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::complete_coupling_matrices_and_rhs()
 {
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat_block =
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(xffluidsysmat_, false);
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat_block =
+      std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(xffluidsysmat_);
 
   // in case that fluid-fluid sysmat is merged (no block matrix), we have to complete the coupling
   // blocks (e.g. fluid-structure) w.r.t. xff sysmat instead of just the xfluid block
 
-  if (sysmat_block == Teuchos::null)  // merged matrix
+  if (sysmat_block == nullptr)  // merged matrix
   {
     XFluidState::complete_coupling_matrices_and_rhs(*xffluiddofrowmap_);
   }
@@ -100,20 +100,20 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
     const Core::LinAlg::MapExtractor& embfluiddbcmaps)
 {
   // create merged dbc map from both fluids
-  std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> dbcmaps;
   dbcmaps.push_back(XFluidState::dbcmaps_->cond_map());
   dbcmaps.push_back(embfluiddbcmaps.cond_map());
 
-  Teuchos::RCP<const Epetra_Map> xffluiddbcmap =
+  std::shared_ptr<const Epetra_Map> xffluiddbcmap =
       Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> othermaps;
   othermaps.push_back(XFluidState::dbcmaps_->other_map());
   othermaps.push_back(embfluiddbcmaps.other_map());
-  Teuchos::RCP<const Epetra_Map> xffluidothermap =
+  std::shared_ptr<const Epetra_Map> xffluidothermap =
       Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
-  xffluiddbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+  xffluiddbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>(
       *xffluiddofrowmap_, xffluiddbcmap, xffluidothermap);
 }
 
@@ -121,8 +121,8 @@ void FLD::XFluidFluidState::create_merged_dbc_map_extractor(
  |  Set dirichlet- and velocity/pressure-map extractor      kruse 01/15 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluidState::setup_map_extractors(
-    const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret,
-    const Teuchos::RCP<Core::FE::Discretization>& embfluiddiscret, const double& time)
+    const std::shared_ptr<Core::FE::Discretization>& xfluiddiscret,
+    const std::shared_ptr<Core::FE::Discretization>& embfluiddiscret, const double& time)
 {
   // create merged dirichlet map extractor
   XFluidState::setup_map_extractors(xfluiddiscret, time);
@@ -161,12 +161,12 @@ bool FLD::XFluidFluidState::destroy()
   // TODO: actually it should be possible to delete the dofrowmap, however this causes problems in
   // xffsi applications! (CHECK THIS!!!)
   // dof_row_map() in Xfluidfluid currently returns a strong RCP
-  if (xffluiddofrowmap_.strong_count() == 1)
-    xffluiddofrowmap_ = Teuchos::null;
+  if (xffluiddofrowmap_.use_count() == 1)
+    xffluiddofrowmap_ = nullptr;
   else  // FOUR_C_THROW("could not destroy object: %i!=1 pointers",
-        // xffluiddofrowmap_.strong_count());
+        // xffluiddofrowmap_.use_count());
     std::cout << "could not destroy xffluiddofrowmap_: number of pointers is "
-              << xffluiddofrowmap_.strong_count() << "!=1";
+              << xffluiddofrowmap_.use_count() << "!=1";
 
   XFluidState::destroy();
 

@@ -65,7 +65,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class myocard
   }     // namespace PAR
@@ -148,9 +148,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Myocard>(*this);
+      return std::make_shared<Myocard>(*this);
     }
 
     /// material call from Discret::Elements::Transport::read_element function
@@ -252,7 +252,7 @@ namespace Mat
     /// get number of Gauss points
     int get_number_of_gp() const;
 
-    bool myocard_mat() const { return myocard_mat_ != Teuchos::null; };
+    bool myocard_mat() const { return myocard_mat_ != nullptr; };
 
     /// @name Access material constants
     //@{
@@ -273,7 +273,7 @@ namespace Mat
     int nb_state_variables_;
 
     // Type of material model
-    Teuchos::RCP<MyocardGeneral> myocard_mat_;
+    std::shared_ptr<MyocardGeneral> myocard_mat_;
 
     /// diffusion at element center
     bool diff_at_ele_center_;

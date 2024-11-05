@@ -16,7 +16,7 @@
 #include "4C_poroelast_utils.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,9 +26,10 @@ namespace Adapter
   {
    public:
     //! Constructor
-    FluidPoro(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidPoro(std::shared_ptr<Fluid> fluid, std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     //! Evaluate no penetration constraint
     /*!
@@ -39,14 +40,14 @@ namespace Adapter
      coupltype                 (i) coupling type, determines which matrix is to be evaluated (0==
      fluid-fluid, 1== fluid -structure)
      */
-    void evaluate_no_penetration_cond(Teuchos::RCP<Core::LinAlg::Vector<double>> Cond_RHS,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> ConstraintMatrix,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> condVector, std::set<int>& condIDs,
+    void evaluate_no_penetration_cond(std::shared_ptr<Core::LinAlg::Vector<double>> Cond_RHS,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> ConstraintMatrix,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> condVector, std::set<int>& condIDs,
         PoroElast::Coupltype coupltype = PoroElast::fluidfluid);
 
     //! calls the VelPresSplitter on the time integrator
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter();
+    virtual std::shared_ptr<Core::LinAlg::MapExtractor> vel_pres_splitter();
 
     /*!
       \brief Write extra output for specified step and time.
@@ -65,7 +66,7 @@ namespace Adapter
 
    private:
     /// fluid field
-    const Teuchos::RCP<Adapter::Fluid>& fluid_field() { return fluid_; }
+    const std::shared_ptr<Adapter::Fluid>& fluid_field() { return fluid_; }
 
     std::vector<Core::Conditions::Condition*>
         nopencond_;  ///< vector containing no penetration conditions

@@ -63,11 +63,11 @@ void ScaTra::MeshtyingStrategyStd::init_meshtying()
  | solve linear system of equations for standard scalar transport   fang 12/14 |
  *-----------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyStd::solve(
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,         //!< state vector at time n+1
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,                //!< solver
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
     const int iteration,  //!< number of current Newton-Raphson iteration
     Core::LinAlg::SolverParams& solver_params) const
 {
@@ -84,7 +84,7 @@ void ScaTra::MeshtyingStrategyStd::solve(
  *-------------------------------------------------------------------------*/
 const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyStd::solver() const
 {
-  if (scatratimint_->solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
+  if (scatratimint_->solver() == nullptr) FOUR_C_THROW("Invalid linear solver!");
   return *scatratimint_->solver();
 }  // ScaTra::MeshtyingStrategyStd::Solver()
 
@@ -95,14 +95,14 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyStd::solver() const
 void ScaTra::MeshtyingStrategyStd::init_conv_check_strategy()
 {
   if (scatratimint_->micro_scale())
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdMicroScale>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStdMicroScale>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   else if (Global::Problem::instance()->get_problem_type() ==
            Core::ProblemType::poromultiphasescatra)
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyPoroMultiphaseScatra>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyPoroMultiphaseScatra>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   else
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStd>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStd>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 
   return;

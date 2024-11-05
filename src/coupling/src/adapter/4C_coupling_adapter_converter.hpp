@@ -15,9 +15,8 @@
 #include "4C_linalg_sparsematrix.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,19 +42,19 @@ namespace Coupling::Adapter
   {
    public:
     virtual ~CouplingConverter() = default;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> src_to_dst(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> s) const = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> src_to_dst(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> s) const = 0;
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> dst_to_src(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> d) const = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> dst_to_src(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> d) const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> src_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> src_map() const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> dst_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> dst_map() const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> perm_src_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> perm_src_map() const = 0;
 
-    virtual Teuchos::RCP<const Epetra_Map> perm_dst_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> perm_dst_map() const = 0;
 
     virtual void fill_src_to_dst_map(std::map<int, int>& rowmap) const = 0;
   };
@@ -66,19 +65,19 @@ namespace Coupling::Adapter
    public:
     explicit CouplingMasterConverter(const Coupling& coup) : coup_(coup) {}
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> src_to_dst(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> s) const override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> src_to_dst(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> s) const override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dst_to_src(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> d) const override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dst_to_src(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> d) const override;
 
-    Teuchos::RCP<const Epetra_Map> src_map() const override;
+    std::shared_ptr<const Epetra_Map> src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> dst_map() const override;
+    std::shared_ptr<const Epetra_Map> dst_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> perm_src_map() const override;
+    std::shared_ptr<const Epetra_Map> perm_src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> perm_dst_map() const override;
+    std::shared_ptr<const Epetra_Map> perm_dst_map() const override;
 
     void fill_src_to_dst_map(std::map<int, int>& rowmap) const override;
 
@@ -92,19 +91,19 @@ namespace Coupling::Adapter
    public:
     explicit CouplingSlaveConverter(const Coupling& coup) : coup_(coup) {}
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> src_to_dst(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> s) const override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> src_to_dst(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> s) const override;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dst_to_src(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> d) const override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dst_to_src(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> d) const override;
 
-    Teuchos::RCP<const Epetra_Map> src_map() const override;
+    std::shared_ptr<const Epetra_Map> src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> dst_map() const override;
+    std::shared_ptr<const Epetra_Map> dst_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> perm_src_map() const override;
+    std::shared_ptr<const Epetra_Map> perm_src_map() const override;
 
-    Teuchos::RCP<const Epetra_Map> perm_dst_map() const override;
+    std::shared_ptr<const Epetra_Map> perm_dst_map() const override;
 
     void fill_src_to_dst_map(std::map<int, int>& rowmap) const override;
 
@@ -217,7 +216,7 @@ namespace Coupling::Adapter
     std::vector<int> lidvector_;
 
     /// exporter to communicate matrix to new row map
-    Teuchos::RCP<Epetra_Export> exporter_;
+    std::shared_ptr<Epetra_Export> exporter_;
   };
 
 

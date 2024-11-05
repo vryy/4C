@@ -17,7 +17,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -76,21 +77,21 @@ namespace FLD
      public:
       //! ctor
       CouplingState()
-          : C_sx_(Teuchos::null),
-            C_xs_(Teuchos::null),
-            C_ss_(Teuchos::null),
-            rhC_s_(Teuchos::null),
-            rhC_s_col_(Teuchos::null),
+          : C_sx_(nullptr),
+            C_xs_(nullptr),
+            C_ss_(nullptr),
+            rhC_s_(nullptr),
+            rhC_s_col_(nullptr),
             is_active_(false)
       {
       }
 
       //! ctor  Initialize coupling matrices with fluid sysmat and fluid rhs vector
-      CouplingState(const Teuchos::RCP<Core::LinAlg::SparseMatrix>& C_sx,
-          const Teuchos::RCP<Core::LinAlg::SparseMatrix>& C_xs,
-          const Teuchos::RCP<Core::LinAlg::SparseMatrix>& C_ss,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& rhC_s,
-          const Teuchos::RCP<Core::LinAlg::Vector<double>>& rhC_s_col)
+      CouplingState(const std::shared_ptr<Core::LinAlg::SparseMatrix>& C_sx,
+          const std::shared_ptr<Core::LinAlg::SparseMatrix>& C_xs,
+          const std::shared_ptr<Core::LinAlg::SparseMatrix>& C_ss,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& rhC_s,
+          const std::shared_ptr<Core::LinAlg::Vector<double>>& rhC_s_col)
           : C_sx_(C_sx),  // this rcp constructor using const references copies also the ownership
                           // and increases the specific weak/strong reference counter
             C_xs_(C_xs),
@@ -102,9 +103,9 @@ namespace FLD
       }
 
       //! ctor  Initialize coupling matrices
-      CouplingState(const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-          const Teuchos::RCP<Core::FE::Discretization>& slavediscret_mat,
-          const Teuchos::RCP<Core::FE::Discretization>& slavediscret_rhs);
+      CouplingState(const std::shared_ptr<const Epetra_Map>& xfluiddofrowmap,
+          const std::shared_ptr<Core::FE::Discretization>& slavediscret_mat,
+          const std::shared_ptr<Core::FE::Discretization>& slavediscret_rhs);
 
       //! zero coupling matrices and rhs vectors
       void zero_coupling_matrices_and_rhs();
@@ -119,11 +120,11 @@ namespace FLD
       //! @name coupling matrices x: xfluid, s: coupling slave (structure, ALE-fluid, xfluid-element
       //! with other active dofset, etc.)
       //@{
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> C_sx_;         ///< slave - xfluid coupling block
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> C_xs_;         ///< xfluid - slave coupling block
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> C_ss_;         ///< slave - slave coupling block
-      Teuchos::RCP<Core::LinAlg::Vector<double>> rhC_s_;      ///< slave rhs block
-      Teuchos::RCP<Core::LinAlg::Vector<double>> rhC_s_col_;  ///< slave rhs block
+      std::shared_ptr<Core::LinAlg::SparseMatrix> C_sx_;         ///< slave - xfluid coupling block
+      std::shared_ptr<Core::LinAlg::SparseMatrix> C_xs_;         ///< xfluid - slave coupling block
+      std::shared_ptr<Core::LinAlg::SparseMatrix> C_ss_;         ///< slave - slave coupling block
+      std::shared_ptr<Core::LinAlg::Vector<double>> rhC_s_;      ///< slave rhs block
+      std::shared_ptr<Core::LinAlg::Vector<double>> rhC_s_col_;  ///< slave rhs block
       //@}
 
       bool is_active_;
@@ -133,16 +134,17 @@ namespace FLD
      ctor for one-sided problems
      @param xfluiddofrowmap dof-rowmap of intersected fluid
      */
-    explicit XFluidState(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& dofset,
-        const Teuchos::RCP<const Epetra_Map>& xfluiddofrowmap,
-        const Teuchos::RCP<const Epetra_Map>& xfluiddofcolmap);
+    explicit XFluidState(const std::shared_ptr<XFEM::ConditionManager>& condition_manager,
+        const std::shared_ptr<Cut::CutWizard>& wizard,
+        const std::shared_ptr<XFEM::XFEMDofSet>& dofset,
+        const std::shared_ptr<const Epetra_Map>& xfluiddofrowmap,
+        const std::shared_ptr<const Epetra_Map>& xfluiddofcolmap);
 
     /// dtor
     virtual ~XFluidState() = default;
     /// setup map extractors for dirichlet maps & velocity/pressure maps
     void setup_map_extractors(
-        const Teuchos::RCP<Core::FE::Discretization>& xfluiddiscret, const double& time);
+        const std::shared_ptr<Core::FE::Discretization>& xfluiddiscret, const double& time);
 
     /// zero system matrix and related rhs vectors
     virtual void zero_system_matrix_and_rhs();
@@ -164,102 +166,102 @@ namespace FLD
     //@{
 
     /// access to the cut wizard
-    Teuchos::RCP<Cut::CutWizard> wizard() const
+    std::shared_ptr<Cut::CutWizard> wizard() const
     {
-      if (wizard_ == Teuchos::null) FOUR_C_THROW("Cut wizard is uninitialized!");
+      if (wizard_ == nullptr) FOUR_C_THROW("Cut wizard is uninitialized!");
       return wizard_;
     }
 
 
     //! access to the xfem-dofset
-    Teuchos::RCP<XFEM::XFEMDofSet> dof_set() { return dofset_; }
+    std::shared_ptr<XFEM::XFEMDofSet> dof_set() { return dofset_; }
 
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> dbc_map_extractor() { return dbcmaps_; }
+    virtual std::shared_ptr<Core::LinAlg::MapExtractor> dbc_map_extractor() { return dbcmaps_; }
 
-    virtual Teuchos::RCP<Core::LinAlg::MapExtractor> vel_pres_splitter()
+    virtual std::shared_ptr<Core::LinAlg::MapExtractor> vel_pres_splitter()
     {
       return velpressplitter_;
     }
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() { return sysmat_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& residual() { return residual_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& zeros() { return zeros_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& inc_vel() { return incvel_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& velnp() { return velnp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& veln() { return veln_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& accnp() { return accnp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>>& accn() { return accn_; }
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() { return sysmat_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& residual() { return residual_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& zeros() { return zeros_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& inc_vel() { return incvel_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& velnp() { return velnp_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& veln() { return veln_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& accnp() { return accnp_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>>& accn() { return accn_; }
     //@}
 
     /// dof-rowmap of intersected fluid
-    Teuchos::RCP<const Epetra_Map> xfluiddofrowmap_;
+    std::shared_ptr<const Epetra_Map> xfluiddofrowmap_;
 
     /// dof-colmap of intersected fluid
-    Teuchos::RCP<const Epetra_Map> xfluiddofcolmap_;
+    std::shared_ptr<const Epetra_Map> xfluiddofcolmap_;
 
     /// system matrix (internally EpetraFECrs)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_;
 
     /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
     /// the vector containing body and surface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> neumann_loads_;
 
     /// (standard) residual vector (rhs for the incremental form),
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
 
     /// (standard) residual vector (rhs for the incremental form) wrt col map,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_col_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_col_;
 
     /// true (rescaled) residual vector without zeros at dirichlet positions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> trueresidual_;
 
     /// nonlinear iteration increment vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> incvel_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> incvel_;
 
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> accnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> accn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> accam_;
     //@}
 
     //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velaf_;
     //@}
 
     //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scaaf_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scaam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scaaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scaam_;
     //@}
 
     //! @name displacemets at time n+1, n and n-1 (if we have an XFEM-ALE-fluid)
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_;
-    //  Teuchos::RCP<Core::LinAlg::Vector<double>>         dispn_;
-    //  Teuchos::RCP<Core::LinAlg::Vector<double>>         dispnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnp_;
+    //  std::shared_ptr<Core::LinAlg::Vector<double>>         dispn_;
+    //  std::shared_ptr<Core::LinAlg::Vector<double>>         dispnm_;
     //@}
 
     /// grid velocity (if we have an XFEM-ALE-fluid) (set from the adapter!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> gridvnp_;
 
     /// histvector --- a linear combination of velnm, veln (BDF)
     ///                or veln, accn (One-Step-Theta)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> hist_;
 
     //! @name map extractors
     //@{
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// velocity/pressure map extractor, used for convergence check
-    Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> velpressplitter_;
 
     //@}
 
@@ -267,7 +269,7 @@ namespace FLD
     //! @name coupling matrices for each coupling object (=key); x: xfluid, s: coupling slave
     //! (structure, ALE-fluid, xfluid-element with other active dofset, etc.)
     //@{
-    std::map<int, Teuchos::RCP<CouplingState>> coup_state_;
+    std::map<int, std::shared_ptr<CouplingState>> coup_state_;
     //@}
 
    protected:
@@ -294,13 +296,13 @@ namespace FLD
         const Core::LinAlg::Vector<double>& gridvnp_initmap);
 
     /// XFEM dofset
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_;
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_;
 
     /// cut wizard
-    Teuchos::RCP<Cut::CutWizard> wizard_;
+    std::shared_ptr<Cut::CutWizard> wizard_;
 
     /// condition manager
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+    std::shared_ptr<XFEM::ConditionManager> condition_manager_;
   };
 
 }  // namespace FLD

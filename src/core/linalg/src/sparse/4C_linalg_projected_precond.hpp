@@ -12,7 +12,8 @@
 #include "4C_config.hpp"
 
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // forward declarations
 
@@ -51,8 +52,8 @@ namespace Core::LinAlg
     \brief Standard Constructor
 
     */
-    LinalgPrecondOperator(Teuchos::RCP<Epetra_Operator> precond, bool project,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
+    LinalgPrecondOperator(std::shared_ptr<Epetra_Operator> precond, bool project,
+        std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
 
 
 
@@ -186,10 +187,10 @@ namespace Core::LinAlg
     bool project_;
 
     //! the actual preconditioner
-    Teuchos::RCP<Epetra_Operator> precond_;
+    std::shared_ptr<Epetra_Operator> precond_;
 
     //! Krylov space projector
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;
   };
 
 }  // namespace Core::LinAlg

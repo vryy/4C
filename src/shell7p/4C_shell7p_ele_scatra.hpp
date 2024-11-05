@@ -18,8 +18,6 @@
 #include "4C_shell7p_ele_calc_interface.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <memory>
 
 FOUR_C_NAMESPACE_OPEN
@@ -37,10 +35,10 @@ namespace Discret::Elements
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+    std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
         const std::string eledistype, const int id, const int owner) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+    std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
     [[nodiscard]] std::string name() const override { return "Shell7pScatraType"; }
 
@@ -99,9 +97,9 @@ namespace Discret::Elements
 
     [[nodiscard]] int num_surface() const override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+    std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
-    std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+    std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
     [[nodiscard]] int num_dof_per_node(const Core::Nodes::Node& node) const override { return 6; }
 
@@ -143,7 +141,7 @@ namespace Discret::Elements
     //! @{
     [[nodiscard]] inline bool is_params_interface() const override
     {
-      return (not interface_ptr_.is_null());
+      return (interface_ptr_ != nullptr);
     }
 
     [[nodiscard]] inline Solid::Elements::ParamsInterface& str_params_interface() const
@@ -157,7 +155,7 @@ namespace Discret::Elements
 
     [[nodiscard]] const std::set<Inpar::Solid::EleTech>& get_ele_tech() const { return eletech_; }
 
-    [[nodiscard]] Teuchos::RCP<Mat::So3Material> solid_material(int nummat = 0) const;
+    [[nodiscard]] std::shared_ptr<Mat::So3Material> solid_material(int nummat = 0) const;
 
     [[nodiscard]] const Inpar::ScaTra::ImplType& impl_type() const { return impltype_; };
 
@@ -189,7 +187,7 @@ namespace Discret::Elements
     Core::FE::CellType distype_ = Core::FE::CellType::dis_none;
 
     //! interface ptr, data exchange between the element and the time integrator.
-    Teuchos::RCP<Solid::Elements::ParamsInterface> interface_ptr_ = Teuchos::null;
+    std::shared_ptr<Solid::Elements::ParamsInterface> interface_ptr_ = nullptr;
 
     //! element technology
     std::set<Inpar::Solid::EleTech> eletech_ = {};

@@ -31,7 +31,7 @@ namespace Solid
       void compute(::NOX::Abstract::Group& grp) override;
 
      private:
-      Teuchos::RCP<Solid::Predict::Generic> tangdis_ptr_;
+      std::shared_ptr<Solid::Predict::Generic> tangdis_ptr_;
     };  // class ConstDisVelAccPress
   }     // namespace Predict
 }  // namespace Solid

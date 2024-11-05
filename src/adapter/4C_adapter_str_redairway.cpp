@@ -11,6 +11,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -18,13 +19,12 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* constructor */
-Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
+Adapter::StructureRedAirway::StructureRedAirway(std::shared_ptr<Structure> stru)
     : StructureWrapper(stru)
 {
   //----------------------------------------------------------------------
   // make sure
-  if (structure_ == Teuchos::null)
-    FOUR_C_THROW("Failed to create the underlying structural adapter");
+  if (structure_ == nullptr) FOUR_C_THROW("Failed to create the underlying structural adapter");
 
   // first get all Neumann conditions on structure
 
@@ -49,7 +49,7 @@ Adapter::StructureRedAirway::StructureRedAirway(Teuchos::RCP<Structure> stru)
   }
   unsigned int numcond = tmp.size();
   if (numcond == 0) FOUR_C_THROW("no coupling conditions found");
-  coupmap_ = Teuchos::make_rcp<Epetra_Map>(
+  coupmap_ = std::make_shared<Epetra_Map>(
       tmp.size(), tmp.size(), tmp.data(), 0, discretization()->get_comm());
 }
 
@@ -91,7 +91,8 @@ void Adapter::StructureRedAirway::calc_vol(std::map<int, double>& V)
     Core::Conditions::Condition& cond = *(coupcond_[condID]);
     double tmp = 0.;
     params.set("ConditionID", condID);
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(cond));
+    params.set<std::shared_ptr<Core::Conditions::Condition>>(
+        "condition", Core::Utils::shared_ptr_from_ref(cond));
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -100,11 +101,11 @@ void Adapter::StructureRedAirway::calc_vol(std::map<int, double>& V)
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond.geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships

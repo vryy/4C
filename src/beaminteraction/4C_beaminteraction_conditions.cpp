@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
-    const Teuchos::RCP<const Core::Conditions::Condition>& condition_line)
+    const std::shared_ptr<const Core::Conditions::Condition>& condition_line)
     : condition_line_(condition_line), line_ids_()
 {
 }
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamInteractionConditionBase::BeamInteractionConditionBase(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditionBase::build_id_sets(
-    const Teuchos::RCP<const Core::FE::Discretization>& discretization)
+    const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Set the IDs of the line elements.
   std::vector<int> line_ids;
@@ -51,7 +51,7 @@ void BEAMINTERACTION::BeamInteractionConditionBase::build_id_sets(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditionBase::setup(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret)
+    const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
 }
 
@@ -83,28 +83,28 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
     if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_contact)
     {
       // Add all beam-to-beam contitions.
-      std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
+      std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 
       // Get the names for the conditions of this type.
       std::string condition_name = "BeamToBeamContact";
 
       // Get the line conditions from the discretization.
-      std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_lines;
+      std::vector<std::shared_ptr<Core::Conditions::Condition>> condition_lines;
       discret.get_condition(condition_name, condition_lines);
 
       // Match the coupling IDs from the input line.
-      std::map<int, std::pair<Teuchos::RCP<const Core::Conditions::Condition>,
-                        Teuchos::RCP<const Core::Conditions::Condition>>>
+      std::map<int, std::pair<std::shared_ptr<const Core::Conditions::Condition>,
+                        std::shared_ptr<const Core::Conditions::Condition>>>
           coupling_id_map;
       for (const auto& condition : condition_lines)
       {
         const int coupling_id = condition->parameters().get<int>("COUPLING_ID");
         auto& condition_1 = coupling_id_map[coupling_id].first;
         auto& condition_2 = coupling_id_map[coupling_id].second;
-        if (condition_1 == Teuchos::null)
+        if (condition_1 == nullptr)
           condition_1 = condition;
-        else if (condition_2 == Teuchos::null)
+        else if (condition_2 == nullptr)
           condition_2 = condition;
         else
           FOUR_C_THROW("There can not be three different beam-to-beam coupling conditions.");
@@ -114,11 +114,11 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
       {
         const auto& condition_1 = map_item.second.first;
         const auto& condition_2 = map_item.second.second;
-        if (condition_1 != Teuchos::null && condition_2 != Teuchos::null)
+        if (condition_1 != nullptr && condition_2 != nullptr)
         {
           // We found the matching conditions, now create the beam-to-beam condition objects.
           interaction_vector.push_back(
-              Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactCondition>(
+              std::make_shared<BEAMINTERACTION::BeamToBeamContactCondition>(
                   condition_1, condition_2));
         }
         else
@@ -140,7 +140,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
                  Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
     {
       // Add all beam-to-solid conditions.
-      std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
+      std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 
       // Get the names for the conditions of this type.
@@ -148,8 +148,8 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
       Inpar::BeamToSolid::beam_to_solid_interaction_get_string(interaction_type, condition_names);
 
       // Get the conditions from the discretization.
-      std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_line;
-      std::vector<Teuchos::RCP<Core::Conditions::Condition>> condition_other;
+      std::vector<std::shared_ptr<Core::Conditions::Condition>> condition_line;
+      std::vector<std::shared_ptr<Core::Conditions::Condition>> condition_other;
       discret.get_condition(condition_names[0], condition_line);
       discret.get_condition(condition_names[1], condition_other);
 
@@ -160,8 +160,8 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
             condition_names[1].c_str());
 
       // Match the coupling IDs from the input line.
-      std::map<int, std::pair<Teuchos::RCP<const Core::Conditions::Condition>,
-                        Teuchos::RCP<const Core::Conditions::Condition>>>
+      std::map<int, std::pair<std::shared_ptr<const Core::Conditions::Condition>,
+                        std::shared_ptr<const Core::Conditions::Condition>>>
           coupling_id_map;
       for (const auto& condition : condition_line)
         coupling_id_map[condition->parameters().get<int>("COUPLING_ID")].first = condition;
@@ -169,23 +169,23 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
         coupling_id_map[condition->parameters().get<int>("COUPLING_ID")].second = condition;
       for (const auto& map_item : coupling_id_map)
       {
-        if (map_item.second.first != Teuchos::null && map_item.second.second != Teuchos::null)
+        if (map_item.second.first != nullptr && map_item.second.second != nullptr)
         {
           // We found the matching conditions, now create the beam-to-solid condition objects.
-          Teuchos::RCP<BeamInteractionConditionBase> new_condition;
+          std::shared_ptr<BeamInteractionConditionBase> new_condition;
           if (interaction_type ==
               Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying)
-            new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying>(
+            new_condition = std::make_shared<BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying>(
                 map_item.second.first, map_item.second.second,
                 params_ptr.beam_to_solid_volume_meshtying_params());
           else if (interaction_type == Inpar::BEAMINTERACTION::BeamInteractionConditions::
                                            beam_to_solid_surface_meshtying)
-            new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidConditionSurface>(
+            new_condition = std::make_shared<BEAMINTERACTION::BeamToSolidConditionSurface>(
                 map_item.second.first, map_item.second.second,
                 params_ptr.beam_to_solid_surface_meshtying_params(), true);
           else if (interaction_type ==
                    Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact)
-            new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidConditionSurface>(
+            new_condition = std::make_shared<BEAMINTERACTION::BeamToSolidConditionSurface>(
                 map_item.second.first, map_item.second.second,
                 params_ptr.beam_to_solid_surface_contact_params(), false);
           else
@@ -206,18 +206,18 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
     else if (interaction_type ==
              Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_beam_point_coupling)
     {
-      std::vector<Teuchos::RCP<BeamInteractionConditionBase>>& interaction_vector =
+      std::vector<std::shared_ptr<BeamInteractionConditionBase>>& interaction_vector =
           condition_map_[interaction_type];
 
       // Get the conditions from the discretization.
-      std::vector<Teuchos::RCP<Core::Conditions::Condition>> coupling_conditions;
+      std::vector<std::shared_ptr<Core::Conditions::Condition>> coupling_conditions;
       discret.get_condition("PenaltyPointCouplingCondition", coupling_conditions);
       for (const auto& condition : coupling_conditions)
       {
         // We found the matching conditions, now create the beam-to-beam coupling condition object
-        Teuchos::RCP<BeamInteractionConditionBase> new_condition;
+        std::shared_ptr<BeamInteractionConditionBase> new_condition;
 
-        new_condition = Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPointCouplingCondition>(
+        new_condition = std::make_shared<BEAMINTERACTION::BeamToBeamPointCouplingCondition>(
             condition, condition->parameters().get<double>("POSITIONAL_PENALTY_PARAMETER"),
             condition->parameters().get<double>("ROTATIONAL_PENALTY_PARAMETER"));
 
@@ -233,7 +233,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_beam_interaction_conditions
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::build_id_sets(
-    Teuchos::RCP<Core::FE::Discretization> discretization)
+    std::shared_ptr<Core::FE::Discretization> discretization)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->build_id_sets(discretization);
@@ -243,8 +243,8 @@ void BEAMINTERACTION::BeamInteractionConditions::build_id_sets(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::set_state(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>&
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>&
         beaminteraction_data_state)
 {
   for (auto const& map_pair : condition_map_)
@@ -256,7 +256,7 @@ void BEAMINTERACTION::BeamInteractionConditions::set_state(
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::setup(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret)
+    const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
   for (auto const& map_pair : condition_map_)
     for (auto const& condition : map_pair.second) condition->setup(discret);
@@ -274,39 +274,39 @@ void BEAMINTERACTION::BeamInteractionConditions::clear()
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamInteractionConditions::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> new_pair;
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair> new_pair;
   for (auto& map_pair : condition_map_)
   {
     for (auto& condition : map_pair.second)
     {
       new_pair = condition->create_contact_pair(ele_ptrs);
-      if (new_pair != Teuchos::null) return new_pair;
+      if (new_pair != nullptr) return new_pair;
     }
   }
 
   // Default return value, i.e. the pair was not found in any of the conditions.
-  return Teuchos::null;
+  return nullptr;
 }
 
 /**
  *
  */
 void BEAMINTERACTION::BeamInteractionConditions::create_indirect_assembly_managers(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    std::vector<Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    std::vector<std::shared_ptr<SUBMODELEVALUATOR::BeamContactAssemblyManager>>& assembly_managers)
 {
-  Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
-      condition_assembly_manager = Teuchos::null;
+  std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>
+      condition_assembly_manager = nullptr;
   for (auto& map_pair : condition_map_)
   {
     for (auto& condition : map_pair.second)
     {
       condition_assembly_manager = condition->create_indirect_assembly_manager(discret);
-      if (not(condition_assembly_manager == Teuchos::null))
+      if (not(condition_assembly_manager == nullptr))
         assembly_managers.push_back(condition_assembly_manager);
     }
   }

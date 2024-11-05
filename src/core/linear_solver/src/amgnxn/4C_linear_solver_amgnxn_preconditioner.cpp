@@ -34,7 +34,7 @@ Core::LinearSolver::AmGnxnPreconditioner::AmGnxnPreconditioner(Teuchos::Paramete
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 
-Teuchos::RCP<Epetra_Operator> Core::LinearSolver::AmGnxnPreconditioner::prec_operator() const
+std::shared_ptr<Epetra_Operator> Core::LinearSolver::AmGnxnPreconditioner::prec_operator() const
 {
   return p_;
 }
@@ -56,7 +56,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(bool create, Epetra_Operato
         "The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
 
   // Do all the setup
-  setup(Teuchos::rcpFromRef(*A_bl));
+  setup(Core::Utils::shared_ptr_from_ref(*A_bl));
 
   return;
 }
@@ -65,7 +65,7 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(bool create, Epetra_Operato
 /*------------------------------------------------------------------------------*/
 
 void Core::LinearSolver::AmGnxnPreconditioner::setup(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::SOLVER::AMGnxn_Preconditioner::Setup");
 
@@ -73,8 +73,8 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
   timer.reset();
 
   // Free old matrix and preconditioner
-  a_ = Teuchos::null;
-  p_ = Teuchos::null;
+  a_ = nullptr;
+  p_ = nullptr;
 
   // Create own copy of the system matrix in order to allow reusing the preconditioner
   a_ = A;
@@ -92,14 +92,14 @@ void Core::LinearSolver::AmGnxnPreconditioner::setup(
   // Create the Operator
   if (myInterface.get_preconditioner_type() == "AMG(BlockSmoother)")
   {
-    p_ = Teuchos::make_rcp<AmGnxnOperator>(a_, myInterface.get_num_pdes(),
+    p_ = std::make_shared<AmGnxnOperator>(a_, myInterface.get_num_pdes(),
         myInterface.get_null_spaces_dim(), myInterface.get_null_spaces_data(),
         myInterface.get_preconditioner_params(), myInterface.get_smoothers_params(),
         myInterface.get_smoothers_params());
   }
   else if (myInterface.get_preconditioner_type() == "BlockSmoother(X)")
   {
-    p_ = Teuchos::make_rcp<BlockSmootherOperator>(a_, myInterface.get_num_pdes(),
+    p_ = std::make_shared<BlockSmootherOperator>(a_, myInterface.get_num_pdes(),
         myInterface.get_null_spaces_dim(), myInterface.get_null_spaces_data(),
         myInterface.get_preconditioner_params(), myInterface.get_smoothers_params());
   }
@@ -233,12 +233,12 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
     num_pdes_[block] = mllist.get<int>("PDE equations", -1);
     null_spaces_dim_[block] = mllist.get<int>("null space: dimension", -1);
 
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
-        mllist.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace", Teuchos::null);
-    if (nullspace == Teuchos::null) FOUR_C_THROW("Nullspace vector is null!");
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
+        mllist.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace", nullptr);
+    if (nullspace == nullptr) FOUR_C_THROW("Nullspace vector is null!");
 
-    Teuchos::RCP<std::vector<double>> ns =
-        Teuchos::make_rcp<std::vector<double>>(nullspace->MyLength() * nullspace->NumVectors());
+    std::shared_ptr<std::vector<double>> ns =
+        std::make_shared<std::vector<double>>(nullspace->MyLength() * nullspace->NumVectors());
 
     Core::LinAlg::epetra_multi_vector_to_std_vector(*nullspace, *ns, null_spaces_dim_[block]);
     null_spaces_data_[block] = ns;
@@ -246,16 +246,16 @@ Core::LinearSolver::AmGnxnInterface::AmGnxnInterface(Teuchos::ParameterList& par
     // Some checks
     if (num_pdes_[block] < 1 or null_spaces_dim_[block] < 1)
       FOUR_C_THROW("Error: PDE equations or null space dimension wrong.");
-    if (null_spaces_data_[block] == Teuchos::null) FOUR_C_THROW("Error: null space data is empty");
+    if (null_spaces_data_[block] == nullptr) FOUR_C_THROW("Error: null space data is empty");
   }
 }
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 Core::LinearSolver::AmGnxnOperator::AmGnxnOperator(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
     std::vector<int> null_spaces_dim,
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
     const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params,
     const Teuchos::ParameterList& muelu_params)
     : a_(A),
@@ -358,7 +358,7 @@ int Core::LinearSolver::AmGnxnOperator::ApplyInverse(
     Ybl.set_vector(Yi, i);
   }
 
-  if (v_ == Teuchos::null) FOUR_C_THROW("Null pointer. We cannot call the vcycle");
+  if (v_ == nullptr) FOUR_C_THROW("Null pointer. We cannot call the vcycle");
 
   v_->solve(Xbl, Ybl, true);
 
@@ -394,7 +394,7 @@ void Core::LinearSolver::AmGnxnOperator::setup()
   }
 
 
-  v_ = Teuchos::make_rcp<AMGNxN::CoupledAmg>(Abl, num_pdes_, null_spaces_dim_, null_spaces_data_,
+  v_ = std::make_shared<AMGNxN::CoupledAmg>(Abl, num_pdes_, null_spaces_dim_, null_spaces_data_,
       amgnxn_params_, smoothers_params_, muelu_params_);
 
 
@@ -406,9 +406,9 @@ void Core::LinearSolver::AmGnxnOperator::setup()
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/
 Core::LinearSolver::BlockSmootherOperator::BlockSmootherOperator(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
     std::vector<int> null_spaces_dim,
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
     const Teuchos::ParameterList& amgnxn_params, const Teuchos::ParameterList& smoothers_params)
     : a_(A),
       num_pdes_(num_pdes),

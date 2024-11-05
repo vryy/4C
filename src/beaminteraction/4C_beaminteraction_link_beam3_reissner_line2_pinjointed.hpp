@@ -110,7 +110,7 @@ namespace BEAMINTERACTION
     void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
     /// return copy of this linking object
-    Teuchos::RCP<BeamLink> clone() const override;
+    std::shared_ptr<BeamLink> clone() const override;
 
     //@}
 
@@ -189,7 +189,7 @@ namespace BEAMINTERACTION
     Core::LinAlg::Matrix<4, 1> triad_;
 
     //! new connecting element
-    Teuchos::RCP<Discret::Elements::Beam3r> linkele_;
+    std::shared_ptr<Discret::Elements::Beam3r> linkele_;
 
     //! the following variables are for output purposes only (no need to pack or unpack)
     std::vector<Core::LinAlg::SerialDenseVector> bspotforces_;

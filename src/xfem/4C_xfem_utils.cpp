@@ -21,9 +21,9 @@ FOUR_C_NAMESPACE_OPEN
 
 void XFEM::Utils::extract_node_vectors(Core::FE::Discretization& dis,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& nodevecmap,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp)
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispnp)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispcol =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispcol =
       Core::Rebalance::get_col_version_of_row_vector(dis, idispnp);
   nodevecmap.clear();
 
@@ -48,7 +48,7 @@ void XFEM::Utils::extract_node_vectors(Core::FE::Discretization& dis,
 // set master and slave parameters (winter 01/2015)
 // -------------------------------------------------------------------
 void XFEM::Utils::get_volume_cell_material(Core::Elements::Element* actele,
-    Teuchos::RCP<Core::Mat::Material>& mat, Cut::Point::PointPosition position)
+    std::shared_ptr<Core::Mat::Material>& mat, Cut::Point::PointPosition position)
 {
   int position_id = 0;
   if (position == Cut::Point::inside)  // minus domain, Omega^i with i<j
@@ -56,7 +56,7 @@ void XFEM::Utils::get_volume_cell_material(Core::Elements::Element* actele,
   else if (position != Cut::Point::outside)  // plus domain, \Omega^j with j>i
     FOUR_C_THROW("Volume cell is either undecided or on surface. That can't be good....");
 
-  Teuchos::RCP<Core::Mat::Material> material = actele->material();
+  std::shared_ptr<Core::Mat::Material> material = actele->material();
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
@@ -88,7 +88,7 @@ void XFEM::Utils::get_volume_cell_material(Core::Elements::Element* actele,
  |                                                         winter 01/15 |
  *----------------------------------------------------------------------*/
 void XFEM::Utils::safety_check_materials(
-    Teuchos::RCP<Core::Mat::Material>& pmat, Teuchos::RCP<Core::Mat::Material>& nmat)
+    std::shared_ptr<Core::Mat::Material>& pmat, std::shared_ptr<Core::Mat::Material>& nmat)
 {
   //------------------------------ see whether materials in patch are equal
 

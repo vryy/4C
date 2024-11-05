@@ -556,7 +556,7 @@ void CONTACT::Utils::DbcHandler::detect_dbc_slave_elements(
     }
     const Core::Conditions::Condition& slcond = **sl_citer;
 
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& geometry = slcond.geometry();
+    const std::map<int, std::shared_ptr<Core::Elements::Element>>& geometry = slcond.geometry();
     for (const auto& iele_pair : geometry)
     {
       const Core::Elements::Element* ele = iele_pair.second.get();

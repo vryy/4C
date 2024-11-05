@@ -21,10 +21,11 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    TimIntStationaryHDG(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntStationaryHDG(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     /// initialize time integration scheme
     void init() override;
@@ -33,10 +34,10 @@ namespace ScaTra
     void compute_intermediate_values() override { return; };
 
     /// routine to return time integration specific parameters
-    Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() override
+    std::shared_ptr<Teuchos::ParameterList> scatra_time_parameter_list() override
     {
       FOUR_C_THROW("Not yet implemented!");
-      return Teuchos::null;
+      return nullptr;
     }
 
    protected:

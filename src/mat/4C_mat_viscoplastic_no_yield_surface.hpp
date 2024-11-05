@@ -15,7 +15,7 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,7 +29,7 @@ namespace Mat
     {
      public:
       explicit ViscoPlasticNoYieldSurface(const Core::Mat::PAR::Parameter::Data& matdata);
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! @name return methods of material parameters
       //! @{
@@ -161,9 +161,9 @@ namespace Mat
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ViscoPlasticNoYieldSurface>(*this);
+      return std::make_shared<ViscoPlasticNoYieldSurface>(*this);
     }
 
     //! @name Evaluation methods

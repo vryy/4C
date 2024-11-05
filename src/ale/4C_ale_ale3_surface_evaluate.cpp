@@ -63,12 +63,12 @@ int Discret::Elements::Ale3Surface::evaluate(Teuchos::ParameterList& params,
   {
     case Ale3::ba_calc_ale_node_normal:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp;
       std::vector<double> mydispnp;
 
       dispnp = discretization.get_state("dispnp");
 
-      if (dispnp != Teuchos::null)
+      if (dispnp != nullptr)
       {
         mydispnp.resize(lm.size());
         Core::FE::extract_my_values(*dispnp, mydispnp, lm);

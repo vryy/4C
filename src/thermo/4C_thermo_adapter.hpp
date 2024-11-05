@@ -21,7 +21,8 @@
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -103,16 +104,16 @@ namespace Thermo
     //@{
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() = 0;
 
     /// RHS of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() = 0;
 
     /// unknown temperatures at t(n+1)
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp() = 0;
 
     /// unknown temperatures at t(n)
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> tempn() = 0;
 
     //@}
 
@@ -120,22 +121,22 @@ namespace Thermo
     //@{
 
     /// DOF map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map() = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map() = 0;
 
     /// DOF map of vector of unknowns for multiple dofsets
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// domain map of system matrix (do we really need this?)
     virtual const Epetra_Map& domain_map() = 0;
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> discretization() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
 
     //@}
 
@@ -178,13 +179,13 @@ namespace Thermo
     virtual void prepare_time_step() = 0;
 
     /// evaluate residual at given temperature increment
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) = 0;
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi) = 0;
 
     /// evaluate residual at given temperature increment
     virtual void evaluate() = 0;
 
     /// update temperature increment after Newton step
-    virtual void update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi) = 0;
+    virtual void update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi) = 0;
 
     /// update at time step end
     virtual void update() = 0;
@@ -193,7 +194,7 @@ namespace Thermo
     virtual void print_step() = 0;
 
     //! Access to output object
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() = 0;
+    virtual std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer() = 0;
 
     /// prepare output
     virtual void prepare_output() = 0;
@@ -209,13 +210,14 @@ namespace Thermo
 
     //! store an RCP to the contact strategy constructed in the structural time integration
     virtual void set_nitsche_contact_strategy(
-        Teuchos::RCP<CONTACT::NitscheStrategyTsi> strategy) = 0;
+        std::shared_ptr<CONTACT::NitscheStrategyTsi> strategy) = 0;
 
     //! store an RCP to the contact interface parameters in the structural time integration
-    virtual void set_nitsche_contact_parameters(Teuchos::RCP<CONTACT::ParamsInterface> params) = 0;
+    virtual void set_nitsche_contact_parameters(
+        std::shared_ptr<CONTACT::ParamsInterface> params) = 0;
 
     /// apply interface loads on the thermal field
-    virtual void set_force_interface(Teuchos::RCP<Core::LinAlg::Vector<double>> ithermoload) = 0;
+    virtual void set_force_interface(std::shared_ptr<Core::LinAlg::Vector<double>> ithermoload) = 0;
 
 
     //@}
@@ -234,17 +236,17 @@ namespace Thermo
     virtual Inpar::Thermo::ConvergenceStatus solve() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 
     //! @name Extract temperature values needed for TSI
     //@{
     /// extract temperatures for inserting in structure field
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_tempn() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_tempn() = 0;
 
     /// extract current temperatures for inserting in structure field
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_tempnp() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_tempnp() = 0;
     //@}
 
     /// Identify residual
@@ -256,7 +258,7 @@ namespace Thermo
     virtual void prepare_partition_step() = 0;
 
     /// create result test for encapulated thermo algorithm
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test() = 0;
   };
 
 
@@ -266,7 +268,7 @@ namespace Thermo
    public:
     /// constructor
     explicit BaseAlgorithm(
-        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis);
+        const Teuchos::ParameterList& prbdyn, std::shared_ptr<Core::FE::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~BaseAlgorithm() = default;
@@ -276,19 +278,19 @@ namespace Thermo
     /// const version of thermal field solver
     const Adapter& thermo_field() const { return *thermo_; }
     /// Teuchos::rcp version of thermal field solver
-    Teuchos::RCP<Adapter> thermo_fieldrcp() { return thermo_; }
+    std::shared_ptr<Adapter> thermo_fieldrcp() { return thermo_; }
 
    private:
     /// setup thermo algorithm
     void setup_thermo(
-        const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis);
+        const Teuchos::ParameterList& prbdyn, std::shared_ptr<Core::FE::Discretization> actdis);
 
     /// setup thermo algorithm of Thermo::TimIntImpl type
     void setup_tim_int(const Teuchos::ParameterList& prbdyn, Inpar::Thermo::DynamicType timinttype,
-        Teuchos::RCP<Core::FE::Discretization> actdis);
+        std::shared_ptr<Core::FE::Discretization> actdis);
 
     /// thermal field solver
-    Teuchos::RCP<Adapter> thermo_;
+    std::shared_ptr<Adapter> thermo_;
 
   };  // class BaseAlgorithm
 

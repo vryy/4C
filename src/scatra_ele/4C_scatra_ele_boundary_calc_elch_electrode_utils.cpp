@@ -10,6 +10,8 @@
 #include "4C_inpar_s2i.hpp"
 #include "4C_utils_exceptions.hpp"
 
+#include <cmath>
+
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*

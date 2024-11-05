@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams(
-    const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container)
+    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container> container)
     : CONTACT::CONSTITUTIVELAW::Parameter(container),
       firstmatid_(container->get<int>("FirstMatID")),
       secondmatid_(container->get<int>("SecondMatID")),
@@ -47,10 +47,10 @@ CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::MircoConstitutiveLawParams
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
+std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw>
 CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::create_constitutive_law()
 {
-  return Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw>(this);
+  return std::make_shared<CONTACT::CONSTITUTIVELAW::MircoConstitutiveLaw>(this);
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -65,7 +65,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::set_parameters()
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)

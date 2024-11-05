@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
  | ctor (public)                                              ager 02/15|
  *----------------------------------------------------------------------*/
 CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
-    const Teuchos::RCP<CONTACT::AbstractStratDataContainer>& data_ptr,
+    const std::shared_ptr<CONTACT::AbstractStratDataContainer>& data_ptr,
     const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap, Teuchos::ParameterList params,
-    std::vector<Teuchos::RCP<CONTACT::Interface>> interface, int dim,
-    Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof)
+    std::vector<std::shared_ptr<CONTACT::Interface>> interface, int dim,
+    std::shared_ptr<Epetra_Comm> comm, double alphaf, int maxdof)
     : LagrangeStrategy(
           data_ptr, dof_row_map, NodeRowMap, params, interface, dim, comm, alphaf, maxdof),
       has_to_evaluate_(false),
@@ -36,17 +36,17 @@ CONTACT::MonoCoupledLagrangeStrategy::MonoCoupledLagrangeStrategy(
  | integrator + condensation of offdiagonal Matrixes (public) ager 02/15|
  *----------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
-    std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*> k_sx,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& k_ss,
+    std::map<int, std::shared_ptr<Core::LinAlg::SparseOperator>*> k_sx,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
     bool predictor)
 {
   // call the main routine for contact!!!
   CONTACT::AbstractStrategy::apply_force_stiff_cmt(dis, k_ss, rhs_s, step, iter, predictor);
 
   // Take care of the alternative condensation of the off-diagonal blocks!!!
-  std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>*>::iterator matiter;
+  std::map<int, std::shared_ptr<Core::LinAlg::SparseOperator>*>::iterator matiter;
   for (matiter = k_sx.begin(); matiter != k_sx.end(); ++matiter)
   {
     evaluate_off_diag_contact(*(matiter->second), matiter->first);
@@ -60,10 +60,10 @@ void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
  | integrator + condensation of one!!! offdiagonal Matrixes (public) ager 02/15|
  *----------------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_ss,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& k_sx,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& k_ss,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& k_sx,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& rhs_s, const int step, const int iter,
     bool predictor)
 {
   // call the main routine for contact!!!
@@ -80,7 +80,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::apply_force_stiff_cmt_coupled(
  |  condense off-diagonal blocks                      (public)  ager 02/15|
  *-----------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff, int Column_Block_Id)
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kteff, int Column_Block_Id)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -90,7 +90,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
   // (this is a prerequisite for the Split2x2 methods to be called later)
   kteff->complete();
 
-  Teuchos::RCP<Epetra_Map> domainmap = Teuchos::make_rcp<Epetra_Map>(kteff->domain_map());
+  std::shared_ptr<Epetra_Map> domainmap = std::make_shared<Epetra_Map>(kteff->domain_map());
 
   // system type
   auto systype = Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(params(), "SYSTEM");
@@ -115,23 +115,23 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     /**********************************************************************/
 
     // we want to split k into 3 groups s,m,n = 9 blocks
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ks, km, kn;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ks, km, kn;
 
     // temporarily we need the blocks ksmsm, ksmn, knsm
     // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ksm, ksm0, kn0, km0, ks0;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ksm, ksm0, kn0, km0, ks0;
 
-    // some temporary Teuchos::RCPs
-    Teuchos::RCP<Epetra_Map> tempmap0;
-    Teuchos::RCP<Epetra_Map> tempmap1;
-    Teuchos::RCP<Epetra_Map> ftempmap;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx2;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx3;
+    // some temporary std::shared_ptrs
+    std::shared_ptr<Epetra_Map> tempmap0;
+    std::shared_ptr<Epetra_Map> tempmap1;
+    std::shared_ptr<Epetra_Map> ftempmap;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx2;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx3;
 
     // split into slave/master part + structure part
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffmatrix =
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(kteff);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kteffmatrix =
+        std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(kteff);
 
     if (parallel_redistribution_status())  // TODO Check if how to modify
     {
@@ -149,7 +149,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
         ksm, gsdofrowmap_, gmdofrowmap_, domainmap, tempmap0, ks, ks0, km, km0);
 
     // store some stuff for static condensation of LM
-    csx_s_.insert(std::pair<int, Teuchos::RCP<Core::LinAlg::SparseMatrix>>(Column_Block_Id, ks));
+    csx_s_.insert(std::pair<int, std::shared_ptr<Core::LinAlg::SparseMatrix>>(Column_Block_Id, ks));
 
 
     /**********************************************************************/
@@ -157,14 +157,14 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     /**********************************************************************/
 
     // we want to split kssmod into 2 groups a,i = 4 blocks
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> ka, ka0, ki, ki0;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> ka, ka0, ki, ki0;
 
     // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kan, kin, kam, kim, kma, kmi;
 
     // we will get the i rowmap as a by-product
-    Teuchos::RCP<Epetra_Map> gidofs;
-    Teuchos::RCP<Epetra_Map> fgidofs;
+    std::shared_ptr<Epetra_Map> gidofs;
+    std::shared_ptr<Epetra_Map> fgidofs;
 
     // do the splitting
     Core::LinAlg::split_matrix2x2(ks, gactivedofs_, gidofs, domainmap, tempmap1, ka, ka0, ki, ki0);
@@ -186,7 +186,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     kmmod.add(*km, false, 1.0, 1.0);
     if (aset)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> kmadd =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> kmadd =
           Core::LinAlg::matrix_multiply(*mhataam_, true, *ka, false, false, false, true);
       kmmod.add(*kmadd, false, 1.0, 1.0);
     }
@@ -203,7 +203,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     kimod.add(*ki, false, 1.0, 1.0);
     if (aset)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> kiadd =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> kiadd =
           Core::LinAlg::matrix_multiply(*dhat_, true, *ka, false, false, false, true);
       kimod.add(*kiadd, false, -1.0, 1.0);
     }
@@ -214,7 +214,7 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
 
     //----------------------------------------------------------- FIFTH LINE
     // ka: multiply tmatrix with invda and ka
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kamod;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kamod;
     if (aset)
     {
       kamod = Core::LinAlg::matrix_multiply(*tmatrix_, false, *invda_, true, false, false, true);
@@ -239,8 +239,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
     /* (10) Global setup of kteffnew (including contact)                  */
     /**********************************************************************/
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kteffnew =
+        std::make_shared<Core::LinAlg::SparseMatrix>(
             *gdisprowmap_, 81, true, false, kteffmatrix->get_matrixtype());
 
     //----------------------------------------------------------- FIRST LINE
@@ -277,8 +277,8 @@ void CONTACT::MonoCoupledLagrangeStrategy::evaluate_off_diag_contact(
  | Coupled Recovery method for contact LM                       ager 02/15|
  *-----------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> inc)
+    std::shared_ptr<Core::LinAlg::Vector<double>> disi,
+    std::map<int, std::shared_ptr<Core::LinAlg::Vector<double>>> inc)
 {
   // check if contact contributions are present,
   // if not we can skip this routine to speed things up
@@ -315,17 +315,17 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
     // (this automatically renders the incative LM to be zero)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invda;
-    Teuchos::RCP<Epetra_Map> tempmap;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> invda;
+    std::shared_ptr<Epetra_Map> tempmap;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
     Core::LinAlg::split_matrix2x2(
         invd_, gactivedofs_, tempmap, gactivedofs_, tempmap, invda, tempmtx1, tempmtx2, tempmtx3);
     Core::LinAlg::SparseMatrix invdmod(*gsdofrowmap_, 10);
     invdmod.add(*invda, false, 1.0, 1.0);
     invdmod.complete();
 
-    std::map<int, Teuchos::RCP<Core::LinAlg::SparseOperator>>::iterator matiter;
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>>::iterator inciter;
+    std::map<int, std::shared_ptr<Core::LinAlg::SparseOperator>>::iterator matiter;
+    std::map<int, std::shared_ptr<Core::LinAlg::Vector<double>>>::iterator inciter;
 
     // loop over all offdiag blocks!!!
     for (matiter = csx_s_.begin(); matiter != csx_s_.end(); ++matiter)
@@ -353,22 +353,22 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
         // full update
         //      z_ = Teuchos::rcp(new Core::LinAlg::Vector<double>(*gsdofrowmap_));
         //      z_->Update(1.0,*fs_,0.0);
-        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod = Teuchos::rcp(new
+        //      std::shared_ptr<Core::LinAlg::Vector<double>> mod = Teuchos::rcp(new
         //      Core::LinAlg::Vector<double>(*gsdofrowmap_)); kss_->Multiply(false,*disis,*mod);
         //      z_->Update(-1.0,*mod,1.0);
         //      ksm_->Multiply(false,*disim,*mod);
         //      z_->Update(-1.0,*mod,1.0);
         //      ksn_->Multiply(false,*disin,*mod);
         //      z_->Update(-1.0,*mod,1.0);
-        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod2 = Teuchos::rcp(new
+        //      std::shared_ptr<Core::LinAlg::Vector<double>> mod2 = Teuchos::rcp(new
         //      Core::LinAlg::Vector<double>((dold_->RowMap()))); if
         //      (dold_->RowMap().NumGlobalElements()) Core::LinAlg::export_to(*zold_,*mod2);
-        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod3 = Teuchos::rcp(new
+        //      std::shared_ptr<Core::LinAlg::Vector<double>> mod3 = Teuchos::rcp(new
         //      Core::LinAlg::Vector<double>((dold_->RowMap()))); dold_->Multiply(true,*mod2,*mod3);
-        //      Teuchos::RCP<Core::LinAlg::Vector<double>> mod4 = Teuchos::rcp(new
+        //      std::shared_ptr<Core::LinAlg::Vector<double>> mod4 = Teuchos::rcp(new
         //      Core::LinAlg::Vector<double>(*gsdofrowmap_)); if (gsdofrowmap_->NumGlobalElements())
         //      Core::LinAlg::export_to(*mod3,*mod4); z_->Update(-alphaf_,*mod4,1.0);
-        //      Teuchos::RCP<Core::LinAlg::Vector<double>> zcopy = Teuchos::rcp(new
+        //      std::shared_ptr<Core::LinAlg::Vector<double>> zcopy = Teuchos::rcp(new
         //      Core::LinAlg::Vector<double>(*z_)); invdmod->Multiply(true,*zcopy,*z_);
         //      z_->Scale(1/(1-alphaf_));
       }
@@ -411,10 +411,11 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
  | Coupled Recovery method for contact LM with one offdiag block ager 02/15|
  *------------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disi, Teuchos::RCP<Core::LinAlg::Vector<double>> inc)
+    std::shared_ptr<Core::LinAlg::Vector<double>> disi,
+    std::shared_ptr<Core::LinAlg::Vector<double>> inc)
 {
-  std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> incm;
-  incm.insert(std::pair<int, Teuchos::RCP<Core::LinAlg::Vector<double>>>(0, inc));
+  std::map<int, std::shared_ptr<Core::LinAlg::Vector<double>>> incm;
+  incm.insert(std::pair<int, std::shared_ptr<Core::LinAlg::Vector<double>>>(0, inc));
 
   recover_coupled(disi, incm);
   return;
@@ -424,12 +425,13 @@ void CONTACT::MonoCoupledLagrangeStrategy::recover_coupled(
  | Save mortar coupling matrices for evaluation of off diag terms! ager 08/14|
  *--------------------------------------------------------------------------*/
 void CONTACT::MonoCoupledLagrangeStrategy::save_coupling_matrices(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dhat, Teuchos::RCP<Core::LinAlg::SparseMatrix> mhataam,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> invda)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dhat,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mhataam,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> invda)
 {
-  dhat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dhat);
-  mhataam_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*mhataam);
-  invda_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*invda);
+  dhat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dhat);
+  mhataam_ = std::make_shared<Core::LinAlg::SparseMatrix>(*mhataam);
+  invda_ = std::make_shared<Core::LinAlg::SparseMatrix>(*invda);
 }
 
 FOUR_C_NAMESPACE_CLOSE

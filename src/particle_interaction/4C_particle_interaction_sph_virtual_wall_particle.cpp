@@ -176,8 +176,7 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->get_vel_col() != Teuchos::null or
-        walldatastate->get_acc_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr or walldatastate->get_acc_col() != nullptr)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2d(
@@ -194,7 +193,7 @@ void ParticleInteraction::SPHVirtualWallParticle::init_states_at_wall_contact_po
     // acceleration of wall contact point j
     double acc_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->get_acc_col() != Teuchos::null)
+    if (walldatastate->get_acc_col() != nullptr)
     {
       // get nodal accelerations
       std::vector<double> nodal_acc(numnodes * 3);

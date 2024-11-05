@@ -40,8 +40,8 @@ void loma_dyn(int restart)
   Global::Problem* problem = Global::Problem::instance();
 
   // access fluid and (typically empty) scatra discretization
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // ensure that all dofs are assigned in the right order such that
   // dof numbers are created with fluid dof < scatra/elch dof
@@ -83,8 +83,8 @@ void loma_dyn(int restart)
           lomacontrol, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-          Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+      std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+          std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
               Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");

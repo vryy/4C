@@ -33,7 +33,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
   using namespace FourC;
 
   // initialize proc0map_ correctly
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->node_row_map();
   proc0map_ = Core::LinAlg::allreduce_e_map(*noderowmap, 0);
 
@@ -44,7 +44,7 @@ EnsightWriter::EnsightWriter(PostField* field, const std::string& filename)
       proc0map_->MyGlobalElements(), proc0map_->MyGlobalElements() + proc0map_->NumMyElements());
   std::sort(sortmap.begin(), sortmap.end());
   proc0map_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm());
+      std::make_shared<Epetra_Map>(-1, sortmap.size(), sortmap.data(), 0, proc0map_->Comm());
 
   // get the number of elements for each distype (global numbers)
   numElePerDisType_ = get_num_ele_per_dis_type(*dis);
@@ -320,7 +320,7 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
   }
 
   // write the grid information
-  Teuchos::RCP<Epetra_Map> proc0map = write_coordinates(file, *field_->discretization());
+  std::shared_ptr<Epetra_Map> proc0map = write_coordinates(file, *field_->discretization());
   proc0map_ = proc0map;  // update the internal map
   write_cells(file, field_->discretization(), proc0map);
 
@@ -331,7 +331,7 @@ void EnsightWriter::write_geo_file_one_time_step(std::ofstream& file,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
+std::shared_ptr<Epetra_Map> EnsightWriter::write_coordinates(
     std::ofstream& geofile, Core::FE::Discretization& dis)
 {
   using namespace FourC;
@@ -346,7 +346,7 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
 
   // map for all visualisation points after they have been
   // communicated to proc 0
-  Teuchos::RCP<Epetra_Map> proc0map;
+  std::shared_ptr<Epetra_Map> proc0map;
 
   switch (distype)
   {
@@ -379,8 +379,8 @@ Teuchos::RCP<Epetra_Map> EnsightWriter::write_coordinates(
   | write node connectivity for every element                  gjb 12/07 |
   *----------------------------------------------------------------------*/
 void EnsightWriter::write_cells(std::ofstream& geofile,
-    const Teuchos::RCP<Core::FE::Discretization> dis,
-    const Teuchos::RCP<Epetra_Map>& proc0map) const
+    const std::shared_ptr<Core::FE::Discretization> dis,
+    const std::shared_ptr<Epetra_Map>& proc0map) const
 {
   using namespace FourC;
 
@@ -1322,12 +1322,12 @@ void EnsightWriter::write_special_field(SpecialFieldInterface& special, PostResu
     filenames[i] = filename_ + "_" + field_->name() + "." + fieldnames[i];
   }
 
-  std::vector<Teuchos::RCP<std::ofstream>> files(numfiles);
+  std::vector<std::shared_ptr<std::ofstream>> files(numfiles);
   std::vector<int> startfilepos(numfiles);
   for (int i = 0; i < numfiles; ++i) startfilepos[i] = 0;
   for (int i = 0; i < numfiles; ++i)
   {
-    files[i] = Teuchos::make_rcp<std::ofstream>();
+    files[i] = std::make_shared<std::ofstream>();
 
     if (myrank_ == 0)
     {
@@ -1498,17 +1498,17 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
   write(file, field_->field_pos() + 1);
   write(file, "coordinates");
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* nodemap = dis->node_row_map();  // local node row map
   const int numnp = nodemap->NumGlobalElements();
 
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> data = result.read_result(groupname);
+  const std::shared_ptr<Core::LinAlg::Vector<double>> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::make_rcp<Epetra_Map>(datamap.NumGlobalElements(),
-      datamap.NumMyElements(), datamap.MyGlobalElements(), 0, datamap.Comm());
+  std::shared_ptr<Epetra_Map> epetradatamap;
+  epetradatamap = std::make_shared<Epetra_Map>(datamap.NumGlobalElements(), datamap.NumMyElements(),
+      datamap.MyGlobalElements(), 0, datamap.Comm());
 
   // determine offset of dofs in case of multiple discretizations in
   // separate files (e.g. multi-scale problems). during calculation,
@@ -1554,7 +1554,7 @@ void EnsightWriter::write_dof_result_step(std::ofstream& file, PostResult& resul
     // each processor provides its result values for proc 0
     //------------------------------------------------------
 
-    Teuchos::RCP<Epetra_Map> proc0datamap;
+    std::shared_ptr<Epetra_Map> proc0datamap;
     proc0datamap = Core::LinAlg::allreduce_e_map(*epetradatamap, 0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
@@ -1685,7 +1685,8 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file, PostResult& res
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
-  const Teuchos::RCP<Core::LinAlg::MultiVector<double>> data = result.read_multi_result(groupname);
+  const std::shared_ptr<Core::LinAlg::MultiVector<double>> data =
+      result.read_multi_result(groupname);
   write_nodal_result_step(file, data, resultfilepos, groupname, name, numdf);
 }
 
@@ -1696,7 +1697,7 @@ void EnsightWriter::write_nodal_result_step(std::ofstream& file, PostResult& res
   Each node has to have the same number of dofs.
 */
 void EnsightWriter::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -1807,22 +1808,22 @@ void EnsightWriter::write_element_dof_result_step(std::ofstream& file, PostResul
   write(file, "part");
   write(file, field_->field_pos() + 1);
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
   const Epetra_Map* elementmap = dis->element_row_map();  // local node row map
 
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> data = result.read_result(groupname);
+  const std::shared_ptr<Core::LinAlg::Vector<double>> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::make_rcp<Epetra_Map>(datamap.NumGlobalElements(),
-      datamap.NumMyElements(), datamap.MyGlobalElements(), 0, datamap.Comm());
+  std::shared_ptr<Epetra_Map> epetradatamap;
+  epetradatamap = std::make_shared<Epetra_Map>(datamap.NumGlobalElements(), datamap.NumMyElements(),
+      datamap.MyGlobalElements(), 0, datamap.Comm());
 
   //------------------------------------------------------
   // each processor provides its result values for proc 0
   //------------------------------------------------------
 
-  Teuchos::RCP<Epetra_Map> proc0datamap;
+  std::shared_ptr<Epetra_Map> proc0datamap;
   proc0datamap = Core::LinAlg::allreduce_e_map(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
@@ -1945,7 +1946,8 @@ void EnsightWriter::write_element_result_step(std::ofstream& file, PostResult& r
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
-  const Teuchos::RCP<Core::LinAlg::MultiVector<double>> data = result.read_multi_result(groupname);
+  const std::shared_ptr<Core::LinAlg::MultiVector<double>> data =
+      result.read_multi_result(groupname);
   write_element_result_step(file, data, resultfilepos, groupname, name, numdf, from);
 }
 
@@ -1961,7 +1963,7 @@ void EnsightWriter::write_element_result_step(std::ofstream& file, PostResult& r
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -1981,15 +1983,15 @@ void EnsightWriter::write_element_result_step(std::ofstream& file,
   const int numcol = data->NumVectors();
 
   // do stupid conversion into Epetra map
-  Teuchos::RCP<Epetra_Map> epetradatamap;
-  epetradatamap = Teuchos::make_rcp<Epetra_Map>(datamap.NumGlobalElements(),
-      datamap.NumMyElements(), datamap.MyGlobalElements(), 0, datamap.Comm());
+  std::shared_ptr<Epetra_Map> epetradatamap;
+  epetradatamap = std::make_shared<Epetra_Map>(datamap.NumGlobalElements(), datamap.NumMyElements(),
+      datamap.MyGlobalElements(), 0, datamap.Comm());
 
   //------------------------------------------------------
   // each processor provides its result values for proc 0
   //------------------------------------------------------
 
-  Teuchos::RCP<Epetra_Map> proc0datamap;
+  std::shared_ptr<Epetra_Map> proc0datamap;
   proc0datamap = Core::LinAlg::allreduce_e_map(*epetradatamap, 0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
@@ -2327,19 +2329,19 @@ std::string EnsightWriter::get_file_section_string_from_filesets(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::write_coordinates_for_polynomial_shapefunctions(
-    std::ofstream& geofile, Core::FE::Discretization& dis, Teuchos::RCP<Epetra_Map>& proc0map)
+    std::ofstream& geofile, Core::FE::Discretization& dis, std::shared_ptr<Epetra_Map>& proc0map)
 {
   using namespace FourC;
 
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> nodecoords;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> nodecoords;
 
   const int NSD = 3;  // number of space dimensions
 
   const Epetra_Map* nodemap = dis.node_row_map();
   const int numnp = nodemap->NumMyElements();
-  nodecoords = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodemap, 3);
+  nodecoords = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodemap, 3);
 
   // loop over the nodes on this proc and store the coordinate information
   for (int inode = 0; inode < numnp; inode++)

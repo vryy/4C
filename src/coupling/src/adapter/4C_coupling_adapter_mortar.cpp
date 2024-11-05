@@ -42,14 +42,14 @@ Coupling::Adapter::CouplingMortar::CouplingMortar(int spatial_dimension,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::setup(
-    const Teuchos::RCP<Core::FE::Discretization>& masterdis,
-    const Teuchos::RCP<Core::FE::Discretization>& slavedis,
-    const Teuchos::RCP<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
+    const std::shared_ptr<Core::FE::Discretization>& masterdis,
+    const std::shared_ptr<Core::FE::Discretization>& slavedis,
+    const std::shared_ptr<Core::FE::Discretization>& aledis, const std::vector<int>& coupleddof,
     const std::string& couplingcond, const Epetra_Comm& comm,
     const Core::Utils::FunctionManager& function_manager,
     const Teuchos::ParameterList& binning_params,
-    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type, const bool slavewithale,
     const bool slidingale, const int nds_master, const int nds_slave)
 {
@@ -62,8 +62,8 @@ void Coupling::Adapter::CouplingMortar::setup(
   std::map<int, Core::Nodes::Node*> slavegnodes;
 
   // initialize maps for elements
-  std::map<int, Teuchos::RCP<Core::Elements::Element>> masterelements;
-  std::map<int, Teuchos::RCP<Core::Elements::Element>> slaveelements;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> masterelements;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> slaveelements;
 
   // Coupling condition is defined by "MORTAR COUPLING CONDITIONS"
   // There is only one discretization (masterdis == slavedis). Therefore, the node set have to be
@@ -129,9 +129,10 @@ void Coupling::Adapter::CouplingMortar::setup(
   inputmortar.setParameters(mortar_coupling_params_);
 
   // interface displacement (=0) has to be merged from slave and master discretization
-  Teuchos::RCP<Epetra_Map> dofrowmap =
+  std::shared_ptr<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(masterdofrowmap_, slavedofrowmap_, false);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dispn = Core::LinAlg::create_vector(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dispn =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
   // set displacement state in mortar interface
   interface_->set_state(Mortar::state_new_displacement, *dispn);
@@ -178,7 +179,7 @@ void Coupling::Adapter::CouplingMortar::setup(
     // the mesh relocation. Hence, this method cannot be used for problem types such
     // as elch, scatra, etc., having less coupling degrees of freedom than spatial
     // dimensions.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp(Teuchos::null);
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp(nullptr);
     mesh_relocation(
         *slavedis, aledis, masterdofrowmap_, slavedofrowmap_, idisp, comm, slavewithale);
   }
@@ -198,7 +199,7 @@ void Coupling::Adapter::CouplingMortar::setup(
  | check for overlap of slave and Dirichlet boundaries      farah 02/16 |
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
-    const Teuchos::RCP<Core::FE::Discretization>& slavedis, const Epetra_Comm& comm,
+    const std::shared_ptr<Core::FE::Discretization>& slavedis, const Epetra_Comm& comm,
     const Core::Utils::FunctionManager& function_manager)
 {
   // safety check
@@ -210,11 +211,11 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
   Teuchos::ParameterList p;
   p.set("total time", 0.0);
   p.set<const Core::Utils::FunctionManager*>("function_manager", &function_manager);
-  Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps =
-      Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> temp =
+  std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps =
+      std::make_shared<Core::LinAlg::MapExtractor>();
+  std::shared_ptr<Core::LinAlg::Vector<double>> temp =
       Core::LinAlg::create_vector(*(slavedis->dof_row_map()), true);
-  slavedis->evaluate_dirichlet(p, temp, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps);
+  slavedis->evaluate_dirichlet(p, temp, nullptr, nullptr, nullptr, dbcmaps);
 
   // loop over all slave row nodes of the interface
   for (int j = 0; j < interface_->slave_row_nodes()->NumMyElements(); ++j)
@@ -256,15 +257,15 @@ void Coupling::Adapter::CouplingMortar::check_slave_dirichlet_overlap(
  | setup routine for mortar framework                        ehrl 08/13 |
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::setup_interface(
-    const Teuchos::RCP<Core::FE::Discretization>& masterdis,
-    const Teuchos::RCP<Core::FE::Discretization>& slavedis, const std::vector<int>& coupleddof,
+    const std::shared_ptr<Core::FE::Discretization>& masterdis,
+    const std::shared_ptr<Core::FE::Discretization>& slavedis, const std::vector<int>& coupleddof,
     const std::map<int, Core::Nodes::Node*>& mastergnodes,
     const std::map<int, Core::Nodes::Node*>& slavegnodes,
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-    const std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
+    const std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+    const std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
     const Epetra_Comm& comm, const Teuchos::ParameterList& binning_params,
-    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType spatial_approximation_type, const bool slavewithale,
     const bool slidingale, const int nds_master, const int nds_slave)
 {
@@ -351,8 +352,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
         ii += 1;
       }
     }
-    Teuchos::RCP<Mortar::Node> mrtrnode =
-        Teuchos::make_rcp<Mortar::Node>(node->id(), node->x(), node->owner(), dofids, false);
+    std::shared_ptr<Mortar::Node> mrtrnode =
+        std::make_shared<Mortar::Node>(node->id(), node->x(), node->owner(), dofids, false);
 
     if (nurbs) Mortar::Utils::prepare_nurbs_node(node, *mrtrnode);
     interface_->add_mortar_node(mrtrnode);
@@ -376,7 +377,7 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
         ii += 1;
       }
     }
-    Teuchos::RCP<Mortar::Node> mrtrnode = Teuchos::make_rcp<Mortar::Node>(
+    std::shared_ptr<Mortar::Node> mrtrnode = std::make_shared<Mortar::Node>(
         node->id() + nodeoffset, node->x(), node->owner(), dofids, true);
 
     if (nurbs) Mortar::Utils::prepare_nurbs_node(node, *mrtrnode);
@@ -400,11 +401,11 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   if (slidingale == true) eleoffset = masterdis->element_row_map()->MaxAllGID() + 1;
 
   // feeding master elements to the interface
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = masterelements.begin(); elemiter != masterelements.end(); ++elemiter)
   {
-    Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
-    Teuchos::RCP<Mortar::Element> mrtrele = Teuchos::make_rcp<Mortar::Element>(
+    std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
+    std::shared_ptr<Mortar::Element> mrtrele = std::make_shared<Mortar::Element>(
         ele->id(), ele->owner(), ele->shape(), ele->num_node(), ele->node_ids(), false, nurbs);
 
     if (nurbs) Mortar::Utils::prepare_nurbs_element(*masterdis, ele, *mrtrele, spatial_dimension_);
@@ -414,15 +415,15 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   // feeding slave elements to the interface
   for (elemiter = slaveelements.begin(); elemiter != slaveelements.end(); ++elemiter)
   {
-    Teuchos::RCP<Core::Elements::Element> ele = elemiter->second;
+    std::shared_ptr<Core::Elements::Element> ele = elemiter->second;
 
     // Here, we have to distinguish between standard and sliding ale since mortar elements are
     // generated from the identical element sets in the case of sliding ale Therefore, we introduce
     // an element offset AND a node offset for the the slave mortar elements
     if (slidingale == false)
     {
-      Teuchos::RCP<Mortar::Element> mrtrele =
-          Teuchos::make_rcp<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
+      std::shared_ptr<Mortar::Element> mrtrele =
+          std::make_shared<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
               ele->num_node(), ele->node_ids(), true, nurbs);
 
       if (nurbs) Mortar::Utils::prepare_nurbs_element(*slavedis, ele, *mrtrele, spatial_dimension_);
@@ -436,8 +437,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
         nidsoff.push_back(ele->node_ids()[ele->num_node() - 1 - i] + nodeoffset);
       }
 
-      Teuchos::RCP<Mortar::Element> mrtrele =
-          Teuchos::make_rcp<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
+      std::shared_ptr<Mortar::Element> mrtrele =
+          std::make_shared<Mortar::Element>(ele->id() + eleoffset, ele->owner(), ele->shape(),
               ele->num_node(), nidsoff.data(), true, nurbs);
 
       interface_->add_mortar_element(mrtrele);
@@ -467,8 +468,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   issetup_ = true;
 
   // store old row maps (before parallel redistribution)
-  pslavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->slave_row_dofs());
-  pmasterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->master_row_dofs());
+  pslavedofrowmap_ = std::make_shared<Epetra_Map>(*interface_->slave_row_dofs());
+  pmasterdofrowmap_ = std::make_shared<Epetra_Map>(*interface_->master_row_dofs());
 
   // print parallel distribution
   interface_->print_parallel_distribution();
@@ -491,8 +492,8 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
   //**********************************************************************
 
   // store row maps (after parallel redistribution)
-  slavedofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->slave_row_dofs());
-  masterdofrowmap_ = Teuchos::make_rcp<Epetra_Map>(*interface_->master_row_dofs());
+  slavedofrowmap_ = std::make_shared<Epetra_Map>(*interface_->slave_row_dofs());
+  masterdofrowmap_ = std::make_shared<Epetra_Map>(*interface_->master_row_dofs());
 
   // create binary search tree
   interface_->create_search_tree();
@@ -504,9 +505,11 @@ void Coupling::Adapter::CouplingMortar::setup_interface(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization& slavedis,
-    Teuchos::RCP<Core::FE::Discretization> aledis, Teuchos::RCP<const Epetra_Map> masterdofrowmap,
-    Teuchos::RCP<const Epetra_Map> slavedofrowmap,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm, bool slavewithale)
+    std::shared_ptr<Core::FE::Discretization> aledis,
+    std::shared_ptr<const Epetra_Map> masterdofrowmap,
+    std::shared_ptr<const Epetra_Map> slavedofrowmap,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm,
+    bool slavewithale)
 {
   // safety check
   check_setup();
@@ -518,9 +521,9 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   // (0) check constraints in reference configuration
   //**********************************************************************
   // build global vectors of slave and master coordinates
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xs =
+  std::shared_ptr<Core::LinAlg::Vector<double>> xs =
       Core::LinAlg::create_vector(*slavedofrowmap, true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> xm =
+  std::shared_ptr<Core::LinAlg::Vector<double>> xm =
       Core::LinAlg::create_vector(*masterdofrowmap, true);
 
   // loop over all slave row nodes
@@ -548,7 +551,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
 
 
     // add ALE displacements, if required
-    if (idisp != Teuchos::null)
+    if (idisp != nullptr)
     {
       // get degrees of freedom of a node
       std::vector<int> gdofs = interface_->discret().dof(node);
@@ -587,7 +590,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     }
 
     // add ALE displacements, if required
-    if (idisp != Teuchos::null)
+    if (idisp != nullptr)
     {
       // get degrees of freedom of a node
       std::vector<int> gdofs = interface_->discret().dof(node);
@@ -603,13 +606,13 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   }
 
   // compute g-vector at global level
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Dxs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
+  std::shared_ptr<Core::LinAlg::Vector<double>> Dxs =
+      std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   D_->multiply(false, *xs, *Dxs);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Mxm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
+  std::shared_ptr<Core::LinAlg::Vector<double>> Mxm =
+      std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   M_->multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gold =
+  std::shared_ptr<Core::LinAlg::Vector<double>> gold =
       Core::LinAlg::create_vector(*slavedofrowmap, true);
   gold->Update(1.0, *Dxs, 1.0);
   gold->Update(-1.0, *Mxm, 1.0);
@@ -671,7 +674,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   // (1) get master positions on global level
   //**********************************************************************
   // fill Xmaster first
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Xmaster =
+  std::shared_ptr<Core::LinAlg::Vector<double>> Xmaster =
       Core::LinAlg::create_vector(*masterdofrowmap, true);
 
   // loop over all master row nodes on the current interface
@@ -692,7 +695,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
       (*Xmaster)[(Xmaster->Map()).LID(dof)] = mtnode->x()[k];
 
       // add ALE displacements, if required
-      if (idisp != Teuchos::null)
+      if (idisp != nullptr)
         (*Xmaster)[(Xmaster->Map()).LID(dof)] += (*idisp)[(idisp->Map()).LID(dof)];
     }
   }
@@ -701,7 +704,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   // (2) solve for modified slave positions on global level
   //**********************************************************************
   // relocate modified slave positions
-  Teuchos::RCP<Core::LinAlg::Vector<double>> Xslavemod =
+  std::shared_ptr<Core::LinAlg::Vector<double>> Xslavemod =
       Core::LinAlg::create_vector(*slavedofrowmap, true);
 
   // this is trivial for dual Lagrange multipliers
@@ -712,9 +715,9 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   // (3) perform mesh relocation node by node
   //**********************************************************************
   // export Xslavemod to fully overlapping column map for current interface
-  Teuchos::RCP<Epetra_Map> fullsdofs =
+  std::shared_ptr<Epetra_Map> fullsdofs =
       Core::LinAlg::allreduce_e_map(*(interface_->slave_row_dofs()));
-  Teuchos::RCP<Epetra_Map> fullsnodes =
+  std::shared_ptr<Epetra_Map> fullsnodes =
       Core::LinAlg::allreduce_e_map(*(interface_->slave_row_nodes()));
   Core::LinAlg::Vector<double> Xslavemodcol(*fullsdofs, false);
   Core::LinAlg::export_to(*Xslavemod, Xslavemodcol);
@@ -755,7 +758,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     // (check if the node is available on this processor)
     bool isinproblemcolmap2 = false;
     Core::Nodes::Node* alenode = nullptr;
-    if (aledis != Teuchos::null)
+    if (aledis != nullptr)
     {
       int lid2 = aledis->node_col_map()->LID(gid);
       if (lid2 >= 0) isinproblemcolmap2 = true;
@@ -792,7 +795,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
           if (locindex[k] < 0) FOUR_C_THROW("Did not find dof in map");
           Xnew[k] = Xslavemodcol[locindex[k]];
           Xold[k] = mtnode->x()[k];
-          if (idisp != Teuchos::null)
+          if (idisp != nullptr)
             Xold[k] += (*idisp)[(idisp->Map()).LID(interface_->discret().dof(node)[k])];
         }
 
@@ -853,7 +856,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
                  mortar_coupling_params_, "MESH_RELOCATION") == Inpar::Mortar::relocation_timestep)
     {
       // modification of ALE displacements
-      if (isininterfacecolmap and idisp != Teuchos::null)
+      if (isininterfacecolmap and idisp != nullptr)
       {
         // insertion solely done by owner processor of this node
         if (comm.MyPID() == node->owner())
@@ -912,7 +915,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     }
 
     // add ALE displacements, if required
-    if (idisp != Teuchos::null)
+    if (idisp != nullptr)
     {
       // get degrees of freedom of a node
       std::vector<int> gdofs = interface_->discret().dof(node);
@@ -948,7 +951,7 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
     }
 
     // add ALE displacements, if required
-    if (idisp != Teuchos::null)
+    if (idisp != nullptr)
     {
       // get degrees of freedom of a node
       std::vector<int> gdofs = interface_->discret().dof(node);
@@ -964,11 +967,11 @@ void Coupling::Adapter::CouplingMortar::mesh_relocation(Core::FE::Discretization
   }
 
   // compute g-vector at global level
-  Dxs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
+  Dxs = std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   D_->multiply(false, *xs, *Dxs);
-  Mxm = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*slavedofrowmap);
+  Mxm = std::make_shared<Core::LinAlg::Vector<double>>(*slavedofrowmap);
   M_->multiply(false, *xm, *Mxm);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gnew =
+  std::shared_ptr<Core::LinAlg::Vector<double>> gnew =
       Core::LinAlg::create_vector(*slavedofrowmap, true);
   gnew->Update(1.0, *Dxs, 1.0);
   gnew->Update(-1.0, *Mxm, 1.0);
@@ -1021,8 +1024,8 @@ void Coupling::Adapter::CouplingMortar::create_p()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   D_->complete();
-  Dinv_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*D_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
+  Dinv_ = std::make_shared<Core::LinAlg::SparseMatrix>(*D_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(*slavedofrowmap_, true);
   int err = 0;
 
@@ -1064,7 +1067,8 @@ void Coupling::Adapter::CouplingMortar::create_p()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp)
+void Coupling::Adapter::CouplingMortar::evaluate(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp)
 {
   // safety check
   check_setup();
@@ -1080,8 +1084,9 @@ void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idispma,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispsl)
+void Coupling::Adapter::CouplingMortar::evaluate(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispma,
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispsl)
 {
   // safety checks
   check_setup();
@@ -1093,14 +1098,14 @@ void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vect
   const Epetra_BlockMap stdmap = idispsl->Map();
   idispsl->ReplaceMap(*slavedofrowmap_);
 
-  Teuchos::RCP<Epetra_Map> dofrowmap =
+  std::shared_ptr<Epetra_Map> dofrowmap =
       Core::LinAlg::merge_map(*pmasterdofrowmap_, *pslavedofrowmap_, false);
   Epetra_Import master_importer(*dofrowmap, *pmasterdofrowmap_);
   Epetra_Import slaveImporter(*dofrowmap, *pslavedofrowmap_);
 
   // Import master and slave displacements into a single vector
   int err = 0;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> idisp_master_slave =
+  std::shared_ptr<Core::LinAlg::Vector<double>> idisp_master_slave =
       Core::LinAlg::create_vector(*dofrowmap, true);
   err = idisp_master_slave->Import(*idispma, master_importer, Add);
   if (err != 0)
@@ -1125,7 +1130,7 @@ void Coupling::Adapter::CouplingMortar::evaluate(Teuchos::RCP<Core::LinAlg::Vect
  *  Create integration cells for mortar interface           farah 01/16 |
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::evaluate_geometry(
-    std::vector<Teuchos::RCP<Mortar::IntCell>>& intcells  //!< vector of mortar integration cells
+    std::vector<std::shared_ptr<Mortar::IntCell>>& intcells  //!< vector of mortar integration cells
 )
 {
   // safety check
@@ -1153,10 +1158,10 @@ void Coupling::Adapter::CouplingMortar::evaluate()
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1189,7 +1194,7 @@ void Coupling::Adapter::CouplingMortar::matrix_row_col_transform()
   // only for parallel redistribution case
   if (parredist)
   {
-    if (pslavedofrowmap_ == Teuchos::null or pmasterdofrowmap_ == Teuchos::null)
+    if (pslavedofrowmap_ == nullptr or pmasterdofrowmap_ == nullptr)
       FOUR_C_THROW("Dof maps based on initial parallel distribution are wrong!");
 
     // transform everything back to old distribution
@@ -1204,8 +1209,10 @@ void Coupling::Adapter::CouplingMortar::matrix_row_col_transform()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
-    Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::RCP<Core::FE::Discretization> aledis,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm, bool slavewithale)
+    std::shared_ptr<Core::FE::Discretization> slavedis,
+    std::shared_ptr<Core::FE::Discretization> aledis,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& idisp, const Epetra_Comm& comm,
+    bool slavewithale)
 {
   // safety check
   check_setup();
@@ -1221,10 +1228,10 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   // (Note that redistslave and redistmaster are the slave and master row maps
   // after parallel redistribution. If no redistribution was performed, they
   // are of course identical to slavedofrowmap_/masterdofrowmap_!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 10);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*slavedofrowmap_, 100);
   interface_->assemble_dm(*dmatrix, *mmatrix);
 
   // Complete() global Mortar matrices
@@ -1234,10 +1241,10 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
   M_ = mmatrix;
 
   // Build Dinv
-  Dinv_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*D_);
+  Dinv_ = std::make_shared<Core::LinAlg::SparseMatrix>(*D_);
 
   // extract diagonal of invd into diag
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
+  std::shared_ptr<Core::LinAlg::Vector<double>> diag =
       Core::LinAlg::create_vector(*slavedofrowmap_, true);
   Dinv_->extract_diagonal_copy(*diag);
 
@@ -1272,7 +1279,8 @@ void Coupling::Adapter::CouplingMortar::evaluate_with_mesh_relocation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
+Coupling::Adapter::CouplingMortar::master_to_slave(
     const Core::LinAlg::MultiVector<double>& mv) const
 {
   // safety check
@@ -1285,8 +1293,8 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMorta
 
   if (M_->multiply(false, mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv.NumVectors());
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> sv =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*pslavedofrowmap_, mv.NumVectors());
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1295,7 +1303,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMorta
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
+std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::master_to_slave(
     const Core::LinAlg::Vector<double>& mv) const
 {
   // safety check
@@ -1307,8 +1315,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::ma
 
   if (M_->multiply(false, mv, tmp)) FOUR_C_THROW("M*mv multiplication failed");
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> sv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> sv =
+      std::make_shared<Core::LinAlg::Vector<double>>(*pslavedofrowmap_);
 
   if (Dinv_->multiply(false, tmp, *sv)) FOUR_C_THROW("D^{-1}*v multiplication failed");
 
@@ -1375,7 +1383,7 @@ void Coupling::Adapter::CouplingMortar::slave_to_master(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
+std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
     const Core::LinAlg::Vector<double>& sv) const
 {
   // safety check
@@ -1384,8 +1392,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::sl
   Core::LinAlg::Vector<double> tmp = Core::LinAlg::Vector<double>(M_->range_map());
   std::copy(sv.Values(), sv.Values() + sv.MyLength(), tmp.Values());
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> mv =
+      std::make_shared<Core::LinAlg::Vector<double>>(*pmasterdofrowmap_);
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
@@ -1394,7 +1402,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMortar::sl
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMortar::slave_to_master(
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
+Coupling::Adapter::CouplingMortar::slave_to_master(
     const Core::LinAlg::MultiVector<double>& sv) const
 {
   // safety check
@@ -1404,8 +1413,8 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMorta
       Core::LinAlg::MultiVector<double>(M_->range_map(), sv.NumVectors());
   std::copy(sv.Values(), sv.Values() + sv.MyLength(), tmp.Values());
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mv =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv.NumVectors());
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> mv =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*pmasterdofrowmap_, sv.NumVectors());
   if (M_->multiply(true, tmp, *mv)) FOUR_C_THROW("M^{T}*sv multiplication failed");
 
   return mv;
@@ -1414,7 +1423,7 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Coupling::Adapter::CouplingMorta
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Coupling::Adapter::CouplingMortar::mortar_condensation(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& k, Core::LinAlg::Vector<double>& rhs) const
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& k, Core::LinAlg::Vector<double>& rhs) const
 {
   Mortar::Utils::mortar_matrix_condensation(k, P_, P_);
   Mortar::Utils::mortar_rhs_condensation(rhs, *P_);

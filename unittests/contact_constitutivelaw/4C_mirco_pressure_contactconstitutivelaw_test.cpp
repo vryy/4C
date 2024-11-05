@@ -29,16 +29,16 @@ namespace
       Global::Problem& problem = (*Global::Problem::instance());
       problem.materials()->set_read_from_problem(problemid);
 
-      std::vector<Teuchos::RCP<Core::Utils::FunctionVariable>> variables;
-      Teuchos::RCP<Core::Utils::SymbolicFunctionOfSpaceTime> FFUNCT1 =
-          Teuchos::make_rcp<Core::Utils::SymbolicFunctionOfSpaceTime>(
+      std::vector<std::shared_ptr<Core::Utils::FunctionVariable>> variables;
+      std::shared_ptr<Core::Utils::SymbolicFunctionOfSpaceTime> FFUNCT1 =
+          std::make_shared<Core::Utils::SymbolicFunctionOfSpaceTime>(
               std::vector<std::string>{"0.7"}, variables);
-      Teuchos::RCP<Core::Utils::SymbolicFunctionOfSpaceTime> FFUNCT2 =
-          Teuchos::make_rcp<Core::Utils::SymbolicFunctionOfSpaceTime>(
+      std::shared_ptr<Core::Utils::SymbolicFunctionOfSpaceTime> FFUNCT2 =
+          std::make_shared<Core::Utils::SymbolicFunctionOfSpaceTime>(
               std::vector<std::string>{"20.0"}, variables);
 
-      Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
-      Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
+      std::shared_ptr<Core::Utils::FunctionOfSpaceTime> FUNCT1 = FFUNCT1;
+      std::shared_ptr<Core::Utils::FunctionOfSpaceTime> FUNCT2 = FFUNCT2;
 
       Core::Utils::FunctionManager functionmanager_;
       functionmanager_.set_functions<std::any>({FUNCT1, FUNCT2});
@@ -54,8 +54,8 @@ namespace
           1, Mat::make_parameter(1, Core::Materials::MaterialType::m_stvenant, mat_stvenant));
 
       // initialize container for material parameters
-      const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container =
-          Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Container>(
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::Container> container =
+          std::make_shared<CONTACT::CONSTITUTIVELAW::Container>(
               1, Inpar::CONTACT::ConstitutiveLawType::colaw_mirco, "Mirco Constitutivelaw");
 
       // add parameters to container
@@ -77,7 +77,7 @@ namespace
       container->add("ActiveGapTolerance", 1e-6);
       container->add("TopologyFilePath", std::string("sup6.dat"));
 
-      const Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> mircococonstlaw =
+      const std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> mircococonstlaw =
           CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(container);
       coconstlaw_ = mircococonstlaw;
 
@@ -91,13 +91,13 @@ namespace
       bool randomseedflag = container->get<bool>("RandomSeedFlag");
       int randomgeneratorseed = container->get<int>("RandomGeneratorSeed");
 
-      cnode = Teuchos::make_rcp<CONTACT::RoughNode>(1, x, 1, dofs, true, true, hurstexponentfunct,
+      cnode = std::make_shared<CONTACT::RoughNode>(1, x, 1, dofs, true, true, hurstexponentfunct,
           initialtopologystddevfunct, resolution, randomtopologyflag, randomseedflag,
           randomgeneratorseed);
     }
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
 
-    Teuchos::RCP<CONTACT::Node> cnode;
+    std::shared_ptr<CONTACT::Node> cnode;
   };
 
   //! test member function Evaluate

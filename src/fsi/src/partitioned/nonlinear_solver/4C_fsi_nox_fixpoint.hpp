@@ -14,7 +14,8 @@
 #include <NOX_Direction_UserDefinedFactory.H>
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -19,7 +19,8 @@
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,7 +47,7 @@ namespace Utils
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0DArterialProxDist(Teuchos::RCP<Core::FE::Discretization>
+    Cardiovascular0DArterialProxDist(std::shared_ptr<Core::FE::Discretization>
                                          discr,  ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
@@ -59,10 +60,10 @@ namespace Utils
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             sysvec1,  ///< distributed vector that may be filled by
                       ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
         ) override;
 
@@ -71,18 +72,18 @@ namespace Utils
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             sysmat3,  ///< Cardiovascular0D offdiagonal matrix dfext/dp
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             sysvec1,  ///< distributed vectors that may be filled by
                       ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5) override;
+        std::shared_ptr<Core::LinAlg::Vector<double>> sysvec2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sysvec3,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> sysvec4,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sysvec5) override;
 
    private:
     // don't want = operator, cctor and destructor

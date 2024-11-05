@@ -16,7 +16,8 @@
 #include "4C_utils_result_test.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -59,55 +60,56 @@ namespace Adapter
         ) = 0;
 
     /// create result test for multiphase porous fluid field
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test() = 0;
 
     /// read restart
     virtual void read_restart(int restart) = 0;
 
     /// access dof row map
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds = 0) const = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds = 0) const = 0;
 
     /// access dof row map of artery discretization
-    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const = 0;
+    virtual std::shared_ptr<const Epetra_Map> artery_dof_row_map() const = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> discretization() const = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> discretization() const = 0;
 
     //! apply moving mesh data
     virtual void apply_mesh_movement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp  //!< displacement vector
         ) = 0;
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
     virtual void set_velocity_field(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel  //!< velocity vector
         ) = 0;
 
     //! set state on discretization
     virtual void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state) = 0;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state) = 0;
 
     //! return primary field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> phinp() const = 0;
 
     //! return primary field at time n
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> phin() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> phin() const = 0;
 
     //! return solid pressure field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> solid_pressure() const = 0;
 
     //! return pressure field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> pressure() const = 0;
 
     //! return saturation field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> saturation() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> saturation() const = 0;
 
     //! return valid volume fraction species dof vector
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> valid_vol_frac_spec_dofs()
+        const = 0;
 
     //! return phase flux field at time n+1
-    virtual Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MultiVector<double>> flux() const = 0;
 
     //! do time integration (time loop)
     virtual void time_loop() = 0;
@@ -134,16 +136,16 @@ namespace Adapter
     virtual int get_dof_set_number_of_solid_pressure() const = 0;
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() const = 0;
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const = 0;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const = 0;
 
     //! iterative update of phinp
-    virtual void update_iter(const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) = 0;
+    virtual void update_iter(const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) = 0;
 
     //! reconstruct pressures and saturation from current solution
     virtual void reconstruct_pressures_and_saturations() = 0;
@@ -159,20 +161,21 @@ namespace Adapter
 
     // Assemble Off-Diagonal Fluid-Structure Coupling matrix
     virtual void assemble_fluid_struct_coupling_mat(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_fs) = 0;
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_fs) = 0;
 
     // Assemble Off-Diagonal Fluid-scatra Coupling matrix
     virtual void assemble_fluid_scatra_coupling_mat(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs) = 0;
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_pfs) = 0;
 
     //! direct access to system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() = 0;
 
     //! direct access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const = 0;
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat()
+        const = 0;
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() = 0;
+    virtual std::shared_ptr<Adapter::ArtNet> art_net_tim_int() = 0;
 
 
   };  // class PoroFluidMultiphase

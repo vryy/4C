@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  | Constructor (public)                                      Thon 07/16 |
  *----------------------------------------------------------------------*/
 FLD::Utils::FluidImpedanceWrapper::FluidImpedanceWrapper(
-    const Teuchos::RCP<Core::FE::Discretization> actdis)
+    const std::shared_ptr<Core::FE::Discretization> actdis)
 {
   std::vector<Core::Conditions::Condition*> impedancecond;
   actdis->get_condition("ImpedanceCond", impedancecond);
@@ -61,8 +61,8 @@ FLD::Utils::FluidImpedanceWrapper::FluidImpedanceWrapper(
     // -------------------------------------------------------------------
     // allocate the impedance bc class members for every case
     // -------------------------------------------------------------------
-    Teuchos::RCP<FluidImpedanceBc> impedancebc =
-        Teuchos::make_rcp<FluidImpedanceBc>(actdis, condid, impedancecond[i]);
+    std::shared_ptr<FluidImpedanceBc> impedancebc =
+        std::make_shared<FluidImpedanceBc>(actdis, condid, impedancecond[i]);
 
     // -----------------------------------------------------------------
     // sort impedance bc's in map and test, if one condition ID appears
@@ -81,11 +81,11 @@ FLD::Utils::FluidImpedanceWrapper::FluidImpedanceWrapper(
  |  Split linearization matrix to a BlockSparseMatrixBase    Thon 07/16 |
  *----------------------------------------------------------------------*/
 
-void FLD::Utils::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
-    const Core::LinAlg::MultiMapExtractor& domainmaps,
+void FLD::Utils::FluidImpedanceWrapper::use_block_matrix(
+    std::shared_ptr<std::set<int>> condelements, const Core::LinAlg::MultiMapExtractor& domainmaps,
     const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
@@ -101,7 +101,7 @@ void FLD::Utils::FluidImpedanceWrapper::use_block_matrix(Teuchos::RCP<std::set<i
 void FLD::Utils::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(const double dta,
     const double time, Core::LinAlg::Vector<double>& residual, Core::LinAlg::SparseOperator& sysmat)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
@@ -119,7 +119,7 @@ void FLD::Utils::FluidImpedanceWrapper::add_impedance_bc_to_residual_and_sysmat(
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidImpedanceWrapper::time_update_impedances(const double time)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
@@ -134,7 +134,7 @@ void FLD::Utils::FluidImpedanceWrapper::time_update_impedances(const double time
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWriter& output)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
@@ -148,7 +148,7 @@ void FLD::Utils::FluidImpedanceWrapper::write_restart(Core::IO::DiscretizationWr
  *----------------------------------------------------------------------*/
 void FLD::Utils::FluidImpedanceWrapper::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  std::map<const int, Teuchos::RCP<class FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
     mapiter->second->FluidImpedanceBc::read_restart(reader, mapiter->first);
@@ -164,7 +164,7 @@ std::vector<double> FLD::Utils::FluidImpedanceWrapper::get_w_krelerrors()
   std::vector<double> wk_rel_error;
 
   // get an iterator to my map
-  std::map<const int, Teuchos::RCP<class FLD::Utils::FluidImpedanceBc>>::iterator mapiter;
+  std::map<const int, std::shared_ptr<class FLD::Utils::FluidImpedanceBc>>::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++)
   {
@@ -178,8 +178,9 @@ std::vector<double> FLD::Utils::FluidImpedanceWrapper::get_w_krelerrors()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     Thon 07/16 |
  *----------------------------------------------------------------------*/
-FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Discretization> actdis,
-    const int condid, Core::Conditions::Condition* impedancecond)
+FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(
+    const std::shared_ptr<Core::FE::Discretization> actdis, const int condid,
+    Core::Conditions::Condition* impedancecond)
     : discret_(actdis),
       myrank_(discret_->get_comm().MyPID()),
       theta_(0.5),
@@ -229,7 +230,7 @@ FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
   // ---------------------------------------------------------------------
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
   impedancetbc_ = Core::LinAlg::create_vector(*dofrowmap, true);
-  impedancetbcsysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
+  impedancetbcsysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
   // NOTE: do not call impedancetbcsysmat_->Complete() before it is filled, since
   // this is our check if it has already been initialized
 
@@ -250,16 +251,16 @@ FLD::Utils::FluidImpedanceBc::FluidImpedanceBc(const Teuchos::RCP<Core::FE::Disc
 /*----------------------------------------------------------------------*
  |  Split linearization matrix to a BlockSparseMatrixBase   Thon 07/16 |
  *----------------------------------------------------------------------*/
-void FLD::Utils::FluidImpedanceBc::use_block_matrix(Teuchos::RCP<std::set<int>> condelements,
+void FLD::Utils::FluidImpedanceBc::use_block_matrix(std::shared_ptr<std::set<int>> condelements,
     const Core::LinAlg::MultiMapExtractor& domainmaps,
     const Core::LinAlg::MultiMapExtractor& rangemaps, bool splitmatrix)
 {
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>> mat;
 
   if (splitmatrix)
   {
     // (re)allocate system matrix
-    mat = Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
+    mat = std::make_shared<Core::LinAlg::BlockSparseMatrix<FLD::Utils::InterfaceSplitStrategy>>(
         domainmaps, rangemaps, 108, false, true);
     mat->set_cond_elements(condelements);
     impedancetbcsysmat_ = mat;
@@ -298,7 +299,7 @@ void FLD::Utils::FluidImpedanceBc::flow_rate_calculation(const int condid)
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // create vector (+ initialization with zeros)
-  Teuchos::RCP<Core::LinAlg::Vector<double>> flowrates =
+  std::shared_ptr<Core::LinAlg::Vector<double>> flowrates =
       Core::LinAlg::create_vector(*dofrowmap, true);
 
   discret_->evaluate_condition(eleparams, flowrates, "ImpedanceCond", condid);
@@ -399,7 +400,8 @@ void FLD::Utils::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
   {
     // calculate dQ/du = ( \phi o n )_Gamma
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dQdu = Core::LinAlg::create_vector(*dofrowmap, true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> dQdu =
+        Core::LinAlg::create_vector(*dofrowmap, true);
 
     Teuchos::ParameterList eleparams2;
     // action for elements
@@ -408,7 +410,7 @@ void FLD::Utils::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
     discret_->evaluate_condition(eleparams2, dQdu, "ImpedanceCond", condid);
 
     // now move dQdu to one proc
-    Teuchos::RCP<Epetra_Map> dofrowmapred = Core::LinAlg::allreduce_e_map(*dofrowmap);
+    std::shared_ptr<Epetra_Map> dofrowmapred = Core::LinAlg::allreduce_e_map(*dofrowmap);
     Core::LinAlg::Vector<double> dQdu_full(*dofrowmapred, true);
 
     Core::LinAlg::export_to(*dQdu, dQdu_full);  //!!! add off proc components
@@ -438,7 +440,7 @@ void FLD::Utils::FluidImpedanceBc::calculate_impedance_tractions_and_update_resi
     }
 
     impedancetbcsysmat_->complete();
-    //  std::cout<<__FILE__<<__LINE__<<*((Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(impedancetbcsysmat_))->EpetraMatrix())<<std::endl;
+    //  std::cout<<__FILE__<<__LINE__<<*((std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(impedancetbcsysmat_))->EpetraMatrix())<<std::endl;
 
     // NOTE: since the building of the linearization is very expensive and since it only
     // changes due to the deformation of the BCs domain (the linearization is independent

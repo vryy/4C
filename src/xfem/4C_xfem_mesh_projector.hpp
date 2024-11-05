@@ -17,7 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -42,18 +43,18 @@ namespace XFEM
   {
    public:
     //! ctor
-    MeshProjector(Teuchos::RCP<const Core::FE::Discretization> sourcedis,
-        Teuchos::RCP<const Core::FE::Discretization> targetdis,
+    MeshProjector(std::shared_ptr<const Core::FE::Discretization> sourcedis,
+        std::shared_ptr<const Core::FE::Discretization> targetdis,
         const Teuchos::ParameterList& params,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sourcedisp = Teuchos::null);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> sourcedisp = nullptr);
 
     //! set current displacements of source discretization
     void set_source_position_vector(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sourcedisp = Teuchos::null);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> sourcedisp = nullptr);
 
     //! set state vectors - mandatory for interpolation
     void set_source_state_vectors(
-        std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> source_statevecs)
+        std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> source_statevecs)
     {
       source_statevecs_ = source_statevecs;
     }
@@ -61,18 +62,18 @@ namespace XFEM
     //! main projection routine (pass a map of the target node ids)
     void project(std::map<int, std::set<int>>&
                      projection_nodeToDof,  //< node-to-dof map of target nodes demanding projection
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>
             target_statevecs,  //< state vectors of target discretization
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> targetdisp = Teuchos::null);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> targetdisp = nullptr);
 
     //! projection routine for projection for all nodes of the target discretization
     void project_in_full_target_discretization(
-        std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> target_statevecs,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> targetdisp = Teuchos::null);
+        std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> target_statevecs,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> targetdisp = nullptr);
 
     //! write gmsh output for projection details
     void gmsh_output(
-        int step = 0, Teuchos::RCP<const Core::LinAlg::Vector<double>> targetdisp = Teuchos::null);
+        int step = 0, std::shared_ptr<const Core::LinAlg::Vector<double>> targetdisp = nullptr);
 
    private:
     /// determine the search radius for the search tree
@@ -112,14 +113,14 @@ namespace XFEM
         std::vector<int>& projection_targetnodes, std::vector<int>& have_values,
         std::vector<char>& sblock);
 
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis_;
-    Teuchos::RCP<const Core::FE::Discretization> targetdis_;
+    std::shared_ptr<const Core::FE::Discretization> sourcedis_;
+    std::shared_ptr<const Core::FE::Discretization> targetdis_;
 
     //! search radius factor
     double searchradius_fac_;
 
     //! 3D seach tree for embedded discretization
-    Teuchos::RCP<Core::Geo::SearchTree> search_tree_;
+    std::shared_ptr<Core::Geo::SearchTree> search_tree_;
 
     //! min. radius needed for the search tree
     double searchradius_;
@@ -128,7 +129,7 @@ namespace XFEM
     std::map<int, Core::LinAlg::Matrix<3, 1>> src_nodepositions_n_;
 
     //! state vectors from projection source
-    std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>> source_statevecs_;
+    std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>> source_statevecs_;
 
     //! map between target node id and parent element id
     std::map<int, int> targetnode_to_parent_;

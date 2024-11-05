@@ -151,31 +151,31 @@ namespace Adapter
     //@{
 
     /// initial guess of Newton's method
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() = 0;
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override = 0;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override = 0;
 
     /// unknown displacements at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() const = 0;
 
     /// known displacements at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() const = 0;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> velnp() const = 0;
 
     /// known velocity at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> veln() const = 0;
 
     /// known velocity at \f$t_{n-1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> velnm() const = 0;
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> accnp() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> accnp() const = 0;
 
     /// known acceleration at \f$t_{n}\f$
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> accn() const = 0;
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> accn() const = 0;
 
     virtual void resize_m_step_tim_ada() = 0;
 
@@ -184,10 +184,10 @@ namespace Adapter
     //! @name Misc
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override = 0;
+    std::shared_ptr<const Epetra_Map> dof_row_map() override = 0;
 
     /// DOF map of vector of unknowns for multiple dofsets
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) = 0;
 
     /// DOF map view of vector of unknowns
     virtual const Epetra_Map* dof_row_map_view() = 0;
@@ -196,17 +196,17 @@ namespace Adapter
     [[nodiscard]] virtual const Epetra_Map& domain_map() const = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override = 0;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override = 0;
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override = 0;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override = 0;
 
     /// switch structure field to block matrix
-    virtual void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) = 0;
+    virtual void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps) = 0;
 
     /// return contact/meshtying bridge
-    virtual Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
+    virtual std::shared_ptr<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() = 0;
 
     /// do we have this model
     virtual bool have_model(Inpar::Solid::ModelType model)
@@ -219,10 +219,10 @@ namespace Adapter
     virtual Solid::ModelEvaluator::Generic& model_evaluator(Inpar::Solid::ModelType mtype) = 0;
 
     // access to locsys manager
-    virtual Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() = 0;
+    virtual std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() = 0;
 
     /// direct access to discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> discretization() = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> discretization() = 0;
 
     /// are there any algebraic constraints?
     virtual bool have_constraint() = 0;
@@ -231,29 +231,29 @@ namespace Adapter
     virtual bool have_spring_dashpot() = 0;
 
     /// get constraint manager defined in the structure
-    virtual Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() = 0;
+    virtual std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() = 0;
 
     /// get SpringDashpot manager defined in the structure
-    virtual Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() = 0;
+    virtual std::shared_ptr<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() = 0;
 
     /// Get type of thickness scaling for thin shell structures
     virtual Inpar::Solid::StcScale get_stc_algo() = 0;
 
     /// Access to scaling matrix for STC
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() = 0;
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    virtual Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
+    virtual std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() = 0;
 
     /// expand dirichlet bc map
-    virtual void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd){
+    virtual void add_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoadd){
         /* This is only needed for the old structural time integration.
            For the new structural time integration this is already
            implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
     };
 
     /// contract dirichlet bc map
-    virtual void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove){
+    virtual void remove_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoremove){
         /* This is only needed for the old structural time integration.
            For the new structural time integration this is already
            implemented in str_dbc.cpp and str_dbc.H ! rauch 02/17 */
@@ -338,7 +338,7 @@ namespace Adapter
     In case the StructureNOXCorrectionWrapper is applied, the step increment is expected
     which is then transformed into an iteration increment
     */
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             disiterinc  ///< displacement increment between Newton iteration i and i+1
         ) override = 0;
 
@@ -356,25 +356,27 @@ namespace Adapter
 
     /// Update iteration
     /// Add residual increment to Lagrange multipliers stored in Constraint manager
-    virtual void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr) = 0;
+    virtual void update_iter_incr_constr(
+        std::shared_ptr<Core::LinAlg::Vector<double>> lagrincr) = 0;
 
     /// Update iteration
     /// Add residual increment to pressures stored in Cardiovascular0D manager
     virtual void update_iter_incr_cardiovascular0_d(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> presincr) = 0;
+        std::shared_ptr<Core::LinAlg::Vector<double>> presincr) = 0;
 
     /// Access to output object
-    virtual Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() = 0;
+    virtual std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer() = 0;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void prepare_output(bool force_prepare_timestep) override = 0;
 
     // Get restart data
-    virtual void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
-        Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
+    virtual void get_restart_data(std::shared_ptr<int> step, std::shared_ptr<double> time,
+        std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+        std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+        std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+        std::shared_ptr<std::vector<char>> elementdata,
+        std::shared_ptr<std::vector<char>> nodedata) = 0;
 
     /// output results
     void output(bool forced_writerestart = false) override = 0;
@@ -398,13 +400,15 @@ namespace Adapter
     virtual void reset_step() = 0;
 
     /// set restart information for parameter continuation
-    virtual void set_restart(int step, double time, Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
-        Teuchos::RCP<std::vector<char>> elementdata, Teuchos::RCP<std::vector<char>> nodedata) = 0;
+    virtual void set_restart(int step, double time,
+        std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+        std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+        std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+        std::shared_ptr<std::vector<char>> elementdata,
+        std::shared_ptr<std::vector<char>> nodedata) = 0;
 
     /// set the state of the nox group and the global state data container (implicit only)
-    virtual void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) = 0;
+    virtual void set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x) = 0;
 
     /// wrapper for things that should be done before prepare_time_step is called
     virtual void pre_predict() = 0;
@@ -445,10 +449,10 @@ namespace Adapter
 
     \note Can only be called after a valid structural solve.
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> solve_relaxation_linear() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() = 0;
 
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<Core::LinAlg::Solver> linear_solver() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Solver> linear_solver() = 0;
 
     //@}
 
@@ -456,21 +460,21 @@ namespace Adapter
     //@{
 
     /// write access to extract displacements at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp() = 0;
 
     /// write access to extract velocities at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_velnp() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_velnp() = 0;
 
     /// write access to extract displacements at \f$t^{n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispn() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispn() = 0;
 
     /// write access to extract velocities at \f$t^{n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_veln() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> write_access_veln() = 0;
 
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> freact() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> freact() = 0;
 
 
     //! @name volume coupled specific methods
@@ -480,7 +484,7 @@ namespace Adapter
     ///
     /// \note This method will be deprecated as soon as new structural time integration is
     ///       completely engulfed by all algorithms using this method.
-    virtual void set_force_interface(Teuchos::RCP<Core::LinAlg::MultiVector<double>> iforce) = 0;
+    virtual void set_force_interface(std::shared_ptr<Core::LinAlg::MultiVector<double>> iforce) = 0;
 
     //! specific method for iterative staggered partitioned TSI
 
@@ -496,13 +500,14 @@ namespace Adapter
     //@}
 
     /// create result test for encapsulated structure algorithm
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_field_test() = 0;
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_field_test() = 0;
 
     /// reset time and state vectors (needed for biofilm growth simulations)
     virtual void reset() = 0;
 
     /// set structure displacement vector due to biofilm growth
-    virtual void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp) = 0;
+    virtual void set_str_gr_disp(
+        std::shared_ptr<Core::LinAlg::Vector<double>> struct_growth_disp) = 0;
 
     /// Write Gmsh output for structural field
     virtual void write_gmsh_struc_output_step() = 0;
@@ -518,25 +523,25 @@ namespace Adapter
    public:
     /// constructor
     StructureBaseAlgorithm(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Core::FE::Discretization> actdis);
+        std::shared_ptr<Core::FE::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
     virtual ~StructureBaseAlgorithm() = default;
 
     /// structural field solver
-    Teuchos::RCP<Structure> structure_field() { return structure_; }
+    std::shared_ptr<Structure> structure_field() { return structure_; }
 
     /// structural field solver
-    // Teuchos::RCP<Solid::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
+    // std::shared_ptr<Solid::TimInt> StructureTimeIntegrator() { return str_tim_int_; }
 
    private:
     /// Create structure algorithm
     void create_structure(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Core::FE::Discretization> actdis);
+        std::shared_ptr<Core::FE::Discretization> actdis);
 
     /// setup structure algorithm of Solid::TimIntImpl type
     void create_tim_int(const Teuchos::ParameterList& prbdyn, const Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<Core::FE::Discretization> actdis);
+        std::shared_ptr<Core::FE::Discretization> actdis);
 
     /*! \brief Create linear solver for contact/meshtying problems
      *
@@ -566,7 +571,7 @@ namespace Adapter
      *
      * \sa create_linear_solver()
      */
-    Teuchos::RCP<Core::LinAlg::Solver> create_contact_meshtying_solver(
+    std::shared_ptr<Core::LinAlg::Solver> create_contact_meshtying_solver(
         Core::FE::Discretization& actdis, const Teuchos::ParameterList& sdyn);
 
     /*! \brief Create linear solver for pure structure problems
@@ -587,11 +592,11 @@ namespace Adapter
      *
      * \sa create_contact_meshtying_solver()
      */
-    Teuchos::RCP<Core::LinAlg::Solver> create_linear_solver(
-        Teuchos::RCP<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
+    std::shared_ptr<Core::LinAlg::Solver> create_linear_solver(
+        std::shared_ptr<Core::FE::Discretization>& actdis, const Teuchos::ParameterList& sdyn);
 
     /// structural field solver
-    Teuchos::RCP<Structure> structure_;
+    std::shared_ptr<Structure> structure_;
   };
 
 }  // namespace Adapter

@@ -18,8 +18,8 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-XFEM::XffCouplingManager::XffCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-    Teuchos::RCP<FLD::XFluid> xfluid, Teuchos::RCP<FLD::XFluid> fluid, std::vector<int> idx)
+XFEM::XffCouplingManager::XffCouplingManager(std::shared_ptr<ConditionManager> condmanager,
+    std::shared_ptr<FLD::XFluid> xfluid, std::shared_ptr<FLD::XFluid> fluid, std::vector<int> idx)
     : CouplingCommManager(fluid->discretization(), "XFEMSurfFluidFluid", 0, 3),
       fluid_(fluid),
       xfluid_(xfluid),
@@ -31,9 +31,9 @@ XFEM::XffCouplingManager::XffCouplingManager(Teuchos::RCP<ConditionManager> cond
 
   // Coupling_Comm_Manager create all Coupling Objects now with Fluid has idx = 0, Fluid has idx =
   // 1!
-  mcffi_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFluidFluid>(
+  mcffi_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFluidFluid>(
       condmanager->get_mesh_coupling(cond_name_));
-  if (mcffi_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFFI for embedded fluid!");
+  if (mcffi_ == nullptr) FOUR_C_THROW(" Failed to get MeshCouplingFFI for embedded fluid!");
 }
 
 /*-----------------------------------------------------------------------------------------*
@@ -57,8 +57,8 @@ void XFEM::XffCouplingManager::set_coupling_states()
   Core::LinAlg::export_to(*fluid_->velnp(), *mcffi_->i_velnp());
   Core::LinAlg::export_to(*fluid_->veln(), *mcffi_->i_veln());
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tmp_diff =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*mcffi_->i_dispnp()).Map());
+  std::shared_ptr<Core::LinAlg::Vector<double>> tmp_diff =
+      std::make_shared<Core::LinAlg::Vector<double>>((*mcffi_->i_dispnp()).Map());
   tmp_diff->Update(1.0, *mcffi_->i_dispnp(), -1.0, *mcffi_->i_dispnpi(), 0.0);
 
   double norm = 0.0;
@@ -113,7 +113,7 @@ void XFEM::XffCouplingManager::add_coupling_matrix(
 /*-----------------------------------------------------------------------------------------*
 | Add the coupling rhs                                                        ager 06/2016 |
 *-----------------------------------------------------------------------------------------*/
-void XFEM::XffCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+void XFEM::XffCouplingManager::add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   // REMARK: Copy this vector to store the correct lambda_ in update!

@@ -130,7 +130,7 @@ namespace FSI
     //! @name dof_row_map access methods
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() const { return extractor().full_map(); }
+    std::shared_ptr<const Epetra_Map> dof_row_map() const { return extractor().full_map(); }
 
     //! extractor to communicate between full monolithic map and block maps of single fields
     const Core::LinAlg::MultiMapExtractor& extractor() const { return blockrowdofmap_; }
@@ -170,8 +170,8 @@ namespace FSI
 
     //! set full monolithic dof row map
     //! The block maps must be row maps by themselves and must not contain identical GIDs.
-    void set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps,
-        const std::vector<Teuchos::RCP<const Epetra_Map>>& maps_mergedporo);
+    void set_dof_row_maps(const std::vector<std::shared_ptr<const Epetra_Map>>& maps,
+        const std::vector<std::shared_ptr<const Epetra_Map>>& maps_mergedporo);
 
     //! Put two field vectors together to a monolithic vector
     //!
@@ -190,10 +190,10 @@ namespace FSI
       \param fx (o) fluid velocities and pressure
       \param ax (o) ale displacements
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax);
+    virtual void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax);
 
     //@}
 
@@ -265,7 +265,7 @@ namespace FSI
         Core::LinAlg::Vector<double>& b);
 
     //! create combined Dirichlet boundary condition map, map containing the dofs with Dirichlet BC
-    Teuchos::RCP<Epetra_Map> combined_dbc_map();
+    std::shared_ptr<Epetra_Map> combined_dbc_map();
 
     //@}
 
@@ -297,9 +297,9 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name General solver parameters
 
-    bool solveradapttol_;                        //!< adapt solver tolerance
-    double solveradaptolbetter_;                 //!< tolerance to which is adapted
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    bool solveradapttol_;                           //!< adapt solver tolerance
+    double solveradaptolbetter_;                    //!< tolerance to which is adapted
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
 
     //@}
 
@@ -317,8 +317,8 @@ namespace FSI
 
     const bool scaling_infnorm_;  //!< inf-norm scaling for blockmatrix for iterative solvers
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> srowsum_;  //!< structural row sum
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scolsum_;  //!< structural column sum
+    std::shared_ptr<Core::LinAlg::Vector<double>> srowsum_;  //!< structural row sum
+    std::shared_ptr<Core::LinAlg::Vector<double>> scolsum_;  //!< structural column sum
 
     //@}
 
@@ -343,33 +343,33 @@ namespace FSI
     Core::LinAlg::MultiMapExtractor blockrowdofmap_;
 
     //! block systemmatrix for structural and fluid dofs
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //--------------------------------------------------------------------------//
     //! @name vectors used within the Newton scheme
 
     //! global sum of increments (step-increment), increment w.r.t the old timestep t^n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x_sum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> x_sum_;
 
     //! intermediate step increment for structure based on predictor solution from beginning of time
     //! step
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> sx_sum_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> sx_sum_;
 
     //! intermediate step increment for fluid based on solution from t^n mapped/transformed to
     //! current interface position and permuted to current dofset ordering
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fx_sum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fx_sum_;
 
     //! intermediate step increment for ale based on predictor solution from beginning of time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ax_sum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ax_sum_;
 
     //! global Newton increment = iteration increment Delta x = x^n+1_i+1 - x^n+1_i
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iterinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iterinc_;
 
     //! global residual vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
     //! global vector for combined fluid and structure system filled with zeros used for DBCs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
     //@}
 
@@ -378,7 +378,7 @@ namespace FSI
     //! @name output streams
 
     //! output stream
-    Teuchos::RCP<std::ofstream> log_;
+    std::shared_ptr<std::ofstream> log_;
 
     //@}
 
@@ -386,8 +386,8 @@ namespace FSI
     //--------------------------------------------------------------------------//
     //! @name special debugging output
 
-    Teuchos::RCP<Utils::DebugWriter> sdbg_;
-    Teuchos::RCP<Utils::DebugWriter> fdbg_;
+    std::shared_ptr<Utils::DebugWriter> sdbg_;
+    std::shared_ptr<Utils::DebugWriter> fdbg_;
 
     //@}
 
@@ -532,11 +532,11 @@ namespace FSI
     bool have_contact_;
 
     //! Xfluid-Contact-Communicator
-    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
+    std::shared_ptr<XFEM::XFluidContactComm> xf_c_comm_;
     //@}
 
     // Map of Coupling Object for FS, FP, FA coupling, ...(Fluid, Structure, Poro, Ale)
-    std::map<int, Teuchos::RCP<XFEM::CouplingManager>> coup_man_;
+    std::map<int, std::shared_ptr<XFEM::CouplingManager>> coup_man_;
   };
 }  // namespace FSI
 

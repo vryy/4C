@@ -56,16 +56,16 @@ namespace EHL
     void read_restart(int restart) override;
 
     //! access to structural field
-    const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
+    const std::shared_ptr<Adapter::Structure>& structure_field() { return structure_; }
 
     /// set structure solution on lubrication field
-    void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
+    void set_struct_solution(std::shared_ptr<const Core::LinAlg::Vector<double>> disp);
 
     /// set lubrication solution on structure field
-    void set_lubrication_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure);
+    void set_lubrication_solution(std::shared_ptr<const Core::LinAlg::Vector<double>> pressure);
 
     /// evaluate fluid forces on structure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> evaluate_fluid_force(
+    std::shared_ptr<Core::LinAlg::Vector<double>> evaluate_fluid_force(
         const Core::LinAlg::Vector<double>& pressure);
 
    protected:
@@ -79,40 +79,40 @@ namespace EHL
         Core::LinAlg::Vector<double>& slaveiforce, Core::LinAlg::Vector<double>& masteriforce);
 
     /// underlying structure of the EHL problem
-    Teuchos::RCP<Adapter::Structure> structure_;
+    std::shared_ptr<Adapter::Structure> structure_;
 
     /// underlying lubrication problem of the EHL problem
-    Teuchos::RCP<Lubrication::LubricationBaseAlgorithm> lubrication_;
+    std::shared_ptr<Lubrication::LubricationBaseAlgorithm> lubrication_;
 
     //! Type of coupling strategy between the two fields of the EHL problems
     const Inpar::EHL::FieldCoupling fieldcoupling_;
 
     //! adapter for coupling the nodes of the lubrication field with the nodes from the master side
     //! of the structure
-    Teuchos::RCP<Adapter::CouplingEhlMortar> mortaradapter_;
+    std::shared_ptr<Adapter::CouplingEhlMortar> mortaradapter_;
 
     //! Interface traction vector in the slave str dof map
-    Teuchos::RCP<Core::LinAlg::Vector<double>> stritraction_D_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> stritraction_M_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> stritraction_D_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> stritraction_M_;
 
     //! Transformation matrix for lubrication pre dof map <-> lubrication disp dof map
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> lubrimaptransform_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> lubrimaptransform_;
 
     //! Mapextractors for dealing with interface vectors of the structure field
-    Teuchos::RCP<Core::LinAlg::MapExtractor> slaverowmapextr_;
-    Teuchos::RCP<Core::LinAlg::MapExtractor> masterrowmapextr_;
-    Teuchos::RCP<Core::LinAlg::MapExtractor> mergedrowmapextr_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> slaverowmapextr_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> masterrowmapextr_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> mergedrowmapextr_;
 
     //! Transformation matrix for slave side node map <-> slave side disp dof map
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> slavemaptransform_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> slavemaptransform_;
 
     //! several adapters to transform maps
-    Teuchos::RCP<Coupling::Adapter::Coupling> ada_strDisp_to_lubDisp_;
-    Teuchos::RCP<Coupling::Adapter::Coupling> ada_strDisp_to_lubPres_;
-    Teuchos::RCP<Coupling::Adapter::Coupling> ada_lubPres_to_lubDisp_;
+    std::shared_ptr<Coupling::Adapter::Coupling> ada_strDisp_to_lubDisp_;
+    std::shared_ptr<Coupling::Adapter::Coupling> ada_strDisp_to_lubPres_;
+    std::shared_ptr<Coupling::Adapter::Coupling> ada_lubPres_to_lubDisp_;
 
     //! height old vector to calculate the time derivative of height (Squeeze term)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> heightold_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> heightold_;
 
     //! use of a dry contact model
     bool dry_contact_;
@@ -126,10 +126,10 @@ namespace EHL
 
     //! write output
     virtual void output(bool forced_writerestart = false);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> inf_gap_toggle_lub_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> inf_gap_toggle_lub_;
 
     /// velocity calculation given the displacements
-    Teuchos::RCP<Core::LinAlg::Vector<double>> calc_velocity(
+    std::shared_ptr<Core::LinAlg::Vector<double>> calc_velocity(
         const Core::LinAlg::Vector<double>& dispnp);
 
    private:

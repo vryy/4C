@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::
-    PoroMultiPhaseScaTraArtCouplNodeToPoint(Teuchos::RCP<Core::FE::Discretization> arterydis,
-        Teuchos::RCP<Core::FE::Discretization> contdis,
+    PoroMultiPhaseScaTraArtCouplNodeToPoint(std::shared_ptr<Core::FE::Discretization> arterydis,
+        std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& couplingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname)
     : PoroMultiPhaseScaTraArtCouplNonConforming(
@@ -65,12 +65,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup()
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate_coupling_pairs()
 {
   // pre-evaluate
-  for (auto& coupl_elepair : coupl_elepairs_) coupl_elepair->pre_evaluate(Teuchos::null);
+  for (auto& coupl_elepair : coupl_elepairs_) coupl_elepair->pre_evaluate(nullptr);
 
   // delete the inactive pairs
   coupl_elepairs_.erase(
       std::remove_if(coupl_elepairs_.begin(), coupl_elepairs_.end(),
-          [](const Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
+          [](const std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScatraArteryCouplingPairBase>
                   coupling_pair) { return not coupling_pair->is_active(); }),
       coupl_elepairs_.end());
 
@@ -88,8 +88,8 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::pre_evaluate
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs)
 {
   if (!issetup_) FOUR_C_THROW("setup() has not been called");
 
@@ -101,14 +101,14 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::evaluate(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::setup_system(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_art,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art,
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_cont,
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_art)
 {
   // call base class
   PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNonConforming::setup_system(*sysmat, rhs,
@@ -126,12 +126,12 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::apply_mesh_m
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint::blood_vessel_volume_fraction()
 {
   FOUR_C_THROW("Output of vessel volume fraction not possible for node-to-point coupling");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

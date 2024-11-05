@@ -28,12 +28,12 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
     for (unsigned i = 0; i < dofsets_.size(); ++i) dofsets_[i]->reset();
   }
 
-  elerowmap_ = Teuchos::null;
-  elecolmap_ = Teuchos::null;
+  elerowmap_ = nullptr;
+  elecolmap_ = nullptr;
   elerowptr_.clear();
   elecolptr_.clear();
-  noderowmap_ = Teuchos::null;
-  nodecolmap_ = Teuchos::null;
+  noderowmap_ = nullptr;
+  nodecolmap_ = nullptr;
   noderowptr_.clear();
   nodecolptr_.clear();
 
@@ -41,7 +41,7 @@ void Core::FE::Discretization::reset(bool killdofs, bool killcond)
   // as early as possible
   if (killcond)
   {
-    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::iterator fool;
+    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::iterator fool;
     for (fool = condition_.begin(); fool != condition_.end(); ++fool)
     {
       fool->second->clear_geometry();
@@ -70,7 +70,7 @@ int Core::FE::Discretization::fill_complete(
         << std::setw(1) << std::right << "|" << Core::IO::endl;
   }
 
-  // set all maps to Teuchos::null
+  // set all maps to nullptr
   reset(assigndegreesoffreedom, doboundaryconditions);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
@@ -163,7 +163,7 @@ void Core::FE::Discretization::build_node_row_map()
 {
   const int myrank = get_comm().MyPID();
   int nummynodes = 0;
-  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->owner() == myrank) ++nummynodes;
   std::vector<int> nodeids(nummynodes);
@@ -178,7 +178,7 @@ void Core::FE::Discretization::build_node_row_map()
       ++count;
     }
   if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  noderowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
+  noderowmap_ = std::make_shared<Epetra_Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
   return;
 }
 
@@ -192,7 +192,7 @@ void Core::FE::Discretization::build_node_col_map()
   nodecolptr_.resize(nummynodes);
 
   int count = 0;
-  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator curr;
   for (curr = node_.begin(); curr != node_.end(); ++curr)
   {
     nodeids[count] = curr->second->id();
@@ -201,7 +201,7 @@ void Core::FE::Discretization::build_node_col_map()
     ++count;
   }
   if (count != nummynodes) FOUR_C_THROW("Mismatch in no. of nodes");
-  nodecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
+  nodecolmap_ = std::make_shared<Epetra_Map>(-1, nummynodes, nodeids.data(), 0, get_comm());
   return;
 }
 
@@ -213,7 +213,7 @@ void Core::FE::Discretization::build_element_row_map()
 {
   const int myrank = get_comm().MyPID();
   int nummyeles = 0;
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->owner() == myrank) nummyeles++;
   std::vector<int> eleids(nummyeles);
@@ -227,7 +227,7 @@ void Core::FE::Discretization::build_element_row_map()
       ++count;
     }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elerowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
+  elerowmap_ = std::make_shared<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
   return;
 }
 
@@ -239,7 +239,7 @@ void Core::FE::Discretization::build_element_col_map()
   int nummyeles = (int)element_.size();
   std::vector<int> eleids(nummyeles);
   elecolptr_.resize(nummyeles);
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   int count = 0;
   for (curr = element_.begin(); curr != element_.end(); ++curr)
   {
@@ -249,7 +249,7 @@ void Core::FE::Discretization::build_element_col_map()
     ++count;
   }
   if (count != nummyeles) FOUR_C_THROW("Mismatch in no. of elements");
-  elecolmap_ = Teuchos::make_rcp<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
+  elecolmap_ = std::make_shared<Epetra_Map>(-1, nummyeles, eleids.data(), 0, get_comm());
   return;
 }
 
@@ -258,7 +258,7 @@ void Core::FE::Discretization::build_element_col_map()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_element_to_node_pointers()
 {
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator elecurr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->build_nodal_pointers(node_);
@@ -272,7 +272,7 @@ void Core::FE::Discretization::build_element_to_node_pointers()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_element_to_element_pointers()
 {
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator elecurr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = elecurr->second->build_element_pointers(element_);
@@ -286,11 +286,11 @@ void Core::FE::Discretization::build_element_to_element_pointers()
  *----------------------------------------------------------------------*/
 void Core::FE::Discretization::build_node_to_element_pointers()
 {
-  std::map<int, Teuchos::RCP<Core::Nodes::Node>>::iterator nodecurr;
+  std::map<int, std::shared_ptr<Core::Nodes::Node>>::iterator nodecurr;
   for (nodecurr = node_.begin(); nodecurr != node_.end(); ++nodecurr)
     nodecurr->second->clear_my_element_topology();
 
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator elecurr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator elecurr;
   for (elecurr = element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     const int nnode = elecurr->second->num_node();

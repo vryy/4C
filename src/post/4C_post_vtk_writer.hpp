@@ -16,12 +16,12 @@
 #include "4C_post_writer_base.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <zlib.h>
 
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -78,20 +78,20 @@ class PostVtkWriter : public PostWriterBase
 
   //! Write a single result step
   virtual void write_dof_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) = 0;
 
   //! Write a single result step
   void write_nodal_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override = 0;
 
   //! Write a single result step
   void write_element_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override = 0;

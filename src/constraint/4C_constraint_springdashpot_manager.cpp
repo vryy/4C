@@ -18,11 +18,12 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Core::FE::Discretization> dis)
+CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(
+    std::shared_ptr<Core::FE::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)
 {
   // get all spring dashpot conditions
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> springdashpots;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> springdashpots;
   actdisc_->get_condition("RobinSpringDashpot", springdashpots);
 
   // number of spring dashpot conditions
@@ -36,16 +37,17 @@ CONSTRAINTS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<Core::FE::D
 
     // new instance of spring dashpot BC with current condition for every spring dashpot condition
     for (int i = 0; i < n_conds_; ++i)
-      springs_.push_back(Teuchos::make_rcp<SpringDashpot>(actdisc_, springdashpots[i]));
+      springs_.push_back(std::make_shared<SpringDashpot>(actdisc_, springdashpots[i]));
   }
 
   return;
 }
 
 void CONSTRAINTS::SpringDashpotManager::stiffness_and_internal_forces(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Core::LinAlg::Vector<double>> fint,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint,
+    std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+    std::shared_ptr<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist)
 {
   // evaluate all spring dashpot conditions
   for (int i = 0; i < n_conds_; ++i)
@@ -84,8 +86,8 @@ void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
     Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp)
 {
   // row maps for export
-  Teuchos::RCP<Core::LinAlg::Vector<double>> gap =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(actdisc_->node_row_map()), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> gap =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(actdisc_->node_row_map()), true);
   Core::LinAlg::MultiVector<double> normals(*(actdisc_->node_row_map()), 3, true);
   Core::LinAlg::MultiVector<double> springstress(*(actdisc_->node_row_map()), 3, true);
 
@@ -115,14 +117,14 @@ void CONSTRAINTS::SpringDashpotManager::output(Core::IO::DiscretizationWriter& o
 }
 
 void CONSTRAINTS::SpringDashpotManager::output_restart(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart, Core::FE::Discretization& discret,
-    Core::LinAlg::Vector<double>& disp)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_restart,
+    Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp)
 {
   // row maps for export
-  Teuchos::RCP<Core::LinAlg::Vector<double>> springoffsetprestr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> springoffsetprestr_old =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(actdisc_->node_row_map()), 3, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> springoffsetprestr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> springoffsetprestr_old =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*(actdisc_->node_row_map()), 3, true);
 
   // collect outputs from all spring dashpot conditions
   for (int i = 0; i < n_conds_; ++i)
@@ -156,10 +158,10 @@ void CONSTRAINTS::SpringDashpotManager::output_restart(
 void CONSTRAINTS::SpringDashpotManager::read_restart(
     Core::IO::DiscretizationReader& reader, const double& time)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> tempvec =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> tempvecold =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*(actdisc_->node_row_map()), 3, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> tempvec =
+      std::make_shared<Core::LinAlg::Vector<double>>(*actdisc_->dof_row_map());
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> tempvecold =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*(actdisc_->node_row_map()), 3, true);
 
   reader.read_vector(tempvec, "springoffsetprestr");
   reader.read_multi_vector(tempvecold, "springoffsetprestr_old");

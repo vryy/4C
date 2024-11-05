@@ -16,7 +16,7 @@
 #include "4C_structure_new_error_evaluator.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"  // base class
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -145,7 +145,7 @@ namespace Solid
       void determine_optional_quantity() override;
 
       bool determine_element_volumes(const Core::LinAlg::Vector<double>& x,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols);
+          std::shared_ptr<Core::LinAlg::Vector<double>>& ele_vols);
 
       //! derived
       void reset_step_state() override;
@@ -160,13 +160,13 @@ namespace Solid
       void runtime_output_step_state() const override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! [derived]
@@ -180,7 +180,7 @@ namespace Solid
 
       //! [derived]
       void assemble_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n) override;
 
       //! [derived]
       void create_backup_state(const Core::LinAlg::Vector<double>& dir) override;
@@ -221,7 +221,7 @@ namespace Solid
 
       //! Set the params_interface in the parameter list and call the other evaluate_neumann routine
       void evaluate_neumann(Core::LinAlg::Vector<double>& eval_vec,
-          const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
+          const std::shared_ptr<Core::LinAlg::SparseOperator>& eval_mat);
 
       /*! \brief Check if the given parameter list is valid and call the
        *  evaluate_neumann routine of the discretization
@@ -232,12 +232,12 @@ namespace Solid
        *  \date 08/15
        *  \author hiermeier */
       void evaluate_neumann(Teuchos::ParameterList& p, Core::LinAlg::Vector<double>& eval_vec,
-          const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat);
+          const std::shared_ptr<Core::LinAlg::SparseOperator>& eval_mat);
 
       //! Set the params_interface in the parameter list and call the other evaluate_internal
       //! routine
-      void evaluate_internal(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+      void evaluate_internal(std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       /*! \brief Check if the given parameter list is valid and call the
        *  Evaluate routine of the discretization
@@ -248,14 +248,14 @@ namespace Solid
        *  \date 08/15
        *  \author hiermeier */
       void evaluate_internal(Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+          std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       /*! \brief  Set the params_interface in the parameter list and call the other
        * evaluate_internal_specified_elements routine */
       void evaluate_internal_specified_elements(
-          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec,
+          std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec,
           const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief  Check if the given parameter list is valid and call the
@@ -263,8 +263,8 @@ namespace Solid
        *
        *  \author grill */
       void evaluate_internal_specified_elements(Teuchos::ParameterList& p,
-          Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec,
+          std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec,
           const Epetra_Map* ele_map_to_be_evaluated);
 
       /*! \brief Add static structural internal force and stiffness matrix to the
@@ -279,8 +279,8 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void static_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+      void static_contributions(std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       /*! \brief Add static structural internal force to the evaluate call (default)
        *
@@ -291,7 +291,7 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void static_contributions(Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+      void static_contributions(std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       /*! \brief Add material damping matrix  to the evaluate call (optional)
        *
@@ -304,7 +304,7 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void material_damping_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat);
+      void material_damping_contributions(std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat);
 
       /*! \brief Add mass matrix and inertial force to the evaluate call (optional)
        *
@@ -323,8 +323,8 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void inertial_contributions(Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-          Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+      void inertial_contributions(std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+          std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       /*! \brief Add inertial force to the evaluate call (optional)
        *
@@ -339,7 +339,7 @@ namespace Solid
        *
        *  \date 09/16
        *  \author hiermeier */
-      void inertial_contributions(Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec);
+      void inertial_contributions(std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec);
 
       /*! \brief Evaluate the inertial forces (for the standard case) and
        *         any viscous damping forces
@@ -364,12 +364,12 @@ namespace Solid
       /*! \brief Returns the interial force vector for non-linear mass problems
        *
        *  This function zeros the inertial force vector and returns it,
-       *  if a non-linear mass problem is solved. Otherwise, a Teuchos::null
+       *  if a non-linear mass problem is solved. Otherwise, a nullptr
        *  pointer is returned.
        *
        *  \date 09/16
        *  \author hiermeier */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_inertial_force();
+      std::shared_ptr<Core::LinAlg::Vector<double>> get_inertial_force();
 
       /*! \brief writes output for discretization structure
        *
@@ -449,7 +449,8 @@ namespace Solid
        *  \date 12/16
        *  \author seitz */
       void params_interface2_parameter_list(
-          Teuchos::RCP<Solid::ModelEvaluator::Data> interface_ptr, Teuchos::ParameterList& params);
+          std::shared_ptr<Solid::ModelEvaluator::Data> interface_ptr,
+          Teuchos::ParameterList& params);
 
      private:
       //! @name Accessors to the data container content
@@ -525,12 +526,12 @@ namespace Solid
       Core::LinAlg::SparseMatrix* stiff_ptr_;
 
       //! contains ptc stiffness contributions calculated on elements
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptc_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptc_ptr_;
 
       /*! \brief displacement increment
        *  Necessary for the EAS reconstruction, incremental strain evaluation,
        *  etc.. */
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_incr_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> dis_incr_ptr_;
 
       //! visualization parameters
       Core::IO::VisualizationParameters visualization_params_;
@@ -538,10 +539,10 @@ namespace Solid
       //! error evaluator parameters
       ErrorEvaluator::Parameters error_evaluator_parameters_;
 
-      Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
+      std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 
       //! beam discretization runtime output writer
-      Teuchos::RCP<BeamDiscretizationRuntimeOutputWriter> beam_vtu_writer_ptr_;
+      std::shared_ptr<BeamDiscretizationRuntimeOutputWriter> beam_vtu_writer_ptr_;
 
       //! @}
     };

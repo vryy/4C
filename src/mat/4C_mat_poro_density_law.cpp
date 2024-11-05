@@ -24,7 +24,7 @@ Mat::PAR::PoroDensityLaw* Mat::PAR::PoroDensityLaw::create_density_law(int matID
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
@@ -63,9 +63,9 @@ Mat::PAR::PoroDensityLawExp::PoroDensityLawExp(const Core::Mat::PAR::Parameter::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::PoroDensityLawExp::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::PoroDensityLawExp::create_material()
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

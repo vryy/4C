@@ -40,7 +40,7 @@ namespace BEAMINTERACTION
        * \brief Constructor.
        */
       BeamContactAssemblyManagerInDirect(
-          const Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager>& mortar_manager)
+          const std::shared_ptr<BEAMINTERACTION::BeamToSolidMortarManager>& mortar_manager)
           : BeamContactAssemblyManager(), mortar_manager_(mortar_manager){};
 
       /**
@@ -50,26 +50,26 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      void evaluate_force_stiff(Teuchos::RCP<Core::FE::Discretization> discret,
-          const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-          Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat) override;
+      void evaluate_force_stiff(std::shared_ptr<Core::FE::Discretization> discret,
+          const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+          std::shared_ptr<Epetra_FEVector> fe_sysvec,
+          std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat) override;
 
       /**
        * \brief Return a const pointer to the mortar manager.
        */
-      inline Teuchos::RCP<const BEAMINTERACTION::BeamToSolidMortarManager> get_mortar_manager()
+      inline std::shared_ptr<const BEAMINTERACTION::BeamToSolidMortarManager> get_mortar_manager()
           const
       {
         return mortar_manager_;
       }
 
       double get_energy(
-          const Teuchos::RCP<const Core::LinAlg::Vector<double>>& disp) const override;
+          const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp) const override;
 
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager_;
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidMortarManager> mortar_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR

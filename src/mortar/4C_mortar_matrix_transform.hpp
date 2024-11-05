@@ -16,7 +16,8 @@
 
 #include <Epetra_Export.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -28,11 +29,11 @@ namespace Mortar
 {
   class MatrixRowColTransformer
   {
-    typedef Core::Gen::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Export>>
+    typedef Core::Gen::Pairedvector<CONTACT::MatBlockType, std::shared_ptr<Epetra_Export>>
         plain_block_export_pairs;
 
    public:
-    typedef Core::Gen::Pairedvector<CONTACT::MatBlockType, Teuchos::RCP<Epetra_Map>*>
+    typedef Core::Gen::Pairedvector<CONTACT::MatBlockType, std::shared_ptr<Epetra_Map>*>
         plain_block_map_pairs;
 
    public:
@@ -47,13 +48,13 @@ namespace Mortar
 
     void setup();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> redistributed_to_unredistributed(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> redistributed_to_unredistributed(
         const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat);
 
     void redistributed_to_unredistributed(const CONTACT::MatBlockType bt,
         const Core::LinAlg::SparseMatrix& src_mat, Core::LinAlg::SparseMatrix& dst_mat);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> unredistributed_to_redistributed(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> unredistributed_to_redistributed(
         const CONTACT::MatBlockType bt, const Core::LinAlg::SparseMatrix& src_mat);
 
     void unredistributed_to_redistributed(const CONTACT::MatBlockType bt,
@@ -80,7 +81,7 @@ namespace Mortar
       if (not issetup_) FOUR_C_THROW("Call setup() first!");
     }
 
-    void reset_exporter(Teuchos::RCP<Epetra_Export>& exporter) const;
+    void reset_exporter(std::shared_ptr<Epetra_Export>& exporter) const;
 
    private:
     bool isinit_;

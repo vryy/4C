@@ -53,29 +53,30 @@ namespace FS3I
 
     void compute_interface_vectors(Core::LinAlg::Vector<double>& idispnp_,
         Core::LinAlg::Vector<double>& iveln_,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp_,
+        std::shared_ptr<Core::LinAlg::Vector<double>> struidispnp_,
         Core::LinAlg::Vector<double>& struiveln_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_ale(Core::LinAlg::Vector<double>& iv) const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_ale(
+        Core::LinAlg::Vector<double>& iv) const;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_fluid_field(
+    std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_fluid_field(
         Core::LinAlg::Vector<double>& iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct_field(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_struct_field(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
     /// field transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> ale_to_struct_field(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> ale_to_struct_field(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_ale(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) const;
 
     /// interface transform
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_ale(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_ale(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
 
     /// solve fluid-ale
     virtual void fluid_ale_solve();
@@ -99,34 +100,34 @@ namespace FS3I
     const Epetra_Comm& comm_;
 
     /// coupling of fluid and ale (interface only)
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupfa_;
 
     /// coupling of fluid and ale (whole field)
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupfa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupfa_;
 
     /// coupling of structure and ale (interface only)
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoupsa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoupsa_;
 
     /// coupling of structure and ale (whole field)
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupsa_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupsa_;
 
-    // Teuchos::RCP< ::Adapter::FSIStructureWrapper> structure_;
+    // std::shared_ptr< ::Adapter::FSIStructureWrapper> structure_;
 
-    // Teuchos::RCP<ALE::AleBaseAlgorithm> ale_;
-    Teuchos::RCP<Adapter::AleFsiWrapper> ale_;
+    // std::shared_ptr<ALE::AleBaseAlgorithm> ale_;
+    std::shared_ptr<Adapter::AleFsiWrapper> ale_;
 
     //    // total flux at the interface overall the InnerTimeloop
-    //    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux;
+    //    std::shared_ptr<Core::LinAlg::MultiVector<double>> flux;
     //
     //    // total flux at the structure interface overall the InnerTimeloop
-    //    Teuchos::RCP<Core::LinAlg::MultiVector<double>> struflux;
+    //    std::shared_ptr<Core::LinAlg::MultiVector<double>> struflux;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> norminflux_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> norminflux_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> normtraction_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tangtractionone_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tangtractiontwo_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> normtraction_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tangtractionone_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> tangtractiontwo_;
 
     std::vector<double> nvector_;
 
@@ -176,34 +177,34 @@ namespace FS3I
     double time_;
 
     /// fluid interface displacement at time t^{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispn_;
 
     /// fluid interface displacement at time t^{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispnp_;
 
     /// fluid velocity at interface (always zero!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iveln_;
 
     /// structure interface displacement at time t^{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struidispn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struidispn_;
 
     /// structure interface displacement at time t^{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struidispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struidispnp_;
 
     /// structure velocity at interface (always zero!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struiveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struiveln_;
 
     /// total structure displacement due to growth
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_growth_disp_;
 
     /// total fluid displacement due to growth
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_growth_disp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_growth_disp_;
 
     /// total scatra structure displacement due to growth
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp_;
 
     /// total scatra fluid displacement due to growth
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp_;
   };
 
 }  // namespace FS3I

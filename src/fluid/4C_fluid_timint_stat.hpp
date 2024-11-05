@@ -22,10 +22,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntStationary(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntStationary(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
 
     /*!
@@ -84,11 +84,11 @@ namespace FLD
            for incompressible and low-Mach-number flow
     */
     void calculate_acceleration(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,  ///< velocity at n+1
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,   ///< velocity at     n
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,  ///< velocity at     n-1
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,   ///< acceleration at n-1
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp         ///< acceleration at n+1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,  ///< velocity at n+1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,   ///< velocity at     n
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,  ///< velocity at     n-1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,   ///< acceleration at n-1
+        const std::shared_ptr<Core::LinAlg::Vector<double>> accnp         ///< acceleration at n+1
         ) override;
 
     /*!
@@ -107,8 +107,8 @@ namespace FLD
     \brief Output of filtered velocity
 
     */
-    void outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec) override;
+    void outputof_filtered_vel(std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec) override;
 
     /*!
 
@@ -135,9 +135,9 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> evaluation_vel() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> evaluation_vel() override
     {
-      return Teuchos::null;
+      return nullptr;
     };
 
     /*!

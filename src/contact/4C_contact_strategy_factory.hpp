@@ -59,33 +59,33 @@ namespace CONTACT
        *
        * \author Popp */
       void build_interfaces(const Teuchos::ParameterList& params,
-          std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, bool& poroslave,
+          std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces, bool& poroslave,
           bool& poromaster) const;
 
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::Interface> create_interface(const int id,
+      static std::shared_ptr<CONTACT::Interface> create_interface(const int id,
           const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
           const bool selfcontact,
-          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr = Teuchos::null,
+          std::shared_ptr<CONTACT::InterfaceDataContainer> interfaceData_ptr = nullptr,
           const int contactconstitutivelaw_id = -1);
 
       /** \brief Create a contact interface object based on the given information
        *
        *  \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::Interface> create_interface(
+      static std::shared_ptr<CONTACT::Interface> create_interface(
           const enum Inpar::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-          Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
+          std::shared_ptr<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
        *
        * \author Popp */
-      Teuchos::RCP<CONTACT::AbstractStrategy> build_strategy(const Teuchos::ParameterList& params,
-          const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
+      std::shared_ptr<CONTACT::AbstractStrategy> build_strategy(
+          const Teuchos::ParameterList& params, const bool& poroslave, const bool& poromaster,
+          const int& dof_offset, std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
           CONTACT::ParamsInterface* cparams_interface = nullptr) const;
 
       /*! \brief Create the solver strategy object and pass all necessary data to it
@@ -94,20 +94,21 @@ namespace CONTACT
        *  access to the class members, use the alternative call.
        *
        * \author hiermeier \date 03/17 */
-      static Teuchos::RCP<CONTACT::AbstractStrategy> build_strategy(
+      static std::shared_ptr<CONTACT::AbstractStrategy> build_strategy(
           const Inpar::CONTACT::SolvingStrategy stype, const Teuchos::ParameterList& params,
           const bool& poroslave, const bool& poromaster, const int& dof_offset,
-          std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces, const Epetra_Map* dof_row_map,
-          const Epetra_Map* node_row_map, const int dim,
-          const Teuchos::RCP<const Epetra_Comm>& comm_ptr,
-          Teuchos::RCP<CONTACT::AbstractStratDataContainer> data_ptr,
+          std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
+          const Epetra_Map* dof_row_map, const Epetra_Map* node_row_map, const int dim,
+          const std::shared_ptr<const Epetra_Comm>& comm_ptr,
+          std::shared_ptr<CONTACT::AbstractStratDataContainer> data_ptr,
           CONTACT::ParamsInterface* cparams_interface = nullptr);
 
       //! Create the desired search tree object
-      void build_search_tree(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
+      void build_search_tree(
+          const std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces) const;
 
       //! print some final screen output
-      void print(const std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces,
+      void print(const std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces,
           CONTACT::AbstractStrategy& strategy_ptr, const Teuchos::ParameterList& params) const;
 
       /*! \brief print strategy banner
@@ -128,7 +129,7 @@ namespace CONTACT
        *  \author Ager */
       void set_poro_parent_element(enum Mortar::Element::PhysicalType& slavetype,
           enum Mortar::Element::PhysicalType& mastertype, CONTACT::Element& cele,
-          Teuchos::RCP<Core::Elements::Element>& ele,
+          std::shared_ptr<Core::Elements::Element>& ele,
           const Core::FE::Discretization& discret) const;
 
       /*! \brief Find Physical Type (Poro or Structure) of Poro Interface
@@ -141,7 +142,7 @@ namespace CONTACT
       //!@}
 
       void fully_overlapping_interfaces(
-          std::vector<Teuchos::RCP<CONTACT::Interface>>& interfaces) const;
+          std::vector<std::shared_ptr<CONTACT::Interface>>& interfaces) const;
 
       int identify_full_subset(const Epetra_Map& map_0, const Epetra_Map& map_1,
           bool throw_if_partial_subset_on_proc = true) const;

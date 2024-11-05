@@ -22,15 +22,15 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
     : isinit_(false),
       issetup_(false),
-      discret_ptr_(Teuchos::null),
-      bindis_ptr_(Teuchos::null),
-      gstate_ptr_(Teuchos::null),
-      gio_ptr_(Teuchos::null),
-      beaminteractiondatastate_(Teuchos::null),
-      beam_crosslinker_handler_(Teuchos::null),
-      binstrategy_(Teuchos::null),
-      periodic_boundingbox_(Teuchos::null),
-      eletypeextractor_(Teuchos::null)
+      discret_ptr_(nullptr),
+      bindis_ptr_(nullptr),
+      gstate_ptr_(nullptr),
+      gio_ptr_(nullptr),
+      beaminteractiondatastate_(nullptr),
+      beam_crosslinker_handler_(nullptr),
+      binstrategy_(nullptr),
+      periodic_boundingbox_(nullptr),
+      eletypeextractor_(nullptr)
 {
   // empty constructor
 }
@@ -38,15 +38,15 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::Generic()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::Generic::init(
-    Teuchos::RCP<Core::FE::Discretization> const& ia_discret,
-    Teuchos::RCP<Core::FE::Discretization> const& bindis,
-    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> const& gstate,
-    Teuchos::RCP<Solid::TimeInt::BaseDataIO> const& gio_ptr,
-    Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
-    Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
-    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy,
-    Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
-    Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor)
+    std::shared_ptr<Core::FE::Discretization> const& ia_discret,
+    std::shared_ptr<Core::FE::Discretization> const& bindis,
+    std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> const& gstate,
+    std::shared_ptr<Solid::TimeInt::BaseDataIO> const& gio_ptr,
+    std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState> const& ia_gstate_ptr,
+    std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler> const& beamcrosslinkerhandler,
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy,
+    std::shared_ptr<Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox,
+    std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor> const& eletypeextractor)
 {
   issetup_ = false;
 
@@ -87,7 +87,8 @@ Core::FE::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::discret_ptr()
+std::shared_ptr<Core::FE::Discretization>&
+BEAMINTERACTION::SUBMODELEVALUATOR::Generic::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -95,7 +96,7 @@ Teuchos::RCP<Core::FE::Discretization>& BEAMINTERACTION::SUBMODELEVALUATOR::Gene
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::Discretization>
+std::shared_ptr<const Core::FE::Discretization>
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::discret_ptr() const
 {
   check_init();
@@ -120,7 +121,7 @@ Core::FE::Discretization& BEAMINTERACTION::SUBMODELEVALUATOR::Generic::bin_discr
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization>&
+std::shared_ptr<Core::FE::Discretization>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::bin_discret_ptr()
 {
   check_init();
@@ -129,7 +130,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::bin_discret_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::Discretization>
+std::shared_ptr<const Core::FE::Discretization>
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::bin_discret_ptr() const
 {
   check_init();
@@ -154,7 +155,7 @@ Solid::TimeInt::BaseDataGlobalState& BEAMINTERACTION::SUBMODELEVALUATOR::Generic
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>&
+std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::g_state_ptr()
 {
   check_init();
@@ -197,7 +198,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluator::BeamInteractionDataState>&
+std::shared_ptr<Solid::ModelEvaluator::BeamInteractionDataState>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_interaction_data_state_ptr()
 {
   check_init();
@@ -224,7 +225,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamCrosslinkerHandler>&
+std::shared_ptr<BEAMINTERACTION::BeamCrosslinkerHandler>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::beam_crosslinker_handler_ptr()
 {
   check_init();
@@ -250,7 +251,7 @@ Core::Binstrategy::BinningStrategy& BEAMINTERACTION::SUBMODELEVALUATOR::Generic:
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Binstrategy::BinningStrategy>&
+std::shared_ptr<Core::Binstrategy::BinningStrategy>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::bin_strategy_ptr()
 {
   check_init();
@@ -277,7 +278,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::periodic_bounding_box()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::MeshFree::BoundingBox>&
+std::shared_ptr<Core::Geo::MeshFree::BoundingBox>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::periodic_bounding_box_ptr()
 {
   check_init();
@@ -305,7 +306,7 @@ BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::Utils::MapExtractor>&
+std::shared_ptr<BEAMINTERACTION::Utils::MapExtractor>&
 BEAMINTERACTION::SUBMODELEVALUATOR::Generic::ele_type_map_extractor_ptr()
 {
   check_init();

@@ -112,7 +112,7 @@ bool Cut::Kernel::is_valid_quad4(const std::vector<Point*>& points)
       points[(i + 2) % 4]->coordinates(&xyze(0, 2));
       points[(i + 3) % 4]->coordinates(&xyz(0, 0));
 
-      Teuchos::RCP<Position> pos = Position::create(xyze, xyz, Core::FE::CellType::tri3);
+      std::shared_ptr<Position> pos = Position::create(xyze, xyz, Core::FE::CellType::tri3);
       if (pos->compute())
       {
         return false;

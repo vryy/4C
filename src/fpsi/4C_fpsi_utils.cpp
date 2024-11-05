@@ -20,7 +20,7 @@
 #include "4C_poroelast_utils_setup.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,23 +39,23 @@ FPSI::InterfaceUtils* FPSI::InterfaceUtils::instance()
 /*----------------------------------------------------------------------/
 | Setup discretization                                           rauch  |
 /----------------------------------------------------------------------*/
-Teuchos::RCP<FPSI::FpsiBase> FPSI::InterfaceUtils::setup_discretizations(const Epetra_Comm& comm,
+std::shared_ptr<FPSI::FpsiBase> FPSI::InterfaceUtils::setup_discretizations(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fpsidynparams, const Teuchos::ParameterList& poroelastdynparams)
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  fluid_poro_fluid_interface_map_ = Teuchos::make_rcp<std::map<int, int>>();
-  poro_fluid_fluid_interface_map_ = Teuchos::make_rcp<std::map<int, int>>();
+  fluid_poro_fluid_interface_map_ = std::make_shared<std::map<int, int>>();
+  poro_fluid_fluid_interface_map_ = std::make_shared<std::map<int, int>>();
 
   // 1.-Initialization.
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
-  if (structdis == Teuchos::null) FOUR_C_THROW(" !!! structdis empty !!! Awwww MAAAAN !!!");
-  Teuchos::RCP<Core::FE::Discretization> porofluiddis = problem->get_dis("porofluid");
-  if (porofluiddis == Teuchos::null) FOUR_C_THROW(" !!! porofluiddis empty !!! Awwww MAAAAN !!!");
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
-  if (fluiddis == Teuchos::null) FOUR_C_THROW(" !!! fluiddis empty !!! Awwww MAAAAN !!!");
-  Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
-  if (aledis == Teuchos::null) FOUR_C_THROW(" !!! aledis empty !!! Awwww MAAAAN !!!");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
+  if (structdis == nullptr) FOUR_C_THROW(" !!! structdis empty !!! Awwww MAAAAN !!!");
+  std::shared_ptr<Core::FE::Discretization> porofluiddis = problem->get_dis("porofluid");
+  if (porofluiddis == nullptr) FOUR_C_THROW(" !!! porofluiddis empty !!! Awwww MAAAAN !!!");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  if (fluiddis == nullptr) FOUR_C_THROW(" !!! fluiddis empty !!! Awwww MAAAAN !!!");
+  std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
+  if (aledis == nullptr) FOUR_C_THROW(" !!! aledis empty !!! Awwww MAAAAN !!!");
 
   /*
    Ok Dude, listen carefully for the following is very important. The stuff below is
@@ -143,13 +143,13 @@ Teuchos::RCP<FPSI::FpsiBase> FPSI::InterfaceUtils::setup_discretizations(const E
   setup_interface_map(comm, *structdis, porofluiddis, fluiddis, *aledis);
 
   // 4.- get coupling algorithm
-  Teuchos::RCP<FPSI::FpsiBase> fpsi_algo = Teuchos::null;
+  std::shared_ptr<FPSI::FpsiBase> fpsi_algo = nullptr;
   const auto coupling = Teuchos::getIntegralValue<FpsiCouplingType>(fpsidynparams, "COUPALGO");
   switch (coupling)
   {
     case fpsi_monolithic_plain:
     {
-      fpsi_algo = Teuchos::make_rcp<FPSI::MonolithicPlain>(comm, fpsidynparams, poroelastdynparams);
+      fpsi_algo = std::make_shared<FPSI::MonolithicPlain>(comm, fpsidynparams, poroelastdynparams);
       break;
     }  // case monolithic
     case partitioned:
@@ -197,10 +197,10 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
 
   if (!condition_exists) return;
 
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>& slavegeom = slavecond->geometry();
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>& mastergeom = mastercond->geometry();
+  std::map<int, std::shared_ptr<Core::Elements::Element>>& slavegeom = slavecond->geometry();
+  std::map<int, std::shared_ptr<Core::Elements::Element>>& mastergeom = mastercond->geometry();
 
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
   std::multimap<int, double> slaveinterfaceelementidentificationmap;
 
   ///////////////////////////////////////////////////////////////////////////////////
@@ -341,8 +341,8 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
 
         }  // for every master node
 
-        Teuchos::RCP<Core::Elements::FaceElement> bele =
-            Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(curr->second);
+        std::shared_ptr<Core::Elements::FaceElement> bele =
+            std::dynamic_pointer_cast<Core::Elements::FaceElement>(curr->second);
         parenteleid = bele->parent_element()->id();
         if (parenteleid == -1) FOUR_C_THROW("Couldn't get master parent element Id() ...");
         parenteleowner = bele->parent_element()->owner();
@@ -357,9 +357,10 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
       // match current master element
       // compare position to every element on interface slave side, every processor compares
       // masterloc of current master element of processor[proc]
-      Teuchos::RCP<Core::Elements::Element> matchcurr = Teuchos::null;
+      std::shared_ptr<Core::Elements::Element> matchcurr = nullptr;
 
-      for (std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator scurr = slavegeom.begin();
+      for (std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator scurr =
+               slavegeom.begin();
            scurr != slavegeom.end(); ++scurr)
       {
         std::pair<std::multimap<int, double>::iterator, std::multimap<int, double>::iterator> range;
@@ -396,7 +397,7 @@ void FPSI::InterfaceUtils::setup_local_interface_facing_element_map(
         mastercomm.Barrier();
         if (mastercomm.MyPID() == p)
         {
-          if (matchcurr != Teuchos::null)
+          if (matchcurr != nullptr)
           {
             // slave interface element is unique => key
             interfacefacingelementmap.insert(std::pair<int, int>(matchcurr->id(), parenteleid));
@@ -451,13 +452,13 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
   int printid = -1;
 
   std::map<int, int>::iterator mapcurr;
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator slaveelecurr;
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator masterelecurr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator slaveelecurr;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator masterelecurr;
   Core::Elements::Element* masterele = nullptr;
 
   Global::Problem* problem = Global::Problem::instance();
   const Epetra_Comm& comm = problem->get_dis(masterdis.name())->get_comm();
-  Teuchos::RCP<Epetra_Comm> rcpcomm = Teuchos::RCP(comm.Clone());
+  std::shared_ptr<Epetra_Comm> rcpcomm(comm.Clone());
 
   int mymapsize = interfacefacingelementmap.size();
   int globalmapsize;
@@ -596,11 +597,11 @@ void FPSI::InterfaceUtils::redistribute_interface(Core::FE::Discretization& mast
 | Setup Interface Map (for parallel distr.)                           rauch  |
 /---------------------------------------------------------------------------*/
 void FPSI::InterfaceUtils::setup_interface_map(const Epetra_Comm& comm,
-    Core::FE::Discretization& structdis, Teuchos::RCP<Core::FE::Discretization> porofluiddis,
-    Teuchos::RCP<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis)
+    Core::FE::Discretization& structdis, std::shared_ptr<Core::FE::Discretization> porofluiddis,
+    std::shared_ptr<Core::FE::Discretization> fluiddis, Core::FE::Discretization& aledis)
 {
-  poro_fluid_fluid_interface_map_ = Teuchos::make_rcp<std::map<int, int>>();
-  fluid_poro_fluid_interface_map_ = Teuchos::make_rcp<std::map<int, int>>();
+  poro_fluid_fluid_interface_map_ = std::make_shared<std::map<int, int>>();
+  fluid_poro_fluid_interface_map_ = std::make_shared<std::map<int, int>>();
 
   setup_local_interface_facing_element_map(
       *fluiddis, *porofluiddis, "fpsi_coupling", *poro_fluid_fluid_interface_map_);
@@ -618,32 +619,32 @@ void FPSI::Utils::MapExtractor::setup(
   const int ndim = Global::Problem::instance()->n_dim();
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(overlapping);  // defines if maps can overlap
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "FSICoupling", 0, ndim + withpressure));
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+  mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
       dis, "fpsi_coupling", 0, ndim + withpressure));
   mcs.setup_extractor(dis, *dis.dof_row_map(), *this);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FPSI::Utils::MapExtractor::setup(
-    Teuchos::RCP<const Epetra_Map>& additionalothermap, const FPSI::Utils::MapExtractor& extractor)
+void FPSI::Utils::MapExtractor::setup(std::shared_ptr<const Epetra_Map>& additionalothermap,
+    const FPSI::Utils::MapExtractor& extractor)
 {
   // build the new othermap
-  std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> othermaps;
   othermaps.push_back(additionalothermap);
   othermaps.push_back(extractor.other_map());
 
   if (Core::LinAlg::MultiMapExtractor::intersect_maps(othermaps)->NumGlobalElements() > 0)
     FOUR_C_THROW("Failed to add dofmap of foreign discretization to other_map. Detected overlap.");
 
-  Teuchos::RCP<const Epetra_Map> mergedothermap =
+  std::shared_ptr<const Epetra_Map> mergedothermap =
       Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
 
   // the vector of maps for the new map extractor consists of othermap at position 0
   // followed by the maps of conditioned DOF
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   // append the merged other map at first position
   maps.push_back(mergedothermap);
 
@@ -651,19 +652,19 @@ void FPSI::Utils::MapExtractor::setup(
   for (int i = 1; i < extractor.num_maps(); ++i) maps.push_back(extractor.Map(i));
 
   // merge
-  Teuchos::RCP<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
+  std::shared_ptr<const Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
 
   Core::LinAlg::MultiMapExtractor::setup(*fullmap, maps);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> FPSI::Utils::MapExtractor::conditioned_element_map(
+std::shared_ptr<std::set<int>> FPSI::Utils::MapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements =
+  std::shared_ptr<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");
-  Teuchos::RCP<std::set<int>> condelements2 =
+  std::shared_ptr<std::set<int>> condelements2 =
       Core::Conditions::conditioned_element_map(dis, "fpsi_coupling");
   std::copy(condelements2->begin(), condelements2->end(),
       std::inserter(*condelements, condelements->begin()));

@@ -17,22 +17,22 @@ FOUR_C_NAMESPACE_OPEN
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 void Mortar::MultiFieldCoupling::push_back_coupling(
-    const Teuchos::RCP<Core::FE::Discretization>& dis, const int nodeset,
+    const std::shared_ptr<Core::FE::Discretization>& dis, const int nodeset,
     const std::vector<int>& dofs_to_couple, const Teuchos::ParameterList& mortar_params,
     const Teuchos::ParameterList& contact_params, const Teuchos::ParameterList& binning_params,
-    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+    const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
     const Core::Utils::FunctionManager& function_manager,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
     const Core::FE::ShapeFunctionType shape_function_type, const int ndim)
 {
   if (!dis->get_condition("MortarMulti"))
     FOUR_C_THROW("this discretization does not have a Mortar-Muti condition");
 
-  Teuchos::RCP<Coupling::Adapter::CouplingMortar> adaptermeshtying =
-      Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(
+  std::shared_ptr<Coupling::Adapter::CouplingMortar> adaptermeshtying =
+      std::make_shared<Coupling::Adapter::CouplingMortar>(
           ndim, mortar_params, contact_params, shape_function_type);
 
-  adaptermeshtying->setup(dis, dis, Teuchos::null, dofs_to_couple, "MortarMulti", dis->get_comm(),
+  adaptermeshtying->setup(dis, dis, nullptr, dofs_to_couple, "MortarMulti", dis->get_comm(),
       function_manager, binning_params, discretization_map, output_control, shape_function_type,
       false, false, nodeset, nodeset);
 
@@ -43,7 +43,7 @@ void Mortar::MultiFieldCoupling::push_back_coupling(
 /*-----------------------------------------------------------------------*/
 /*-----------------------------------------------------------------------*/
 void Mortar::MultiFieldCoupling::condense_matrix(
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat)
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>& mat)
 {
   Mortar::Utils::mortar_matrix_condensation(mat, p_);
 }

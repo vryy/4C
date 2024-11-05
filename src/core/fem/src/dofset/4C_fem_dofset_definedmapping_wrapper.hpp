@@ -54,7 +54,7 @@ namespace Core::DOFSets
 
   \code
 
-    Teuchos::RCP<Core::DOFSets::DofSet> newsourcedofset_for_target_dis =
+    std::shared_ptr<Core::DOFSets::DofSet> newsourcedofset_for_target_dis =
         Teuchos::rcp(new
   Core::DOFSets::DofSetMappedProxy(sourcedis->GetDofSetProxy(),sourcedis,"CouplingSourceToTarget",setofcouplingids));
 
@@ -81,8 +81,8 @@ namespace Core::DOFSets
     \param sourcedis    (in) : source discretization for the new dofset
     \param couplingcond (in) : condition to be coupled
     \param condids      (in) : set of condition ids to merge into one dofset    */
-    DofSetDefinedMappingWrapper(Teuchos::RCP<DofSetInterface> dofset,
-        Teuchos::RCP<const Core::FE::Discretization> sourcedis, const std::string& couplingcond,
+    DofSetDefinedMappingWrapper(std::shared_ptr<DofSetInterface> dofset,
+        std::shared_ptr<const Core::FE::Discretization> sourcedis, const std::string& couplingcond,
         const std::set<int> condids);
 
     //! destructor
@@ -131,7 +131,7 @@ namespace Core::DOFSets
          We can now create the dofset proxy from the struct dis via
 
          \code
-          Teuchos::RCP<Core::DOFSets::DofSet> newdofset =
+          std::shared_ptr<Core::DOFSets::DofSet> newdofset =
               Teuchos::rcp(new
        Core::DOFSets::DofSetMappedProxy(structdis->GetDofSetProxy(), structdis,
                                                       "SSICouplingSolidToScatra",
@@ -315,14 +315,14 @@ namespace Core::DOFSets
     const Core::Nodes::Node* get_source_node(int targetLid) const;
 
     // dofset
-    Teuchos::RCP<DofSetInterface> sourcedofset_;
+    std::shared_ptr<DofSetInterface> sourcedofset_;
 
     //! map containing the mapping of the target node GID to the corresponding source node GID
     //! (value)
-    Teuchos::RCP<Core::LinAlg::Vector<int>> targetlidtosourcegidmapping_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> targetlidtosourcegidmapping_;
 
     //! source discretization
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis_;
+    std::shared_ptr<const Core::FE::Discretization> sourcedis_;
 
     //! condition string defining the coupling
     const std::string couplingcond_;

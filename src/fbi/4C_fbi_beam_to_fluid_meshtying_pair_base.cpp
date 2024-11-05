@@ -94,7 +94,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
 template <typename Beam, typename Fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::create_geometry_pair(
     const Core::Elements::Element* element1, const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+    const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   // Set up the geometry pair
   this->geometry_pair_ = GEOMETRYPAIR::geometry_pair_line_to_volume_factory<double, Beam, Fluid>(
@@ -170,7 +170,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam,
  */
 template <typename Beam, typename Fluid>
 void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visualization(
-    Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+    std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
   // Get visualization of base class.
@@ -178,9 +178,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
 
 
   // If a writer exists for integration point data, add the integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization =
       visualization_writer->get_visualization_writer("integration-points");
-  if (visualization != Teuchos::null)
+  if (visualization != nullptr)
   {
     // Setup variables.
     Core::LinAlg::Matrix<3, 1, scalar_type> X;
@@ -217,7 +217,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<Beam, Fluid>::get_pair_visual
 
   // If a writer exists for segmentation point data, add the segmentation point data.
   visualization = visualization_writer->get_visualization_writer("segmentation");
-  if (visualization != Teuchos::null)
+  if (visualization != nullptr)
   {
     // Setup variables.
     Core::LinAlg::Matrix<3, 1, scalar_type> X;

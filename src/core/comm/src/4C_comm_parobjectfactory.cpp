@@ -124,7 +124,7 @@ Core::Communication::ParObject* Core::Communication::ParObjectFactory::create(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::create(
+std::shared_ptr<Core::Elements::Element> Core::Communication::ParObjectFactory::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   finalize_registration();
@@ -142,8 +142,8 @@ Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::cre
     Core::Elements::ElementType* eot = dynamic_cast<Core::Elements::ElementType*>(pot);
     if (eot != nullptr)
     {
-      Teuchos::RCP<Core::Elements::Element> ele = eot->create(eletype, eledistype, id, owner);
-      if (ele != Teuchos::null)
+      std::shared_ptr<Core::Elements::Element> ele = eot->create(eletype, eledistype, id, owner);
+      if (ele != nullptr)
       {
         element_cache_[eletype] = eot;
         return ele;
@@ -152,7 +152,7 @@ Teuchos::RCP<Core::Elements::Element> Core::Communication::ParObjectFactory::cre
   }
 
   FOUR_C_THROW("Unknown type '%s' of finite element", eletype.c_str());
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -248,11 +248,11 @@ void Core::Communication::ParObjectFactory::initialize_elements(Core::FE::Discre
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::Communication::ParObjectFactory::pre_evaluate(Core::FE::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   finalize_registration();
 

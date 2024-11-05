@@ -28,10 +28,10 @@ Core::Communication::ParObject* CONTACT::ElementType::create(
   return ele;
 }
 
-Teuchos::RCP<Core::Elements::Element> CONTACT::ElementType::create(const int id, const int owner)
+std::shared_ptr<Core::Elements::Element> CONTACT::ElementType::create(const int id, const int owner)
 {
   // return Teuchos::rcp( new Element( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 void CONTACT::ElementType::nodal_block_information(
@@ -374,9 +374,8 @@ void CONTACT::Element::prepare_dderiv(const std::vector<Mortar::Element*>& meles
   int numderiv = 0;
   numderiv += num_node() * 3 * 12;
   for (unsigned m = 0; m < meles.size(); ++m) numderiv += (meles.at(m))->num_node() * 3;
-  d_matrix_deriv_ =
-      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
-          numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), num_node()));
+  d_matrix_deriv_ = std::make_shared<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+      numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), num_node()));
 }
 
 void CONTACT::Element::prepare_mderiv(const std::vector<Mortar::Element*>& meles, const int m)
@@ -385,15 +384,14 @@ void CONTACT::Element::prepare_mderiv(const std::vector<Mortar::Element*>& meles
   int numderiv = 0;
   numderiv += num_node() * 3 * 12;
   for (unsigned i = 0; i < meles.size(); ++i) numderiv += meles[i]->num_node() * 3;
-  m_matrix_deriv_ =
-      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
-          numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), meles.at(m)->num_node()));
+  m_matrix_deriv_ = std::make_shared<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+      numderiv, 0, Core::LinAlg::SerialDenseMatrix(num_node(), meles.at(m)->num_node()));
 }
 
 
 void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
 {
-  if (d_matrix_deriv_ == Teuchos::null)
+  if (d_matrix_deriv_ == nullptr)
     FOUR_C_THROW("assemble_dderiv_to_nodes called w/o prepare_dderiv first");
 
   if (d_matrix_deriv_->size() == 0) return;
@@ -425,12 +423,12 @@ void CONTACT::Element::assemble_dderiv_to_nodes(bool dual)
         ddmap_jj[p->first] += (p->second)(j, j);
     }
   }
-  d_matrix_deriv_ = Teuchos::null;
+  d_matrix_deriv_ = nullptr;
 }
 
 void CONTACT::Element::assemble_mderiv_to_nodes(Mortar::Element& mele)
 {
-  if (m_matrix_deriv_ == Teuchos::null)
+  if (m_matrix_deriv_ == nullptr)
     FOUR_C_THROW("assemble_mderiv_to_nodes called w/o prepare_mderiv first");
   if (m_matrix_deriv_->size() == 0) return;
 

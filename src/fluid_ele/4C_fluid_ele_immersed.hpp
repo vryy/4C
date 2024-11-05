@@ -27,7 +27,7 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void setup_element_definition(
           std::map<std::string, std::map<std::string, Input::LineDefinition>>& definitions)
@@ -160,7 +160,7 @@ namespace Discret
       /*!
       \brief returns rcp to vector containing gps with projected divergence
       */
-      Teuchos::RCP<std::vector<int>> get_rcp_int_point_has_projected_divergence() override
+      std::shared_ptr<std::vector<int>> get_rcp_int_point_has_projected_divergence() override
       {
         return intpoint_has_projected_divergence_;
       };
@@ -168,7 +168,7 @@ namespace Discret
       /*!
       \brief returns rcp to vector containing projected divergence values
       */
-      Teuchos::RCP<std::vector<double>> get_rcp_projected_int_point_divergence() override
+      std::shared_ptr<std::vector<double>> get_rcp_projected_int_point_divergence() override
       {
         return stored_projected_intpoint_divergence_;
       };
@@ -178,13 +178,13 @@ namespace Discret
       */
       void construct_element_rcp(int size) override
       {
-        if (intpoint_has_projected_divergence_ == Teuchos::null)
-          intpoint_has_projected_divergence_ = Teuchos::make_rcp<std::vector<int>>(size, 0);
+        if (intpoint_has_projected_divergence_ == nullptr)
+          intpoint_has_projected_divergence_ = std::make_shared<std::vector<int>>(size, 0);
         else
           intpoint_has_projected_divergence_->resize(size, 0);
 
-        if (stored_projected_intpoint_divergence_ == Teuchos::null)
-          stored_projected_intpoint_divergence_ = Teuchos::make_rcp<std::vector<double>>(size, 0.0);
+        if (stored_projected_intpoint_divergence_ == nullptr)
+          stored_projected_intpoint_divergence_ = std::make_shared<std::vector<double>>(size, 0.0);
         else
           stored_projected_intpoint_divergence_->resize(size, 0.0);
       };
@@ -278,8 +278,9 @@ namespace Discret
       int is_immersed_bdry_;  //!< true if boundary intersects this element
       int has_projected_dirichletvalues_;  //!< true if Dirichlet values need to be projected to
                                            //!< this element
-      Teuchos::RCP<std::vector<int>> intpoint_has_projected_divergence_;  //!< 1000 max number of gp
-      Teuchos::RCP<std::vector<double>>
+      std::shared_ptr<std::vector<int>>
+          intpoint_has_projected_divergence_;  //!< 1000 max number of gp
+      std::shared_ptr<std::vector<double>>
           stored_projected_intpoint_divergence_;  //!< 1000 max number of gp
     };
   }  // namespace Elements

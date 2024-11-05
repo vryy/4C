@@ -22,9 +22,9 @@
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -52,11 +52,11 @@ namespace NOX::FSI
    public:
     LinearSystem(Teuchos::ParameterList& printParams,  ///< printing parameters
         Teuchos::ParameterList& linearSolverParams,    ///< parameters for linear solution
-        const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>&
-            iJac,                                  ///< NOX interface to Jacobian
-        const Teuchos::RCP<Epetra_Operator>& J,    ///< the Jacobian or stiffness matrix
-        const ::NOX::Epetra::Vector& cloneVector,  ///< initial guess of the solution process
-        Teuchos::RCP<Core::LinAlg::Solver>
+        const std::shared_ptr<::NOX::Epetra::Interface::Jacobian>&
+            iJac,                                   ///< NOX interface to Jacobian
+        const std::shared_ptr<Epetra_Operator>& J,  ///< the Jacobian or stiffness matrix
+        const ::NOX::Epetra::Vector& cloneVector,   ///< initial guess of the solution process
+        std::shared_ptr<Core::LinAlg::Solver>
             structure_solver,  ///< (used-defined) linear algebraic solver
         const Teuchos::RCP<::NOX::Epetra::Scaling> scalingObject =
             Teuchos::null);  ///< scaling of the linear system
@@ -139,13 +139,13 @@ namespace NOX::FSI
 
     ::NOX::Utils utils_;
 
-    Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> jac_interface_ptr_;
-    Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> prec_interface_ptr_;
+    std::shared_ptr<::NOX::Epetra::Interface::Jacobian> jac_interface_ptr_;
+    std::shared_ptr<::NOX::Epetra::Interface::Preconditioner> prec_interface_ptr_;
     OperatorType jac_type_;
-    mutable Teuchos::RCP<Epetra_Operator> jac_ptr_;
-    mutable Teuchos::RCP<Epetra_Operator> prec_ptr_;
+    mutable std::shared_ptr<Epetra_Operator> jac_ptr_;
+    mutable std::shared_ptr<Epetra_Operator> prec_ptr_;
     Teuchos::RCP<::NOX::Epetra::Scaling> scaling_;
-    mutable Teuchos::RCP<::NOX::Epetra::Vector> tmp_vector_ptr_;
+    mutable std::shared_ptr<::NOX::Epetra::Vector> tmp_vector_ptr_;
 
     bool output_solve_details_;
     bool zero_initial_guess_;
@@ -155,7 +155,7 @@ namespace NOX::FSI
     int callcount_;
 
     /// linear algebraic solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
 
     Teuchos::Time timer_;
   };

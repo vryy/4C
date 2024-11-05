@@ -20,7 +20,7 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_local_numeric_methods.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,7 +34,7 @@ namespace Mat
       /// constructor
       MuscleGiantesio(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -138,9 +138,9 @@ namespace Mat
     // Constructor for the material given the material parameters
     explicit MuscleGiantesio(Mat::PAR::MuscleGiantesio* params);
 
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MuscleGiantesio>(*this);
+      return std::make_shared<MuscleGiantesio>(*this);
     }
 
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }

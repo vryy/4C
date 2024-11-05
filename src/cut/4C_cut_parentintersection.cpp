@@ -213,8 +213,8 @@ void Cut::ParentIntersection::create_nodal_dof_set(
  | fill parallel DofSetData with information that has to be communicated   schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void Cut::ParentIntersection::fill_parallel_dof_set_data(
-    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, const Core::FE::Discretization& dis,
-    bool include_inner)
+    std::vector<std::shared_ptr<DofSetData>>& parallel_dofSetData,
+    const Core::FE::Discretization& dis, bool include_inner)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 5/6 --- cut_positions_dofsets --- fill_parallel_dof_set_data");
 
@@ -304,8 +304,8 @@ void Cut::ParentIntersection::fill_parallel_dof_set_data(
  | create parallel DofSetData for a volumecell that has to be communicated schott 03/12 |
  *-------------------------------------------------------------------------------------*/
 void Cut::ParentIntersection::create_parallel_dof_set_data_vc(
-    std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData, int eid, int set_index, bool inside,
-    VolumeCell* cell, std::map<int, int>& node_dofset_map)
+    std::vector<std::shared_ptr<DofSetData>>& parallel_dofSetData, int eid, int set_index,
+    bool inside, VolumeCell* cell, std::map<int, int>& node_dofset_map)
 {
   if (node_dofset_map.size() > 0)
   {
@@ -349,7 +349,7 @@ void Cut::ParentIntersection::create_parallel_dof_set_data_vc(
 
     // create dofset data for this volumecell for Communication
     parallel_dofSetData.push_back(
-        Teuchos::make_rcp<DofSetData>(set_index, inside, cut_points_coords, eid, node_dofset_map));
+        std::make_shared<DofSetData>(set_index, inside, cut_points_coords, eid, node_dofset_map));
   }
   else
     FOUR_C_THROW("communication for empty node-dofset map not necessary!");

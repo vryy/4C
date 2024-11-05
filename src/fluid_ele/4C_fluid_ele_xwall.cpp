@@ -30,20 +30,20 @@ Core::Communication::ParObject* Discret::Elements::FluidXWallType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidXWallType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidXWallType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDXW")
   {
-    return Teuchos::make_rcp<Discret::Elements::FluidXWall>(id, owner);
+    return std::make_shared<Discret::Elements::FluidXWall>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidXWallType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidXWallType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::FluidXWall>(id, owner);
+  return std::make_shared<Discret::Elements::FluidXWall>(id, owner);
 }
 
 void Discret::Elements::FluidXWallType::nodal_block_information(
@@ -110,7 +110,7 @@ Core::Elements::Element* Discret::Elements::FluidXWall::clone() const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                           |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidXWall::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidXWall::lines()
 {
   return Core::Communication::get_element_lines<FluidXWallBoundary, FluidXWall>(*this);
 }
@@ -119,7 +119,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidXWall
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                                     |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidXWall::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidXWall::surfaces()
 {
   return Core::Communication::get_element_surfaces<FluidXWallBoundary, FluidXWall>(*this);
 }

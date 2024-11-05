@@ -24,18 +24,18 @@ namespace
    * coordinates for unit test examples.
    */
   void xtest_line_along_element_surface_geometry(
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& line_elements,
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& volume_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& line_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& volume_elements,
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<24, 1, double>>& q_volume_elements)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
-    line_elements.push_back(Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0));
+    line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoHex8>(1, 0));
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoHex8>(2, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoHex8>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoHex8>(2, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -110,18 +110,18 @@ namespace
    * \brief Create the geometry for two solid elements and a line between them.
    */
   void xtest_line_in_small_elements_geometry(
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& line_elements,
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& volume_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& line_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& volume_elements,
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<24, 1, double>>& q_volume_elements)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
-    line_elements.push_back(Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0));
+    line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoHex8>(1, 0));
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoHex8>(2, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoHex8>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoHex8>(2, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -197,17 +197,17 @@ namespace
    * coordinates for unit test examples.
    */
   void xtest_multiple_intersections_hex27_geometry(
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& line_elements,
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& volume_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& line_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& volume_elements,
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<81, 1, double>>& q_volume_elements)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
-    line_elements.push_back(Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0));
+    line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoHex27>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoHex27>(1, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -315,17 +315,17 @@ namespace
    * coordinates for unit test examples.
    */
   void xtest_multiple_intersections_tet10_geometry(
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& line_elements,
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& volume_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& line_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& volume_elements,
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<30, 1, double>>& q_volume_elements)
   {
     // Create the elements.
     const int dummy_node_ids[2] = {0, 1};
-    line_elements.push_back(Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0));
+    line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoTet10>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoTet10>(1, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());
@@ -383,19 +383,19 @@ namespace
    * The solid is a 90degree element of a hollow cylinder.
    */
   void xtest_multiple_intersections_nurbs27_geometry(
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& line_elements,
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& volume_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& line_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& volume_elements,
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<81, 1, double>>& q_volume_elements,
-      Teuchos::RCP<Core::FE::Nurbs::NurbsDiscretization> structdis)
+      std::shared_ptr<Core::FE::Nurbs::NurbsDiscretization> structdis)
   {
     // Create the elements. In this case the volume has to be first, as otherwise the nurbs patches
     // would need a different numbering.
     const int dummy_node_ids[2] = {0, 1};
-    line_elements.push_back(Teuchos::make_rcp<Discret::Elements::Beam3r>(1, 0));
+    line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(1, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids);
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::Nurbs::SoNurbs27>(0, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::Nurbs::SoNurbs27>(0, 0));
 
     // Positional and tangent DOFs of the line(s).
     Core::LinAlg::Matrix<12, 1, double> q_line(true);
@@ -501,14 +501,15 @@ namespace
     q_volume_elements.push_back(q_volume);
 
     // Set up the needed structure for a nurbs discretization.
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knot_vector =
-        Teuchos::make_rcp<Core::FE::Nurbs::Knotvector>(3, 1);
+    std::shared_ptr<Core::FE::Nurbs::Knotvector> knot_vector =
+        std::make_shared<Core::FE::Nurbs::Knotvector>(3, 1);
 
     // Set the knotvector.
     const std::string knotvectortype = "Interpolated";
     for (unsigned int dir = 0; dir < 3; dir++)
     {
-      Teuchos::RCP<std::vector<double>> directions_knots = Teuchos::make_rcp<std::vector<double>>();
+      std::shared_ptr<std::vector<double>> directions_knots =
+          std::make_shared<std::vector<double>>();
       directions_knots->clear();
       directions_knots->push_back(0.);
       directions_knots->push_back(0.);
@@ -551,13 +552,13 @@ namespace
     weights[25] = 0.707107;
     weights[26] = 1.0;
     int nodes[27];
-    std::map<int, Teuchos::RCP<Core::Nodes::Node>> nodes_map;
+    std::map<int, std::shared_ptr<Core::Nodes::Node>> nodes_map;
     for (unsigned int i_node = 0; i_node < 27; i_node++)
     {
       nodes[i_node] = (int)i_node;
       std::vector<double> dummycoord = {0., 0., 0., 0., 0., 0.};
-      Teuchos::RCP<Core::Nodes::Node> new_node =
-          Teuchos::make_rcp<Core::FE::Nurbs::ControlPoint>(i_node, dummycoord, weights[i_node], 0);
+      std::shared_ptr<Core::Nodes::Node> new_node =
+          std::make_shared<Core::FE::Nurbs::ControlPoint>(i_node, dummycoord, weights[i_node], 0);
       structdis->add_node(new_node);
       nodes_map[i_node] = new_node;
     }
@@ -575,17 +576,17 @@ namespace
    * script/unittest_geometry_pair_line_to_volume.wls
    */
   void xtest_create_geometry_single_hex8_with_pre_curved_line(
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& line_elements,
-      std::vector<Teuchos::RCP<Core::Elements::Element>>& volume_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& line_elements,
+      std::vector<std::shared_ptr<Core::Elements::Element>>& volume_elements,
       std::vector<Core::LinAlg::Matrix<12, 1, double>>& q_line_elements,
       std::vector<double>& line_ref_lengths,
       std::vector<Core::LinAlg::Matrix<24, 1, double>>& q_volume_elements)
   {
     // Create the elements.
     const std::vector<int> dummy_node_ids{0, 1};
-    line_elements.push_back(Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0));
+    line_elements.push_back(std::make_shared<Discret::Elements::Beam3r>(0, 0));
     line_elements.back()->set_node_ids(2, dummy_node_ids.data());
-    volume_elements.push_back(Teuchos::make_rcp<Discret::Elements::SoHex8>(1, 0));
+    volume_elements.push_back(std::make_shared<Discret::Elements::SoHex8>(1, 0));
 
     // Positional and tangent DOFs of the line(s).
     q_line_elements.push_back(Core::LinAlg::Matrix<12, 1, double>());

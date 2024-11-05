@@ -16,8 +16,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -64,19 +63,19 @@ namespace POROFLUIDMULTIPHASE
       \param numdofpernode    : number of dofs per node of the vector (assumed to be equal for all
       nodes)
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> convert_dof_vector_to_node_based_multi_vector(
-        const Core::FE::Discretization& dis, const Core::LinAlg::Vector<double>& vector,
-        const int nds, const int numdofpernode);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>>
+    convert_dof_vector_to_node_based_multi_vector(const Core::FE::Discretization& dis,
+        const Core::LinAlg::Vector<double>& vector, const int nds, const int numdofpernode);
 
     /// create solution algorithm depending on input file
-    Teuchos::RCP<Adapter::PoroFluidMultiphase> create_algorithm(
+    std::shared_ptr<Adapter::PoroFluidMultiphase> create_algorithm(
         Inpar::POROFLUIDMULTIPHASE::TimeIntegrationScheme
-            timintscheme,                                    //!< time discretization scheme
-        Teuchos::RCP<Core::FE::Discretization> dis,          //!< discretization
-        const int linsolvernumber,                           //!< number of linear solver
-        const Teuchos::ParameterList& probparams,            //!< parameter list of global problem
-        const Teuchos::ParameterList& poroparams,            //!< paramter list of poro problem
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< output writer
+            timintscheme,                               //!< time discretization scheme
+        std::shared_ptr<Core::FE::Discretization> dis,  //!< discretization
+        const int linsolvernumber,                      //!< number of linear solver
+        const Teuchos::ParameterList& probparams,       //!< parameter list of global problem
+        const Teuchos::ParameterList& poroparams,       //!< paramter list of poro problem
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< output writer
     );
 
     /**
@@ -88,7 +87,7 @@ namespace POROFLUIDMULTIPHASE
      *                     artery element with a vector of close 3D elements
      */
     std::map<int, std::set<int>> extended_ghosting_artery_discretization(
-        Core::FE::Discretization& contdis, Teuchos::RCP<Core::FE::Discretization> artdis,
+        Core::FE::Discretization& contdis, std::shared_ptr<Core::FE::Discretization> artdis,
         const bool evaluate_on_lateral_surface,
         const Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod couplingmethod);
 
@@ -146,7 +145,7 @@ namespace POROFLUIDMULTIPHASE
      * @param doboundaryconditions  also do boundary conditions in fill-complete call
      * @return  fully-overlapping artery discretization
      */
-    Teuchos::RCP<Core::FE::Discretization> create_fully_overlapping_artery_discretization(
+    std::shared_ptr<Core::FE::Discretization> create_fully_overlapping_artery_discretization(
         Core::FE::Discretization& artdis, std::string disname, bool doboundaryconditions);
 
   }  // namespace Utils

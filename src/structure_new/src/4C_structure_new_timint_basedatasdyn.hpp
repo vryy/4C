@@ -61,12 +61,12 @@ namespace Solid
       virtual ~BaseDataSDyn() = default;
 
       /// initialize class variables (already existing)
-      virtual void init(const Teuchos::RCP<Core::FE::Discretization> discret,
+      virtual void init(const std::shared_ptr<Core::FE::Discretization> discret,
           const Teuchos::ParameterList& sDynParams, const Teuchos::ParameterList& xparams,
-          const Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes,
-          const Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs,
-          const Teuchos::RCP<
-              std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+          const std::shared_ptr<std::set<enum Inpar::Solid::ModelType>> modeltypes,
+          const std::shared_ptr<std::set<enum Inpar::Solid::EleTech>> eletechs,
+          const std::shared_ptr<
+              std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
               linsolvers);
 
       /// setup new class variables
@@ -116,7 +116,7 @@ namespace Solid
       }
 
       /// Returns timer for solution technique
-      Teuchos::RCP<const Teuchos::Time> get_timer() const
+      std::shared_ptr<const Teuchos::Time> get_timer() const
       {
         check_init_setup();
         return timer_;
@@ -251,7 +251,7 @@ namespace Solid
       ///@{
 
       /// Returns linear solvers pointer
-      const std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>&
+      const std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>&
       get_lin_solvers() const
       {
         check_init_setup();
@@ -332,7 +332,7 @@ namespace Solid
       /// @name Get model specific data container
       ///@{
       /// Returns periodic bounding box object (read access)
-      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> const& get_periodic_bounding_box() const
+      std::shared_ptr<Core::Geo::MeshFree::BoundingBox> const& get_periodic_bounding_box() const
       {
         check_init_setup();
         return periodic_boundingbox_;
@@ -445,7 +445,7 @@ namespace Solid
       };
 
       /// Returns timer for solution technique
-      Teuchos::RCP<Teuchos::Time>& get_timer()
+      std::shared_ptr<Teuchos::Time>& get_timer()
       {
         check_init_setup();
         return timer_;
@@ -534,7 +534,7 @@ namespace Solid
       }
 
       /// Returns nox parameters
-      Teuchos::RCP<Teuchos::ParameterList> get_nox_params_ptr()
+      std::shared_ptr<Teuchos::ParameterList> get_nox_params_ptr()
       {
         check_init_setup();
         return noxparams_;
@@ -573,7 +573,7 @@ namespace Solid
       /// @name Get mutable linear solver variables (read and write access)
       ///@{
       /// Returns linear solvers pointer
-      Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+      std::shared_ptr<std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
       get_lin_solvers_ptr()
       {
         check_init_setup();
@@ -581,7 +581,8 @@ namespace Solid
       }
 
       /// Returns linear solvers pointer
-      std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>& get_lin_solvers()
+      std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>&
+      get_lin_solvers()
       {
         check_init_setup();
         return *linsolvers_;
@@ -640,7 +641,7 @@ namespace Solid
       };
 
       /// Return a pointer to the coupling model evaluator
-      const Teuchos::RCP<Solid::ModelEvaluator::Generic>& coupling_model_ptr()
+      const std::shared_ptr<Solid::ModelEvaluator::Generic>& coupling_model_ptr()
       {
         return coupling_model_ptr_;
       }
@@ -702,7 +703,7 @@ namespace Solid
       /// @name Time measurement
       ///@{
       /// timer for solution technique
-      Teuchos::RCP<Teuchos::Time> timer_;
+      std::shared_ptr<Teuchos::Time> timer_;
 
       ///@}
 
@@ -735,13 +736,13 @@ namespace Solid
       ///@{
 
       /// current active model types for the model evaluator
-      Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes_;
+      std::shared_ptr<std::set<enum Inpar::Solid::ModelType>> modeltypes_;
 
       /// current active element technologies
-      Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs_;
+      std::shared_ptr<std::set<enum Inpar::Solid::EleTech>> eletechs_;
 
       /// pointer to the coupling model evaluator object
-      Teuchos::RCP<Solid::ModelEvaluator::Generic> coupling_model_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::Generic> coupling_model_ptr_;
 
       ///@}
 
@@ -797,10 +798,10 @@ namespace Solid
       int maxdivconrefinementlevel_;
 
       /// nox parameters list
-      Teuchos::RCP<Teuchos::ParameterList> noxparams_;
+      std::shared_ptr<Teuchos::ParameterList> noxparams_;
 
       /// loca parameter list
-      Teuchos::RCP<Teuchos::ParameterList> locaparams_;
+      std::shared_ptr<Teuchos::ParameterList> locaparams_;
 
       /// initial pseudo time step for the pseudo transient continuation (PTC) method
       double ptc_delta_init_;
@@ -810,7 +811,7 @@ namespace Solid
       ///@{
 
       /// pointer to the linear solvers map
-      Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+      std::shared_ptr<std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
           linsolvers_;
       ///@}
 
@@ -982,7 +983,7 @@ namespace Solid
       ///@{
 
       /// pointer to the linear solvers map
-      Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
+      std::shared_ptr<Core::Geo::MeshFree::BoundingBox> periodic_boundingbox_;
       ///@}
 
       ///@}
@@ -990,7 +991,7 @@ namespace Solid
        *
        * Do not touch this. It should be used only in derived Setup routines. Do not call it from
        * outside! */
-      Teuchos::RCP<const Teuchos::ParameterList> sdynparams_ptr_;
+      std::shared_ptr<const Teuchos::ParameterList> sdynparams_ptr_;
     };  // class BaseDataSDyn
 
     /** \brief Generalized alpha structural dynamics data container

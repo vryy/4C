@@ -31,10 +31,10 @@ FSI::FluidFluidMonolithicFluidSplit::FluidFluidMonolithicFluidSplit(
     : MonolithicFluidSplit(comm, timeparams)
 {
   // cast to problem-specific fluid-wrapper
-  fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFluidFSI>(MonolithicFluidSplit::fluid_field());
+  fluid_ = std::dynamic_pointer_cast<Adapter::FluidFluidFSI>(MonolithicFluidSplit::fluid_field());
 
   // cast to problem-specific ALE-wrapper
-  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleXFFsiWrapper>(MonolithicFluidSplit::ale_field());
+  ale_ = std::dynamic_pointer_cast<Adapter::AleXFFsiWrapper>(MonolithicFluidSplit::ale_field());
 
   // XFFSI_Full_Newton is an invalid choice together with NOX,
   // because DOF-maps can change from one iteration step to the other (XFEM cut)
@@ -85,25 +85,25 @@ void FSI::FluidFluidMonolithicFluidSplit::prepare_time_step()
 void FSI::FluidFluidMonolithicFluidSplit::setup_dbc_map_extractor()
 {
   // merge Dirichlet maps of structure, fluid and ALE to global FSI Dirichlet map
-  std::vector<Teuchos::RCP<const Epetra_Map>> dbcmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> dbcmaps;
 
   // structure DBC
   dbcmaps.push_back(structure_field()->get_dbc_map_extractor()->cond_map());
   // fluid DBC (including background & embedded discretization)
   dbcmaps.push_back(fluid_field()->get_dbc_map_extractor()->cond_map());
   // ALE-DBC-maps, free of FSI DOF
-  std::vector<Teuchos::RCP<const Epetra_Map>> aleintersectionmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> aleintersectionmaps;
   aleintersectionmaps.push_back(ale_field()->get_dbc_map_extractor()->cond_map());
   aleintersectionmaps.push_back(ale_field()->interface()->other_map());
-  Teuchos::RCP<Epetra_Map> aleintersectionmap =
+  std::shared_ptr<Epetra_Map> aleintersectionmap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(aleintersectionmaps);
   dbcmaps.push_back(aleintersectionmap);
 
-  Teuchos::RCP<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
+  std::shared_ptr<const Epetra_Map> dbcmap = Core::LinAlg::MultiMapExtractor::merge_maps(dbcmaps);
 
   // finally, create the global FSI Dirichlet map extractor
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*dof_row_map(), dbcmap, true);
-  if (dbcmaps_ == Teuchos::null)
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>(*dof_row_map(), dbcmap, true);
+  if (dbcmaps_ == nullptr)
   {
     FOUR_C_THROW("Creation of Dirichlet map extractor failed.");
   }
@@ -121,11 +121,11 @@ void FSI::FluidFluidMonolithicFluidSplit::output()
     // the Lagrange multiplier lives on the FSI interface
     // for output, we want to insert lambda into a full vector, defined on the embedded fluid field
     // 1. insert into vector containing all fluid DOF
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
         fluid_field()->interface()->insert_fsi_cond_vector(
             *FSI::MonolithicFluidSplit::get_lambda());
     // 2. extract the embedded fluid part
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdaemb =
         fluid_field()->x_fluid_fluid_map_extractor()->extract_fluid_vector(*lambdafull);
 
     const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
@@ -152,14 +152,14 @@ void FSI::FluidFluidMonolithicFluidSplit::read_restart(int step)
 {
   // Read Lagrange Multiplier (associated with embedded fluid)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdaemb =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdaemb =
+        std::make_shared<Core::LinAlg::Vector<double>>(
             *(fluid_field()->x_fluid_fluid_map_extractor()->fluid_map()), true);
     Core::IO::DiscretizationReader reader = Core::IO::DiscretizationReader(
         fluid_field()->discretization(), Global::Problem::instance()->input_control_file(), step);
     reader.read_vector(lambdaemb, "fsilambda");
     // Insert into vector containing the whole merged fluid DOF
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
         fluid_field()->x_fluid_fluid_map_extractor()->insert_fluid_vector(*lambdaemb);
     FSI::MonolithicFluidSplit::set_lambda(
         fluid_field()->interface()->extract_fsi_cond_vector(*lambdafull));

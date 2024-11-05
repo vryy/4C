@@ -12,7 +12,7 @@
 
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -98,20 +98,20 @@ namespace Solid
 
       void post_time_loop() override;
 
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override
       {
-        return Teuchos::null;
+        return nullptr;
       };
 
       void post_output() override{};

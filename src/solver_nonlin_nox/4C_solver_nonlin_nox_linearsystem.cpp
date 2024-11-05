@@ -205,7 +205,7 @@ bool NOX::Nln::LinearSystem::apply_jacobian_block(const ::NOX::Epetra::Vector& i
   const Epetra_Map& rangemap = block.range_map();
 
   Core::LinAlg::Vector<double> input_v = Core::LinAlg::Vector<double>(input.getEpetraVector());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> input_apply = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> input_apply = nullptr;
 
   if (not input_v.Map().SameAs(domainmap))
   {
@@ -213,7 +213,7 @@ bool NOX::Nln::LinearSystem::apply_jacobian_block(const ::NOX::Epetra::Vector& i
   }
   else
   {
-    input_apply = Teuchos::rcpFromRef(input_v);
+    input_apply = Core::Utils::shared_ptr_from_ref(input_v);
   }
 
   Teuchos::RCP<Core::LinAlg::Vector<double>> result_apply =
@@ -223,7 +223,8 @@ bool NOX::Nln::LinearSystem::apply_jacobian_block(const ::NOX::Epetra::Vector& i
   int status = block.Apply(*input_apply, *result_apply);
 
   result = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-      result_apply->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateCopy);
+      Teuchos::rcpFromRef(*result_apply->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateCopy);
 
   return (status == 0);
 }
@@ -304,7 +305,7 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     set_linear_problem_for_solve(linProblem, jacobian(), result_view, nonConstInput_view);
 
     // ************* Begin linear system scaling *****************
-    if (!Teuchos::is_null(scaling_))
+    if (!!(scaling_))
     {
       if (!manualScaling_) scaling_->computeScaling(linProblem);
 
@@ -329,7 +330,7 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     solver_params.refactor = true;
     solver_params.reset = iter == 0;
 
-    Teuchos::RCP<Epetra_Operator> matrix = Teuchos::rcpFromRef(*linProblem.GetOperator());
+    auto matrix = Core::Utils::shared_ptr_from_ref(*linProblem.GetOperator());
 
     Core::LinAlg::VectorView x(*linProblem.GetLHS());
     Core::LinAlg::VectorView b(*linProblem.GetRHS());
@@ -346,7 +347,7 @@ bool NOX::Nln::LinearSystem::applyJacobianInverse(Teuchos::ParameterList& linear
     }
 
     // ************* Begin linear system unscaling *************
-    if (!Teuchos::is_null(scaling_)) scaling_->unscaleLinearSystem(linProblem);
+    if (!!(scaling_)) scaling_->unscaleLinearSystem(linProblem);
     // ************* End linear system unscaling ***************
 
     complete_solution_after_solve(linProblem, result_view);
@@ -460,8 +461,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   if (jac.is_null())
     throw_error("adjust_pseudo_time_step()", "Cast to Core::LinAlg::SparseMatrix failed!");
   // get the diagonal terms of the jacobian
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag =
-      Core::LinAlg::create_vector(jac->row_map(), false);
+  auto diag = Core::LinAlg::create_vector(jac->row_map(), false);
   jac->extract_diagonal_copy(*diag);
   diag->Update(-1.0, v, 1.0);
   // Finally undo the changes
@@ -473,8 +473,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   /* evaluate the first vector:
    *    eta^{-1} F_{n-1} + (\nabla_{x} F_{n-1})^{T} d_{n-1}             */
   double stepSizeInv = 1.0 / stepSize;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vec_1 =
-      Core::LinAlg::create_vector(jac->row_map(), true);
+  auto vec_1 = Core::LinAlg::create_vector(jac->row_map(), true);
   Core::LinAlg::Vector<double> vec_2(rhs.getEpetraVector());
   jac->multiply(false, Core::LinAlg::MultiVector<double>(dir.getEpetraVector()), *vec_1);
   vec_2.Scale(stepSizeInv);
@@ -491,8 +490,7 @@ void NOX::Nln::LinearSystem::adjust_pseudo_time_step(double& delta, const double
   // ---------------------------------------------------------------------
   // show the error (L2-norm)
   // ---------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vec_err =
-      Core::LinAlg::create_vector(jac->row_map(), true);
+  auto vec_err = Core::LinAlg::create_vector(jac->row_map(), true);
   vec_err->Update(delta, *vec_1, 1.0, vec_2, 0.0);
   double error_start = 0.0;
   vec_err->Norm2(&error_start);
@@ -891,7 +889,7 @@ void NOX::Nln::LinearSystem::convert_sparse_to_dense_matrix(
     const Epetra_Map& full_rangemap, const Epetra_Map& full_domainmap) const
 {
   if (not sparse.filled()) FOUR_C_THROW("The sparse matrix must be filled!");
-  Teuchos::RCP<const Epetra_CrsMatrix> crs_mat = sparse.epetra_matrix();
+  auto crs_mat = sparse.epetra_matrix();
 
   if (dense.numCols() == 0 or dense.numRows() == 0)
   {

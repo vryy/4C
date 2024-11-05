@@ -48,7 +48,7 @@ void ALE::Utils::AleCloneStrategy::check_material_type(const int matid)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Utils::AleCloneStrategy::set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+void ALE::Utils::AleCloneStrategy::set_element_data(std::shared_ptr<Core::Elements::Element> newele,
     Core::Elements::Element* oldele, const int matid, const bool nurbsdis)
 {
   if (nurbsdis == false)

@@ -31,7 +31,7 @@ Core::IO::EveryIterationWriter::EveryIterationWriter()
       base_filename_(),
       parent_writer_(nullptr),
       interface_(nullptr),
-      every_iter_writer_(Teuchos::null)
+      every_iter_writer_(nullptr)
 {
   /* empty */
 }
@@ -77,15 +77,15 @@ void Core::IO::EveryIterationWriter::setup()
   std::string prefix;
   prefix = dir_name + "/" + create_run_directory(file_dir_path);
 
-  Teuchos::RCP<Core::IO::OutputControl> control_iteration = Teuchos::null;
+  std::shared_ptr<Core::IO::OutputControl> control_iteration = nullptr;
   control_iteration =
-      Teuchos::make_rcp<Core::IO::OutputControl>(*parent_writer().output(), prefix.c_str());
+      std::make_shared<Core::IO::OutputControl>(*parent_writer().output(), prefix.c_str());
 
   // adjust steps per file
   adjust_steps_per_file(*control_iteration);
 
   // create new output writer object
-  every_iter_writer_ = Teuchos::make_rcp<Core::IO::DiscretizationWriter>(
+  every_iter_writer_ = std::make_shared<Core::IO::DiscretizationWriter>(
       parent_writer(), control_iteration, Core::IO::CopyType::shape);
 
   // save base file name

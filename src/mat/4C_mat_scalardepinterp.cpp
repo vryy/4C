@@ -25,9 +25,9 @@ Mat::PAR::ScalarDepInterp::ScalarDepInterp(const Core::Mat::PAR::Parameter::Data
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ScalarDepInterp::create_material()
 {
-  return Teuchos::make_rcp<Mat::ScalarDepInterp>(this);
+  return std::make_shared<Mat::ScalarDepInterp>(this);
 }
 
 
@@ -45,11 +45,7 @@ Core::Communication::ParObject* Mat::ScalarDepInterpType::create(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::ScalarDepInterp::ScalarDepInterp()
-    : params_(nullptr),
-      isinit_(false),
-      lambda_zero_mat_(Teuchos::null),
-      lambda_unit_mat_(Teuchos::null),
-      lambda_(Teuchos::null)
+    : params_(nullptr), isinit_(false), lambda_zero_mat_(nullptr), lambda_unit_mat_(nullptr)
 {
 }
 
@@ -57,11 +53,7 @@ Mat::ScalarDepInterp::ScalarDepInterp()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Mat::ScalarDepInterp::ScalarDepInterp(Mat::PAR::ScalarDepInterp* params)
-    : params_(params),
-      isinit_(false),
-      lambda_zero_mat_(Teuchos::null),
-      lambda_unit_mat_(Teuchos::null),
-      lambda_(Teuchos::null)
+    : params_(params), isinit_(false), lambda_zero_mat_(nullptr), lambda_unit_mat_(nullptr)
 {
 }
 
@@ -74,12 +66,12 @@ void Mat::ScalarDepInterp::setup(int numgp, const Core::IO::InputParameterContai
 
   // Setup of elastic material for zero concentration
   lambda_zero_mat_ =
-      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_zero_));
+      std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_zero_));
   lambda_zero_mat_->setup(numgp, container);
 
   // Setup of elastic material for zero concentration
   lambda_unit_mat_ =
-      Teuchos::rcp_dynamic_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_unit_));
+      std::dynamic_pointer_cast<Mat::So3Material>(Mat::factory(params_->id_lambda_unit_));
   lambda_unit_mat_->setup(numgp, container);
 
   // Some safety check
@@ -159,8 +151,8 @@ void Mat::ScalarDepInterp::evaluate(const Core::LinAlg::Matrix<3, 3>* defgrd,
   if (params.isParameter("dlambda_dC"))
   {
     // get derivative of interpolation ratio w.r.t. glstrain
-    Teuchos::RCP<Core::LinAlg::Matrix<6, 1>> dlambda_dC =
-        params.get<Teuchos::RCP<Core::LinAlg::Matrix<6, 1>>>("dlambda_dC");
+    std::shared_ptr<Core::LinAlg::Matrix<6, 1>> dlambda_dC =
+        params.get<std::shared_ptr<Core::LinAlg::Matrix<6, 1>>>("dlambda_dC");
 
     // evaluate strain energy functions
     double psi_lambda_zero = 0.0;
@@ -206,7 +198,7 @@ void Mat::ScalarDepInterp::pack(Core::Communication::PackBuffer& data) const
   }
 
   // Pack data of both elastic materials
-  if (lambda_zero_mat_ != Teuchos::null and lambda_unit_mat_ != Teuchos::null)
+  if (lambda_zero_mat_ != nullptr and lambda_unit_mat_ != nullptr)
   {
     lambda_zero_mat_->pack(data);
     lambda_unit_mat_->pack(data);
@@ -229,7 +221,7 @@ void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -266,10 +258,10 @@ void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
         Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    lambda_zero_mat_ = Teuchos::RCP(matel);
+    lambda_zero_mat_ = std::shared_ptr<So3Material>(matel);
   }
   else
-    lambda_zero_mat_ = Teuchos::null;
+    lambda_zero_mat_ = nullptr;
 
   // Unpack data of elastic material (these lines are copied from element.cpp)
   std::vector<char> dataelastic2;
@@ -281,10 +273,10 @@ void Mat::ScalarDepInterp::unpack(Core::Communication::UnpackBuffer& buffer)
         Core::Communication::factory(buffer_dataelastic);  // Unpack is done here
     Mat::So3Material* matel = dynamic_cast<Mat::So3Material*>(o);
     if (matel == nullptr) FOUR_C_THROW("failed to unpack elastic material");
-    lambda_unit_mat_ = Teuchos::RCP(matel);
+    lambda_unit_mat_ = std::shared_ptr<So3Material>(matel);
   }
   else
-    lambda_unit_mat_ = Teuchos::null;
+    lambda_unit_mat_ = nullptr;
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 

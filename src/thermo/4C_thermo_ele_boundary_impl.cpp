@@ -122,7 +122,7 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
   FOUR_C_ASSERT(dynamic_cast<Thermo::Element*>(genericparent) != nullptr,
       "Parent element is no fluid element");
   Thermo::Element* parentele = static_cast<Thermo::Element*>(genericparent);
-  Teuchos::RCP<Core::Mat::Material> mat = parentele->material();
+  std::shared_ptr<Core::Mat::Material> mat = parentele->material();
 
   // Now, check for the action parameter
   const auto action = Teuchos::getIntegralValue<Thermo::BoundaryAction>(params, "action");
@@ -138,9 +138,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
     Core::LinAlg::Matrix<nen_, 1> efext(elevec1_epetra.values(), true);     // view only!
 
     // get current condition
-    Teuchos::RCP<Core::Conditions::Condition> cond =
-        params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-    if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
+    std::shared_ptr<Core::Conditions::Condition> cond =
+        params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+    if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
     // access parameters of the condition
     const std::string* tempstate = &cond->parameters().get<std::string>("temperature state");
@@ -187,9 +187,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       {
         // get actual values of temperature from global location vector
         std::vector<double> mytempnp((la[0].lm_).size());
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state("temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
         // build the element temperature
@@ -206,9 +206,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       {
         // get actual values of temperature from global location vector
         std::vector<double> mytempn((la[0].lm_).size());
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempn =
             discretization.get_state("old temperature");
-        if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
+        if (tempn == nullptr) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
         Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
         // build the element temperature
@@ -267,9 +267,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
       if (discretization.has_state(1, "displacement"))
       {
         // get the displacements
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state(1, "displacement");
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 
@@ -357,9 +357,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
             elemat1_epetra.values(), true);  // view only!
 
         // get current condition
-        Teuchos::RCP<Core::Conditions::Condition> cond =
-            params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
-        if (cond == Teuchos::null) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
+        std::shared_ptr<Core::Conditions::Condition> cond =
+            params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
+        if (cond == nullptr) FOUR_C_THROW("Cannot access condition 'ThermoConvections'");
 
         // access parameters of the condition
         const std::string* tempstate = &cond->parameters().get<std::string>("temperature state");
@@ -406,9 +406,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
           {
             // get actual values of temperature from global location vector
             std::vector<double> mytempnp((la[0].lm_).size());
-            Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+            std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
                 discretization.get_state("temperature");
-            if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+            if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
             Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
             // build the element temperature
@@ -425,9 +425,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
           {
             // get actual values of temperature from global location vector
             std::vector<double> mytempn((la[0].lm_).size());
-            Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn =
+            std::shared_ptr<const Core::LinAlg::Vector<double>> tempn =
                 discretization.get_state("old temperature");
-            if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
+            if (tempn == nullptr) FOUR_C_THROW("Cannot get state vector 'tempn'");
 
             Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
             // build the element temperature
@@ -454,9 +454,9 @@ int Thermo::TemperBoundaryImpl<distype>::evaluate(const FaceElement* ele,
 #endif  // THRASOUTPUT
 
         // get the displacements
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state(1, "displacement");
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
         // extract the displacements
         Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 

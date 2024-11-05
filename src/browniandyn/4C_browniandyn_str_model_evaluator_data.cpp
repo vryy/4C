@@ -21,14 +21,14 @@ FOUR_C_NAMESPACE_OPEN
 Solid::ModelEvaluator::BrownianDynData::BrownianDynData()
     : isinit_(false),
       issetup_(false),
-      str_data_ptr_(Teuchos::null),
+      str_data_ptr_(nullptr),
       viscosity_(0.0),
       kt_(0.0),
       maxrandforce_(0.0),
       timeintconstrandnumb_(0.0),
       beam_damping_coeff_specified_via_(Inpar::BrownianDynamics::vague),
       beams_damping_coefficient_prefactors_perunitlength_{0.0, 0.0, 0.0},
-      randomforces_(Teuchos::null)
+      randomforces_(nullptr)
 {
   // empty constructor
 }
@@ -36,7 +36,7 @@ Solid::ModelEvaluator::BrownianDynData::BrownianDynData()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDynData::init(
-    const Teuchos::RCP<const Solid::ModelEvaluator::Data>& str_data_ptr)
+    const std::shared_ptr<const Solid::ModelEvaluator::Data>& str_data_ptr)
 {
   issetup_ = false;
 
@@ -110,12 +110,12 @@ void Solid::ModelEvaluator::BrownianDynData::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BrownianDynData::resize_random_force_m_vector(
-    Teuchos::RCP<Core::FE::Discretization> discret_ptr, int maxrandnumelement)
+    std::shared_ptr<Core::FE::Discretization> discret_ptr, int maxrandnumelement)
 {
   check_init_setup();
 
   // resize in case of new crosslinkers that were set and are now part of the discretization
-  randomforces_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  randomforces_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(discret_ptr->element_col_map()), maxrandnumelement, true);
 
   return;

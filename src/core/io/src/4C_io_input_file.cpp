@@ -781,7 +781,7 @@ namespace Core::IO
   /// read a knotvector section (for isogeometric analysis)
   //----------------------------------------------------------------------
   void read_knots(InputFile& input, const std::string& name,
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots)
+      std::shared_ptr<Core::FE::Nurbs::Knotvector>& disknots)
   {
     // io to shell
     const int myrank = input.get_comm().MyPID();
@@ -899,10 +899,10 @@ namespace Core::IO
     //--------------------------------------------------------------------
 
     // allocate knotvector for this dis
-    disknots = Teuchos::make_rcp<Core::FE::Nurbs::Knotvector>(nurbs_dim, npatches);
+    disknots = std::make_shared<Core::FE::Nurbs::Knotvector>(nurbs_dim, npatches);
 
     // make sure that we have some Knotvector object to fill
-    if (disknots == Teuchos::null)
+    if (disknots == nullptr)
     {
       FOUR_C_THROW("disknots should have been allocated before");
     }
@@ -915,7 +915,7 @@ namespace Core::IO
     {
       // this is a pointer to the knots of one patch in one direction
       // we will read them and put them
-      std::vector<Teuchos::RCP<std::vector<double>>> patch_knots(nurbs_dim);
+      std::vector<std::shared_ptr<std::vector<double>>> patch_knots(nurbs_dim);
 
       // temporary string
       std::string tmp;
@@ -958,7 +958,7 @@ namespace Core::IO
           // create vectors for knots in this patch
           for (int rr = 0; rr < nurbs_dim; ++rr)
           {
-            patch_knots[rr] = Teuchos::make_rcp<std::vector<double>>();
+            patch_knots[rr] = std::make_shared<std::vector<double>>();
             (*(patch_knots[rr])).clear();
           }
 

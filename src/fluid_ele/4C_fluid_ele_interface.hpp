@@ -17,9 +17,8 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -78,7 +77,8 @@ namespace Discret
        */
       virtual int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -87,7 +87,8 @@ namespace Discret
       /// evaluate element at specified Gauss points
       virtual int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -97,7 +98,7 @@ namespace Discret
       /// Evaluate the XFEM cut element
       virtual int evaluate_xfem(Discret::Elements::Fluid* ele,
           Core::FE::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+          Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
           Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -119,21 +120,21 @@ namespace Discret
 
       /// Evaluate supporting methods of the element
       virtual int evaluate_service(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
           Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
           Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3) = 0;
 
       virtual int compute_error(Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+          std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
           std::vector<int>& lm, Core::LinAlg::SerialDenseVector& elevec1,
           const Core::FE::GaussIntegration& intpoints2) = 0;
 
       virtual int compute_error_interface(Discret::Elements::Fluid* ele,  ///< fluid element
-          Core::FE::Discretization& dis,                             ///< background discretization
-          const std::vector<int>& lm,                                ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
+          Core::FE::Discretization& dis,  ///< background discretization
+          const std::vector<int>& lm,     ///< element local map
+          const std::shared_ptr<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+          std::shared_ptr<Core::Mat::Material>& mat,                    ///< material
           Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
           const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
@@ -143,20 +144,20 @@ namespace Discret
           ) = 0;
 
       virtual void element_xfem_interface_hybrid_lm(
-          Discret::Elements::Fluid* ele,                             ///< fluid element
-          Core::FE::Discretization& dis,                             ///< background discretization
-          const std::vector<int>& lm,                                ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-          const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
+          Discret::Elements::Fluid* ele,  ///< fluid element
+          Core::FE::Discretization& dis,  ///< background discretization
+          const std::vector<int>& lm,     ///< element local map
+          const std::shared_ptr<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
+          const std::vector<Core::FE::GaussIntegration>& intpoints,      ///< element gauss points
           const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>&
               patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
-              side_coupling,                       ///< side coupling matrices
-          Teuchos::ParameterList& params,          ///< parameter list
-          Teuchos::RCP<Core::Mat::Material>& mat,  ///< material
+              side_coupling,                          ///< side coupling matrices
+          Teuchos::ParameterList& params,             ///< parameter list
+          std::shared_ptr<Core::Mat::Material>& mat,  ///< material
           Core::LinAlg::SerialDenseMatrix&
               elemat1_epetra,  ///< local system matrix of intersected element
           Core::LinAlg::SerialDenseVector&
@@ -167,19 +168,19 @@ namespace Discret
 
       /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
       virtual void element_xfem_interface_nit(Discret::Elements::Fluid* ele,  ///< fluid element
-          Core::FE::Discretization& dis,                             ///< background discretization
-          const std::vector<int>& lm,                                ///< element local map
-          const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+          Core::FE::Discretization& dis,  ///< background discretization
+          const std::vector<int>& lm,     ///< element local map
+          const std::shared_ptr<XFEM::ConditionManager>& cond_manager,   ///< XFEM condition manager
           const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
           const std::map<int, std::vector<Core::FE::GaussIntegration>>&
               bintpoints,  ///< boundary integration points
           const std::map<int, std::vector<int>>& patchcouplm,
-          Teuchos::ParameterList& params,                   ///< parameter list
-          Teuchos::RCP<Core::Mat::Material>& mat_master,    ///< material for the coupled side
-          Teuchos::RCP<Core::Mat::Material>& mat_slave,     ///< material for the coupled side
-          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,  ///< element matrix
-          Core::LinAlg::SerialDenseVector& elevec1_epetra,  ///< element vector
-          const Cut::plain_volumecell_set& vcSet,           ///< volumecell sets in this element
+          Teuchos::ParameterList& params,                    ///< parameter list
+          std::shared_ptr<Core::Mat::Material>& mat_master,  ///< material for the coupled side
+          std::shared_ptr<Core::Mat::Material>& mat_slave,   ///< material for the coupled side
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,   ///< element matrix
+          Core::LinAlg::SerialDenseVector& elevec1_epetra,   ///< element vector
+          const Cut::plain_volumecell_set& vcSet,            ///< volumecell sets in this element
           std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
               side_coupling,                       ///< side coupling matrices
           Core::LinAlg::SerialDenseMatrix& Cuiui,  ///< ui-ui coupling matrix

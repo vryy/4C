@@ -15,7 +15,7 @@
 #include "4C_io_linecomponent.hpp"
 #include "4C_mat_par_bundle.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -71,7 +71,7 @@ namespace Mat
     /// add a concrete component to the material line definition
     ///
     /// Add new components to the input line. One at a time.
-    void add_component(const Teuchos::RCP<Input::LineComponent>& c);
+    void add_component(const std::shared_ptr<Input::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
     std::vector<std::pair<int, Core::IO::InputParameterContainer>> read(
@@ -92,7 +92,7 @@ namespace Mat
     std::string description() const { return description_; }
 
     /// my material inputline
-    std::vector<Teuchos::RCP<Input::LineComponent>> inputline() const { return inputline_; }
+    std::vector<std::shared_ptr<Input::LineComponent>> inputline() const { return inputline_; }
 
    private:
     /// name of material
@@ -103,7 +103,7 @@ namespace Mat
     Core::Materials::MaterialType mattype_;
 
     /// the list of valid components
-    std::vector<Teuchos::RCP<Input::LineComponent>> inputline_;
+    std::vector<std::shared_ptr<Input::LineComponent>> inputline_;
   };
 
 
@@ -111,8 +111,8 @@ namespace Mat
   ///
   /// this method checks for coincidental material names or types
   void append_material_definition(
-      std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,  ///< list of defined materials
-      const Teuchos::RCP<MaterialDefinition>& mat              ///< material to add
+      std::vector<std::shared_ptr<MaterialDefinition>>& matlist,  ///< list of defined materials
+      const std::shared_ptr<MaterialDefinition>& mat              ///< material to add
   );
 
 }  // namespace Mat

@@ -32,24 +32,23 @@ Solid::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Integrator> Solid::Factory::build_integrator(
+std::shared_ptr<Solid::Integrator> Solid::Factory::build_integrator(
     const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
-  Teuchos::RCP<Solid::Integrator> int_ptr = Teuchos::null;
+  std::shared_ptr<Solid::Integrator> int_ptr = nullptr;
   int_ptr = build_implicit_integrator(datasdyn);
-  if (int_ptr.is_null()) int_ptr = build_explicit_integrator(datasdyn);
-  FOUR_C_ASSERT(
-      !int_ptr.is_null(), "We could not find a suitable dynamic integrator (Dynamic Type).");
+  if (!int_ptr) int_ptr = build_explicit_integrator(datasdyn);
+  FOUR_C_ASSERT(int_ptr, "We could not find a suitable dynamic integrator (Dynamic Type).");
 
   return int_ptr;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
+std::shared_ptr<Solid::Integrator> Solid::Factory::build_implicit_integrator(
     const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
-  Teuchos::RCP<Solid::IMPLICIT::Generic> impl_int_ptr = Teuchos::null;
+  std::shared_ptr<Solid::IMPLICIT::Generic> impl_int_ptr = nullptr;
 
   const enum Inpar::Solid::DynamicType& dyntype = datasdyn.get_dynamic_type();
   const enum Inpar::Solid::PreStress& prestresstype = datasdyn.get_pre_stress_type();
@@ -58,7 +57,7 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
   const bool is_prestress = prestresstype != Inpar::Solid::PreStress::none;
   if (is_prestress)
   {
-    impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::PreStress>();
+    impl_int_ptr = std::make_shared<Solid::IMPLICIT::PreStress>();
     return impl_int_ptr;
   }
 
@@ -67,28 +66,28 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
     // Static analysis
     case Inpar::Solid::dyna_statics:
     {
-      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::Statics>();
+      impl_int_ptr = std::make_shared<Solid::IMPLICIT::Statics>();
       break;
     }
 
     // Generalised-alpha time integration
     case Inpar::Solid::dyna_genalpha:
     {
-      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::GenAlpha>();
+      impl_int_ptr = std::make_shared<Solid::IMPLICIT::GenAlpha>();
       break;
     }
 
     // Generalised-alpha time integration for Lie groups (e.g. SO3 group of rotation matrices)
     case Inpar::Solid::dyna_genalpha_liegroup:
     {
-      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::GenAlphaLieGroup>();
+      impl_int_ptr = std::make_shared<Solid::IMPLICIT::GenAlphaLieGroup>();
       break;
     }
 
     // One-step-theta (OST) time integration
     case Inpar::Solid::dyna_onesteptheta:
     {
-      impl_int_ptr = Teuchos::make_rcp<Solid::IMPLICIT::OneStepTheta>();
+      impl_int_ptr = std::make_shared<Solid::IMPLICIT::OneStepTheta>();
       break;
     }
 
@@ -105,38 +104,38 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_implicit_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Integrator> Solid::Factory::build_explicit_integrator(
+std::shared_ptr<Solid::Integrator> Solid::Factory::build_explicit_integrator(
     const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
-  Teuchos::RCP<Solid::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
+  std::shared_ptr<Solid::EXPLICIT::Generic> expl_int_ptr = nullptr;
 
   switch (datasdyn.get_dynamic_type())
   {
     // Forward Euler Scheme
     case Inpar::Solid::dyna_expleuler:
     {
-      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::ForwardEuler>();
+      expl_int_ptr = std::make_shared<Solid::EXPLICIT::ForwardEuler>();
       break;
     }
 
     // Central Difference Scheme
     case Inpar::Solid::dyna_centrdiff:
     {
-      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::CentrDiff>();
+      expl_int_ptr = std::make_shared<Solid::EXPLICIT::CentrDiff>();
       break;
     }
 
     // Adams-Bashforth-2 Scheme
     case Inpar::Solid::dyna_ab2:
     {
-      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::AdamsBashforth2>();
+      expl_int_ptr = std::make_shared<Solid::EXPLICIT::AdamsBashforth2>();
       break;
     }
 
     // Adams-Bashforth-4 Scheme
     case Inpar::Solid::dyna_ab4:
     {
-      expl_int_ptr = Teuchos::make_rcp<Solid::EXPLICIT::AdamsBashforthX<4>>();
+      expl_int_ptr = std::make_shared<Solid::EXPLICIT::AdamsBashforthX<4>>();
       break;
     }
 
@@ -153,7 +152,7 @@ Teuchos::RCP<Solid::Integrator> Solid::Factory::build_explicit_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Integrator> Solid::build_integrator(
+std::shared_ptr<Solid::Integrator> Solid::build_integrator(
     const Solid::TimeInt::BaseDataSDyn& datasdyn)
 {
   Solid::Factory factory;
@@ -163,20 +162,20 @@ Teuchos::RCP<Solid::Integrator> Solid::build_integrator(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Dbc> Solid::Factory::build_dbc(
+std::shared_ptr<Solid::Dbc> Solid::Factory::build_dbc(
     const Solid::TimeInt::BaseDataSDyn& datasdyn) const
 {
   // if you want your model specific dbc object, check here if your model type is
   // active ( datasdyn.get_model_types() )and build your own dbc object
-  Teuchos::RCP<Solid::Dbc> dbc = Teuchos::null;
-  dbc = Teuchos::make_rcp<Solid::Dbc>();
+  std::shared_ptr<Solid::Dbc> dbc = nullptr;
+  dbc = std::make_shared<Solid::Dbc>();
 
   return dbc;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Dbc> Solid::build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn)
+std::shared_ptr<Solid::Dbc> Solid::build_dbc(const Solid::TimeInt::BaseDataSDyn& datasdyn)
 {
   Solid::Factory factory;
 

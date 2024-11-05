@@ -22,6 +22,7 @@
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Generic.H>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +44,8 @@ void Solid::Nln::SOLVER::Nox::setup()
    * which are evaluated outside of the non-linear solver, but
    * are always necessary. A simple example is the right-hand-side
    * F. (see computeF) */
-  const Teuchos::RCP<::NOX::Epetra::Interface::Required> ireq = nox_interface_ptr();
+  const Teuchos::RCP<::NOX::Epetra::Interface::Required> ireq =
+      Teuchos::rcpFromRef(*nox_interface_ptr());
 
   /* Set ::NOX::Epetra::Interface::Jacobian
    * This interface is necessary for the evaluation of the jacobian
@@ -52,10 +54,12 @@ void Solid::Nln::SOLVER::Nox::setup()
    * as one way to circumvent the evaluation of the jacobian.
    * Nevertheless, we always set this interface ptr in the structural
    * case. */
-  const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> ijac = nox_interface_ptr();
+  const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian> ijac =
+      Teuchos::rcpFromRef(*nox_interface_ptr());
 
   // pre-conditioner interface
-  Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iprec = nox_interface_ptr();
+  Teuchos::RCP<::NOX::Epetra::Interface::Preconditioner> iprec =
+      Teuchos::rcpFromRef(*nox_interface_ptr());
 
   // vector of currently present solution types
   std::vector<enum NOX::Nln::SolutionType> soltypes(0);
@@ -90,8 +94,10 @@ void Solid::Nln::SOLVER::Nox::setup()
   // -------------------------------------------------------------------------
   // Create NOX control class: NoxProblem()
   // -------------------------------------------------------------------------
-  Teuchos::RCP<::NOX::Epetra::Vector> soln = data_global_state().create_global_vector();
-  Teuchos::RCP<Core::LinAlg::SparseOperator>& jac = data_global_state().create_jacobian();
+  Teuchos::RCP<::NOX::Epetra::Vector> soln =
+      Teuchos::rcp(data_global_state().create_global_vector());
+  Teuchos::RCP<Core::LinAlg::SparseOperator> jac =
+      Teuchos::rcp(data_global_state().create_jacobian());
   problem_ = Teuchos::make_rcp<NOX::Nln::Problem>(nlnglobaldata_, soln, jac);
 
   // -------------------------------------------------------------------------
@@ -135,7 +141,8 @@ void Solid::Nln::SOLVER::Nox::reset()
   // -------------------------------------------------------------------------
   // Create NOX non-linear solver
   // -------------------------------------------------------------------------
-  nlnsolver_ = NOX::Nln::Solver::build_solver(group_ptr(), ostatus_, istatus_, *nlnglobaldata_);
+  nlnsolver_ = NOX::Nln::Solver::build_solver(
+      Teuchos::rcpFromRef(*group_ptr()), ostatus_, istatus_, *nlnglobaldata_);
 }
 
 
@@ -232,7 +239,7 @@ enum Inpar::Solid::ConvergenceStatus Solid::Nln::SOLVER::Nox::convert_final_stat
  *----------------------------------------------------------------------------*/
 int Solid::Nln::SOLVER::Nox::get_num_nln_iterations() const
 {
-  if (not nlnsolver_.is_null()) return nlnsolver_->getNumIterations();
+  if (nlnsolver_) return nlnsolver_->getNumIterations();
   return 0;
 }
 

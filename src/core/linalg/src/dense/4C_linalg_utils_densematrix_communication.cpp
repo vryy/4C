@@ -89,18 +89,18 @@ void Core::LinAlg::allreduce_e_map(std::map<int, int>& idxmap, const Epetra_Map&
 /*----------------------------------------------------------------------*
  |  create an allreduced map on a distinct processor (public)  gjb 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, const int pid)
+std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, const int pid)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
   allreduce_e_map(rv, emap);
-  Teuchos::RCP<Epetra_Map> rmap;
+  std::shared_ptr<Epetra_Map> rmap;
 
   if (emap.Comm().MyPID() == pid)
   {
-    rmap = Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
+    rmap = std::make_shared<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
@@ -108,7 +108,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, c
   else
   {
     rv.clear();
-    rmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, emap.Comm());
+    rmap = std::make_shared<Epetra_Map>(-1, 0, nullptr, 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
@@ -118,16 +118,16 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap, c
 /*----------------------------------------------------------------------*
  |  create an allreduced map on EVERY processor (public)        tk 12/07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap)
+std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap)
 {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   if (not emap.UniqueGIDs()) FOUR_C_THROW("works only for unique Epetra_Maps");
 #endif
   std::vector<int> rv;
   allreduce_e_map(rv, emap);
-  Teuchos::RCP<Epetra_Map> rmap;
+  std::shared_ptr<Epetra_Map> rmap;
 
-  rmap = Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
+  rmap = std::make_shared<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
 
   return rmap;
 }
@@ -135,7 +135,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_e_map(const Epetra_Map& emap)
 /*----------------------------------------------------------------------*
 |  create an allreduced map on EVERY processor (public)                 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(const Epetra_Map& emap)
+std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(const Epetra_Map& emap)
 {
   std::vector<int> rv;
   allreduce_e_map(rv, emap);
@@ -144,18 +144,18 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(const Epetra_
   std::set<int> rs(rv.begin(), rv.end());
   rv.assign(rs.begin(), rs.end());
 
-  return Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
+  return std::make_shared<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
 }
 
 /*----------------------------------------------------------------------*
 | create an allreduced map on a distinct processor (public)  ghamm 10/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
+std::shared_ptr<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
     const Epetra_Map& emap, const int pid)
 {
   std::vector<int> rv;
   allreduce_e_map(rv, emap);
-  Teuchos::RCP<Epetra_Map> rmap;
+  std::shared_ptr<Epetra_Map> rmap;
 
   if (emap.Comm().MyPID() == pid)
   {
@@ -163,7 +163,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
     std::set<int> rs(rv.begin(), rv.end());
     rv.assign(rs.begin(), rs.end());
 
-    rmap = Teuchos::make_rcp<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
+    rmap = std::make_shared<Epetra_Map>(-1, rv.size(), rv.data(), 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == rmap->NumGlobalElements(),
         "Processor with pid does not get all map elements");
@@ -171,7 +171,7 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::allreduce_overlapping_e_map(
   else
   {
     rv.clear();
-    rmap = Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, emap.Comm());
+    rmap = std::make_shared<Epetra_Map>(-1, 0, nullptr, 0, emap.Comm());
     // check the map
     FOUR_C_ASSERT(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }

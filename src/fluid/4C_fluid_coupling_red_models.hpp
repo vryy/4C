@@ -18,7 +18,8 @@
 #include "4C_red_airways_dyn_drt.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -47,9 +48,9 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidCouplingWrapperBase(Teuchos::RCP<Core::FE::Discretization> dis_3D,
-          Teuchos::RCP<Core::FE::Discretization> dis_redD, Core::IO::DiscretizationWriter& output,
-          double dt_3d, double dt_redD);
+      FluidCouplingWrapperBase(std::shared_ptr<Core::FE::Discretization> dis_3D,
+          std::shared_ptr<Core::FE::Discretization> dis_redD,
+          Core::IO::DiscretizationWriter& output, double dt_3d, double dt_redD);
 
       /*!
       \brief Destructor
@@ -92,7 +93,7 @@ namespace FLD
       void read_restart(Core::IO::DiscretizationReader& reader);
 
 
-      virtual void integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>&) = 0;
+      virtual void integrate(bool flag, std::shared_ptr<Teuchos::ParameterList>&) = 0;
 
       virtual void save_state() = 0;
 
@@ -107,28 +108,28 @@ namespace FLD
       /*!
       \brief all single coupling conditions
       */
-      std::map<const int, Teuchos::RCP<FluidCouplingBc>> coup_map_3d_;
+      std::map<const int, std::shared_ptr<FluidCouplingBc>> coup_map_3d_;
 
       //! map of coupling variables returned by the reduced-D model at time step n+1
-      Teuchos::RCP<std::map<std::string, double>> map_red_dnp_;
+      std::shared_ptr<std::map<std::string, double>> map_red_dnp_;
 
       //! map of coupling variables returned by the reduced-D model at time step n
-      Teuchos::RCP<std::map<std::string, double>> map_red_dn_;
+      std::shared_ptr<std::map<std::string, double>> map_red_dn_;
 
       //! map of coupling variables returned by the 3-D model at time step n+1
-      Teuchos::RCP<std::map<std::string, double>> map3_dnp_;
+      std::shared_ptr<std::map<std::string, double>> map3_dnp_;
 
       //! map of coupling variables returned by the 3-D model at time step n
-      Teuchos::RCP<std::map<std::string, double>> map3_dn_;
+      std::shared_ptr<std::map<std::string, double>> map3_dn_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_3d_;
+      std::shared_ptr<Core::FE::Discretization> discret_3d_;
 
       //! Reduced-D artery network discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_red_d_;
+      std::shared_ptr<Core::FE::Discretization> discret_red_d_;
 
       //! Reduced-D artery network time integration
-      //  Teuchos::RCP<Arteries::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
+      //  std::shared_ptr<Arteries::ArtNetExplicitTimeInt>              ArtExpTime_integ_;
 
 
       //! the output writer
@@ -147,15 +148,16 @@ namespace FLD
     class FluidCouplingWrapper : public FluidCouplingWrapperBase
     {
      public:
-      FluidCouplingWrapper(Teuchos::RCP<Core::FE::Discretization> dis_3D,
-          Teuchos::RCP<Core::FE::Discretization> dis_redD, Teuchos::RCP<RedDTimeInt> time_intg,
-          Core::IO::DiscretizationWriter& output, double dt_3d, double dt_rm)
+      FluidCouplingWrapper(std::shared_ptr<Core::FE::Discretization> dis_3D,
+          std::shared_ptr<Core::FE::Discretization> dis_redD,
+          std::shared_ptr<RedDTimeInt> time_intg, Core::IO::DiscretizationWriter& output,
+          double dt_3d, double dt_rm)
           : FluidCouplingWrapperBase(dis_3D, dis_redD, output, dt_3d, dt_rm),
             reduced_d_time_integ_(time_intg)
       {
       }
 
-      void integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) override
+      void integrate(bool flag, std::shared_ptr<Teuchos::ParameterList>& params) override
       {
         reduced_d_time_integ_->integrate(true, params);
       }
@@ -168,7 +170,7 @@ namespace FLD
 
      private:
       //! Reduced-D artery network time integration
-      Teuchos::RCP<RedDTimeInt> reduced_d_time_integ_;
+      std::shared_ptr<RedDTimeInt> reduced_d_time_integ_;
     };
 
     //--------------------------------------------------------------------
@@ -187,8 +189,8 @@ namespace FLD
       /*!
       \brief Standard Constructor
       */
-      FluidCouplingBc(Teuchos::RCP<Core::FE::Discretization> dis_3D,
-          Teuchos::RCP<Core::FE::Discretization> dis_reD, Core::IO::DiscretizationWriter& output,
+      FluidCouplingBc(std::shared_ptr<Core::FE::Discretization> dis_3D,
+          std::shared_ptr<Core::FE::Discretization> dis_reD, Core::IO::DiscretizationWriter& output,
           double dt_3d, double dt_rm, int condid, int numcond, int numcond2);
 
       /*!
@@ -265,7 +267,7 @@ namespace FLD
 
      protected:
       // coupled neumann BC
-      Teuchos::RCP<Core::LinAlg::Vector<double>> couplingbc_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> couplingbc_;
 
      private:
       //! ID of present condition
@@ -290,10 +292,10 @@ namespace FLD
       int myrank_;
 
       //! 3D fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_3d_;
+      std::shared_ptr<Core::FE::Discretization> discret_3d_;
 
       //! fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_red_d_;
+      std::shared_ptr<Core::FE::Discretization> discret_red_d_;
 
       //! the output writer
       Core::IO::DiscretizationWriter& output_;

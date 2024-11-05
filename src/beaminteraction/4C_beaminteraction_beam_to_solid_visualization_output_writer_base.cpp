@@ -27,7 +27,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::BeamToSolidVisualizat
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
 BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
     const std::string& writer_name, const std::string& writer_name_key)
 {
@@ -39,7 +39,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
   }
   else
   {
-    auto new_writer = Teuchos::make_rcp<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
+    auto new_writer = std::make_shared<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>(
 
         base_output_name_ + "-" + writer_name, visualization_params_);
     visualization_writers_[writer_name_key] = new_writer;
@@ -50,7 +50,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
 BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_writer(
     const std::string& writer_name)
 {
@@ -60,7 +60,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::add_visualization_wri
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
 BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::get_visualization_writer(
     const std::string& writer_name)
 {
@@ -68,7 +68,7 @@ BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase::get_visualization_wri
   if (it != visualization_writers_.end())
     return it->second;
   else
-    return Teuchos::null;
+    return nullptr;
 }
 
 /**

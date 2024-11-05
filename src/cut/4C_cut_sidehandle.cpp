@@ -308,7 +308,7 @@ void Cut::Tri6SideHandle::local_coordinates(
     n->coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos =
+  std::shared_ptr<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::tri6>(xyze, xyz);
   bool success = pos->compute();
   if (not success)
@@ -330,7 +330,7 @@ void Cut::Quad4SideHandle::local_coordinates(
     n->coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos =
+  std::shared_ptr<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::quad4>(xyze, xyz);
   bool success = pos->compute();
   if (not success)
@@ -352,7 +352,7 @@ void Cut::Quad8SideHandle::local_coordinates(
     n->coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos =
+  std::shared_ptr<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::quad8>(xyze, xyz);
   bool success = pos->compute();
   if (not success)
@@ -374,7 +374,7 @@ void Cut::Quad9SideHandle::local_coordinates(
     n->coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos =
+  std::shared_ptr<Position> pos =
       PositionFactory::build_position<3, Core::FE::CellType::quad9>(xyze, xyz);
   bool success = pos->compute();
   if (not success)

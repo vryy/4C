@@ -13,7 +13,7 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace Core::IO
      * @param parameters (in)     Visualization parameters
      */
     DiscretizationVisualizationWriterNodes(
-        const Teuchos::RCP<const Core::FE::Discretization> &discretization,
+        const std::shared_ptr<const Core::FE::Discretization> &discretization,
         VisualizationParameters parameters);
 
     /**
@@ -94,10 +94,10 @@ namespace Core::IO
 
    private:
     //! discretization containing nodes of which geometry and result data shall be visualized
-    Teuchos::RCP<const Core::FE::Discretization> discretization_;
+    std::shared_ptr<const Core::FE::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data
-    Teuchos::RCP<VisualizationManager> visualization_manager_;
+    std::shared_ptr<VisualizationManager> visualization_manager_;
   };
 }  // namespace Core::IO
 FOUR_C_NAMESPACE_CLOSE

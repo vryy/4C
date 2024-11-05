@@ -46,23 +46,24 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
     std::string xmlFileName =
         tekolist_.sublist("Teko Parameters").get<std::string>("TEKO_XML_FILE");
 
-    Teuchos::RCP<Teuchos::ParameterList> tekoParams = Teuchos::make_rcp<Teuchos::ParameterList>();
+    Teuchos::ParameterList tekoParams;
     auto comm = Core::Communication::to_teuchos_comm<int>(matrix->Comm());
-    Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, tekoParams.ptr(), *comm);
+    Teuchos::updateParametersFromXmlFileAndBroadcast(xmlFileName, Teuchos::Ptr(&tekoParams), *comm);
 
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A =
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(
-            Teuchos::rcpFromRef(*matrix));
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A =
+        std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(
+            Core::Utils::shared_ptr_from_ref(*matrix));
 
-    if (A.is_null())
+    if (!A)
     {
       if (tekolist_.sublist("Teko Parameters").isParameter("extractor"))
       {
-        Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor =
+        std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor =
             tekolist_.sublist("Teko Parameters")
-                .get<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>("extractor");
+                .get<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>("extractor");
 
-        auto crsA = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcp(matrix, false));
+        auto crsA =
+            std::dynamic_pointer_cast<Epetra_CrsMatrix>(Core::Utils::shared_ptr_from_ref(*matrix));
         Core::LinAlg::SparseMatrix sparseA = Core::LinAlg::SparseMatrix(crsA, LinAlg::View);
 
         A = Core::LinAlg::split_matrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
@@ -72,7 +73,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
     }
 
     // wrap linear operators
-    if (A.is_null())
+    if (!A)
     {
       auto A_crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(Teuchos::rcpFromRef(*matrix));
       pmatrix_ = Thyra::epetraLinearOp(A_crs);
@@ -104,26 +105,29 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
           // "Inverse<1...n>".
           Teuchos::ParameterList& inverseList = tekolist_.sublist(inverse);
 
-          if (tekoParams->sublist("Inverse Factory Library")
+          if (tekoParams.sublist("Inverse Factory Library")
                   .sublist(inverse)
                   .get<std::string>("Type") == "MueLu")
           {
             const int number_of_equations = inverseList.get<int>("PDE equations");
 
-            Teuchos::RCP<XpetraMultiVector> nullspace = Teuchos::make_rcp<EpetraMultiVector>(
-                inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("nullspace")
-                    ->get_ptr_of_Epetra_MultiVector());
+            Teuchos::RCP<XpetraMultiVector> nullspace =
+                Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
+                    *inverseList
+                         .get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("nullspace")
+                         ->get_ptr_of_Epetra_MultiVector()));
 
-            Teuchos::RCP<XpetraMultiVector> coordinates = Teuchos::make_rcp<EpetraMultiVector>(
-                inverseList.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("Coordinates")
-                    ->get_ptr_of_Epetra_MultiVector());
+            Teuchos::RCP<XpetraMultiVector> coordinates =
+                Teuchos::make_rcp<EpetraMultiVector>(Teuchos::rcpFromRef(
+                    *inverseList
+                         .get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("Coordinates")
+                         ->get_ptr_of_Epetra_MultiVector()));
 
-            tekoParams->sublist("Inverse Factory Library")
+            tekoParams.sublist("Inverse Factory Library")
                 .sublist(inverse)
                 .set("number of equations", number_of_equations);
-            Teuchos::ParameterList& userParamList = tekoParams->sublist("Inverse Factory Library")
-                                                        .sublist(inverse)
-                                                        .sublist("user data");
+            Teuchos::ParameterList& userParamList =
+                tekoParams.sublist("Inverse Factory Library").sublist(inverse).sublist("user data");
             userParamList.set("Nullspace", nullspace);
             userParamList.set("Coordinates", coordinates);
           }
@@ -139,7 +143,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
     Teko::addTekoToStratimikosBuilder(builder);
 
     // add special in-house block preconditioning methods
-    Teuchos::RCP<Teko::Cloneable> clone = rcp(new Teko::AutoClone<LU2x2SpaiStrategy>());
+    Teuchos::RCP<Teko::Cloneable> clone = Teuchos::make_rcp<Teko::AutoClone<LU2x2SpaiStrategy>>();
     Teko::LU2x2PreconditionerFactory::addStrategy("Spai Strategy", clone);
 
     // get preconditioner parameter list
@@ -147,7 +151,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
         Teuchos::make_rcp<Teuchos::ParameterList>(*builder.getValidParameters());
     Teuchos::ParameterList& tekoList =
         stratimikos_params->sublist("Preconditioner Types").sublist("Teko");
-    tekoList.setParameters(*tekoParams);
+    tekoList.setParameters(tekoParams);
     builder.setParameterList(stratimikos_params);
 
     // construct preconditioning operator
@@ -157,7 +161,7 @@ void Core::LinearSolver::TekoPreconditioner::setup(bool create, Epetra_Operator*
         Thyra::prec<double>(*precFactory, pmatrix_);
     Teko::LinearOp inverseOp = prec->getUnspecifiedPrecOp();
 
-    p_ = Teuchos::make_rcp<Teko::Epetra::EpetraInverseOpWrapper>(inverseOp);
+    p_ = std::make_shared<Teko::Epetra::EpetraInverseOpWrapper>(inverseOp);
   }
 }
 
@@ -217,17 +221,19 @@ void Core::LinearSolver::LU2x2SpaiStrategy::initialize_state(
     auto A_op = Teuchos::rcp_dynamic_cast<const Thyra::EpetraLinearOp>(F);
     auto A_crs = Teuchos::rcp_dynamic_cast<const Epetra_CrsMatrix>(A_op->epetra_op(), true);
     const Core::LinAlg::SparseMatrix A_sparse(
-        Teuchos::rcp_const_cast<Epetra_CrsMatrix>(A_crs), Core::LinAlg::Copy);
+        Core::Utils::shared_ptr_from_ref(*Teuchos::rcp_const_cast<Epetra_CrsMatrix>(A_crs)),
+        Core::LinAlg::Copy);
 
     // sparse inverse calculation
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_thresh =
         Core::LinAlg::threshold_matrix(A_sparse, drop_tol_);
-    Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern_enriched =
+    std::shared_ptr<Epetra_CrsGraph> sparsity_pattern_enriched =
         Core::LinAlg::enrich_matrix_graph(*A_thresh, fill_level_);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_inverse =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_inverse =
         Core::LinAlg::matrix_sparse_inverse(A_sparse, sparsity_pattern_enriched);
     A_thresh = Core::LinAlg::threshold_matrix(*A_inverse, drop_tol_);
-    Teko::LinearOp H = Thyra::epetraLinearOp(A_thresh->epetra_matrix());
+    Teko::LinearOp H =
+        Thyra::epetraLinearOp(Teuchos::make_rcp<Epetra_CrsMatrix>(*A_thresh->epetra_matrix()));
 
     // build Schur-complement
     Teko::LinearOp HBt;

@@ -43,20 +43,20 @@ bool Core::LinAlg::BlockSparseMatrixBase::destroy(bool throw_exception_for_block
     block.destroy(throw_exception_for_blocks);
   }
   /// destroy full matrix row map
-  if (fullrowmap_.strong_count() > 1)
+  if (fullrowmap_.use_count() > 1)
   {
     FOUR_C_THROW("fullrowmap_ cannot be finally deleted - any RCP (%i>1) still points to it",
-        fullrowmap_.strong_count());
+        fullrowmap_.use_count());
   }
-  fullrowmap_ = Teuchos::null;
+  fullrowmap_ = nullptr;
 
   /// destroy full matrix column map
-  if (fullcolmap_.strong_count() > 1)
+  if (fullcolmap_.use_count() > 1)
   {
     FOUR_C_THROW("fullrowmap_ cannot be finally deleted - any RCP (%i>1) still points to it",
-        fullrowmap_.strong_count());
+        fullrowmap_.use_count());
   }
-  fullcolmap_ = Teuchos::null;
+  fullcolmap_ = nullptr;
 
   return true;
 }
@@ -64,15 +64,15 @@ bool Core::LinAlg::BlockSparseMatrixBase::destroy(bool throw_exception_for_block
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::BlockSparseMatrixBase::merge(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::BlockSparseMatrixBase::merge(
     bool explicitdirichlet) const
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::BlockSparseMatrixBase::Merge");
 
   const SparseMatrix& m00 = matrix(0, 0);
 
-  Teuchos::RCP<SparseMatrix> sparse =
-      Teuchos::make_rcp<SparseMatrix>(*fullrowmap_, m00.max_num_entries(), explicitdirichlet);
+  std::shared_ptr<SparseMatrix> sparse =
+      std::make_shared<SparseMatrix>(*fullrowmap_, m00.max_num_entries(), explicitdirichlet);
   for (const auto& block : blocks_)
   {
     sparse->add(block, false, 1.0, 1.0);
@@ -132,9 +132,9 @@ void Core::LinAlg::BlockSparseMatrixBase::complete(bool enforce_complete)
     }
   }
 
-  fullrowmap_ = Teuchos::make_rcp<Epetra_Map>(*(rangemaps_.full_map()));
+  fullrowmap_ = std::make_shared<Epetra_Map>(*(rangemaps_.full_map()));
 
-  if (fullcolmap_ == Teuchos::null)
+  if (fullcolmap_ == nullptr)
   {
     // build full col map
     std::vector<int> colmapentries;
@@ -151,7 +151,7 @@ void Core::LinAlg::BlockSparseMatrixBase::complete(bool enforce_complete)
     colmapentries.erase(
         std::unique(colmapentries.begin(), colmapentries.end()), colmapentries.end());
     fullcolmap_ =
-        Teuchos::make_rcp<Epetra_Map>(-1, colmapentries.size(), colmapentries.data(), 0, Comm());
+        std::make_shared<Epetra_Map>(-1, colmapentries.size(), colmapentries.data(), 0, Comm());
   }
 }
 
@@ -190,7 +190,7 @@ void Core::LinAlg::BlockSparseMatrixBase::apply_dirichlet(
 {
   for (int rblock = 0; rblock < rows(); ++rblock)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rowtoggle =
+    std::shared_ptr<Core::LinAlg::Vector<double>> rowtoggle =
         rangemaps_.extract_vector(dbctoggle, rblock);
     for (int cblock = 0; cblock < cols(); ++cblock)
     {
@@ -254,13 +254,13 @@ int Core::LinAlg::BlockSparseMatrixBase::Apply(
   {
     for (int rblock = 0; rblock < rows(); ++rblock)
     {
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowresult =
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> rowresult =
           rangemaps_.vector(rblock, Y.NumVectors());
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowy =
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> rowy =
           rangemaps_.vector(rblock, Y.NumVectors());
       for (int cblock = 0; cblock < cols(); ++cblock)
       {
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> colx =
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> colx =
             domainmaps_.extract_vector(Core::LinAlg::MultiVector<double>(X), cblock);
         const Core::LinAlg::SparseMatrix& bmat = matrix(rblock, cblock);
         int err = bmat.Apply(*colx, *rowy);
@@ -277,13 +277,13 @@ int Core::LinAlg::BlockSparseMatrixBase::Apply(
   {
     for (int rblock = 0; rblock < cols(); ++rblock)
     {
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowresult =
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> rowresult =
           rangemaps_.vector(rblock, Y.NumVectors());
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> rowy =
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> rowy =
           rangemaps_.vector(rblock, Y.NumVectors());
       for (int cblock = 0; cblock < rows(); ++cblock)
       {
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> colx =
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> colx =
             domainmaps_.extract_vector(Core::LinAlg::MultiVector<double>(X), cblock);
         const Core::LinAlg::SparseMatrix& bmat = matrix(cblock, rblock);
         int err = bmat.Apply(*colx, *rowy);
@@ -434,9 +434,9 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
 {
   const unsigned num_blocks = block_ids.size();
 
-  Teuchos::RCP<Epetra_Map> full_map = Teuchos::null;
+  std::shared_ptr<Epetra_Map> full_map = nullptr;
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> p_block_maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> p_block_maps;
   p_block_maps.reserve(num_blocks);
 
   for (const int id : block_ids)
@@ -451,7 +451,7 @@ void Core::LinAlg::BlockSparseMatrixBase::get_partial_extractor(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
+std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
 Core::LinAlg::block_matrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::SparseMatrix& A01,
     Core::LinAlg::SparseMatrix& A10, Core::LinAlg::SparseMatrix& A11)
 {
@@ -461,29 +461,29 @@ Core::LinAlg::block_matrix2x2(Core::LinAlg::SparseMatrix& A00, Core::LinAlg::Spa
 
 
   // generate range map
-  std::vector<Teuchos::RCP<const Epetra_Map>> range_maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> range_maps;
   range_maps.reserve(2);
 
-  range_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A00.range_map()));
-  range_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A10.range_map()));
-  Teuchos::RCP<const Epetra_Map> range_map = MultiMapExtractor::merge_maps(range_maps);
+  range_maps.emplace_back(std::make_shared<Epetra_Map>(A00.range_map()));
+  range_maps.emplace_back(std::make_shared<Epetra_Map>(A10.range_map()));
+  std::shared_ptr<const Epetra_Map> range_map = MultiMapExtractor::merge_maps(range_maps);
   MultiMapExtractor rangeMMex(*range_map, range_maps);
 
   // generate domain map
-  std::vector<Teuchos::RCP<const Epetra_Map>> domain_maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> domain_maps;
   domain_maps.reserve(2);
 
-  domain_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A00.domain_map()));
-  domain_maps.emplace_back(Teuchos::make_rcp<Epetra_Map>(A01.domain_map()));
-  Teuchos::RCP<const Epetra_Map> domain_map = MultiMapExtractor::merge_maps(domain_maps);
+  domain_maps.emplace_back(std::make_shared<Epetra_Map>(A00.domain_map()));
+  domain_maps.emplace_back(std::make_shared<Epetra_Map>(A01.domain_map()));
+  std::shared_ptr<const Epetra_Map> domain_map = MultiMapExtractor::merge_maps(domain_maps);
   MultiMapExtractor domainMMex(*domain_map, domain_maps);
 
   // generate result matrix
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> C =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>> C =
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           domainMMex, rangeMMex);
-  // Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Cb =
-  // Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(C);
+  // std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Cb =
+  // std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(C);
   // assign matrices
   C->assign(0, 0, Core::LinAlg::View, A00);
   C->assign(0, 1, Core::LinAlg::View, A01);
@@ -655,25 +655,25 @@ void Core::LinAlg::DefaultBlockMatrixStrategy::complete(bool enforce_complete)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>
 Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> input_matrix)
 {
-  auto block_matrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(input_matrix);
-  FOUR_C_ASSERT(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
+  auto block_matrix = std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(input_matrix);
+  FOUR_C_ASSERT(block_matrix != nullptr, "Matrix is not a block matrix!");
 
   return block_matrix;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::BlockSparseMatrixBase>
+std::shared_ptr<const Core::LinAlg::BlockSparseMatrixBase>
 Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix)
+    std::shared_ptr<const Core::LinAlg::SparseOperator> input_matrix)
 {
   auto block_matrix =
-      Teuchos::rcp_dynamic_cast<const Core::LinAlg::BlockSparseMatrixBase>(input_matrix);
-  FOUR_C_ASSERT(block_matrix != Teuchos::null, "Matrix is not a block matrix!");
+      std::dynamic_pointer_cast<const Core::LinAlg::BlockSparseMatrixBase>(input_matrix);
+  FOUR_C_ASSERT(block_matrix != nullptr, "Matrix is not a block matrix!");
 
   return block_matrix;
 }

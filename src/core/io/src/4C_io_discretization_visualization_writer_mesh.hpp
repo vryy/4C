@@ -15,8 +15,7 @@
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <optional>
 
 FOUR_C_NAMESPACE_OPEN
@@ -47,7 +46,7 @@ namespace Core::IO
      *   included.
      */
     DiscretizationVisualizationWriterMesh(
-        const Teuchos::RCP<const Core::FE::Discretization>& discretization,
+        const std::shared_ptr<const Core::FE::Discretization>& discretization,
         VisualizationParameters parameters,
         std::function<bool(const Core::Elements::Element* element)> element_filter =
             [](const Core::Elements::Element*) { return true; });
@@ -190,17 +189,17 @@ namespace Core::IO
 
    private:
     //! discretization containing elements of which geometry and result data shall be visualized
-    Teuchos::RCP<const Core::FE::Discretization> discretization_;
+    std::shared_ptr<const Core::FE::Discretization> discretization_;
 
     //! The actual visualization writer object that additionally stores the geometry and result data
-    Teuchos::RCP<VisualizationManager> visualization_manager_;
+    std::shared_ptr<VisualizationManager> visualization_manager_;
 
     //! A filter function that returns true for all elements that should be visualized.
     std::function<bool(const Core::Elements::Element* element)> element_filter_;
 
     //! Node row and col maps the geometry of visualization writer is based on
-    Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
-    Teuchos::RCP<Epetra_Map> nodecolmap_last_geometry_set_;
+    std::shared_ptr<Epetra_Map> noderowmap_last_geometry_set_;
+    std::shared_ptr<Epetra_Map> nodecolmap_last_geometry_set_;
   };
 
   /**

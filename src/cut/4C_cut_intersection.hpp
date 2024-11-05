@@ -87,7 +87,7 @@ namespace Cut
   class IntersectionBase
   {
    public:
-    static Teuchos::RCP<IntersectionBase> create(
+    static std::shared_ptr<IntersectionBase> create(
         const Core::FE::CellType& edge_type, const Core::FE::CellType& side_type);
 
    public:
@@ -1314,7 +1314,7 @@ namespace Cut
    public:
     IntersectionFactory(){};
 
-    Teuchos::RCP<IntersectionBase> create_intersection(
+    std::shared_ptr<IntersectionBase> create_intersection(
         Core::FE::CellType edge_type, Core::FE::CellType side_type) const;
 
    private:

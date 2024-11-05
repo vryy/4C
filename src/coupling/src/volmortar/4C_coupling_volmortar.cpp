@@ -41,15 +41,15 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            farah 10/13|
  *----------------------------------------------------------------------*/
 Coupling::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
-    Teuchos::RCP<Core::FE::Discretization> dis1,  // on Omega_1
-    Teuchos::RCP<Core::FE::Discretization> dis2,  // on Omega_2
+    std::shared_ptr<Core::FE::Discretization> dis1,  // on Omega_1
+    std::shared_ptr<Core::FE::Discretization> dis2,  // on Omega_2
     const Teuchos::ParameterList& volmortar_parameters,
     const Teuchos::ParameterList& cut_parameters,
     std::vector<int>* coupleddof12,  // 2-->1
     std::vector<int>* coupleddof21,  // 1-->2
     std::pair<int, int>* dofset12,   // 2-->1
     std::pair<int, int>* dofset21,   // 1-->2
-    Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy>
+    std::shared_ptr<Coupling::VolMortar::Utils::DefaultMaterialStrategy>
         materialstrategy  // strategy for element information transfer
     )
     : dim_(dim),
@@ -65,7 +65,7 @@ Coupling::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
         "VolMortarCoupl");
 
   // its the same communicator for all discr.
-  comm_ = Teuchos::RCP(dis1->get_comm().Clone());
+  comm_ = std::shared_ptr<Epetra_Comm>(dis1->get_comm().Clone());
   myrank_ = comm_->MyPID();
 
   // define dof sets
@@ -127,8 +127,8 @@ Coupling::VolMortar::VolMortarCoupl::VolMortarCoupl(int dim,
 /*----------------------------------------------------------------------*
  |  Build maps based on coupling dofs                        farah 03/15|
  *----------------------------------------------------------------------*/
-void Coupling::VolMortar::VolMortarCoupl::build_maps(Teuchos::RCP<Core::FE::Discretization>& dis,
-    Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof, const int* nodes,
+void Coupling::VolMortar::VolMortarCoupl::build_maps(std::shared_ptr<Core::FE::Discretization>& dis,
+    std::shared_ptr<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof, const int* nodes,
     int numnode, int dofset)
 {
   std::vector<int> dofmapvec;
@@ -164,7 +164,7 @@ void Coupling::VolMortar::VolMortarCoupl::build_maps(Teuchos::RCP<Core::FE::Disc
     }
   }
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = Teuchos::make_rcp<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_);
+  dofmap = std::make_shared<Epetra_Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, *comm_);
 
   return;
 }
@@ -298,8 +298,8 @@ void Coupling::VolMortar::VolMortarCoupl::init_dop_normals()
 /*----------------------------------------------------------------------*
  |  Init search tree                                         farah 05/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init_search(
-    Teuchos::RCP<Core::FE::Discretization> searchdis)
+std::shared_ptr<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init_search(
+    std::shared_ptr<Core::FE::Discretization> searchdis)
 {
   // init current positions
   std::map<int, Core::LinAlg::Matrix<3, 1>> currentpositions;
@@ -323,7 +323,7 @@ Teuchos::RCP<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init_se
   }
 
   // init of 3D search tree
-  Teuchos::RCP<Core::Geo::SearchTree> searchTree = Teuchos::make_rcp<Core::Geo::SearchTree>(5);
+  std::shared_ptr<Core::Geo::SearchTree> searchTree = std::make_shared<Core::Geo::SearchTree>(5);
 
   // find the bounding box of the elements and initialize the search tree
   const Core::LinAlg::Matrix<3, 2> rootBox =
@@ -337,7 +337,7 @@ Teuchos::RCP<Core::Geo::SearchTree> Coupling::VolMortar::VolMortarCoupl::init_se
  |  Calculate Dops for background mesh                       farah 05/14|
  *----------------------------------------------------------------------*/
 std::map<int, Core::LinAlg::Matrix<9, 2>> Coupling::VolMortar::VolMortarCoupl::calc_background_dops(
-    Teuchos::RCP<Core::FE::Discretization> searchdis)
+    std::shared_ptr<Core::FE::Discretization> searchdis)
 {
   std::map<int, Core::LinAlg::Matrix<9, 2>> currentKDOPs;
 
@@ -399,7 +399,7 @@ Core::LinAlg::Matrix<9, 2> Coupling::VolMortar::VolMortarCoupl::calc_dop(
  |  Perform searching procedure                              farah 05/14|
  *----------------------------------------------------------------------*/
 std::vector<int> Coupling::VolMortar::VolMortarCoupl::search(Core::Elements::Element& ele,
-    Teuchos::RCP<Core::Geo::SearchTree> SearchTree,
+    std::shared_ptr<Core::Geo::SearchTree> SearchTree,
     std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs)
 {
   // vector of global ids of found elements
@@ -427,12 +427,12 @@ std::vector<int> Coupling::VolMortar::VolMortarCoupl::search(Core::Elements::Ele
  *----------------------------------------------------------------------*/
 void Coupling::VolMortar::VolMortarCoupl::assign_materials()
 {
-  if (dis1_ == Teuchos::null or dis2_ == Teuchos::null)
+  if (dis1_ == nullptr or dis2_ == nullptr)
     FOUR_C_THROW("no discretization for assigning materials!");
 
   // init search trees
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
 
   // calculate DOPs for search algorithm
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsA = calc_background_dops(dis1_);
@@ -599,7 +599,7 @@ std::vector<int> Coupling::VolMortar::VolMortarCoupl::get_adjacent_nodes(
  |  Calculate trafo matrix for quadr. elements               farah 05/14|
  *----------------------------------------------------------------------*/
 void Coupling::VolMortar::VolMortarCoupl::create_trafo_operator(Core::Elements::Element& ele,
-    Teuchos::RCP<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore)
+    std::shared_ptr<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore)
 {
   // trafo parameter
   const double alpha = 0.3;
@@ -720,14 +720,14 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_consistent_interpolation()
   /***********************************************************
    * Init P-matrices                                         *
    ***********************************************************/
-  p12_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
-  p21_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 100);
+  p12_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
+  p21_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 100);
 
   /***********************************************************
    * create search tree and current dops                     *
    ***********************************************************/
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsA = calc_background_dops(dis1_);
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsB = calc_background_dops(dis2_);
 
@@ -781,8 +781,8 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_elements()
   }
 
   // init search trees
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
 
   // calculate DOPs for search algorithm
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsA = calc_background_dops(dis1_);
@@ -842,7 +842,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_elements()
 void Coupling::VolMortar::VolMortarCoupl::evaluate_segments()
 {
   // create search tree and current dops
-  Teuchos::RCP<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
+  std::shared_ptr<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
   std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsB = calc_background_dops(dis2_);
 
   /**************************************************
@@ -914,7 +914,7 @@ void Coupling::VolMortar::VolMortarCoupl::evaluate_segments_2d(
   static std::vector<Mortar::Vertex> slave_vertices;
   static std::vector<Mortar::Vertex> master_vertices;
   static std::vector<Mortar::Vertex> ClippedPolygon;
-  static std::vector<Teuchos::RCP<Mortar::IntCell>> cells;
+  static std::vector<std::shared_ptr<Mortar::IntCell>> cells;
 
   // clear old polygons
   slave_vertices.clear();
@@ -1059,15 +1059,15 @@ void Coupling::VolMortar::VolMortarCoupl::read_and_check_input(
 void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
 {
   // create vectors of initial primary variables
-  Teuchos::RCP<Core::LinAlg::Vector<double>> var_A =
+  std::shared_ptr<Core::LinAlg::Vector<double>> var_A =
       Core::LinAlg::create_vector(*discret1()->dof_row_map(0), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> var_B =
+  std::shared_ptr<Core::LinAlg::Vector<double>> var_B =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
 
   // solution
-  Teuchos::RCP<Core::LinAlg::Vector<double>> result_A =
+  std::shared_ptr<Core::LinAlg::Vector<double>> result_A =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> result_B =
+  std::shared_ptr<Core::LinAlg::Vector<double>> result_B =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(1), true);
 
   // node positions for Discr A
@@ -1137,10 +1137,10 @@ void Coupling::VolMortar::VolMortarCoupl::check_initial_residuum()
 void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 {
   // create merged map:
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
   int dofseta = dis1_->add_dof_set(dofsetaux);
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(dim_, 0, 0, true);
   int dofsetb = dis2_->add_dof_set(dofsetaux);
   dis1_->fill_complete(true, false, false);
   dis2_->fill_complete(true, false, false);
@@ -1150,9 +1150,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
   int maxiter = 1;
 
   // init zero residuum vector for old iteration
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ResoldA =
+  std::shared_ptr<Core::LinAlg::Vector<double>> ResoldA =
       Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ResoldB =
+  std::shared_ptr<Core::LinAlg::Vector<double>> ResoldB =
       Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb), true);
 
   // output
@@ -1166,21 +1166,21 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
   {
     // init
     dmatrix_xa_ =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret1()->dof_row_map(dofseta), 10);
+        std::make_shared<Core::LinAlg::SparseMatrix>(*discret1()->dof_row_map(dofseta), 10);
     mmatrix_xa_ =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret1()->dof_row_map(dofseta), 100);
+        std::make_shared<Core::LinAlg::SparseMatrix>(*discret1()->dof_row_map(dofseta), 100);
 
     dmatrix_xb_ =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret2()->dof_row_map(dofsetb), 10);
+        std::make_shared<Core::LinAlg::SparseMatrix>(*discret2()->dof_row_map(dofsetb), 10);
     mmatrix_xb_ =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret2()->dof_row_map(dofsetb), 100);
+        std::make_shared<Core::LinAlg::SparseMatrix>(*discret2()->dof_row_map(dofsetb), 100);
 
     // output
     if (myrank_ == 0) std::cout << "*****       step " << mi << std::endl;
 
     // init search trees
-    Teuchos::RCP<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
-    Teuchos::RCP<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
+    std::shared_ptr<Core::Geo::SearchTree> SearchTreeA = init_search(dis1_);
+    std::shared_ptr<Core::Geo::SearchTree> SearchTreeB = init_search(dis2_);
 
     // calculate DOPs for search algorithm
     std::map<int, Core::LinAlg::Matrix<9, 2>> CurrentDOPsA = calc_background_dops(dis1_);
@@ -1220,11 +1220,13 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
 
     mergedmap_ = Core::LinAlg::merge_map(
         *discret1()->dof_row_map(dofseta), *discret2()->dof_row_map(dofsetb), false);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedsol = Core::LinAlg::create_vector(*mergedmap_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedX = Core::LinAlg::create_vector(*mergedmap_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedXa =
+    std::shared_ptr<Core::LinAlg::Vector<double>> mergedsol =
+        Core::LinAlg::create_vector(*mergedmap_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> mergedX =
+        Core::LinAlg::create_vector(*mergedmap_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> mergedXa =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mergedXb =
+    std::shared_ptr<Core::LinAlg::Vector<double>> mergedXb =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->node_row_map()->NumMyElements(); ++n)
@@ -1278,9 +1280,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solDA =
+    std::shared_ptr<Core::LinAlg::Vector<double>> solDA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solMA =
+    std::shared_ptr<Core::LinAlg::Vector<double>> solMA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
 
     int err = 0;
@@ -1290,9 +1292,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     err = mmatrix_xa_->multiply(false, *mergedXb, *solMA);
     if (err != 0) FOUR_C_THROW("stop");
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solDB =
+    std::shared_ptr<Core::LinAlg::Vector<double>> solDB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solMB =
+    std::shared_ptr<Core::LinAlg::Vector<double>> solMB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->multiply(false, *mergedXb, *solDB);
@@ -1325,9 +1327,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     if (mi > 0)
     {
       double fac = 0.0;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> DiffA =
+      std::shared_ptr<Core::LinAlg::Vector<double>> DiffA =
           Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta), true);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> DiffB =
+      std::shared_ptr<Core::LinAlg::Vector<double>> DiffB =
           Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb), true);
       err = DiffA->Update(1.0, *solDA, 0.0);
       if (err != 0) FOUR_C_THROW("stop");
@@ -1394,14 +1396,14 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     solver_params.refactor = true;
     solver.solve(k.epetra_operator(), mergedsol, mergedX, solver_params);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sola =
+    std::shared_ptr<Core::LinAlg::Vector<double>> sola =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solb =
+    std::shared_ptr<Core::LinAlg::Vector<double>> solb =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     Core::LinAlg::MapExtractor mapext(*mergedmap_,
-        Teuchos::make_rcp<Epetra_Map>(*(discret1()->dof_row_map(dofseta))),
-        Teuchos::make_rcp<Epetra_Map>(*(discret2()->dof_row_map(dofsetb))));
+        std::make_shared<Epetra_Map>(*(discret1()->dof_row_map(dofseta))),
+        std::make_shared<Epetra_Map>(*(discret2()->dof_row_map(dofsetb))));
     mapext.extract_cond_vector(*mergedsol, *sola);
     mapext.extract_other_vector(*mergedsol, *solb);
 
@@ -1450,9 +1452,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     dis2_->fill_complete(false, true, true);
 
     // last check:
-    Teuchos::RCP<Core::LinAlg::Vector<double>> checka =
+    std::shared_ptr<Core::LinAlg::Vector<double>> checka =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> checkb =
+    std::shared_ptr<Core::LinAlg::Vector<double>> checkb =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     for (int n = 0; n < dis1_->node_row_map()->NumMyElements(); ++n)
@@ -1504,9 +1506,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     //--------------------------------------------------------------
     //--------------------------------------------------------------
     // Check:
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finalDA =
+    std::shared_ptr<Core::LinAlg::Vector<double>> finalDA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finalMA =
+    std::shared_ptr<Core::LinAlg::Vector<double>> finalMA =
         Core::LinAlg::create_vector(*discret1()->dof_row_map(dofseta));
 
     err = dmatrix_xa_->multiply(false, *checka, *finalDA);
@@ -1515,9 +1517,9 @@ void Coupling::VolMortar::VolMortarCoupl::mesh_init()
     err = mmatrix_xa_->multiply(false, *checkb, *finalMA);
     if (err != 0) FOUR_C_THROW("stop");
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finalDB =
+    std::shared_ptr<Core::LinAlg::Vector<double>> finalDB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
-    Teuchos::RCP<Core::LinAlg::Vector<double>> finalMB =
+    std::shared_ptr<Core::LinAlg::Vector<double>> finalMB =
         Core::LinAlg::create_vector(*discret2()->dof_row_map(dofsetb));
 
     err = dmatrix_xb_->multiply(false, *checkb, *finalDB);
@@ -1582,7 +1584,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
     Core::Elements::Element* sele, Core::Elements::Element* mele, bool switched_conf)
 {
   // create empty vector of integration cells
-  std::vector<Teuchos::RCP<Cell>> IntCells;
+  std::vector<std::shared_ptr<Cell>> IntCells;
 
   // the cut wizard wants discretizations to perform the cut. One is supposed to be the background
   // discretization and the other the interface discretization. As we want to cut only two 3D
@@ -1592,13 +1594,13 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   // nodes, as we only need the geometrie to perform the cut, but want to make sure that the gids
   // and dofs of the original elements are kept untouched.
 
-  Teuchos::RCP<Core::FE::Discretization> sauxdis =
-      Teuchos::make_rcp<Core::FE::Discretization>((std::string) "slaveauxdis", comm_, dim_);
-  Teuchos::RCP<Core::FE::Discretization> mauxdis =
-      Teuchos::make_rcp<Core::FE::Discretization>((std::string) "masterauxdis", comm_, dim_);
+  std::shared_ptr<Core::FE::Discretization> sauxdis =
+      std::make_shared<Core::FE::Discretization>((std::string) "slaveauxdis", comm_, dim_);
+  std::shared_ptr<Core::FE::Discretization> mauxdis =
+      std::make_shared<Core::FE::Discretization>((std::string) "masterauxdis", comm_, dim_);
 
   // build surface elements for all surfaces of slave element
-  std::vector<Teuchos::RCP<Core::Elements::Element>> sele_surfs = sele->surfaces();
+  std::vector<std::shared_ptr<Core::Elements::Element>> sele_surfs = sele->surfaces();
   const int numsurf = sele_surfs.size();
   for (int isurf = 0; isurf < numsurf; ++isurf)
   {
@@ -1609,13 +1611,13 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
   }
 
   // add clone of element to auxiliary discretization
-  mauxdis->add_element(Teuchos::RCP(mele->clone()));
+  mauxdis->add_element(std::shared_ptr<Core::Elements::Element>(mele->clone()));
 
   // add clones of nodes to auxiliary discretizations
   for (int node = 0; node < sele->num_node(); ++node)
-    sauxdis->add_node(Teuchos::RCP(sele->nodes()[node]->clone()));
+    sauxdis->add_node(std::shared_ptr<Core::Nodes::Node>(sele->nodes()[node]->clone()));
   for (int node = 0; node < mele->num_node(); ++node)
-    mauxdis->add_node(Teuchos::RCP(mele->nodes()[node]->clone()));
+    mauxdis->add_node(std::shared_ptr<Core::Nodes::Node>(mele->nodes()[node]->clone()));
 
   // complete dis
   sauxdis->fill_complete(true, false, false);
@@ -1643,8 +1645,8 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
     );
 
     // cut in reference configuration
-    wizard.set_background_state(Teuchos::null, Teuchos::null, -1);
-    wizard.add_cutter_state(0, sauxdis, Teuchos::null);
+    wizard.set_background_state(nullptr, nullptr, -1);
+    wizard.add_cutter_state(0, sauxdis, nullptr);
 
     wizard.prepare();
     wizard.cut(true);  // include_inner
@@ -1670,7 +1672,7 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
         {
           Cut::IntegrationCell* ic = *z;
 
-          IntCells.push_back(Teuchos::make_rcp<Coupling::VolMortar::Cell>(
+          IntCells.push_back(std::make_shared<Coupling::VolMortar::Cell>(
               count, 4, ic->coordinates(), ic->shape()));
           volume_ += IntCells[count]->vol();
 
@@ -1705,8 +1707,8 @@ void Coupling::VolMortar::VolMortarCoupl::perform_cut(
     );
 
     // cut in reference configuration
-    wizard.set_background_state(Teuchos::null, Teuchos::null, -1);
-    wizard.add_cutter_state(0, sauxdis, Teuchos::null);
+    wizard.set_background_state(nullptr, nullptr, -1);
+    wizard.add_cutter_state(0, sauxdis, nullptr);
 
     wizard.cut(true);  // include_inner
 
@@ -2071,7 +2073,7 @@ bool Coupling::VolMortar::VolMortarCoupl::check_cut(
  |  integrate_2d Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
 void Coupling::VolMortar::VolMortarCoupl::integrate_2d(Core::Elements::Element& sele,
-    Core::Elements::Element& mele, std::vector<Teuchos::RCP<Mortar::IntCell>>& cells)
+    Core::Elements::Element& mele, std::vector<std::shared_ptr<Mortar::IntCell>>& cells)
 {
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -2224,7 +2226,7 @@ void Coupling::VolMortar::VolMortarCoupl::integrate_2d(Core::Elements::Element& 
  |  integrate_3d Cells                                        farah 01/14|
  *----------------------------------------------------------------------*/
 void Coupling::VolMortar::VolMortarCoupl::integrate_3d_cell(Core::Elements::Element& sele,
-    Core::Elements::Element& mele, std::vector<Teuchos::RCP<Cell>>& cells)
+    Core::Elements::Element& mele, std::vector<std::shared_ptr<Cell>>& cells)
 {
   //--------------------------------------------------------------------
   // loop over cells for A Field
@@ -3043,7 +3045,7 @@ void Coupling::VolMortar::VolMortarCoupl::integrate_3d_cell_direct_divergence(
     if (vc->is_negligibly_small()) continue;
 
     // main gp rule
-    Teuchos::RCP<Core::FE::GaussPoints> intpoints = vc->get_gauss_rule();
+    std::shared_ptr<Core::FE::GaussPoints> intpoints = vc->get_gauss_rule();
 
     //--------------------------------------------------------------------
     // loop over cells for A Field
@@ -3625,17 +3627,17 @@ void Coupling::VolMortar::VolMortarCoupl::initialize()
    * slave side!                                                      *
    * ******************************************************************/
 
-  d1_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
-  m12_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 100);
+  d1_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
+  m12_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 100);
 
-  d2_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 10);
-  m21_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 100);
+  d2_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 10);
+  m21_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 100);
 
   // initialize trafo operator for quadr. modification
   if (dualquad_ != dualquad_no_mod)
   {
-    t1_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
-    t2_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 10);
+    t1_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p12_dofrowmap_, 10);
+    t2_ = std::make_shared<Core::LinAlg::SparseMatrix>(*p21_dofrowmap_, 10);
   }
 
   return;
@@ -3672,7 +3674,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   /* Multiply Mortar matrices: P = inv(D) * M         A               */
   /********************************************************************/
   Core::LinAlg::SparseMatrix invd1(*d1_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag1 =
+  std::shared_ptr<Core::LinAlg::Vector<double>> diag1 =
       Core::LinAlg::create_vector(*p12_dofrowmap_, true);
   int err = 0;
 
@@ -3691,14 +3693,14 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   err = invd1.replace_diagonal_values(*diag1);
 
   // do the multiplication P = inv(D) * M
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> aux12 =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> aux12 =
       Core::LinAlg::matrix_multiply(invd1, false, *m12_, false, false, false, true);
 
   /********************************************************************/
   /* Multiply Mortar matrices: P = inv(D) * M         B               */
   /********************************************************************/
   Core::LinAlg::SparseMatrix invd2(*d2_);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> diag2 =
+  std::shared_ptr<Core::LinAlg::Vector<double>> diag2 =
       Core::LinAlg::create_vector(*p21_dofrowmap_, true);
 
   // extract diagonal of invd into diag
@@ -3716,7 +3718,7 @@ void Coupling::VolMortar::VolMortarCoupl::create_projection_operator()
   err = invd2.replace_diagonal_values(*diag2);
 
   // do the multiplication P = inv(D) * M
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> aux21 =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> aux21 =
       Core::LinAlg::matrix_multiply(invd2, false, *m21_, false, false, false, true);
 
   // initialize trafo operator for quadr. modification
@@ -4528,7 +4530,7 @@ bool Coupling::VolMortar::VolMortarCoupl::polygon_clipping_convex_hull(
  |  Triangulation of clip polygon (3D) - CENTER               popp 08/11|
  *----------------------------------------------------------------------*/
 bool Coupling::VolMortar::VolMortarCoupl::center_triangulation(
-    std::vector<Teuchos::RCP<Mortar::IntCell>>& cells, std::vector<Mortar::Vertex>& clip,
+    std::vector<std::shared_ptr<Mortar::IntCell>>& cells, std::vector<Mortar::Vertex>& clip,
     double tol)
 {
   // preparations
@@ -4554,7 +4556,7 @@ bool Coupling::VolMortar::VolMortarCoupl::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(0, 3, coords, auxn(),
+    cells.push_back(std::make_shared<Mortar::IntCell>(0, 3, coords, auxn(),
         Core::FE::CellType::tri3, linvertex[0], linvertex[1], linvertex[2], derivauxn));
 
     // get out of here
@@ -4677,7 +4679,7 @@ bool Coupling::VolMortar::VolMortarCoupl::center_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, 2) = clip[num + 1].coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(num, 3, coords, auxn(),
+    cells.push_back(std::make_shared<Mortar::IntCell>(num, 3, coords, auxn(),
         Core::FE::CellType::tri3, lincenter, linvertex[num], linvertex[numplus1], derivauxn));
   }
 
@@ -4689,7 +4691,7 @@ bool Coupling::VolMortar::VolMortarCoupl::center_triangulation(
  |  Triangulation of clip polygon (3D) - DELAUNAY             popp 08/11|
  *----------------------------------------------------------------------*/
 bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
-    std::vector<Teuchos::RCP<Mortar::IntCell>>& cells, std::vector<Mortar::Vertex>& clip,
+    std::vector<std::shared_ptr<Mortar::IntCell>>& cells, std::vector<Mortar::Vertex>& clip,
     double tol)
 {
   // preparations
@@ -4713,7 +4715,7 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
       for (int k = 0; k < 3; ++k) coords(k, i) = clip[i].coord()[k];
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(0, 3, coords, auxn(),
+    cells.push_back(std::make_shared<Mortar::IntCell>(0, 3, coords, auxn(),
         Core::FE::CellType::tri3, linvertex[0], linvertex[1], linvertex[2], derivauxn));
 
     // get out of here
@@ -5110,7 +5112,7 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
     }
 
     // create IntCell object and push back
-    cells.push_back(Teuchos::make_rcp<Mortar::IntCell>(t, 3, coords, auxn(),
+    cells.push_back(std::make_shared<Mortar::IntCell>(t, 3, coords, auxn(),
         Core::FE::CellType::tri3, linvertex[idx0], linvertex[idx1], linvertex[idx2], derivauxn));
   }
 

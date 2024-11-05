@@ -17,6 +17,7 @@
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_mat_fluid_murnaghantait.hpp"
 #include "4C_mat_newtonianfluid.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_BLAS.hpp>
 #include <Teuchos_LAPACK.hpp>
@@ -40,7 +41,7 @@ Discret::Elements::FluidEleCalcHDG<distype>::FluidEleCalcHDG() : usescompletepol
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDG<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -63,24 +64,23 @@ void Discret::Elements::FluidEleCalcHDG<distype>::initialize_shapes(
           dynamic_cast<const Discret::Elements::FluidHDG*>(ele))
   {
     usescompletepoly_ = hdgele->uses_complete_polynomial_space();
-    if (shapes_ == Teuchos::null)
-      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+    if (shapes_ == nullptr)
+      shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgele->degree(), usescompletepoly_, 2 * ele->degree());
     else if (shapes_->degree_ != unsigned(ele->degree()) ||
              shapes_->usescompletepoly_ != usescompletepoly_)
-      shapes_ = Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(
+      shapes_ = std::make_shared<Core::FE::ShapeValues<distype>>(
           hdgele->degree(), usescompletepoly_, 2 * ele->degree());
 
-    if (shapesface_ == Teuchos::null)
+    if (shapesface_ == nullptr)
     {
       Core::FE::ShapeValuesFaceParams svfparams(
           ele->degree(), usescompletepoly_, 2 * ele->degree());
-      shapesface_ = Teuchos::make_rcp<Core::FE::ShapeValuesFace<distype>>(svfparams);
+      shapesface_ = std::make_shared<Core::FE::ShapeValuesFace<distype>>(svfparams);
     }
 
-    if (local_solver_ == Teuchos::null)
-      local_solver_ =
-          Teuchos::make_rcp<LocalSolver>(ele, *shapes_, *shapesface_, usescompletepoly_);
+    if (local_solver_ == nullptr)
+      local_solver_ = std::make_shared<LocalSolver>(ele, *shapes_, *shapesface_, usescompletepoly_);
   }
   else
     FOUR_C_THROW("Only works for HDG fluid elements");
@@ -91,7 +91,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::initialize_shapes(
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDG<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix&,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector&,
     Core::LinAlg::SerialDenseVector&, bool offdiag)
@@ -112,7 +112,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::evaluate(Discret::Elements::Flu
   interiorebofoaf_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_, 0.0);
   if (params.get<bool>("forcing", false))
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         discretization.get_state(1, "forcing");
     std::vector<int> localDofs = discretization.dof(1, ele);
     Core::FE::extract_my_values(*matrix_state, interiorebofoaf_, localDofs);
@@ -189,7 +189,8 @@ void Discret::Elements::FluidEleCalcHDG<distype>::read_global_vectors(
   interior_val_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   interior_acc_.resize(((nsd_ + 1) * nsd_ + 1) * shapes_->ndofs_ + 1);
   FOUR_C_ASSERT(lm.size() == trace_val_.size(), "Internal error");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = discretization.get_state("velaf");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+      discretization.get_state("velaf");
   Core::FE::extract_my_values(*matrix_state, trace_val_, lm);
 
   // read the interior values from solution vector
@@ -208,7 +209,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::update_secondary_solution(
     const Core::Elements::Element& ele, Core::FE::Discretization& discretization,
     const Core::LinAlg::SerialDenseVector& updateG, const Core::LinAlg::SerialDenseVector& updateUp)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, &ele);
   FOUR_C_ASSERT(localDofs.size() == static_cast<std::size_t>(updateG.length() + updateUp.length()),
@@ -258,7 +259,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::update_secondary_solution(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDG<distype>::evaluate_service(Discret::Elements::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -317,7 +318,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::evaluate_service(Discret::Eleme
 
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDG<distype>::compute_error(Discret::Elements::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec)
 {
@@ -326,7 +327,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::compute_error(Discret::Elements
   shapes_->evaluate(*ele);
   const double time = local_solver_->fldparatimint_->time();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, ele);
   std::vector<double> vecValues(localDofs.size());
@@ -399,7 +400,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::compute_error(Discret::Elements
 /// projection of function field
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDG<distype>::project_field(Discret::Elements::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
@@ -688,7 +689,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::interpolate_solution_to_nodes(
   // get local solution values
   // The vector "matrix_state" contains the interior velocity values following
   // the local id numbers
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "intvelnp");
   // Vector of the ids of the DOF for the element
   std::vector<int> localDofs = discretization.dof(1, ele);
@@ -883,7 +884,7 @@ int Discret::Elements::FluidEleCalcHDG<distype>::interpolate_solution_for_hit(
         l++;
       }
   // get local solution values
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "intvelnp");
   std::vector<int> localDofs = discretization.dof(1, ele);
   std::vector<double> solvalues(localDofs.size());
@@ -1334,7 +1335,7 @@ Discret::Elements::FluidEleCalcHDG<distype>* Discret::Elements::FluidEleCalcHDG<
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcHDG<distype>::evaluate_pressure_average(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec)
+    std::shared_ptr<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec)
 {
   double pressureint = 0.;
   double volume = 0.;
@@ -1431,16 +1432,17 @@ Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::LocalSolver(
   upUpd.resize((nsd_ + 1) * ndofs_ + 1);
 
   // pointer to class FluidEleParameter (access to the general parameter)
-  fldparatimint_ = Teuchos::rcpFromRef(*Discret::Elements::FluidEleParameterTimInt::instance());
+  fldparatimint_ =
+      Core::Utils::shared_ptr_from_ref(*Discret::Elements::FluidEleParameterTimInt::instance());
   // initialize also general parameter list, also it will be overwritten in derived subclasses
-  fldpara_ = Teuchos::rcpFromRef(*Discret::Elements::FluidEleParameterStd::instance());
+  fldpara_ = Core::Utils::shared_ptr_from_ref(*Discret::Elements::FluidEleParameterStd::instance());
 }
 
 
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_residual(
-    const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
+    const std::shared_ptr<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& accel, const double avgPressure,
     const Core::LinAlg::Matrix<nsd_, nen_>& ebodyforce, const std::vector<double>& intebodyforce,
     Core::LinAlg::SerialDenseVector& elevec, const std::vector<double>& interiorecorrectionterm,
@@ -1656,7 +1658,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_matrices(
-    const Teuchos::RCP<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear)
+    const std::shared_ptr<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear)
 {
   // get physical type
   Inpar::FLUID::PhysicalType physicaltype = fldpara_->physical_type();
@@ -1909,7 +1911,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_interior_
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_face_residual(const int face,
-    const Teuchos::RCP<Core::Mat::Material>& mat, const std::vector<double>& val,
+    const std::shared_ptr<Core::Mat::Material>& mat, const std::vector<double>& val,
     const std::vector<double>& traceval, Core::LinAlg::SerialDenseVector& elevec)
 {
   // get physical type
@@ -2064,7 +2066,7 @@ void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_face_resi
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcHDG<distype>::LocalSolver::compute_face_matrices(const int face,
-    const Teuchos::RCP<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear,
+    const std::shared_ptr<Core::Mat::Material>& mat, const bool evaluateOnlyNonlinear,
     Core::LinAlg::SerialDenseMatrix& elemat)
 {
   // get physical type

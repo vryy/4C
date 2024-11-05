@@ -47,14 +47,14 @@ namespace Thermo
 
    private:
     //! our discretisation
-    Teuchos::RCP<Core::FE::Discretization> thrdisc_;
+    std::shared_ptr<Core::FE::Discretization> thrdisc_;
     // our solution
     //! global temperature DOFs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> temp_;
     //! global temperature rate DOFs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rate_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rate_;
     //! global temperature DOFs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> flux_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> flux_;
     //! NOTE: these have to be present explicitly
     //! as they are not part of the problem instance like in fluid3
 

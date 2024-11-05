@@ -59,8 +59,8 @@ void TSI::Utils::ThermoStructureCloneStrategy::check_material_type(const int mat
  | set element data for cloned element                                  |
  *----------------------------------------------------------------------*/
 void TSI::Utils::ThermoStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool isnurbs)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbs)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -85,8 +85,8 @@ void TSI::Utils::ThermoStructureCloneStrategy::set_element_data(
 
   // note: set_material() was reimplemented by the thermo element!
 
-  Teuchos::RCP<Thermo::Element> therm = Teuchos::rcp_dynamic_cast<Thermo::Element>(newele);
-  if (therm != Teuchos::null)
+  std::shared_ptr<Thermo::Element> therm = std::dynamic_pointer_cast<Thermo::Element>(newele);
+  if (therm != nullptr)
   {
     // cloning to same material id -> use the same material instance
     if (oldele->material()->parameter()->id() == matid)
@@ -124,7 +124,7 @@ bool TSI::Utils::ThermoStructureCloneStrategy::determine_ele_type(
 void TSI::Utils::setup_tsi(const Epetra_Comm& comm)
 {
   // access the structure discretization, make sure it is filled
-  Teuchos::RCP<Core::FE::Discretization> structdis;
+  std::shared_ptr<Core::FE::Discretization> structdis;
   structdis = Global::Problem::instance()->get_dis("structure");
   // set degrees of freedom in the discretization
   if (!structdis->filled() or !structdis->have_dofs())
@@ -136,7 +136,7 @@ void TSI::Utils::setup_tsi(const Epetra_Comm& comm)
   }
 
   // access the thermo discretization
-  Teuchos::RCP<Core::FE::Discretization> thermdis;
+  std::shared_ptr<Core::FE::Discretization> thermdis;
   thermdis = Global::Problem::instance()->get_dis("thermo");
   if (!thermdis->filled()) thermdis->fill_complete();
 
@@ -182,9 +182,9 @@ void TSI::Utils::setup_tsi(const Epetra_Comm& comm)
 
     // TSI must know the other discretization
     // build a proxy of the structure discretization for the temperature field
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
+    std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
     // build a proxy of the temperature discretization for the structure field
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> thermodofset = thermdis->get_dof_set_proxy();
+    std::shared_ptr<Core::DOFSets::DofSetInterface> thermodofset = thermdis->get_dof_set_proxy();
 
     // check if ThermoField has 2 discretizations, so that coupling is possible
     if (thermdis->add_dof_set(structdofset) != 1)
@@ -214,12 +214,12 @@ void TSI::Utils::setup_tsi(const Epetra_Comm& comm)
     const int ndofperelement_thermo = 0;
     const int ndofpernode_struct = Global::Problem::instance()->n_dim();
     const int ndofperelement_struct = 0;
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-    dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+    std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+    dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
         ndofpernode_thermo, ndofperelement_thermo, 0, true);
     if (structdis->add_dof_set(dofsetaux) != 1)
       FOUR_C_THROW("unexpected dof sets in structure field");
-    dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+    dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
         ndofpernode_struct, ndofperelement_struct, 0, true);
     if (thermdis->add_dof_set(dofsetaux) != 1) FOUR_C_THROW("unexpected dof sets in thermo field");
 
@@ -262,8 +262,8 @@ void TSI::Utils::set_material_pointers_matching_grid(
  *----------------------------------------------------------------------*/
 void TSI::Utils::TSIMaterialStrategy::assign_material2_to1(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele1,
-    const std::vector<int>& ids_2, Teuchos::RCP<Core::FE::Discretization> dis1,
-    Teuchos::RCP<Core::FE::Discretization> dis2)
+    const std::vector<int>& ids_2, std::shared_ptr<Core::FE::Discretization> dis1,
+    std::shared_ptr<Core::FE::Discretization> dis2)
 {
   // call default assignment
   Coupling::VolMortar::Utils::DefaultMaterialStrategy::assign_material2_to1(
@@ -279,8 +279,8 @@ void TSI::Utils::TSIMaterialStrategy::assign_material2_to1(
  *----------------------------------------------------------------------*/
 void TSI::Utils::TSIMaterialStrategy::assign_material1_to2(
     const Coupling::VolMortar::VolMortarCoupl* volmortar, Core::Elements::Element* ele2,
-    const std::vector<int>& ids_1, Teuchos::RCP<Core::FE::Discretization> dis1,
-    Teuchos::RCP<Core::FE::Discretization> dis2)
+    const std::vector<int>& ids_1, std::shared_ptr<Core::FE::Discretization> dis1,
+    std::shared_ptr<Core::FE::Discretization> dis2)
 {
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;

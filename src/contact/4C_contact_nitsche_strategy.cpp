@@ -25,16 +25,18 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |
  *----------------------------------------------------------------------*/
-void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& kt, Teuchos::RCP<Core::LinAlg::Vector<double>>& f,
-    const int step, const int iter, bool predictor)
+void CONTACT::NitscheStrategy::apply_force_stiff_cmt(
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& kt,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& f, const int step, const int iter,
+    bool predictor)
 {
   // mortar initialization and evaluation
   set_state(Mortar::state_new_displacement, *dis);
 
   // just a Nitsche-version
-  Teuchos::RCP<Epetra_FEVector> fc = Teuchos::make_rcp<Epetra_FEVector>(f->Map());
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  std::shared_ptr<Epetra_FEVector> fc = std::make_shared<Epetra_FEVector>(f->Map());
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kc = std::make_shared<Core::LinAlg::SparseMatrix>(
       (dynamic_cast<Epetra_CrsMatrix*>(&(*kt->epetra_operator())))->RowMap(), 100, true, false,
       Core::LinAlg::SparseMatrix::FE_MATRIX);
 
@@ -69,8 +71,8 @@ void CONTACT::NitscheStrategy::apply_force_stiff_cmt(Teuchos::RCP<Core::LinAlg::
  |  read restart information for contact                     seitz 10/16|
  *----------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::do_read_restart(Core::IO::DiscretizationReader& reader,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dis,
-    Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr)
 {
   // check whether this is a restart with contact of a previously
   // non-contact simulation run (if yes, we have to be careful not
@@ -106,9 +108,9 @@ void CONTACT::NitscheStrategy::set_state(
   if (statename == Mortar::state_new_displacement)
   {
     double inf_delta = 0.;
-    if (curr_state_ == Teuchos::null)
+    if (curr_state_ == nullptr)
     {
-      curr_state_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(vec);
+      curr_state_ = std::make_shared<Core::LinAlg::Vector<double>>(vec);
       inf_delta = 1.e12;
     }
     else
@@ -124,9 +126,9 @@ void CONTACT::NitscheStrategy::set_state(
       curr_state_eval_ = false;
       (*curr_state_) = vec;
       AbstractStrategy::set_state(statename, vec);
-      Teuchos::RCP<Core::FE::Discretization> dis =
+      std::shared_ptr<Core::FE::Discretization> dis =
           Global::Problem::instance()->get_dis("structure");
-      if (dis == Teuchos::null) FOUR_C_THROW("didn't get my discretization");
+      if (dis == nullptr) FOUR_C_THROW("didn't get my discretization");
       set_parent_state(statename, vec, *dis);
     }
   }
@@ -243,27 +245,27 @@ void CONTACT::NitscheStrategy::integrate(const CONTACT::ParamsInterface& cparams
   kc_ = create_matrix_block_ptr(CONTACT::MatBlockType::displ_displ);
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::setup_rhs_block_vec(
+std::shared_ptr<Epetra_FEVector> CONTACT::NitscheStrategy::setup_rhs_block_vec(
     const enum CONTACT::VecBlockType& bt) const
 {
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
-      return Teuchos::make_rcp<Epetra_FEVector>(
+      return std::make_shared<Epetra_FEVector>(
           *Global::Problem::instance()->get_dis("structure")->dof_row_map());
     default:
       FOUR_C_THROW("you should not be here");
       break;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
+std::shared_ptr<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
-  Teuchos::RCP<Epetra_FEVector> fc = setup_rhs_block_vec(bt);
+  std::shared_ptr<Epetra_FEVector> fc = setup_rhs_block_vec(bt);
 
   for (const auto& interface : interface_)
   {
@@ -280,7 +282,7 @@ Teuchos::RCP<Epetra_FEVector> CONTACT::NitscheStrategy::create_rhs_block_ptr(
   return fc;
 }
 
-Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategy::get_rhs_block_ptr(
+std::shared_ptr<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategy::get_rhs_block_ptr(
     const enum CONTACT::VecBlockType& bt) const
 {
   if (!curr_state_eval_)
@@ -290,35 +292,35 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> CONTACT::NitscheStrategy::get_r
   switch (bt)
   {
     case CONTACT::VecBlockType::displ:
-      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fc_);
+      return std::make_shared<Core::LinAlg::Vector<double>>(*fc_);
     case CONTACT::VecBlockType::constraint:
-      return Teuchos::null;
+      return nullptr;
     default:
       FOUR_C_THROW("get_rhs_block_ptr: your type is no treated properly!");
       break;
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::setup_matrix_block_ptr(
+std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::setup_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   switch (bt)
   {
     case CONTACT::MatBlockType::displ_displ:
-      return Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      return std::make_shared<Core::LinAlg::SparseMatrix>(
           *Global::Problem::instance()->get_dis("structure")->dof_row_map(), 100, true, false,
           Core::LinAlg::SparseMatrix::FE_MATRIX);
     default:
       FOUR_C_THROW("you should not be here");
       break;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 void CONTACT::NitscheStrategy::complete_matrix_block_ptr(
-    const enum CONTACT::MatBlockType& bt, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc)
+    const enum CONTACT::MatBlockType& bt, std::shared_ptr<Core::LinAlg::SparseMatrix> kc)
 {
   switch (bt)
   {
@@ -331,12 +333,12 @@ void CONTACT::NitscheStrategy::complete_matrix_block_ptr(
   }
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::create_matrix_block_ptr(
+std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::create_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt)
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kc = setup_matrix_block_ptr(bt);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kc = setup_matrix_block_ptr(bt);
 
   for (const auto& interface : interface_)
   {
@@ -353,7 +355,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::create_matrix
   return kc;
 }
 
-Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::get_matrix_block_ptr(
+std::shared_ptr<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::get_matrix_block_ptr(
     const enum CONTACT::MatBlockType& bt, const CONTACT::ParamsInterface* cparams) const
 {
   if (!curr_state_eval_) FOUR_C_THROW("you didn't evaluate this contact state first");
@@ -363,7 +365,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> CONTACT::NitscheStrategy::get_matrix_bl
   else
     FOUR_C_THROW("get_matrix_block_ptr: your type is no treated properly!");
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
@@ -380,7 +382,7 @@ void CONTACT::NitscheStrategy::setup(bool redistributed, bool init)
     if (selfcontact) isselfcontact_ = true;
   }
   reconnect_parent_elements();
-  curr_state_ = Teuchos::null;
+  curr_state_ = nullptr;
   curr_state_eval_ = false;
 }
 
@@ -401,7 +403,7 @@ void CONTACT::NitscheStrategy::update_trace_ineq_etimates()
   }
 }
 
-void CONTACT::NitscheStrategy::update(Teuchos::RCP<const Core::LinAlg::Vector<double>> dis)
+void CONTACT::NitscheStrategy::update(std::shared_ptr<const Core::LinAlg::Vector<double>> dis)
 {
   if (params().get<bool>("NITSCHE_PENALTY_ADAPTIVE")) update_trace_ineq_etimates();
   if (friction_)
@@ -432,7 +434,8 @@ void CONTACT::NitscheStrategy::evaluate_reference_state()
  *---------------------------------------------------------------------------------------------*/
 void CONTACT::NitscheStrategy::reconnect_parent_elements()
 {
-  Teuchos::RCP<Core::FE::Discretization> voldis = Global::Problem::instance()->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> voldis =
+      Global::Problem::instance()->get_dis("structure");
 
   for (const auto& contact_interface : contact_interfaces())
   {

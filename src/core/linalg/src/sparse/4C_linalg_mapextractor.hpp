@@ -14,10 +14,10 @@
 
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -54,19 +54,20 @@ namespace Core::LinAlg
 
     /// create an extractor from fullmap to the given set of maps
     MultiMapExtractor(
-        const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+        const Epetra_Map& fullmap, const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /// setup of an empty extractor
     /*!
       \warning The fullmap has to be nonoverlapping. The list of maps has to
       be nonoverlapping as well and its sum has to equal the fullmap.
      */
-    void setup(const Epetra_Map& fullmap, const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    void setup(
+        const Epetra_Map& fullmap, const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /// debug helper
     /*!
       loop all maps in the list of nonoverlapping partial row maps unequal
-      Teuchos::null and check whether they have a valid DataPtr() and are
+      nullptr and check whether they have a valid DataPtr() and are
       unique
 
       \note hidden calls to redistribute() may render maps in maps_ obsolete.
@@ -79,22 +80,22 @@ namespace Core::LinAlg
       \warning There must be no overlap in these maps.
                The order of the GIDs is destroyed
      */
-    static Teuchos::RCP<Epetra_Map> merge_maps(
-        const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    static std::shared_ptr<Epetra_Map> merge_maps(
+        const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /// merge set of unique maps
     /*!
       \warning There must be no overlap in these maps.
     */
-    static Teuchos::RCP<Epetra_Map> merge_maps_keep_order(
-        const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    static std::shared_ptr<Epetra_Map> merge_maps_keep_order(
+        const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /// intersect set of unique maps
     /*!
       \warning There must be no overlap in these maps.
      */
-    static Teuchos::RCP<Epetra_Map> intersect_maps(
-        const std::vector<Teuchos::RCP<const Epetra_Map>>& maps);
+    static std::shared_ptr<Epetra_Map> intersect_maps(
+        const std::vector<std::shared_ptr<const Epetra_Map>>& maps);
 
     /** \name Maps */
     //@{
@@ -103,10 +104,10 @@ namespace Core::LinAlg
     int num_maps() const { return maps_.size(); }
 
     /// get the map
-    const Teuchos::RCP<const Epetra_Map>& Map(int i) const { return maps_[i]; }
+    const std::shared_ptr<const Epetra_Map>& Map(int i) const { return maps_[i]; }
 
     /// the full map
-    const Teuchos::RCP<const Epetra_Map>& full_map() const { return fullmap_; }
+    const std::shared_ptr<const Epetra_Map>& full_map() const { return fullmap_; }
 
     //@}
 
@@ -114,15 +115,15 @@ namespace Core::LinAlg
     //@{
 
     /// create vector to map i
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vector(int i) const
+    std::shared_ptr<Core::LinAlg::Vector<double>> vector(int i) const
     {
-      return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*Map(i));
+      return std::make_shared<Core::LinAlg::Vector<double>>(*Map(i));
     }
 
     /// create multi vector to map i
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> vector(int i, int numvec) const
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> vector(int i, int numvec) const
     {
-      return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*Map(i), numvec);
+      return std::make_shared<Core::LinAlg::MultiVector<double>>(*Map(i), numvec);
     }
 
     //@
@@ -135,7 +136,7 @@ namespace Core::LinAlg
       \param full vector on the full map
       \param block number of vector to extract
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_vector(
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_vector(
         const Core::LinAlg::Vector<double>& full, int block) const;
 
     /// extract a partial vector from a full vector
@@ -143,7 +144,7 @@ namespace Core::LinAlg
       \param full vector on the full map
       \param block number of vector to extract
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> extract_vector(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> extract_vector(
         const Core::LinAlg::MultiVector<double>& full, int block) const;
 
     /// extract a partial vector from a full vector
@@ -166,7 +167,7 @@ namespace Core::LinAlg
       \param partial vector to copy into full vector
       \param block number of partial vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> insert_vector(
+    std::shared_ptr<Core::LinAlg::Vector<double>> insert_vector(
         const Core::LinAlg::Vector<double>& partial, int block) const;
 
     /// Put a partial vector into a full vector
@@ -174,7 +175,7 @@ namespace Core::LinAlg
       \param partial vector to copy into full vector
       \param block number of partial vector
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> insert_vector(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> insert_vector(
         const Core::LinAlg::MultiVector<double>& partial, int block) const;
 
     /// Put a partial vector into a full vector
@@ -217,19 +218,19 @@ namespace Core::LinAlg
 
    protected:
     /// the full row map
-    Teuchos::RCP<const Epetra_Map> fullmap_;
+    std::shared_ptr<const Epetra_Map> fullmap_;
 
     /// the list of nonoverlapping partial row maps that sums up to the full map
-    std::vector<Teuchos::RCP<const Epetra_Map>> maps_;
+    std::vector<std::shared_ptr<const Epetra_Map>> maps_;
 
     /// communication between condition dof map and full row dof map
-    std::vector<Teuchos::RCP<Epetra_Import>> importer_;
+    std::vector<std::shared_ptr<Epetra_Import>> importer_;
   };
 
 
 /// Add all kinds of support methods to derived classes of MultiMapExtractor.
 #define MAP_EXTRACTOR_VECTOR_METHODS(name, pos)                                           \
-  Teuchos::RCP<Core::LinAlg::Vector<double>> extract_##name##_vector(                     \
+  std::shared_ptr<Core::LinAlg::Vector<double>> extract_##name##_vector(                  \
       const Core::LinAlg::Vector<double>& full) const                                     \
   {                                                                                       \
     return MultiMapExtractor::extract_vector(full, pos);                                  \
@@ -241,7 +242,7 @@ namespace Core::LinAlg
     extract_vector(full, pos, cond);                                                      \
   }                                                                                       \
                                                                                           \
-  Teuchos::RCP<Core::LinAlg::Vector<double>> insert_##name##_vector(                      \
+  std::shared_ptr<Core::LinAlg::Vector<double>> insert_##name##_vector(                   \
       const Core::LinAlg::Vector<double>& cond) const                                     \
   {                                                                                       \
     return insert_vector(cond, pos);                                                      \
@@ -265,7 +266,7 @@ namespace Core::LinAlg
     add_vector(cond, pos, full, scale);                                                   \
   }                                                                                       \
                                                                                           \
-  const Teuchos::RCP<const Epetra_Map>& name##_map() const { return Map(pos); }           \
+  const std::shared_ptr<const Epetra_Map>& name##_map() const { return Map(pos); }        \
                                                                                           \
   bool name##_relevant() const { return name##_map()->NumGlobalElements() != 0; }         \
                                                                                           \
@@ -317,30 +318,30 @@ namespace Core::LinAlg
     /** \brief  constructor
      *
      *  Calls setup() from known maps */
-    MapExtractor(const Epetra_Map& fullmap, Teuchos::RCP<const Epetra_Map> condmap,
-        Teuchos::RCP<const Epetra_Map> othermap);
+    MapExtractor(const Epetra_Map& fullmap, std::shared_ptr<const Epetra_Map> condmap,
+        std::shared_ptr<const Epetra_Map> othermap);
 
     /** \brief constructor
      *
      *  Calls setup() to create non-overlapping othermap/condmap which is complementary
      *  to condmap/othermap with respect to fullmap depending on boolean 'iscondmap'  */
-    MapExtractor(const Epetra_Map& fullmap,         //< full map
-        Teuchos::RCP<const Epetra_Map> partialmap,  //< partial map, ie condition or other map
-        bool iscondmap = true                       //< true, if partialmap is condition map
+    MapExtractor(const Epetra_Map& fullmap,            //< full map
+        std::shared_ptr<const Epetra_Map> partialmap,  //< partial map, ie condition or other map
+        bool iscondmap = true                          //< true, if partialmap is condition map
     );
 
     /** \name Setup */
     //@{
 
     /// setup from known maps
-    void setup(const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& condmap,
-        const Teuchos::RCP<const Epetra_Map>& othermap);
+    void setup(const Epetra_Map& fullmap, const std::shared_ptr<const Epetra_Map>& condmap,
+        const std::shared_ptr<const Epetra_Map>& othermap);
 
     /// setup creates non-overlapping othermap/condmap which is complementary to condmap/othermap
     /// with respect to fullmap depending on boolean 'iscondmap'
     /// \author bborn
     /// \date 10/08
-    void setup(const Epetra_Map& fullmap, const Teuchos::RCP<const Epetra_Map>& partialmap,
+    void setup(const Epetra_Map& fullmap, const std::shared_ptr<const Epetra_Map>& partialmap,
         bool iscondmap = true);
 
     //@}

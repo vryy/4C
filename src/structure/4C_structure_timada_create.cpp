@@ -21,43 +21,43 @@ FOUR_C_NAMESPACE_OPEN
 
 /*======================================================================*/
 /* create auxiliary time integration scheme */
-Teuchos::RCP<Solid::TimAda> Solid::tim_ada_create(
+std::shared_ptr<Solid::TimAda> Solid::tim_ada_create(
     const Teuchos::ParameterList& ioflags, const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdyn, const Teuchos::ParameterList& xparams,
     const Teuchos::ParameterList& tap,  //!< adaptive input flags
-    Teuchos::RCP<Solid::TimInt> tis     //!< marching time integrator
+    std::shared_ptr<Solid::TimInt> tis  //!< marching time integrator
 )
 {
-  Teuchos::RCP<Solid::TimAda> sta = Teuchos::null;
+  std::shared_ptr<Solid::TimAda> sta = nullptr;
 
   // auxiliary time integrator
   switch (Teuchos::getIntegralValue<Inpar::Solid::TimAdaKind>(tap, "KIND"))
   {
     case Inpar::Solid::timada_kind_none:
       // No adaptivity in time
-      sta = Teuchos::null;
+      sta = nullptr;
       break;
 
     case Inpar::Solid::timada_kind_zienxie:
       // Zienkiewicz-Xie error indicator for generalised-alpha
-      sta = Teuchos::make_rcp<Solid::TimAdaZienXie>(timeparams, tap, tis);
+      sta = std::make_shared<Solid::TimAdaZienXie>(timeparams, tap, tis);
       break;
 
     case Inpar::Solid::timada_kind_ab2:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::make_rcp<Solid::TimAdaJoint<Solid::TimIntAB2>>(
+      sta = std::make_shared<Solid::TimAdaJoint<Solid::TimIntAB2>>(
           ioflags, timeparams, sdyn, xparams, tap, tis);
       break;
 
     case Inpar::Solid::timada_kind_expleuler:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::make_rcp<Solid::TimAdaJoint<Solid::TimIntExplEuler>>(
+      sta = std::make_shared<Solid::TimAdaJoint<Solid::TimIntExplEuler>>(
           ioflags, timeparams, sdyn, xparams, tap, tis);
       break;
 
     case Inpar::Solid::timada_kind_centraldiff:
       // Adams-Bashforth 2nd order
-      sta = Teuchos::make_rcp<Solid::TimAdaJoint<Solid::TimIntCentrDiff>>(
+      sta = std::make_shared<Solid::TimAdaJoint<Solid::TimIntCentrDiff>>(
           ioflags, timeparams, sdyn, xparams, tap, tis);
       break;
 

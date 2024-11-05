@@ -70,14 +70,14 @@ namespace Discret
 
 
       //! evaluate material
-      void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void materials(const std::shared_ptr<const Core::Mat::Material>
+                         material,  //!< pointer to current material
+          const int k,              //!< id of current scalar
+          double& densn,            //!< density at t_(n)
+          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,           //!< density at t_(n+alpha_M)
+          double& visc,             //!< fluid viscosity
+          const int iquad = -1      //!< id of current gauss point (default = -1)
           ) override;
 
 
@@ -102,8 +102,8 @@ namespace Discret
 
 
       //! Set advanced reaction terms and derivatives
-      virtual void set_advanced_reaction_terms(const int k,       //!< index of current scalar
-          const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
+      virtual void set_advanced_reaction_terms(const int k,          //!< index of current scalar
+          const std::shared_ptr<Mat::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
       );
 
@@ -117,9 +117,9 @@ namespace Discret
       virtual const double* get_gp_coord() const { return gpcoord_; }
 
       //! get reaction manager for advanced reaction
-      Teuchos::RCP<ScaTraEleReaManagerAdvReac> rea_manager()
+      std::shared_ptr<ScaTraEleReaManagerAdvReac> rea_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
+        return std::static_pointer_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
       };
 
      private:

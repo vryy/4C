@@ -43,10 +43,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntRedModels(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntRedModels(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
 
     /*!
@@ -101,8 +101,9 @@ namespace FLD
     \brief Insert Womersley condition
 
     */
-    void insert_volumetric_surface_flow_cond_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> res) override;
+    void insert_volumetric_surface_flow_cond_vector(
+        std::shared_ptr<Core::LinAlg::Vector<double>> vel,
+        std::shared_ptr<Core::LinAlg::Vector<double>> res) override;
 
     /// prepare AVM3-based scale separation
     void avm3_preparation() override;
@@ -114,7 +115,7 @@ namespace FLD
     \brief Additional function for RedModels in linear_relaxation_solve
 
     */
-    void custom_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> relax) override;
+    void custom_solve(std::shared_ptr<Core::LinAlg::Vector<double>> relax) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
@@ -137,28 +138,28 @@ namespace FLD
 
    protected:
     /// bio related special (in/outflow) traction velocity component adder
-    Teuchos::RCP<Utils::TotalTractionCorrector> traction_vel_comp_adder_bc_;
+    std::shared_ptr<Utils::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
     /// bio related, 3D to reduced-D coupling
-    Teuchos::RCP<Utils::FluidCouplingWrapperBase> coupled3D_redDbc_art_;
+    std::shared_ptr<Utils::FluidCouplingWrapperBase> coupled3D_redDbc_art_;
 
     /// 1D arterial network time integration
-    Teuchos::RCP<Adapter::ArtNet> ART_timeInt_;
+    std::shared_ptr<Adapter::ArtNet> ART_timeInt_;
 
     /// bio related, 3D to reduced-D coupling
-    Teuchos::RCP<Utils::FluidCouplingWrapperBase> coupled3D_redDbc_airways_;
+    std::shared_ptr<Utils::FluidCouplingWrapperBase> coupled3D_redDbc_airways_;
 
     /// 1D arterial network time integration
-    Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airway_imp_timeInt_;
+    std::shared_ptr<Airway::RedAirwayImplicitTimeInt> airway_imp_timeInt_;
 
     /// bio related special (in/outflow) boundaries
-    Teuchos::RCP<Utils::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
+    std::shared_ptr<Utils::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
 
     /// maps for womersley flow profile which is applied as a Dirichlet condition
-    Teuchos::RCP<Epetra_Map> vol_surf_flow_bc_maps_;
+    std::shared_ptr<Epetra_Map> vol_surf_flow_bc_maps_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<FLD::Utils::VolumetricFlowMapExtractor> vol_flow_rates_bc_extractor_;
+    std::shared_ptr<FLD::Utils::VolumetricFlowMapExtractor> vol_flow_rates_bc_extractor_;
 
     /// flag for potential 3D Reduced_D coupling
     bool strong_redD_3d_coupling_;

@@ -43,9 +43,9 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
     virtual bool evaluate_force_stiff(const Core::LinAlg::Vector<double>& displacement_vector,
-        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> me_force_ptr);
+        std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> me_stiff_ptr,
+        std::shared_ptr<Core::LinAlg::Vector<double>> me_force_ptr);
 
     //! Evaluate the matrices of the saddle-point system
     virtual void evaluate_coupling_terms(Solid::TimeInt::BaseDataGlobalState& gstate);
@@ -61,14 +61,14 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
    private:
     //! Colum Map
-    Teuchos::RCP<Epetra_Map> n_condition_map_;
+    std::shared_ptr<Epetra_Map> n_condition_map_;
 
     //! Penalty parameter
     double penalty_parameter_;
 
    protected:
     //! Vector containing all multipoint constraint and related constraint equation objects
-    std::vector<Teuchos::RCP<MultiPointConstraintEquationBase>> listMPCs_;
+    std::vector<std::shared_ptr<MultiPointConstraintEquationBase>> listMPCs_;
 
     //! Pointer to the structural stiffness matrix \f$ K_{sys} \f$
     Core::LinAlg::SparseMatrix* stiff_ptr_;
@@ -77,19 +77,19 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     enum Inpar::RveMpc::EnforcementStrategy strategy_ = Inpar::RveMpc::EnforcementStrategy::penalty;
 
     //! Pointer to the discretization
-    Teuchos::RCP<const Core::FE::Discretization> discret_ptr_ = Teuchos::null;
+    std::shared_ptr<const Core::FE::Discretization> discret_ptr_ = nullptr;
 
     //! System Matrix \f$ Q_{dd} \f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_dd_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Q_dd_ = nullptr;
 
     //! System Matrix \f$ Q_{dL} \f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_dL_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Q_dL_ = nullptr;
 
     //! System Matrix \f$ Q_{Ld} \f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_Ld_ = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Q_Ld_ = nullptr;
 
     //! coupling conditions evaluated at current displacements
-    Teuchos::RCP<Core::LinAlg::Vector<double>> constraint_vector_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> constraint_vector_;
   };
 
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR

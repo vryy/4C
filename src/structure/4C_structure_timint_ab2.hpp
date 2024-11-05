@@ -43,10 +43,10 @@ namespace Solid
         const Teuchos::ParameterList& sdynparams,        //!< input parameters
         const Teuchos::ParameterList& xparams,           //!< extra flags
         // const Teuchos::ParameterList& ab2params,  //!< AB2 flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::LinAlg::Solver> contactsolver,    //!< the solver for contact meshtying
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+        std::shared_ptr<Core::FE::Discretization> actdis,     //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,         //!< the solver
+        std::shared_ptr<Core::LinAlg::Solver> contactsolver,  //!< the solver for contact meshtying
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Copy constructor
@@ -74,8 +74,8 @@ namespace Solid
     \date 08/16
     \author rauch  */
     void init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
-        const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+        const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+        std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -152,20 +152,20 @@ namespace Solid
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fextn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_new() override
     {
       FOUR_C_THROW("FextNew() not available in AB2");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! Read and set restart for forces
     void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -173,15 +173,15 @@ namespace Solid
    protected:
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;   //!< external force
-                                                         //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;   //!< internal force
-                                                         //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fviscn_;  //!< Rayleigh viscous forces
-                                                         //!< \f$C \cdot V_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcmtn_;   //!< contact or meshtying forces
-                                                         //!< \f$F_{cmt;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>> fextn_;   //!< external force
+                                                            //!< \f$F_{int;n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;   //!< internal force
+                                                            //!< \f$F_{int;n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fviscn_;  //!< Rayleigh viscous forces
+                                                            //!< \f$C \cdot V_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fcmtn_;   //!< contact or meshtying forces
+                                                            //!< \f$F_{cmt;n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         frimpn_;  //!< time derivative of
                   //!< linear momentum
                   //!< (temporal rate of impulse)

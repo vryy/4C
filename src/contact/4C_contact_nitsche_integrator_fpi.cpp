@@ -20,7 +20,7 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
     : IntegratorNitschePoro(params, eletype, comm), ele_contact_state_(-2)
 {
   if (imortar_.isParameter("XFluidContactComm"))
-    xf_c_comm_ = imortar_.get<Teuchos::RCP<XFEM::XFluidContactComm>>("XFluidContactComm");
+    xf_c_comm_ = imortar_.get<std::shared_ptr<XFEM::XFluidContactComm>>("XFluidContactComm");
   else
     FOUR_C_THROW("Couldn't find XFluidContactComm!");
 }
@@ -29,7 +29,7 @@ CONTACT::IntegratorNitscheFpi::IntegratorNitscheFpi(
  *----------------------------------------------------------------------*/
 void CONTACT::IntegratorNitscheFpi::integrate_deriv_ele_3d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-    const Teuchos::RCP<Mortar::ParamsInterface>& cparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& cparams_ptr)
 {
   auto* csele = dynamic_cast<CONTACT::Element*>(&sele);
   if (!csele) FOUR_C_THROW("Could cast to Contact Element!");

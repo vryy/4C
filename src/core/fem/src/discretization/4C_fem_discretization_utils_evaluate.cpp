@@ -18,11 +18,12 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector, const Epetra_Map* col_ele_map)
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
+    const Epetra_Map* col_ele_map)
 {
-  std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>> systemmatrices(2, Teuchos::null);
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> systemvectors(3, Teuchos::null);
+  std::vector<std::shared_ptr<Core::LinAlg::SparseOperator>> systemmatrices(2, nullptr);
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> systemvectors(3, nullptr);
 
   systemmatrices[0] = systemmatrix;
   systemvectors[0] = systemvector;
@@ -33,8 +34,8 @@ void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::Param
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::ParameterList& eparams,
-    std::vector<Teuchos::RCP<Core::LinAlg::SparseOperator>>& systemmatrices,
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& systemvectors,
+    std::vector<std::shared_ptr<Core::LinAlg::SparseOperator>>& systemmatrices,
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& systemvectors,
     const Epetra_Map* col_ele_map)
 {
   FOUR_C_ASSERT(systemmatrices.size() <= 2,
@@ -44,8 +45,8 @@ void Core::FE::Utils::evaluate(Core::FE::Discretization& discret, Teuchos::Param
       "Currently a maximum number of three "
       "system-vectors is supported!");
 
-  if (systemmatrices.size() < 2) systemmatrices.resize(2, Teuchos::null);
-  if (systemvectors.size() < 3) systemvectors.resize(3, Teuchos::null);
+  if (systemmatrices.size() < 2) systemmatrices.resize(2, nullptr);
+  if (systemvectors.size() < 3) systemvectors.resize(3, nullptr);
 
   Core::FE::AssembleStrategy strategy(0, 0, systemmatrices[0], systemmatrices[1], systemvectors[0],
       systemvectors[1], systemvectors[2]);

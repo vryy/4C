@@ -15,7 +15,8 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -93,7 +94,7 @@ namespace FLD
     \brief Get current velnp for meshtying, since it may have changed
 
     */
-    void get_current_velnp(Teuchos::RCP<Core::LinAlg::Vector<double>>);
+    void get_current_velnp(std::shared_ptr<Core::LinAlg::Vector<double>>);
 
     /*!
     \brief Include current quantities in the time
@@ -101,7 +102,7 @@ namespace FLD
 
     Include current quantities in the time
     averaging procedure. The velnp parameters with
-    the default of Teuchos::null can be used in
+    the default of nullptr can be used in
     case:
     1. discretmatchingvelnp: the discretization has a varying
                              number of dofs.
@@ -151,7 +152,7 @@ namespace FLD
     \brief Provide access to scalar transport field
 
     */
-    void add_scatra_field(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_timeint);
+    void add_scatra_field(std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_timeint);
 
     /*!
     \brief   Write (dump) the scatra-specific mean fields to the result file
@@ -165,7 +166,7 @@ namespace FLD
     \brief remote access method to general mean statistics manager
 
     */
-    Teuchos::RCP<TurbulenceStatisticsGeneralMean> get_turbulence_statistics_general_mean() const
+    std::shared_ptr<TurbulenceStatisticsGeneralMean> get_turbulence_statistics_general_mean() const
     {
       return statistics_general_mean_;
     }
@@ -192,21 +193,21 @@ namespace FLD
     int dumperiod_;
 
     //! the fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
     //! the scatra discretization
-    Teuchos::RCP<Core::FE::Discretization> scatradis_;
+    std::shared_ptr<Core::FE::Discretization> scatradis_;
 
     //! parameterlist of the discretization including time params,
     //! stabilization params and turbulence sublist
-    Teuchos::RCP<Teuchos::ParameterList> params_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
     //! parameterlist of the scatra discretization including time params,
     //! stabilization params and turbulence sublist
-    Teuchos::RCP<Teuchos::ParameterList> scatraparams_;
+    std::shared_ptr<Teuchos::ParameterList> scatraparams_;
     //! since model parameters (Prt, Csgs, etc.) are recomputed during
     //! simulation and change their values, we need a pointer to this
     //! list and cannot use a copy stored in scatraparams_
-    Teuchos::RCP<Teuchos::ParameterList> scatraextraparams_;
-    Teuchos::RCP<Teuchos::ParameterList> scatratimeparams_;
+    std::shared_ptr<Teuchos::ParameterList> scatraextraparams_;
+    std::shared_ptr<Teuchos::ParameterList> scatratimeparams_;
 
     //! parameterlist specially designed for the evaluation of
     //! gausspoint statistics
@@ -216,40 +217,40 @@ namespace FLD
     bool alefluid_;
 
     //! all my solution vectors needed for element evaluation
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myaccnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myaccn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myaccam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myaccnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myaccn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myaccam_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myvelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myveln_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myvelaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myvelaf_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myhist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myhist_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myscaaf_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myscaam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myscaaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myscaam_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mydispnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mydispn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mydispnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mydispn_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mygridvelaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mygridvelaf_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myforce_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myforce_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myfsvelaf_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myfsscaaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myfsvelaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myfsscaaf_;
     // xwall object is required for evaluating inner element planes of channel
-    Teuchos::RCP<FLD::XWall> myxwall_;
+    std::shared_ptr<FLD::XWall> myxwall_;
 
-    Teuchos::RCP<FLD::Utils::StressManager> mystressmanager_;
+    std::shared_ptr<FLD::Utils::StressManager> mystressmanager_;
 
     //! scatra result vector (defined on the scatra dofrowmap!)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myphinp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myphiaf_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myphiam_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myfsphi_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myscatrahist_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> myphidtam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myphinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myphiaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myphiam_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myfsphi_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myscatrahist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> myphidtam_;
 
     //! specifies the special flow
     enum SpecialFlow
@@ -299,34 +300,34 @@ namespace FLD
     //! name of statistics output file, despite the ending
     const std::string statistics_outfilename_;
 
-    Teuchos::RCP<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
+    std::shared_ptr<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
 
     //! turbulence statistics for turbulent channel flow
-    Teuchos::RCP<TurbulenceStatisticsCha> statistics_channel_;
+    std::shared_ptr<TurbulenceStatisticsCha> statistics_channel_;
 
     //! turbulence statistics for a rotating circular cylinder
-    Teuchos::RCP<TurbulenceStatisticsCcy> statistics_ccy_;
+    std::shared_ptr<TurbulenceStatisticsCcy> statistics_ccy_;
 
     //! turbulence statistics for lid-driven cavity
-    Teuchos::RCP<TurbulenceStatisticsLdc> statistics_ldc_;
+    std::shared_ptr<TurbulenceStatisticsLdc> statistics_ldc_;
 
     //! turbulence statistics for backward-facing step
-    Teuchos::RCP<TurbulenceStatisticsBfs> statistics_bfs_;
+    std::shared_ptr<TurbulenceStatisticsBfs> statistics_bfs_;
 
     //! turbulence statistics for periodic hill
-    Teuchos::RCP<TurbulenceStatisticsPh> statistics_ph_;
+    std::shared_ptr<TurbulenceStatisticsPh> statistics_ph_;
 
     //! turbulence statistics for blood fda flow
-    Teuchos::RCP<TurbulenceStatisticsBfda> statistics_bfda_;
+    std::shared_ptr<TurbulenceStatisticsBfda> statistics_bfda_;
 
     //! turbulence statistics for square cylinder
-    Teuchos::RCP<TurbulenceStatisticsSqc> statistics_sqc_;
+    std::shared_ptr<TurbulenceStatisticsSqc> statistics_sqc_;
 
     //! turbulence statistics for homogeneous isotropic turbulence
-    Teuchos::RCP<TurbulenceStatisticsHit> statistics_hit_;
+    std::shared_ptr<TurbulenceStatisticsHit> statistics_hit_;
 
     //! turbulence statistics for Taylor-Green Vortex
-    Teuchos::RCP<TurbulenceStatisticsTgv> statistics_tgv_;
+    std::shared_ptr<TurbulenceStatisticsTgv> statistics_tgv_;
 
   };  // end class turbulence_statistic_manager
 

@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 int CONSTRAINTS::ConstraintDofSet::assign_degrees_of_freedom(
-    const Teuchos::RCP<Core::FE::Discretization> dis, const int ndofs, const int start)
+    const std::shared_ptr<Core::FE::Discretization> dis, const int ndofs, const int start)
 {
   // A definite offset is currently not supported.
   if (start != 0) FOUR_C_THROW("right now user specified dof offsets are not supported");
@@ -50,7 +50,7 @@ int CONSTRAINTS::ConstraintDofSet::assign_degrees_of_freedom(
   for (int i = 0; i < dofrowmap.NumMyElements(); i++) gids.push_back(dofrowmap.GID(i));
 
   // dofrowmap with index base = 0
-  dofrowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, gids.size(), gids.data(), 0, dis->get_comm());
+  dofrowmap_ = std::make_shared<Epetra_Map>(-1, gids.size(), gids.data(), 0, dis->get_comm());
 
   return count;
 }

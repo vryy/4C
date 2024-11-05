@@ -2049,8 +2049,8 @@ void test_hex8quad4selfcut42()
   std::vector<double> dirdivVol;
 
   Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -4210,15 +4210,15 @@ void test_hex8quad4selfcut71()
   std::vector<double> tessVol, momFitVol, dirDivVol;
 
   Cut::Mesh mesh = intersection.normal_mesh();
-  const std::list<Teuchos::RCP<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  const std::list<std::shared_ptr<Cut::VolumeCell>>& other_cells = mesh.volume_cells();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
     tessVol.push_back(vc->volume());
   }
 
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;
@@ -4226,7 +4226,7 @@ void test_hex8quad4selfcut71()
     momFitVol.push_back(vc->volume());
   }
 
-  for (std::list<Teuchos::RCP<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<std::shared_ptr<Cut::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     Cut::VolumeCell* vc = &**i;

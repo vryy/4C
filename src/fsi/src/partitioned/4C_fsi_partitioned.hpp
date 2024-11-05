@@ -19,7 +19,8 @@
 #include <NOX.H>
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Required.H>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -58,7 +59,7 @@ namespace FSI
    *
    * Inside the time loop the interface problem is solved using NOX. To
    * do so Timeloop() needs to know an object which defines the nonlinear
-   * residual of the FSI problem. This is always a Teuchos::RCP to the
+   * residual of the FSI problem. This is always a std::shared_ptr to the
    * DirichletNeumannCoupling object itself!
    *
    * So the second part of this class consists of the interface residual
@@ -119,10 +120,10 @@ namespace FSI
    protected:
     //! @name Transfer helpers
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) override;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_fluid(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_struct(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) override;
 
     //@}
 
@@ -133,19 +134,19 @@ namespace FSI
         const FillType fillFlag);
 
     /// interface fluid operator
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag);
 
     /// interface structural operator
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag);
 
     //@}
 
     //! @name Encapsulation of interface unknown
     /// default is displacement, but subclasses might change that
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess();
 
     //@}
 
@@ -168,20 +169,20 @@ namespace FSI
      *  - [2] U Kuettler, Effiziente Loesungsverfahren fuer Fluid-Struktur-Interaktions-Probleme,
      *    PhD-Thesis, 2009
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interface_velocity(
+    std::shared_ptr<Core::LinAlg::Vector<double>> interface_velocity(
         const Core::LinAlg::Vector<double>& idispnp) const;
 
     /// current interface displacements
     /*!
       Extract structural displacement at t(n+1)
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interface_disp();
+    std::shared_ptr<Core::LinAlg::Vector<double>> interface_disp();
 
     /// current interface forces
     /*!
       Extract fluid force at t(n+1)
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interface_force();
+    std::shared_ptr<Core::LinAlg::Vector<double>> interface_force();
 
     //@}
 
@@ -189,7 +190,7 @@ namespace FSI
     virtual void create_status_test(Teuchos::ParameterList& nlParams,
         Teuchos::RCP<::NOX::Epetra::Group> grp, Teuchos::RCP<::NOX::StatusTest::Combo> converged);
 
-    Teuchos::RCP<Utils::DebugWriter> my_debug_writer() const { return debugwriter_; }
+    std::shared_ptr<Utils::DebugWriter> my_debug_writer() const { return debugwriter_; }
 
     /// return coupsfm_
     Coupling::Adapter::CouplingMortar& structure_fluid_coupling_mortar();
@@ -204,10 +205,10 @@ namespace FSI
     virtual void extract_previous_interface_solution();
 
     /// interface displacement from time step begin
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispn_;
 
     /// interface velocity from time step begin
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iveln_;
 
     /// setup list with default parameters
     virtual void set_default_parameters(
@@ -227,7 +228,7 @@ namespace FSI
         Teuchos::ParameterList& nlParams, Teuchos::RCP<::NOX::Epetra::Group> grp);
 
     //! connection of interface dofs for finite differences
-    Teuchos::RCP<Epetra_CrsGraph> raw_graph_;
+    std::shared_ptr<Epetra_CrsGraph> raw_graph_;
 
     //! counters on how many times the residuum was called in a time step
     /*!
@@ -245,14 +246,14 @@ namespace FSI
     /*!
       \warning This variable is only valid during when the time loop runs.
      */
-    Teuchos::RCP<::NOX::Utils> utils_;
+    std::shared_ptr<::NOX::Utils> utils_;
 
    protected:
     int mfresitemax_;
 
 
     /// coupling of structure and fluid at the interface, with mortar.
-    Teuchos::RCP<Coupling::Adapter::CouplingMortar> coupsfm_;
+    std::shared_ptr<Coupling::Adapter::CouplingMortar> coupsfm_;
 
     /// nodes at the fluid-structure interface match
     bool matchingnodes_;
@@ -261,7 +262,7 @@ namespace FSI
     Teuchos::ParameterList noxparameterlist_;
 
     /// special debugging output
-    Teuchos::RCP<Utils::DebugWriter> debugwriter_;
+    std::shared_ptr<Utils::DebugWriter> debugwriter_;
   };
 
 }  // namespace FSI

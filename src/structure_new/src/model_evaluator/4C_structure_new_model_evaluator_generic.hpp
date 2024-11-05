@@ -12,7 +12,7 @@
 
 #include "4C_inpar_structure.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 // forward declarations
 class Epetra_Map;
@@ -102,11 +102,11 @@ namespace Solid
        * @param timint_ptr
        * @param[in] dof_offset
        */
-      virtual void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-          const Teuchos::RCP<Solid::Integrator>& int_ptr,
-          const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset);
+      virtual void init(const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+          const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+          const std::shared_ptr<Solid::Integrator>& int_ptr,
+          const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr, const int& dof_offset);
 
       //! setup class variables
       virtual void setup() = 0;
@@ -346,7 +346,7 @@ namespace Solid
       virtual void evaluate_jacobian_contributions_from_element_level_for_ptc(){};
       // assemble the element contributions
       virtual void assemble_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n){};
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n){};
 
       //! Update the element by end of the time step
       virtual void update_step_element() = 0;
@@ -437,25 +437,26 @@ namespace Solid
       //! @name Accessors to model specific things
       //! @{
       //! Returns a pointer to the model specific dof row map
-      virtual Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const = 0;
+      virtual std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const = 0;
 
       /*! Returns a pointer to the current model solution vector (usually the
        *  Lagrange multiplier vector) */
-      virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const = 0;
+      virtual std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr()
+          const = 0;
 
       /*! Returns a pointer to the model solution vector of the last time step
        *  (usually the Lagrange multiplier vector) */
-      virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      virtual std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const = 0;
 
       /// access the current external load increment
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_fext_incr() const;
+      std::shared_ptr<Core::LinAlg::Vector<double>> get_fext_incr() const;
 
       //! Get the mechanical stress state vector (read access)
-      [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>>
+      [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>>
       get_mechanical_stress_state() const
       {
-        return Teuchos::null;
+        return nullptr;
       }
 
       //! @}
@@ -499,23 +500,23 @@ namespace Solid
       //! @{
       //! Returns the model evaluator data container
       Solid::ModelEvaluator::Data& eval_data();
-      Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr();
+      std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr();
 
       //! Returns the global state data container
       Solid::TimeInt::BaseDataGlobalState& global_state();
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
 
       //! Returns the global input/output data container
       Solid::TimeInt::BaseDataIO& global_in_output();
-      Teuchos::RCP<Solid::TimeInt::BaseDataIO> global_in_output_ptr();
+      std::shared_ptr<Solid::TimeInt::BaseDataIO> global_in_output_ptr();
 
       //! Returns the (structural) discretization
       Core::FE::Discretization& discret();
-      Teuchos::RCP<Core::FE::Discretization>& discret_ptr();
+      std::shared_ptr<Core::FE::Discretization>& discret_ptr();
 
       //! Returns the underlying Solid::Integrator object
       Solid::Integrator& integrator();
-      Teuchos::RCP<Solid::Integrator>& integrator_ptr();
+      std::shared_ptr<Solid::Integrator>& integrator_ptr();
 
       const int& dof_offset() const;
       //! @}
@@ -528,22 +529,22 @@ namespace Solid
 
      private:
       //! pointer to the model evaluator data container
-      Teuchos::RCP<Solid::ModelEvaluator::Data> eval_data_ptr_;
+      std::shared_ptr<Solid::ModelEvaluator::Data> eval_data_ptr_;
 
       //! pointer to the global state data container
-      Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
       //! pointer to input/ouput data container
-      Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
+      std::shared_ptr<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
       //! pointer to the problem discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
+      std::shared_ptr<Core::FE::Discretization> discret_ptr_;
 
       //! pointer to the structural (time) integrator
-      Teuchos::RCP<Solid::Integrator> int_ptr_;
+      std::shared_ptr<Solid::Integrator> int_ptr_;
 
       //! pointer to the time integrator strategy object
-      Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
+      std::shared_ptr<const Solid::TimeInt::Base> timint_ptr_;
 
       /*! \brief initial dof offset
        *

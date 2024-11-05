@@ -74,7 +74,7 @@ namespace FSI
     void output() override;
 
     /// Set the binning object for the presort strategy in the FBI constraint enforcer
-    void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning);
+    void set_binning(std::shared_ptr<Core::Binstrategy::BinningStrategy> binning);
 
    protected:
     /** \brief interface fluid operator
@@ -85,8 +85,8 @@ namespace FSI
      * \param[in] ivel The interface velocity
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel, const FillType fillFlag) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel, const FillType fillFlag) override;
 
     /** \brief interface structural operator
      *
@@ -96,11 +96,11 @@ namespace FSI
      * \param[in] iforce The interface force
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override;
 
     /// Computes initial guess for the next iteration
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess() override;
 
     /**
      * \brief In here all coupling related quantities are given to the fluid solver
@@ -108,8 +108,8 @@ namespace FSI
      * \param[in] iv In our case, the input parameter is not used!
      * \returns ivel The fluid velocity on the (whole) fluid domain
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_fluid(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) override;
 
     /**
      * \brief In here all coupling related quantities are assembled for the structure solver
@@ -118,8 +118,8 @@ namespace FSI
      * \returns iforce The fsi force acting on the structure
      */
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_struct(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv) override;
 
 
    private:
@@ -127,9 +127,10 @@ namespace FSI
      * \brief Object that allows to capsule the different constraint enforcement strategies and
      * effectively separating it from the actual algorithm
      */
-    Teuchos::RCP<Adapter::FBIConstraintenforcer> constraint_manager_;
+    std::shared_ptr<Adapter::FBIConstraintenforcer> constraint_manager_;
 
-    Teuchos::RCP<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter> visualization_output_writer_;
+    std::shared_ptr<BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter>
+        visualization_output_writer_;
   };
 }  // namespace FSI
 

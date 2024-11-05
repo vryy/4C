@@ -27,22 +27,22 @@ namespace Core::LinearSolver
   class KrylovProjectionPreconditioner : public PreconditionerTypeBase
   {
    public:
-    KrylovProjectionPreconditioner(Teuchos::RCP<PreconditionerTypeBase> preconditioner,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector);
+    KrylovProjectionPreconditioner(std::shared_ptr<PreconditionerTypeBase> preconditioner,
+        std::shared_ptr<Core::LinAlg::KrylovProjector> projector);
 
     void setup(bool create, Epetra_Operator* matrix, Core::LinAlg::MultiVector<double>* x,
         Core::LinAlg::MultiVector<double>* b) override;
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> prec_operator() const override { return p_; }
+    std::shared_ptr<Epetra_Operator> prec_operator() const override { return p_; }
 
    private:
-    Teuchos::RCP<PreconditionerTypeBase> preconditioner_;
+    std::shared_ptr<PreconditionerTypeBase> preconditioner_;
 
     /// Peter's projector object that does the actual work
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;
 
-    Teuchos::RCP<Epetra_Operator> p_;
+    std::shared_ptr<Epetra_Operator> p_;
   };
 }  // namespace Core::LinearSolver
 

@@ -38,12 +38,12 @@ namespace Thermo
     //@{
 
     //! Constructor
-    TimIntExplEuler(const Teuchos::ParameterList& ioparams,  //!< ioflags
-        const Teuchos::ParameterList& tdynparams,            //!< input parameters
-        const Teuchos::ParameterList& xparams,               //!< extra flags
-        Teuchos::RCP<Core::FE::Discretization> actdis,       //!< current discretisation
-        Teuchos::RCP<Core::LinAlg::Solver> solver,           //!< the solver
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< the output
+    TimIntExplEuler(const Teuchos::ParameterList& ioparams,     //!< ioflags
+        const Teuchos::ParameterList& tdynparams,               //!< input parameters
+        const Teuchos::ParameterList& xparams,                  //!< extra flags
+        std::shared_ptr<Core::FE::Discretization> actdis,       //!< current discretisation
+        std::shared_ptr<Core::LinAlg::Solver> solver,           //!< the solver
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -106,30 +106,30 @@ namespace Thermo
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext() override { return fextn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext_new()
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext_new()
     {
       FOUR_C_THROW("FextNew() not available in ExplEuler");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! Read and set restart for forces
     void read_restart_force() override;
 
     //! Write internal and external forces for restart
-    void write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output) override;
+    void write_restart_force(std::shared_ptr<Core::IO::DiscretizationWriter> output) override;
 
     //@}
 
    protected:
     //! @name Global forces at \f$t_{n+1}\f$
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fextn_;  //!< external force
-                                                        //!< \f$F_{int;n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fintn_;  //!< internal force
-                                                        //!< \f$F_{int;n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fextn_;  //!< external force
+                                                           //!< \f$F_{int;n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> fintn_;  //!< internal force
+                                                           //!< \f$F_{int;n+1}\f$
     //@}
 
   };  // class TimIntExplEuler

@@ -45,7 +45,7 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToVolumeGaussPointProjection(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
+        const std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData>& evaluation_data);
 
 
     /**

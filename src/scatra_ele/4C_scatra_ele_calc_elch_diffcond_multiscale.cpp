@@ -46,7 +46,7 @@ Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
           numdofpernode, numscal, disname)
 {
   // replace diffusion manager
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerElchDiffCondMultiScale>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerElchDiffCondMultiScale>(my::numscal_);
 }
 
 /*----------------------------------------------------------------------*
@@ -58,11 +58,11 @@ void Discret::Elements::ScaTraEleCalcElchDiffCondMultiScale<distype,
     const int iquad, const double timefacfac, const double rhsfac)
 {
   // extract multi-scale Newman material
-  const auto elchmat = Teuchos::rcp_dynamic_cast<const Mat::ElchMat>(ele->material());
+  const auto elchmat = std::dynamic_pointer_cast<const Mat::ElchMat>(ele->material());
   const auto elchphase =
-      Teuchos::rcp_dynamic_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
+      std::dynamic_pointer_cast<const Mat::ElchPhase>(elchmat->phase_by_id(elchmat->phase_id(0)));
   const auto newmanmultiscale =
-      Teuchos::rcp_dynamic_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
+      std::dynamic_pointer_cast<Mat::NewmanMultiScale>(elchphase->mat_by_id(elchphase->mat_id(0)));
 
   // initialize variables for micro-scale coupling flux and derivatives of micro-scale coupling flux
   // w.r.t. macro-scale state variables

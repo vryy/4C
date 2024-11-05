@@ -124,7 +124,7 @@ namespace BEAMINTERACTION
     }
 
     //! get the data container for parameters regarding visualization output
-    inline Teuchos::RCP<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    inline std::shared_ptr<const BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
     get_beam_potential_visualization_output_params() const
     {
       throw_error_if_not_init_and_setup();
@@ -148,10 +148,10 @@ namespace BEAMINTERACTION
 
     //! exponents of the summands of a potential law in form of a power law
     // Todo maybe change to integer?
-    Teuchos::RCP<std::vector<double>> pot_law_exponents_;
+    std::shared_ptr<std::vector<double>> pot_law_exponents_;
 
     //! prefactors of the summands of a potential law in form of a power law
-    Teuchos::RCP<std::vector<double>> pot_law_prefactors_;
+    std::shared_ptr<std::vector<double>> pot_law_prefactors_;
 
     //! type of applied potential (volume, surface)
     enum Inpar::BEAMPOTENTIAL::BeamPotentialType potential_type_;
@@ -185,7 +185,7 @@ namespace BEAMINTERACTION
 
     //! data container for input parameters related to visualization output of beam contact at
     //! runtime
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
+    std::shared_ptr<BEAMINTERACTION::BeamToBeamPotentialRuntimeOutputParams>
         params_runtime_visualization_output_btb_potential_;
 
     //! within this length starting from the master beam end point the potential is smoothly

@@ -110,7 +110,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>& derxy, const double& scalefac);
 
       //! evaluate Soret material
-      void mat_soret(const Teuchos::RCP<const Core::Mat::Material> material  //!< Soret material
+      void mat_soret(const std::shared_ptr<const Core::Mat::Material> material  //!< Soret material
       );
 
       //! compute gradient of test function times gradient of shape function
@@ -145,7 +145,7 @@ namespace Discret
       Core::LinAlg::Matrix<nen_, 1> etempnp_;
 
       //! thermo diffusion manager
-      const Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> diffmanagerstithermo_;
+      const std::shared_ptr<ScaTraEleDiffManagerSTIThermo> diffmanagerstithermo_;
     };  // class ScaTraEleSTIThermo
 
 

@@ -105,7 +105,7 @@ void PaSI::PartitionedAlgo::test_results(const Epetra_Comm& comm)
 
   // add particle field specific result test objects
   for (auto& resulttest : allresulttests)
-    if (resulttest) problem->add_field_test(Teuchos::rcp(resulttest));
+    if (resulttest) problem->add_field_test(resulttest);
 
   // perform all tests
   problem->test_all(comm);
@@ -172,9 +172,9 @@ void PaSI::PartitionedAlgo::extract_interface_states()
 }
 
 void PaSI::PartitionedAlgo::set_interface_states(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfdispnp,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfvelnp,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfaccnp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> intfdispnp,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> intfvelnp,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> intfaccnp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PartitionedAlgo::set_interface_states");
 
@@ -187,13 +187,10 @@ void PaSI::PartitionedAlgo::set_interface_states(
       particlewallinterface->get_wall_data_state();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (walldatastate->get_disp_row() == Teuchos::null or
-      walldatastate->get_disp_col() == Teuchos::null)
+  if (walldatastate->get_disp_row() == nullptr or walldatastate->get_disp_col() == nullptr)
     FOUR_C_THROW("wall displacements not initialized!");
-  if (walldatastate->get_vel_col() == Teuchos::null)
-    FOUR_C_THROW("wall velocities not initialized!");
-  if (walldatastate->get_acc_col() == Teuchos::null)
-    FOUR_C_THROW("wall accelerations not initialized!");
+  if (walldatastate->get_vel_col() == nullptr) FOUR_C_THROW("wall velocities not initialized!");
+  if (walldatastate->get_acc_col() == nullptr) FOUR_C_THROW("wall accelerations not initialized!");
 #endif
 
   // export displacement, velocity and acceleration states
@@ -246,7 +243,7 @@ void PaSI::PartitionedAlgo::init_structure_field()
   const Teuchos::ParameterList& params = problem->structural_dynamic_params();
 
   // access the structural discretization
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
 
   // build structure
   if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(params, "INT_STRATEGY") ==
@@ -282,7 +279,7 @@ void PaSI::PartitionedAlgo::init_particle_algorithm()
   std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& initialparticles = problem->particles();
 
   // create and init particle algorithm
-  particlealgorithm_ = Teuchos::make_rcp<PARTICLEALGORITHM::ParticleAlgorithm>(get_comm(), params);
+  particlealgorithm_ = std::make_shared<PARTICLEALGORITHM::ParticleAlgorithm>(get_comm(), params);
   particlealgorithm_->init(initialparticles);
 }
 
@@ -292,8 +289,8 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
   if (not struct_adapterbase_ptr_->is_setup())
   {
     // build and register pasi model evaluator
-    Teuchos::RCP<Solid::ModelEvaluator::Generic> pasi_model_ptr =
-        Teuchos::make_rcp<Solid::ModelEvaluator::PartitionedPASI>();
+    std::shared_ptr<Solid::ModelEvaluator::Generic> pasi_model_ptr =
+        std::make_shared<Solid::ModelEvaluator::PartitionedPASI>();
 
     struct_adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", pasi_model_ptr);
 
@@ -301,15 +298,15 @@ void PaSI::PartitionedAlgo::build_structure_model_evaluator()
     struct_adapterbase_ptr_->setup();
 
     // get wrapper and cast it to specific type
-    structurefield_ = Teuchos::rcp_dynamic_cast<Adapter::PASIStructureWrapper>(
+    structurefield_ = std::dynamic_pointer_cast<Adapter::PASIStructureWrapper>(
         struct_adapterbase_ptr_->structure_field());
 
-    if (structurefield_ == Teuchos::null)
+    if (structurefield_ == nullptr)
       FOUR_C_THROW("No valid pointer to Adapter::PASIStructureWrapper set!");
 
     // set pointer to model evaluator in PASIStructureWrapper
     structurefield_->set_model_evaluator_ptr(
-        Teuchos::rcp_dynamic_cast<Solid::ModelEvaluator::PartitionedPASI>(pasi_model_ptr));
+        std::dynamic_pointer_cast<Solid::ModelEvaluator::PartitionedPASI>(pasi_model_ptr));
   }
 }
 

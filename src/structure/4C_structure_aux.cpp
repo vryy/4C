@@ -63,19 +63,19 @@ void Solid::MapExtractor::setup(
   Core::Conditions::MultiConditionSelector mcs;
   mcs.set_overlapping(overlapping);
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "FSICoupling", 0, ndim));
-  mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
-      dis, "StructAleCoupling", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "FSICoupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "BioGrCoupling", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "StructAleCoupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "AleWear", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "BioGrCoupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "fpsi_coupling", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "AleWear", 0, ndim));
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "IMMERSEDCoupling", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "fpsi_coupling", 0, ndim));
   mcs.add_selector(
-      Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(dis, "ParticleWall", 0, ndim));
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "IMMERSEDCoupling", 0, ndim));
+  mcs.add_selector(
+      std::make_shared<Core::Conditions::NDimConditionSelector>(dis, "ParticleWall", 0, ndim));
 
   mcs.setup_extractor(dis, fullmap, *this);
 }
@@ -83,22 +83,22 @@ void Solid::MapExtractor::setup(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::set<int>> Solid::MapExtractor::conditioned_element_map(
+std::shared_ptr<std::set<int>> Solid::MapExtractor::conditioned_element_map(
     const Core::FE::Discretization& dis) const
 {
-  Teuchos::RCP<std::set<int>> condelements =
+  std::shared_ptr<std::set<int>> condelements =
       Core::Conditions::conditioned_element_map(dis, "FSICoupling");
-  Teuchos::RCP<std::set<int>> condelements2 =
+  std::shared_ptr<std::set<int>> condelements2 =
       Core::Conditions::conditioned_element_map(dis, "StructAleCoupling");
-  Teuchos::RCP<std::set<int>> condelements3 =
+  std::shared_ptr<std::set<int>> condelements3 =
       Core::Conditions::conditioned_element_map(dis, "BioGrCoupling");
-  Teuchos::RCP<std::set<int>> condelements4 =
+  std::shared_ptr<std::set<int>> condelements4 =
       Core::Conditions::conditioned_element_map(dis, "AleWear");
-  Teuchos::RCP<std::set<int>> condelements5 =
+  std::shared_ptr<std::set<int>> condelements5 =
       Core::Conditions::conditioned_element_map(dis, "fpsi_coupling");
-  Teuchos::RCP<std::set<int>> condelements6 =
+  std::shared_ptr<std::set<int>> condelements6 =
       Core::Conditions::conditioned_element_map(dis, "IMMERSEDCoupling");
-  Teuchos::RCP<std::set<int>> condelements7 =
+  std::shared_ptr<std::set<int>> condelements7 =
       Core::Conditions::conditioned_element_map(dis, "ParticleWall");
 
 

@@ -24,24 +24,24 @@ Solid::Nln::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_nln_solver(
+std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_nln_solver(
     const enum Inpar::Solid::NonlinSolTech& nlnSolType) const
 {
-  Teuchos::RCP<Solid::Nln::SOLVER::Generic> nlnSolver = Teuchos::null;
+  std::shared_ptr<Solid::Nln::SOLVER::Generic> nlnSolver = nullptr;
 
   switch (nlnSolType)
   {
     case Inpar::Solid::soltech_newtonfull:
-      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::FullNewton>();
+      nlnSolver = std::make_shared<Solid::Nln::SOLVER::FullNewton>();
       break;
     case Inpar::Solid::soltech_nox_nln:
-      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::Nox>();
+      nlnSolver = std::make_shared<Solid::Nln::SOLVER::Nox>();
       break;
     case Inpar::Solid::soltech_ptc:
-      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::PseudoTransient>();
+      nlnSolver = std::make_shared<Solid::Nln::SOLVER::PseudoTransient>();
       break;
     case Inpar::Solid::soltech_singlestep:
-      nlnSolver = Teuchos::make_rcp<Solid::Nln::SOLVER::SingleStep>();
+      nlnSolver = std::make_shared<Solid::Nln::SOLVER::SingleStep>();
       break;
     case Inpar::Solid::soltech_newtonuzawanonlin:
     case Inpar::Solid::soltech_newtonuzawalin:
@@ -58,7 +58,7 @@ Teuchos::RCP<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::Factory::build_nln
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solver(
+std::shared_ptr<Solid::Nln::SOLVER::Generic> Solid::Nln::SOLVER::build_nln_solver(
     const enum Inpar::Solid::NonlinSolTech& nlnSolType)
 {
   Factory factory;

@@ -52,7 +52,7 @@ namespace Mat
       explicit FluidPoroRelPermeabilityLawConstant(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
       // get permeability
       double get_rel_permeability(const double saturation) const override
@@ -85,7 +85,7 @@ namespace Mat
       explicit FluidPoroRelPermeabilityLawExponent(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
       // get permeability
       double get_rel_permeability(const double saturation) const override

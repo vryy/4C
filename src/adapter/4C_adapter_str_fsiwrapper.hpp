@@ -32,10 +32,10 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit FSIStructureWrapper(Teuchos::RCP<Structure> structure);
+    explicit FSIStructureWrapper(std::shared_ptr<Structure> structure);
 
     /// communication object at the interface
-    virtual Teuchos::RCP<const Solid::MapExtractor> interface() const { return interface_; }
+    virtual std::shared_ptr<const Solid::MapExtractor> interface() const { return interface_; }
 
     /// switch structure field to block matrix in fsi simulations
     virtual void use_block_matrix();
@@ -46,19 +46,19 @@ namespace Adapter
     /// calculation (and matrix free Newton Krylov).
     ///
     /// \note Can only be called after a valid structural solve.
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce);
 
     /// @name Extract interface values
 
     /// extract interface displacements at \f$t_{n}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispn();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispn();
 
     /// extract interface displacements at \f$t_{n+1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispnp();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispnp();
 
     /// Predictor for interface displacements
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> predict_interface_dispnp();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> predict_interface_dispnp();
 
     /// @name Apply interface forces
 
@@ -68,7 +68,7 @@ namespace Adapter
     /// step. The middle values are newly created.
     ///
     /// \note This is not yet the most efficient implementation.
-    virtual void apply_interface_forces(Teuchos::RCP<Core::LinAlg::Vector<double>> iforce);
+    virtual void apply_interface_forces(std::shared_ptr<Core::LinAlg::Vector<double>> iforce);
 
     /// remove as soon as new structure is fully usable ! todo
     /// only 3 nightly tests use this method:
@@ -76,13 +76,13 @@ namespace Adapter
     /// fsi_ow3D_mtr_drt (no solidsh8 possible yet)
     /// constr2D_fsi (newtonlinuzawa not implemented; but really needed ?)
     virtual void apply_interface_forces_temporary_deprecated(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce);
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce);
 
     /// rebuild FSI interface from structure side
     virtual void rebuild_interface();
 
     /// set pointer to model evaluator
-    void set_model_evaluator_ptr(Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> me)
+    void set_model_evaluator_ptr(std::shared_ptr<Solid::ModelEvaluator::PartitionedFSI> me)
     {
       fsi_model_evaluator_ = me;
       return;
@@ -90,13 +90,13 @@ namespace Adapter
 
    protected:
     /// the interface map setup for interface <-> full translation
-    Teuchos::RCP<Solid::MapExtractor> interface_;
+    std::shared_ptr<Solid::MapExtractor> interface_;
 
     /// predictor type
     std::string predictor_;
 
     /// access the fsi model evaluator
-    Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator();
+    std::shared_ptr<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator();
 
    private:
     /// The structural model evaluator object.
@@ -105,7 +105,7 @@ namespace Adapter
     /// a corresponding method in the model evaluator may be
     /// called, if necessary.
     /// See e.g. \ref Adapter::FSIStructureWrapper::RelaxationSolve()
-    Teuchos::RCP<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator_;
+    std::shared_ptr<Solid::ModelEvaluator::PartitionedFSI> fsi_model_evaluator_;
 
   };  // class FSIStructureWrapper
 }  // namespace Adapter

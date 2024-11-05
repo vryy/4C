@@ -38,14 +38,14 @@ std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_fi
   Global::Problem* problem = Global::Problem::instance();
 
   // 1.-Initialization.
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
 
   // possible interaction partners [artelegid; contelegid_1, ... contelegid_n]
   std::map<int, std::set<int>> nearbyelepairs;
 
   if (Global::Problem::instance()->does_exist_dis("artery"))
   {
-    Teuchos::RCP<Core::FE::Discretization> arterydis = Teuchos::null;
+    std::shared_ptr<Core::FE::Discretization> arterydis = nullptr;
     arterydis = Global::Problem::instance()->get_dis("artery");
 
     // get coupling method
@@ -65,9 +65,9 @@ std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_fi
                                     .get<int>("MAXNUMSEGPERARTELE");
 
     // curr_seg_lengths: defined as element-wise quantity
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
+    std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
     dofsetaux =
-        Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, maxnumsegperele, 0, false);
+        std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, maxnumsegperele, 0, false);
     // add it to artery discretization
     arterydis->add_dof_set(dofsetaux);
 
@@ -90,7 +90,7 @@ std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_fi
     if (!arterydis->filled()) arterydis->fill_complete();
   }
 
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
   if (!structdis->filled()) structdis->fill_complete();
   if (!fluiddis->filled()) fluiddis->fill_complete();
 
@@ -109,9 +109,9 @@ std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_fi
   fluiddis->fill_complete();
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
 
   // assign structure dof set to fluid and save the dofset number
   nds_disp = fluiddis->add_dof_set(structdofset);
@@ -123,8 +123,8 @@ std::map<int, std::set<int>> POROMULTIPHASE::Utils::setup_discretizations_and_fi
     FOUR_C_THROW("unexpected dof sets in structure field");
 
   // build auxiliary dofset for postprocessing solid pressures
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, false);
   nds_solidpressure = fluiddis->add_dof_set(dofsetaux);
   // add it also to the solid field
   structdis->add_dof_set(fluiddis->get_dof_set_proxy(nds_solidpressure));
@@ -143,8 +143,8 @@ void POROMULTIPHASE::Utils::assign_material_pointers(
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
 
   PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *fluiddis);
 }
@@ -152,20 +152,20 @@ void POROMULTIPHASE::Utils::assign_material_pointers(
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase>
+std::shared_ptr<POROMULTIPHASE::PoroMultiPhase>
 POROMULTIPHASE::Utils::create_poro_multi_phase_algorithm(
     Inpar::POROMULTIPHASE::SolutionSchemeOverFields solscheme,
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
-  Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> algo = Teuchos::null;
+  std::shared_ptr<POROMULTIPHASE::PoroMultiPhase> algo = nullptr;
 
   switch (solscheme)
   {
     case Inpar::POROMULTIPHASE::solscheme_twoway_partitioned:
     {
       // call constructor
-      algo = Teuchos::make_rcp<POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay>(comm, timeparams);
+      algo = std::make_shared<POROMULTIPHASE::PoroMultiPhasePartitionedTwoWay>(comm, timeparams);
       break;
     }
     case Inpar::POROMULTIPHASE::solscheme_twoway_monolithic:
@@ -174,12 +174,12 @@ POROMULTIPHASE::Utils::create_poro_multi_phase_algorithm(
       if (!artery_coupl)
       {
         // call constructor
-        algo = Teuchos::make_rcp<POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay>(comm, timeparams);
+        algo = std::make_shared<POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay>(comm, timeparams);
       }
       else
       {
         // call constructor
-        algo = Teuchos::make_rcp<POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling>(
+        algo = std::make_shared<POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWayArteryCoupling>(
             comm, timeparams);
       }
       break;

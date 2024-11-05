@@ -42,9 +42,9 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
-    : sm_crosslinkink_ptr_(Teuchos::null),
-      spherebeamlinking_params_ptr_(Teuchos::null),
-      visualization_manager_ptr_(Teuchos::null),
+    : sm_crosslinkink_ptr_(nullptr),
+      spherebeamlinking_params_ptr_(nullptr),
+      visualization_manager_ptr_(nullptr),
       random_number_sphere_beam_linking_step_(-1)
 {
 }
@@ -56,7 +56,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
   check_init();
 
   // construct, init and setup data container for crosslinking
-  spherebeamlinking_params_ptr_ = Teuchos::make_rcp<BEAMINTERACTION::SphereBeamLinkingParams>();
+  spherebeamlinking_params_ptr_ = std::make_shared<BEAMINTERACTION::SphereBeamLinkingParams>();
   spherebeamlinking_params_ptr_->init(g_state());
   spherebeamlinking_params_ptr_->setup();
 
@@ -67,7 +67,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::setup()
       discret_ptr(), *spherebeamlinking_params_ptr_);
 
   // build runtime visualization output writer
-  if (g_in_output().get_runtime_vtp_output_params() != Teuchos::null) init_output_runtime();
+  if (g_in_output().get_runtime_vtp_output_params() != nullptr) init_output_runtime();
 
   // set flag
   issetup_ = true;
@@ -84,7 +84,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::post_setup()
 /*-------------------------------------------------------------------------------*
  *-------------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_dependencies(
-    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
+    std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap)
 {
   check_init_setup();
 
@@ -93,7 +93,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_submodel_depend
   for (miter = (*submodelmap).begin(); miter != (*submodelmap).end(); ++miter)
     if (miter->first == Inpar::BEAMINTERACTION::submodel_crosslinking)
       sm_crosslinkink_ptr_ =
-          Teuchos::rcp_dynamic_cast<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking>(
+          std::dynamic_pointer_cast<BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking>(
               miter->second);
 }
 
@@ -114,7 +114,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::reset()
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // get elements
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -187,7 +187,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       for (unsigned int i = 0; i < 2; ++i)
       {
@@ -209,7 +209,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force()
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
       BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
           elegids, eleforce, dummystiff, beam_interaction_data_state_ptr()->get_force_np(),
-          Teuchos::null);
+          nullptr);
     }
   }
 
@@ -248,7 +248,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       for (unsigned int i = 0; i < 2; ++i)
       {
@@ -270,8 +270,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_stiff()
       // assemble the contributions into stiffness matrix class variable
       // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
       BEAMINTERACTION::Utils::fe_assemble_ele_force_stiff_into_system_vector_matrix(discret(),
-          elegids, dummyforce, elestiff, Teuchos::null,
-          beam_interaction_data_state_ptr()->get_stiff());
+          elegids, dummyforce, elestiff, nullptr, beam_interaction_data_state_ptr()->get_stiff());
     }
   }
 
@@ -313,7 +312,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::evaluate_force_stiff
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       for (unsigned int i = 0; i < 2; ++i)
       {
@@ -485,7 +484,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::runtime_output_step_
 {
   check_init_setup();
 
-  if (visualization_manager_ptr_ != Teuchos::null) write_output_runtime();
+  if (visualization_manager_ptr_ != nullptr) write_output_runtime();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -601,7 +600,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::init_output_runtime(
 {
   check_init();
 
-  visualization_manager_ptr_ = Teuchos::make_rcp<Core::IO::VisualizationManager>(
+  visualization_manager_ptr_ = std::make_shared<Core::IO::VisualizationManager>(
       Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
           *Global::Problem::instance()->output_control_file(), g_state().get_time_n()),
@@ -652,7 +651,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::write_output_runtime
     // loop over bonds of current sphere
     for (auto const& ipair : sphere->get_bond_map())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       Discret::Elements::Beam3Base const* beamele =
           dynamic_cast<Discret::Elements::Beam3Base const*>(
@@ -966,7 +965,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::create_beam_to_spher
       // create and initialize objects of beam-to-beam connections
       // Todo introduce enum for type of linkage (only linear Beam3r element possible so far)
       //      and introduce corresponding input parameter
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr =
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr =
           BEAMINTERACTION::BeamLinkPinJointed::create(Inpar::BEAMINTERACTION::truss);
 
       // unique linker id is bspot elegid and locspot id paired
@@ -1030,7 +1029,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
     to_dissolve.reserve(sphere->get_bond_map().size());
     for (auto const& ipair : sphere->get_bond_map())
     {
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // check if linker was set this time step
       if (elepairptr->get_time_link_was_set() == g_state().get_time_np()) continue;
@@ -1055,7 +1054,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::unbind_sphere_beam_b
  *----------------------------------------------------------------------------*/
 void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
     calc_force_dependent_catch_slip_bond_unbind_probability(
-        Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind)
+        std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> linkelepairptr, double& p_unbind)
 {
   check_init_setup();
 
@@ -1142,7 +1141,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::update_linker_length
     for (auto const& ipair : sphere->get_bond_map())
     {
       // get pair object
-      Teuchos::RCP<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
+      std::shared_ptr<BEAMINTERACTION::BeamLinkPinJointed> elepairptr = ipair.second;
 
       // only contract if linker size > sphere radius * factor
       double factor = 1.01;

@@ -44,17 +44,17 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::pre_evaluate(Teuchos::Parame
             la[1].size(), nen_ * numdofpernode_thr);
       }
       // check if you can get the temperature state
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
           discretization.get_state(1, "temperature");
-      if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'.");
+      if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'.");
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double>> nodaltempnp =
-          Teuchos::make_rcp<std::vector<double>>(la[1].lm_.size());
+      std::shared_ptr<std::vector<double>> nodaltempnp =
+          std::make_shared<std::vector<double>>(la[1].lm_.size());
       Core::FE::extract_my_values(*tempnp, *nodaltempnp, la[1].lm_);
 
       // now set the current temperature vector in the parameter list
-      params.set<Teuchos::RCP<std::vector<double>>>("nodal_tempnp", nodaltempnp);
+      params.set<std::shared_ptr<std::vector<double>>>("nodal_tempnp", nodaltempnp);
     }
   }  // initial temperature dependence
 }  // pre_evaluate()
@@ -194,12 +194,12 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1+2, elevec2+3 are not used anyway
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> res =
           discretization.get_state(0, "residual displacement");
 
-      if ((disp == Teuchos::null) or (res == Teuchos::null))
+      if ((disp == nullptr) or (res == nullptr))
         FOUR_C_THROW("Cannot get state vectors 'displacement' and/or residual");
 
       // build the location vector only for the structure field
@@ -219,9 +219,9 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
@@ -271,10 +271,10 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1 only for geometrically nonlinear analysis
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
 
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
@@ -291,9 +291,9 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
@@ -348,10 +348,10 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       // elemat1 only for geometrically nonlinear analysis
 
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
 
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       // build the location vector only for the structure field
       std::vector<double> mydisp((la[0].lm_).size());
@@ -369,9 +369,9 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
@@ -419,14 +419,14 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
     case calc_struct_stress:
     {
       // elemat1+2,elevec1-3 are not used anyway
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
 
       std::vector<double> mydisp((la[0].lm_).size());
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
 
-      Teuchos::RCP<std::vector<char>> couplstressdata;
+      std::shared_ptr<std::vector<char>> couplstressdata;
       Inpar::Solid::StressType iocouplstress;
       if (this->is_params_interface())
       {
@@ -435,7 +435,7 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       }
       else
       {
-        couplstressdata = params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
+        couplstressdata = params.get<std::shared_ptr<std::vector<char>>>("couplstress", nullptr);
         iocouplstress =
             params.get<Inpar::Solid::StressType>("iocouplstress", Inpar::Solid::stress_none);
       }
@@ -455,9 +455,9 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
@@ -546,16 +546,16 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
     //============================================================================
     case calc_struct_update_istep:
     {
-      auto thermoSolid = Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
-      if (thermoSolid != Teuchos::null)
+      auto thermoSolid = std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(material());
+      if (thermoSolid != nullptr)
       {
         std::vector<double> mytempnp(((la[0].lm_).size()) / nsd_, 0.0);
         if (discretization.has_state(1, "temperature"))
         {
           // check if you can get the temperature state
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
               discretization.get_state(1, "temperature");
-          if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+          if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
           // the temperature field has only one dof per node, disregarded by the
           // dimension of the problem
@@ -595,9 +595,9 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       Core::LinAlg::Matrix<numdofperelement_, nen_> stiffmatrix_kdT(elemat1_epetra.values(), true);
       // elemat2,elevec1-3 are not used anyway
       // need current displacement and residual/incremental displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state(0, "displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp((la[0].lm_).size());
       // build the location vector only for the structure field
       Core::FE::extract_my_values(*disp, mydisp, la[0].lm_);
@@ -614,9 +614,9 @@ int Discret::Elements::So3Thermo<So3Ele, distype>::evaluate_coupl_with_thr(
       if (discretization.has_state(1, "temperature"))
       {
         // check if you can get the temperature state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
             discretization.get_state(1, "temperature");
-        if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+        if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
 
         // the temperature field has only one dof per node, disregarded by the
         // dimension of the problem
@@ -892,9 +892,9 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::lin_kd_t_tsi(Core::Elements:
 
     // call material law
 
-    Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
-    if (thermoSolidMaterial != Teuchos::null)
+    std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolidMaterial =
+        std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(material());
+    if (thermoSolidMaterial != nullptr)
     {
       // calculate the nodal strains: strain = B . d
       Core::LinAlg::Matrix<numstr_, 1> strain(false);
@@ -1268,9 +1268,9 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(Core::Elements:
 
     // call material law
 
-    Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
-    if (thermoSolidMaterial != Teuchos::null)
+    std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolidMaterial =
+        std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(material());
+    if (thermoSolidMaterial != nullptr)
     {
       Core::LinAlg::Matrix<numstr_, 1> glstrain(false);
       glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
@@ -1304,8 +1304,8 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::nln_kd_t_tsi(Core::Elements:
       params.set<Core::LinAlg::Matrix<nsd_, nsd_>>("defgrd", defgrd);
       params.set<Core::LinAlg::Matrix<numstr_, 1>>("Cinv_vct", Cinv_vct);
 
-      Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(material(), true);
+      std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(material());
       // get thermal material tangent
       thermoplhyperelast->setup_cthermo(ctemp, defgrd.determinant(), Cinv_vct);
     }  // m_thermoplhyperelast
@@ -1368,9 +1368,9 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::materialize(
 #endif
 
   // backwards compatibility: not all materials use the new interface
-  Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolidMaterial =
-      Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(material(), false);
-  if (thermoSolidMaterial != Teuchos::null)
+  std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolidMaterial =
+      std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(material());
+  if (thermoSolidMaterial != nullptr)
   {
     // new interface already includes temperature terms in stress evaluation
     // no additive splitting into stress and couplstress -> nothing to do here
@@ -1380,14 +1380,14 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::materialize(
   // All materials that have a pure Core::LinAlg::Matrix
   // interface go to the material law here.
   // the old interface does not exist anymore...
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
   switch (mat->material_type())
   {
     // small strain von Mises thermoelastoplastic material
     case Core::Materials::m_thermopllinelast:
     {
-      Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(material(), true);
+      std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(material());
       thrpllinelast->evaluate(*Ntemp, *ctemp, *couplstress);
       return;
       break;
@@ -1402,8 +1402,8 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::materialize(
     // thermo-hyperelasto-plastic material
     case Core::Materials::m_thermoplhyperelast:
     {
-      Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(material(), true);
+      std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(material());
       thermoplhyperelast->evaluate(*Ntemp, *ctemp, *cmat, *couplstress, params);
       return;
       break;
@@ -1433,8 +1433,8 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::compute_ctemp(
     // small strain von Mises thermoelastoplastic material
     case Core::Materials::m_thermopllinelast:
     {
-      Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(material(), true);
+      std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(material());
       return thrpllinelast->setup_cthermo(*ctemp);
       break;
     }
@@ -1449,8 +1449,8 @@ void Discret::Elements::So3Thermo<So3Ele, distype>::compute_ctemp(
     // thermo-hyperelasto-plastic material
     case Core::Materials::m_thermoplhyperelast:
     {
-      Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(material(), true);
+      std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(material());
       Core::LinAlg::Matrix<3, 3> defgrd = params.get<Core::LinAlg::Matrix<3, 3>>("defgrd");
       Core::LinAlg::Matrix<6, 1> Cinv = params.get<Core::LinAlg::Matrix<6, 1>>("Cinv_vct");
       thermoplhyperelast->setup_cthermo(*ctemp, defgrd.determinant(), Cinv);

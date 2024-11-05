@@ -9,14 +9,13 @@
 
 #include "4C_comm_pack_helpers.hpp"
 #include "4C_mat_anisotropy.hpp"
-
-#include <Teuchos_RCP.hpp>
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
 void Mat::BaseAnisotropyExtension::set_anisotropy(Mat::Anisotropy& anisotropy)
 {
-  anisotropy_ = Teuchos::rcpFromRef(anisotropy);
+  anisotropy_ = Core::Utils::shared_ptr_from_ref(anisotropy);
 }
 
 FOUR_C_NAMESPACE_CLOSE

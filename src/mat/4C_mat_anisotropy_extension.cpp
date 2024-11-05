@@ -17,7 +17,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <unsigned int numfib>
 Mat::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension(
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy)
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& stucturalTensorStrategy)
     : fibers_(0),
       fiber_structural_tensors_stress_(0),
       fiber_structural_tensors_(0),
@@ -30,7 +30,7 @@ Mat::FiberAnisotropyExtension<numfib>::FiberAnisotropyExtension()
     : fibers_(0),
       fiber_structural_tensors_stress_(0),
       fiber_structural_tensors_(0),
-      structural_tensor_strategy_(Teuchos::null)
+      structural_tensor_strategy_(nullptr)
 {
 }
 

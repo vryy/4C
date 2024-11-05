@@ -23,8 +23,9 @@ namespace FLD
    \brief Constructor
 
    */
-    FluidDiscretExtractor(Teuchos::RCP<Core::FE::Discretization> actdis,  //! parent discretization
-        const std::string& condition,  //! condition for separation of domain
+    FluidDiscretExtractor(
+        std::shared_ptr<Core::FE::Discretization> actdis,  //! parent discretization
+        const std::string& condition,                      //! condition for separation of domain
         bool yescondition);  //! (unused) bool to distinguish between all nodes having the condition
                              //! and all nodes not having it
 
@@ -35,25 +36,25 @@ namespace FLD
     virtual ~FluidDiscretExtractor() = default;
 
     //! get child discretization
-    Teuchos::RCP<Core::FE::Discretization> get_child_discretization() { return childdiscret_; }
+    std::shared_ptr<Core::FE::Discretization> get_child_discretization() { return childdiscret_; }
     //! get node to node coupling in case of periodic boundary conditions (column and row version)
-    Teuchos::RCP<std::map<int, std::vector<int>>> get_coupled_col_nodes_child_discretization()
+    std::shared_ptr<std::map<int, std::vector<int>>> get_coupled_col_nodes_child_discretization()
     {
       return col_pbcmapmastertoslave_;
     }
-    Teuchos::RCP<std::map<int, std::vector<int>>> get_coupled_row_nodes_child_discretization()
+    std::shared_ptr<std::map<int, std::vector<int>>> get_coupled_row_nodes_child_discretization()
     {
       return row_pbcmapmastertoslave_;
     }
 
    private:
     //! the parent discretization
-    Teuchos::RCP<Core::FE::Discretization> parentdiscret_;
+    std::shared_ptr<Core::FE::Discretization> parentdiscret_;
     //! the child discretization
-    Teuchos::RCP<Core::FE::Discretization> childdiscret_;
+    std::shared_ptr<Core::FE::Discretization> childdiscret_;
     //! periodic boundary condition: node to node coupling (column and row version)
-    Teuchos::RCP<std::map<int, std::vector<int>>> col_pbcmapmastertoslave_;
-    Teuchos::RCP<std::map<int, std::vector<int>>> row_pbcmapmastertoslave_;
+    std::shared_ptr<std::map<int, std::vector<int>>> col_pbcmapmastertoslave_;
+    std::shared_ptr<std::map<int, std::vector<int>>> row_pbcmapmastertoslave_;
   };
 
 }  // namespace FLD

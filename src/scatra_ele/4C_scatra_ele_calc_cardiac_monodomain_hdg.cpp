@@ -22,6 +22,7 @@
 #include "4C_scatra_ele_calc_hdg.hpp"
 #include "4C_scatra_ele_parameter_std.hpp"
 #include "4C_scatra_ele_parameter_timint.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -79,13 +80,13 @@ Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::instance
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_all(
-    Core::Elements::Element* ele,                            //!< the element we are dealing with
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
+    Core::Elements::Element* ele,                               //!< the element we are dealing with
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
 {
-  const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+  const std::shared_ptr<Mat::Myocard>& actmat =
+      std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
   Discret::Elements::ScaTraHDG* hdgele =
       dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
@@ -105,8 +106,8 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
   {
     actmat->reset_diffusion_tensor();
 
-    Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes =
-        Teuchos::make_rcp<Core::FE::ShapeValues<distype>>(1, false, 2 * hdgele->degree());
+    std::shared_ptr<Core::FE::ShapeValues<distype>> shapes =
+        std::make_shared<Core::FE::ShapeValues<distype>>(1, false, 2 * hdgele->degree());
 
     shapes->evaluate(*ele);
 
@@ -147,10 +148,10 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials(
-    Core::Elements::Element* ele,                            //!< the element we are dealing with
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
+    Core::Elements::Element* ele,                               //!< the element we are dealing with
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
 {
   if (distype == Core::FE::CellType::tet4 or distype == Core::FE::CellType::tet10)
     prepare_materials_tet(ele, material, k, difftensor);
@@ -165,13 +166,13 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::prepare_materials_tet(
-    Core::Elements::Element* ele,                            //!< the element we are dealing with
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
+    Core::Elements::Element* ele,                               //!< the element we are dealing with
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseMatrix>> difftensor)
 {
-  const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+  const std::shared_ptr<Mat::Myocard>& actmat =
+      std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
   Discret::Elements::ScaTraHDG* hdgele =
       dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
@@ -235,8 +236,8 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::pre
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
     Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
     Core::LinAlg::SerialDenseVector& ivecnp, Core::LinAlg::SerialDenseMatrix& ivecnpderiv)
 {
@@ -254,13 +255,13 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat_myocard(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
     Core::LinAlg::SerialDenseMatrix& difftensor, Core::LinAlg::SerialDenseVector& ivecn,
     Core::LinAlg::SerialDenseVector& ivecnp, Core::LinAlg::SerialDenseMatrix& ivecnpderiv)
 {
-  const Teuchos::RCP<const Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::Myocard>(material);
+  const std::shared_ptr<const Mat::Myocard>& actmat =
+      std::dynamic_pointer_cast<const Mat::Myocard>(material);
 
   // coordinate of material gauss points
   Core::LinAlg::Matrix<probdim, 1> mat_gp_coord(true);
@@ -327,7 +328,7 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::mat
     else
       deg = 3 * this->shapes_->degree_;
 
-    Teuchos::RCP<Core::FE::GaussPoints> quadrature_(
+    std::shared_ptr<Core::FE::GaussPoints> quadrature_(
         Core::FE::GaussPointCache::instance().create(distype, deg));
     nqpoints = quadrature_->num_points();
 
@@ -412,27 +413,27 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::tim
     const Core::Elements::Element* ele  //!< the element we are dealing with
 )
 {
-  std::vector<Teuchos::RCP<Mat::Myocard>> updatemat;
+  std::vector<std::shared_ptr<Mat::Myocard>> updatemat;
 
   // access the general material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // first, determine the materials which need a time update, i.e. myocard materials
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<Mat::MatList> actmat = Teuchos::rcp_dynamic_cast<Mat::MatList>(material);
+    const std::shared_ptr<Mat::MatList> actmat = std::dynamic_pointer_cast<Mat::MatList>(material);
     if (actmat->num_mat() < this->numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < this->numscal_; ++k)
     {
       const int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       if (singlemat->material_type() == Core::Materials::m_myocard)
       {
         // reference to Teuchos::rcp not possible here, since the material
         // is required to be not const for this application
-        updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(singlemat));
+        updatemat.push_back(std::dynamic_pointer_cast<Mat::Myocard>(singlemat));
       }
     }
   }
@@ -441,12 +442,12 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::tim
   {
     // reference to Teuchos::rcp not possible here, since the material is required to be
     // not const for this application
-    updatemat.push_back(Teuchos::rcp_dynamic_cast<Mat::Myocard>(material));
+    updatemat.push_back(std::dynamic_pointer_cast<Mat::Myocard>(material));
   }
 
   if (updatemat.size() > 0)  // found at least one material to be updated
   {
-    for (unsigned i = 0; i < updatemat.size(); i++) updatemat[i]->update(Teuchos::null, 0.0);
+    for (unsigned i = 0; i < updatemat.size(); i++) updatemat[i]->update(0.0, 0.0);
   }
 
   return;
@@ -466,14 +467,14 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
   if (ele->owner() == discretization.get_comm().MyPID())
   {
     // access the general material
-    Teuchos::RCP<Core::Mat::Material> material = ele->material();
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state =
-        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
+    std::shared_ptr<Core::Mat::Material> material = ele->material();
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> material_internal_state =
+        params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("material_internal_state");
 
     if (material->material_type() == Core::Materials::m_myocard)
     {
-      Teuchos::RCP<Mat::Myocard> material =
-          Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+      std::shared_ptr<Mat::Myocard> material =
+          std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
       for (int k = 0; k < material->get_number_of_internal_state_variables(); ++k)
       {
         double material_state = 0;
@@ -488,7 +489,7 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
       }
     }
 
-    params.set<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(
+    params.set<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(
         "material_internal_state", material_internal_state);
   }
 
@@ -508,21 +509,21 @@ void Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
   if (ele->owner() == discretization.get_comm().MyPID())
   {
     // access the general material
-    Teuchos::RCP<Core::Mat::Material> material = ele->material();
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state =
-        params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("material_internal_state");
+    std::shared_ptr<Core::Mat::Material> material = ele->material();
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> material_internal_state =
+        params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("material_internal_state");
 
     if (material->material_type() == Core::Materials::m_myocard)
     {
-      Teuchos::RCP<Mat::Myocard> material =
-          Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+      std::shared_ptr<Mat::Myocard> material =
+          std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
       for (int k = 0; k < material->get_number_of_internal_state_variables(); ++k)
       {
         int nqpoints = material->get_number_of_gp();
         for (int q = 0; q < nqpoints; ++q)
         {
           auto material_internal_state_component =
-              Teuchos::rcpFromRef((*material_internal_state)(k * nqpoints + q));
+              Core::Utils::shared_ptr_from_ref((*material_internal_state)(k * nqpoints + q));
           material->set_internal_state(k, (*material_internal_state_component)[ele->id()], q);
         }
       }
@@ -557,8 +558,8 @@ int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
         ele  //!< the element we are dealing with
 )
 {
-  const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+  const std::shared_ptr<Mat::Myocard>& actmat =
+      std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
 
   Discret::Elements::ScaTraHDG* hdgele =
       dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
@@ -574,11 +575,13 @@ int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
   else
     degold = 3 * hdgele->degree_old();
 
-  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes = Teuchos::RCP(
-      new Core::FE::ShapeValues<distype>(hdgele->degree_old(), this->usescompletepoly_, deg));
+  std::shared_ptr<Core::FE::ShapeValues<distype>> shapes =
+      std::make_shared<Core::FE::ShapeValues<distype>>(
+          hdgele->degree_old(), this->usescompletepoly_, deg);
 
-  Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_old = Teuchos::RCP(
-      new Core::FE::ShapeValues<distype>(hdgele->degree_old(), this->usescompletepoly_, degold));
+  std::shared_ptr<Core::FE::ShapeValues<distype>> shapes_old =
+      std::make_shared<Core::FE::ShapeValues<distype>>(
+          hdgele->degree_old(), this->usescompletepoly_, degold);
 
   shapes->evaluate(*ele);
   shapes_old->evaluate(*ele);
@@ -654,15 +657,15 @@ int Discret::Elements::ScaTraEleCalcHDGCardiacMonodomain<distype,
         ele  //!< the element we are dealing with
 )
 {
-  const Teuchos::RCP<Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<Mat::Myocard>(ele->material());
+  const std::shared_ptr<Mat::Myocard>& actmat =
+      std::dynamic_pointer_cast<Mat::Myocard>(ele->material());
 
   Discret::Elements::ScaTraHDG* hdgele =
       dynamic_cast<Discret::Elements::ScaTraHDG*>(const_cast<Core::Elements::Element*>(ele));
 
   // polynomial space to get the value of the shape function at the material gauss points
   Core::FE::PolynomialSpaceParams params(distype, hdgele->degree_old(), this->usescompletepoly_);
-  Teuchos::RCP<Core::FE::PolynomialSpace<probdim>> polySpace =
+  std::shared_ptr<Core::FE::PolynomialSpace<probdim>> polySpace =
       Core::FE::PolynomialSpaceCache<probdim>::instance().create(params);
 
   int deg = 0;

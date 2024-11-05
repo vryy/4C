@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 void ssi_drt()
 {
   // 1.- Initialization
-  Teuchos::RCP<SSI::SSIBase> ssi = Teuchos::null;
+  std::shared_ptr<SSI::SSIBase> ssi = nullptr;
   Global::Problem* problem = Global::Problem::instance();
   const Epetra_Comm& comm = problem->get_dis("structure")->get_comm();
 
@@ -61,30 +61,30 @@ void ssi_drt()
     {
       case Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_ScatraToSolid:
       {
-        ssi = Teuchos::make_rcp<SSI::SSIPart1WCScatraToSolid>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart1WCScatraToSolid>(comm, ssiparams);
         isale = false;
       }
       break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_OneWay_SolidToScatra:
-        ssi = Teuchos::make_rcp<SSI::SSIPart1WCSolidToScatra>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart1WCSolidToScatra>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStagg:
-        ssi = Teuchos::make_rcp<SSI::SSIPart2WC>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart2WC>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_ScatraToSolid:
-        ssi = Teuchos::make_rcp<SSI::SSIPart2WCScatraToSolidRelax>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart2WCScatraToSolidRelax>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggFixedRel_SolidToScatra:
-        ssi = Teuchos::make_rcp<SSI::SSIPart2WCSolidToScatraRelax>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart2WCSolidToScatraRelax>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_ScatraToSolid:
-        ssi = Teuchos::make_rcp<SSI::SSIPart2WCScatraToSolidRelaxAitken>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart2WCScatraToSolidRelaxAitken>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_IterStaggAitken_SolidToScatra:
-        ssi = Teuchos::make_rcp<SSI::SSIPart2WCSolidToScatraRelaxAitken>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SSIPart2WCSolidToScatraRelaxAitken>(comm, ssiparams);
         break;
       case Inpar::SSI::SolutionSchemeOverFields::ssi_Monolithic:
-        ssi = Teuchos::make_rcp<SSI::SsiMono>(comm, ssiparams);
+        ssi = std::make_shared<SSI::SsiMono>(comm, ssiparams);
         break;
       default:
         FOUR_C_THROW("unknown coupling algorithm for SSI!");
@@ -127,7 +127,7 @@ void ssi_drt()
         flag_readscatra)
     {
       std::string filename = Teuchos::getNumericStringParameter(ssiparams, "SCATRA_FILENAME");
-      auto inputscatra = Teuchos::make_rcp<Core::IO::InputControl>(filename, comm);
+      auto inputscatra = std::make_shared<Core::IO::InputControl>(filename, comm);
       problem->set_input_control_file(inputscatra);
     }
 

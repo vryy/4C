@@ -175,49 +175,52 @@ namespace SSI
     void read_restart(int restart) override;
 
     //! access to structural field
-    const Teuchos::RCP<Adapter::SSIStructureWrapper>& structure_field() const { return structure_; }
+    const std::shared_ptr<Adapter::SSIStructureWrapper>& structure_field() const
+    {
+      return structure_;
+    }
 
     /// pointer to the underlying structure problem base algorithm
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> structure_base_algorithm() const
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> structure_base_algorithm() const
     {
       return struct_adapterbase_ptr_;
     }
 
     //! access the scalar transport base algorithm
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_base_algorithm() const
+    const std::shared_ptr<Adapter::ScaTraBaseAlgorithm>& scatra_base_algorithm() const
     {
       return scatra_base_algorithm_;
     }
 
     //! access the scalar transport base algorithm on manifolds
-    const Teuchos::RCP<Adapter::ScaTraBaseAlgorithm>& scatra_manifold_base_algorithm() const
+    const std::shared_ptr<Adapter::ScaTraBaseAlgorithm>& scatra_manifold_base_algorithm() const
     {
       return scatra_manifold_base_algorithm_;
     }
 
     //! access the scalar transport field
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const;
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_field() const;
 
     //! access the scalar transport field on manifolds
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_manifold() const;
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_manifold() const;
 
     /// set structure solution on other fields
-    void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel, bool set_mechanical_stress);
+    void set_struct_solution(std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel, bool set_mechanical_stress);
 
     /// set scatra solution on other fields
-    virtual void set_scatra_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> phi) const;
+    virtual void set_scatra_solution(std::shared_ptr<const Core::LinAlg::Vector<double>> phi) const;
 
     /*!
      * @brief set contact states needed for evaluation of ssi contact
      *
      * @param[in] phi  scatra state to be set to contact nitsche strategy
      */
-    void set_ssi_contact_states(Teuchos::RCP<const Core::LinAlg::Vector<double>> phi) const;
+    void set_ssi_contact_states(std::shared_ptr<const Core::LinAlg::Vector<double>> phi) const;
 
     /// set micro scatra solution on other fields
     virtual void set_micro_scatra_solution(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi) const;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phi) const;
 
     /// set temperature field  by evaluating time dependent function
     void evaluate_and_set_temperature_field();
@@ -226,7 +229,7 @@ namespace SSI
     bool ssi_interface_meshtying() const { return ssiinterfacemeshtying_; }
 
     //! return the scatra-scatra interface meshtying strategy
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2_i() const
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2_i() const
     {
       return meshtying_strategy_s2i_;
     }
@@ -253,13 +256,13 @@ namespace SSI
     void setup_contact_strategy();
 
     //! SSI structure meshtying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::Utils::SSIMeshTying> ssi_structure_mesh_tying() const
+    std::shared_ptr<SSI::Utils::SSIMeshTying> ssi_structure_mesh_tying() const
     {
       return ssi_structure_meshtying_;
     }
 
     //! return contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> nitsche_strategy_ssi() const
+    std::shared_ptr<CONTACT::NitscheStrategySsi> nitsche_strategy_ssi() const
     {
       return contact_strategy_nitsche_;
     }
@@ -291,10 +294,10 @@ namespace SSI
 
     //! set structure stress state on scatra field
     void set_mechanical_stress_state(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> mechanical_stress_state) const;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> mechanical_stress_state) const;
 
     void set_modelevaluator_base_ssi(
-        Teuchos::RCP<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base)
+        std::shared_ptr<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base)
     {
       modelevaluator_ssi_base_ = modelevaluator_ssi_base;
     }
@@ -315,7 +318,7 @@ namespace SSI
     bool diff_time_step_size() const { return diff_time_step_size_; }
 
     //! store contact nitsche strategy for ssi problems
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
+    std::shared_ptr<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
    private:
     /*!
@@ -365,10 +368,10 @@ namespace SSI
     bool is_init() const { return isinit_; }
 
     /// set structure mesh displacement on scatra field
-    void set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
+    void set_mesh_disp(std::shared_ptr<const Core::LinAlg::Vector<double>> disp);
 
     /// set structure velocity field on scatra field
-    void set_velocity_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel);
+    void set_velocity_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> vel);
 
     //! different time step size between scatra field and structure field
     const bool diff_time_step_size_;
@@ -399,22 +402,22 @@ namespace SSI
     const bool macro_scale_;
 
     //! meshtying strategy for scatra-scatra interface coupling on scatra discretization
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_s2i_;
 
     //! structure model evaluator for ssi problems
-    Teuchos::RCP<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base_;
+    std::shared_ptr<Solid::ModelEvaluator::Generic> modelevaluator_ssi_base_;
 
     //! underlying scatra problem base algorithm
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_base_algorithm_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_base_algorithm_;
 
     //! underlying scatra problem base algorithm on manifolds
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_manifold_base_algorithm_;
 
     //! SSI structure mesh tying object containing coupling adapters, converters and maps
-    Teuchos::RCP<SSI::Utils::SSIMeshTying> ssi_structure_meshtying_;
+    std::shared_ptr<SSI::Utils::SSIMeshTying> ssi_structure_meshtying_;
 
     /// helper class for applying SSI couplings
-    Teuchos::RCP<SSICouplingBase> ssicoupling_;
+    std::shared_ptr<SSICouplingBase> ssicoupling_;
 
     //! bool indicating if we have at least one ssi interface contact condition
     const bool ssiinterfacecontact_;
@@ -423,22 +426,22 @@ namespace SSI
     const bool ssiinterfacemeshtying_;
 
     /// ptr to underlying structure
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure_;
 
     /// ptr to the underlying structure problem base algorithm
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
 
     //! number of function for prescribed temperature
     const int temperature_funct_num_;
 
     //! vector of temperatures
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temperature_vector_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> temperature_vector_;
 
     //! Flag to indicate whether old structural time integration is used.
     const bool use_old_structure_;
 
     //! a zero vector of full length with structure dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_structure_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_structure_;
   };  // SSI_Base
 }  // namespace SSI
 FOUR_C_NAMESPACE_CLOSE

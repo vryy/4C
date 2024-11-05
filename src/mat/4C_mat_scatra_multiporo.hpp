@@ -57,7 +57,7 @@ namespace Mat
       ScatraMatMultiPoroFluid(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -82,7 +82,7 @@ namespace Mat
       ScatraMatMultiPoroVolFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -101,7 +101,7 @@ namespace Mat
       ScatraMatMultiPoroSolid(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// delta used for modelling dependency of diffusivity on
       /// (saturation*porosity)^delta
@@ -120,7 +120,7 @@ namespace Mat
       ScatraMatMultiPoroTemperature(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       const int numfluidphases_;
       const int numvolfrac_;
@@ -247,9 +247,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraMatMultiPoroFluid>(*this);
+      return std::make_shared<ScatraMatMultiPoroFluid>(*this);
     }
 
     /// Return quick accessible material parameter data
@@ -334,9 +334,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraMatMultiPoroVolFrac>(*this);
+      return std::make_shared<ScatraMatMultiPoroVolFrac>(*this);
     }
 
     /// Return quick accessible material parameter data
@@ -418,9 +418,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraMatMultiPoroSolid>(*this);
+      return std::make_shared<ScatraMatMultiPoroSolid>(*this);
     }
 
     /// Return quick accessible material parameter data
@@ -493,9 +493,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraMatMultiPoroTemperature>(*this);
+      return std::make_shared<ScatraMatMultiPoroTemperature>(*this);
     }
 
     /// Return quick accessible material parameter data

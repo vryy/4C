@@ -46,21 +46,21 @@ namespace FSI
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) override
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) override
     {
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override
     {
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! empty; overridden in sub class
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override { return Teuchos::null; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess() override { return nullptr; };
 
 
   };  // class PartitionedImmersed

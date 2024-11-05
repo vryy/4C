@@ -40,9 +40,9 @@ namespace Mortar
 
 
     /// create a copy of this object
-    Teuchos::RCP<Core::DOFSets::DofSet> clone() override
+    std::shared_ptr<Core::DOFSets::DofSet> clone() override
     {
-      return Teuchos::make_rcp<Mortar::DofSet>(*this);
+      return std::make_shared<Mortar::DofSet>(*this);
     }
 
     //! @}

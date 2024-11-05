@@ -36,19 +36,19 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-FPSI::FpsiCoupling::FpsiCoupling(Teuchos::RCP<PoroElast::Monolithic> poro,
-    Teuchos::RCP<Adapter::Fluid> fluid, Teuchos::RCP<Adapter::AleFpsiWrapper> ale,
-    Teuchos::RCP<std::map<int, int>> Fluid_PoroFluid_InterfaceMap,
-    Teuchos::RCP<std::map<int, int>> PoroFluid_Fluid_InterfaceMap)
+FPSI::FpsiCoupling::FpsiCoupling(std::shared_ptr<PoroElast::Monolithic> poro,
+    std::shared_ptr<Adapter::Fluid> fluid, std::shared_ptr<Adapter::AleFpsiWrapper> ale,
+    std::shared_ptr<std::map<int, int>> Fluid_PoroFluid_InterfaceMap,
+    std::shared_ptr<std::map<int, int>> PoroFluid_Fluid_InterfaceMap)
     : poro_(poro),
       fluid_(fluid),
       ale_(ale),
-      fluidvelpres_extractor_(Teuchos::null),
-      fluidvel_extractor_(Teuchos::null),
-      porofluid_extractor_(Teuchos::null),
-      porostruct_extractor_(Teuchos::null),
-      poro_extractor_(Teuchos::null),
-      fluid_fsifpsi_extractor_(Teuchos::null),
+      fluidvelpres_extractor_(nullptr),
+      fluidvel_extractor_(nullptr),
+      porofluid_extractor_(nullptr),
+      porostruct_extractor_(nullptr),
+      poro_extractor_(nullptr),
+      fluid_fsifpsi_extractor_(nullptr),
       isfirstcall_(true),
       fluid_poro_fluid_interface_map_(Fluid_PoroFluid_InterfaceMap),  // to be removed later
       poro_fluid_fluid_interface_map_(PoroFluid_Fluid_InterfaceMap),
@@ -70,28 +70,28 @@ void FPSI::FpsiCoupling::init_coupling_matrixes_rhs()
   Core::LinAlg::MapExtractor aleextractor(
       *(ale_->interface()->other_map()), ale_->interface()->other_map(), false);
 
-  c_pp_ = Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>(
+  c_pp_ = std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>(
       new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *poro_->extractor(), *poro_->extractor(), 81, true, true));
-  c_ff_ = Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>(
+  c_ff_ = std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>(
       new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *fluid_->interface(), *fluid_->interface(), 81, true, true));
-  c_pf_ = Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>(
+  c_pf_ = std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>(
       new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           fluidextractor, *poro_->extractor(), 81, true, true));
-  c_fp_ = Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>(
+  c_fp_ = std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>(
       new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           *poro_->extractor(), fluidextractor, 81, true, true));
-  c_pa_ = Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>(
+  c_pa_ = std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>(
       new Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>(
           aleextractor, *poro_->extractor(), 81, true, true));
-  c_fa_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*fluid_->dof_row_map(), 81, true, true);
+  c_fa_ = std::make_shared<Core::LinAlg::SparseMatrix>(*fluid_->dof_row_map(), 81, true, true);
 
-  c_rhs_s_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  c_rhs_s_ = std::make_shared<Core::LinAlg::Vector<double>>(
       *poro_->structure_field()->dof_row_map(), true);
   c_rhs_pf_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*poro_->fluid_field()->dof_row_map(), true);
-  c_rhs_f_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_->dof_row_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*poro_->fluid_field()->dof_row_map(), true);
+  c_rhs_f_ = std::make_shared<Core::LinAlg::Vector<double>>(*fluid_->dof_row_map(), true);
 
   return;
 }
@@ -103,56 +103,56 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
 {
   const int ndim = Global::Problem::instance()->n_dim();
 
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
-  Teuchos::RCP<Core::FE::Discretization> porofluiddis =
+  std::shared_ptr<Core::FE::Discretization> fluiddis = fluid_field()->discretization();
+  std::shared_ptr<Core::FE::Discretization> porofluiddis =
       poro_field()->fluid_field()->discretization();
-  Teuchos::RCP<Core::FE::Discretization> porostructdis =
+  std::shared_ptr<Core::FE::Discretization> porostructdis =
       poro_field()->structure_field()->discretization();
 
   {
-    porofluid_extractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+    porofluid_extractor_ = std::make_shared<Core::LinAlg::MapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *porofluiddis, "fpsi_coupling", 0, ndim + 1));
     mcs.setup_extractor(*porofluiddis, *(porofluiddis->dof_row_map()), *porofluid_extractor_);
   }
 
   {
-    porostruct_extractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+    porostruct_extractor_ = std::make_shared<Core::LinAlg::MapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *porostructdis, "fpsi_coupling", 0, ndim));
     mcs.setup_extractor(*porostructdis, *(porostructdis->dof_row_map()), *porostruct_extractor_);
   }
 
   {
-    fluidvelpres_extractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+    fluidvelpres_extractor_ = std::make_shared<Core::LinAlg::MapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *fluiddis, "fpsi_coupling", 0, ndim + 1));
     mcs.setup_extractor(*fluiddis, *(fluiddis->dof_row_map()), *fluidvelpres_extractor_);
   }
 
   {
-    fluidvel_extractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+    fluidvel_extractor_ = std::make_shared<Core::LinAlg::MapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *fluiddis, "fpsi_coupling", 0, ndim));
     mcs.setup_extractor(*fluiddis, *(fluiddis->dof_row_map()), *fluidvel_extractor_);
   }
 
   {
-    fluid_fsifpsi_extractor_ = Teuchos::make_rcp<FPSI::Utils::MapExtractor>();
+    fluid_fsifpsi_extractor_ = std::make_shared<FPSI::Utils::MapExtractor>();
     Core::Conditions::MultiConditionSelector mcs;
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *fluiddis, "FSICoupling", 0, ndim));
-    mcs.add_selector(Teuchos::make_rcp<Core::Conditions::NDimConditionSelector>(
+    mcs.add_selector(std::make_shared<Core::Conditions::NDimConditionSelector>(
         *fluiddis, "fpsi_coupling", 0, ndim));
     mcs.setup_extractor(*fluiddis, *(fluiddis->dof_row_map()), *fluid_fsifpsi_extractor_);
   }
 
   {
-    std::vector<Teuchos::RCP<const Epetra_Map>> vecSpaces;
+    std::vector<std::shared_ptr<const Epetra_Map>> vecSpaces;
 
     // Split poro_field into:
     //                      --> Structure (inside + FSI-Interface)
@@ -160,7 +160,7 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
     //                      --> PoroFluid (inside + FSI-Interface)
     //                      --> PoroFluid FPSI-Interface
 
-    Teuchos::RCP<const Epetra_Map> s_other_map = Core::LinAlg::merge_map(
+    std::shared_ptr<const Epetra_Map> s_other_map = Core::LinAlg::merge_map(
         poro_field()->structure_field()->interface()->Map(Solid::MapExtractor::cond_other),
         poro_field()->structure_field()->interface()->Map(Solid::MapExtractor::cond_fsi));
     vecSpaces.push_back(s_other_map);  // other map
@@ -169,24 +169,24 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
     vecSpaces.push_back(porofluid_extractor_->other_map());  // other map
     vecSpaces.push_back(porofluid_extractor_->cond_map());   // fpsi_coupling
 
-    Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
+    std::shared_ptr<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(vecSpaces);
     // full Poroelasticity-blockmap
-    poro_extractor_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+    poro_extractor_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
     poro_extractor_->setup(*fullmap, vecSpaces);
   }
 
   // porous fluid to fluid
-  icoup_pf_f_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  icoup_pf_f_ = std::make_shared<Coupling::Adapter::Coupling>();
   icoup_pf_f_->setup_condition_coupling(*porofluiddis, porofluid_extractor_->cond_map(), *fluiddis,
       fluidvelpres_extractor_->cond_map(), "fpsi_coupling", ndim + 1, false);
 
   // porous structure to fluid
-  icoup_ps_f_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  icoup_ps_f_ = std::make_shared<Coupling::Adapter::Coupling>();
   icoup_ps_f_->setup_condition_coupling(*porostructdis, porostruct_extractor_->cond_map(),
       *fluiddis, fluidvel_extractor_->cond_map(), "fpsi_coupling", ndim, false);
 
   // porous structure to ale
-  icoup_ps_a_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  icoup_ps_a_ = std::make_shared<Coupling::Adapter::Coupling>();
   icoup_ps_a_->setup_condition_coupling(*porostructdis, porostruct_extractor_->cond_map(),
       *ale_field()->discretization(), ale_field()->interface()->fpsi_cond_map(), "fpsi_coupling",
       ndim, false);
@@ -200,15 +200,15 @@ void FPSI::FpsiCoupling::setup_interface_coupling()
 void FPSI::FpsiCoupling::re_init_coupling_matrix_transform()
 {
   // create transformation objects for coupling terms
-  couplingrowtransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  couplingrowtransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  couplingrowtransform3_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  couplingrowtransform4_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  couplingrowtransform5_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowTransform>();
-  couplingcoltransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  couplingcoltransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixColTransform>();
-  couplingrowcoltransform_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
-  couplingrowcoltransform2_ = Teuchos::make_rcp<Coupling::Adapter::MatrixRowColTransform>();
+  couplingrowtransform_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  couplingrowtransform2_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  couplingrowtransform3_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  couplingrowtransform4_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  couplingrowtransform5_ = std::make_shared<Coupling::Adapter::MatrixRowTransform>();
+  couplingcoltransform_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  couplingcoltransform2_ = std::make_shared<Coupling::Adapter::MatrixColTransform>();
+  couplingrowcoltransform_ = std::make_shared<Coupling::Adapter::MatrixRowColTransform>();
+  couplingrowcoltransform2_ = std::make_shared<Coupling::Adapter::MatrixRowColTransform>();
 }
 
 /*-------------------------------------------------------------------------------/
@@ -219,12 +219,11 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
   // Evaluates all Coupling Matrixes ...
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::fpsi_coupling::evaluate_coupling_matrixes_rhs");
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_fp_porofluid =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_fp_porofluid =
+      std::make_shared<Core::LinAlg::SparseMatrix>(
           *(poro_field()->fluid_field()->dof_row_map()), 81, true, true);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pf_porofluid =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-          *(fluid_field()->dof_row_map()), 81, true, true);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> k_pf_porofluid =
+      std::make_shared<Core::LinAlg::SparseMatrix>(*(fluid_field()->dof_row_map()), 81, true, true);
 
   // set all coupling matrixes to zero!!
   c_pp_->zero();
@@ -296,8 +295,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy fluidstrategy(0,  // fluiddofset for row
           0,                                       // fluiddofset for column
           k_pf_porofluid,                          // coupling matrix with fluid rowmap
-          Teuchos::null,                           // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                 // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       // what's the current problem type? Is it a fps3i problem?
       Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
@@ -328,8 +327,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy fluidstrategy21(0,  // porofluiddofset for row
           0,                                         // porofluiddofset for column
           k_pf_porofluid,                            // coupling matrix with fluid rowmap
-          Teuchos::null,                             // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                   // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       fluid_field()->discretization()->evaluate_condition(
           fparams, fluidstrategy21, "fpsi_coupling");
@@ -353,8 +352,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy porofluidstrategy(0,  // porofluiddofset for row
           0,                                           // porofluiddofset for column
           k_fp_porofluid,                              // porofluid-structure coupling matrix
-          Teuchos::null,                               // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                     // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       poro_field()->fluid_field()->discretization()->evaluate_condition(
           fparams, porofluidstrategy, "fpsi_coupling");
@@ -371,8 +370,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       fparams.set("InterfaceFacingElementMap", poro_fluid_fluid_interface_map_);
 
       // move me somewhere else
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pfs_ =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      std::shared_ptr<Core::LinAlg::SparseMatrix> k_pfs_ =
+          std::make_shared<Core::LinAlg::SparseMatrix>(
               *(poro_field()->fluid_field()->discretization()->dof_row_map()), 81, true, true);
 
       k_pfs_->un_complete();
@@ -380,8 +379,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy structurestrategy(0,  // porofluiddofset for row
           1,                                           // structuredofset for column
           k_pfs_,                                      // coupling matrix with porofluid rowmap
-          Teuchos::null,                               // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                     // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       poro_field()->fluid_field()->discretization()->evaluate_condition(
           fparams, structurestrategy, "fpsi_coupling");
@@ -402,8 +401,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy structurestrategy2(0,  // porofluiddofset for row
           0,                                            // fluiddofset for column
           k_pf_porofluid,                               // coupling matrix with porofluid rowmap
-          Teuchos::null,                                // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                      // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
       fluid_field()->discretization()->evaluate_condition(
@@ -430,8 +429,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy fluidfluidstrategy(0,  // fluiddofset for row
           0,                                            // fluiddofset for column
           c_ff_,                                        // porofluid-structure coupling matrix
-          Teuchos::null,                                // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                      // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       fluid_field()->discretization()->evaluate_condition(
           fparams, fluidfluidstrategy, "fpsi_coupling");
@@ -444,8 +443,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy structurefluidstrategy(0,  // fluid dofset for row
           0,                                                // fluid dofset for column
           k_pf_porofluid,                                   // coupling matrix with fluid rowmap
-          Teuchos::null,                                    // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                          // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       fluid_field()->discretization()->evaluate_condition(
           fparams, structurefluidstrategy, "fpsi_coupling");
@@ -454,7 +453,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       {
         TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::transform");
         (*couplingrowtransform4_)(
-            *Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(k_pf_porofluid), 1.0,
+            *std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(k_pf_porofluid), 1.0,
             Coupling::Adapter::CouplingSlaveConverter(
                 coupsf_fpsi),  // important to use slave converter
             c_pf_->matrix(0, 0),
@@ -469,8 +468,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy structurestructurestrategy(0,  // fluid dofset for row
           0,                                                    // fluid dofset for column
           k_pf_porofluid,                                       // coupling matrix with fluid rowmap
-          Teuchos::null,                                        // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                              // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       fluid_field()->discretization()->evaluate_condition(
           fparams, structurestructurestrategy, "fpsi_coupling");
@@ -496,8 +495,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
       // temporal matrix
       // todo (initialization should be avoided in every iteration...)
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
-          temp6 = Teuchos::make_rcp<
+      std::shared_ptr<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>
+          temp6 = std::make_shared<
               Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
               *ale_field()->interface(), *fluid_field()->interface(), 81, false,
@@ -508,8 +507,8 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy structurealestrategy(0,  // fluid dofset for row
           1,                                              // ale dofset for column
           temp6,                                          // coupling matrix with fluid rowmap
-          Teuchos::null,                                  // no other matrix or vectors
-          Teuchos::null, Teuchos::null, Teuchos::null);
+          nullptr,                                        // no other matrix or vectors
+          nullptr, nullptr, nullptr);
 
       // evaluate coupling terms
       fluid_field()->discretization()->evaluate_condition(
@@ -543,21 +542,21 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
     //////                          //////
     //////////////////////////////////////
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temprhs = Teuchos::null;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> temprhs2 = Teuchos::null;
+    std::shared_ptr<Core::LinAlg::Vector<double>> temprhs = nullptr;
+    std::shared_ptr<Core::LinAlg::Vector<double>> temprhs2 = nullptr;
 
     fparams.set<std::string>("fillblock", "conti");
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(), true);
-    temprhs2 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*poro_field()->dof_row_map(), true);
+    temprhs = std::make_shared<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(), true);
+    temprhs2 = std::make_shared<Core::LinAlg::Vector<double>>(*poro_field()->dof_row_map(), true);
     temprhs->PutScalar(0.0);
     temprhs2->PutScalar(0.0);
 
     Core::FE::AssembleStrategy rhscontistrategy(0,  // fluid dofset for row
         0,                                          // fluid dofset for column
-        Teuchos::null, Teuchos::null,
+        nullptr, nullptr,
         temprhs,  // rhs vector
-        Teuchos::null, Teuchos::null);
+        nullptr, nullptr);
 
     fluid_field()->discretization()->evaluate_condition(fparams, rhscontistrategy, "fpsi_coupling");
 
@@ -579,14 +578,14 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "structure");
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(), true);
-    temprhs2 = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*poro_field()->dof_row_map(), true);
+    temprhs = std::make_shared<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(), true);
+    temprhs2 = std::make_shared<Core::LinAlg::Vector<double>>(*poro_field()->dof_row_map(), true);
 
     Core::FE::AssembleStrategy rhsstructurestrategy(0,  // fluid dofset for row
         0,                                              // fluid dofset for column
-        Teuchos::null, Teuchos::null,
+        nullptr, nullptr,
         temprhs,  // rhs vector
-        Teuchos::null, Teuchos::null);
+        nullptr, nullptr);
 
     fluid_field()->discretization()->evaluate_condition(
         fparams, rhsstructurestrategy, "fpsi_coupling");
@@ -603,16 +602,15 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "fluid");
     fparams.set("InterfaceFacingElementMap", poro_fluid_fluid_interface_map_);
-    temprhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+    temprhs = std::make_shared<Core::LinAlg::Vector<double>>(
         *poro_field()->fluid_field()->dof_row_map(0), true);
-    temprhs2 =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(0), true);
+    temprhs2 = std::make_shared<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(0), true);
 
     Core::FE::AssembleStrategy rhsfluidstrategy(0,  // fluid dofset for row
         0,                                          // fluid dofset for column
-        Teuchos::null, Teuchos::null,
+        nullptr, nullptr,
         temprhs,  // rhs vector
-        Teuchos::null, Teuchos::null);
+        nullptr, nullptr);
 
     poro_field()->fluid_field()->discretization()->evaluate_condition(
         fparams, rhsfluidstrategy, "fpsi_coupling");
@@ -631,13 +629,13 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
 
     fparams.set<std::string>("fillblock", "fluidfluid");  // (wot,tangentialfac*uot) part
     fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
-    temprhs = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(0), true);
+    temprhs = std::make_shared<Core::LinAlg::Vector<double>>(*fluid_field()->dof_row_map(0), true);
 
     Core::FE::AssembleStrategy rhsfluidfluidstrategy(0,  // fluid dofset for row
         0,                                               // fluid dofset for column
-        Teuchos::null, Teuchos::null,
+        nullptr, nullptr,
         temprhs,  // rhs vector
-        Teuchos::null, Teuchos::null);
+        nullptr, nullptr);
 
     fluid_field()->discretization()->evaluate_condition(
         fparams, rhsfluidfluidstrategy, "fpsi_coupling");
@@ -660,9 +658,9 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
       Core::FE::AssembleStrategy rhsfluidfluidstrategy2(0,  // fluid dofset for row
           0,                                                // fluid dofset for column
           c_ff_,                                            // coupling matrix with fluid rowmap
-          Teuchos::null,
+          nullptr,
           temprhs,  // rhs vector
-          Teuchos::null, Teuchos::null);
+          nullptr, nullptr);
 
       fluid_field()->discretization()->evaluate_condition(
           fparams, rhsfluidfluidstrategy2, "NeumannIntegration");
@@ -674,7 +672,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
         fparams.set<std::string>("fillblock", "NeumannIntegration_Ale");
         fparams.set("InterfaceFacingElementMap", fluid_poro_fluid_interface_map_);
 
-        Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> tmp_c_fa = Teuchos::make_rcp<
+        std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> tmp_c_fa = std::make_shared<
             Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
             *ale_field()->interface(), *fluid_field()->fpsi_interface(), 81, false, true);
@@ -682,7 +680,7 @@ void FPSI::FpsiCoupling::evaluate_coupling_matrixes_rhs()
         Core::FE::AssembleStrategy rhsfluidfluidstrategy3(0,  // fluid dofset for row
             1,                                                // ale dofset for column
             tmp_c_fa,                                         // coupling matrix with fluid rowmap
-            Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+            nullptr, nullptr, nullptr, nullptr);
 
         fluid_field()->discretization()->evaluate_condition(
             fparams, rhsfluidfluidstrategy3, "NeumannIntegration");

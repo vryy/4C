@@ -29,28 +29,34 @@ using NO = Node;
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix                                mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> Core::LinAlg::create_matrix(const Epetra_Map& rowmap, const int npr)
+std::shared_ptr<Epetra_CrsMatrix> Core::LinAlg::create_matrix(
+    const Epetra_Map& rowmap, const int npr)
 {
   if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
-  return Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, npr, false);
+  return std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, npr, false);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::create_identity_matrix(const Epetra_Map& map)
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::create_identity_matrix(
+    const Epetra_Map& map)
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> eye = Teuchos::make_rcp<SparseMatrix>(map, 1);
-  int numelements = map.NumMyElements();
-  int* gids = map.MyGlobalElements();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> eye = std::make_shared<SparseMatrix>(map, 1);
+  fill_identity_matrix(*eye);
+  return eye;
+}
+
+void Core::LinAlg::fill_identity_matrix(Core::LinAlg::SparseMatrix& mat)
+{
+  int numelements = mat.row_map().NumMyElements();
+  int* gids = mat.row_map().MyGlobalElements();
 
   for (int i = 0; i < numelements; ++i)
   {
     int gid = gids[i];
-    eye->assemble(1., gid, gid);
+    mat.assemble(1., gid, gid);
   }
-  eye->complete();
-
-  return eye;
+  mat.complete();
 }
 
 /*----------------------------------------------------------------------*
@@ -67,7 +73,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(const Spars
   const int number_of_equations = params.get<int>("PDE equations");
 
   Teuchos::RCP<Xpetra::CrsMatrix<SC, LO, GO, NO>> mueluA =
-      Teuchos::rcp(new EpetraCrsMatrix(matrix.epetra_matrix()));
+      Teuchos::rcp(new EpetraCrsMatrix(Teuchos::rcpFromRef(*matrix.epetra_matrix())));
   Teuchos::RCP<Xpetra::Matrix<SC, LO, GO, NO>> xpetra_matrix =
       Teuchos::rcp(new Xpetra::CrsMatrixWrap<SC, LO, GO, NO>(mueluA));
   xpetra_matrix->SetFixedBlockSize(number_of_equations);
@@ -126,7 +132,8 @@ Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(const Spars
 
   auto prolongation_operator = MueLu::Utilities<SC, LO, GO, NO>::Op2NonConstEpetraCrs(Ptent);
 
-  Core::LinAlg::SparseMatrix prolongator(prolongation_operator, Core::LinAlg::View);
+  Core::LinAlg::SparseMatrix prolongator(
+      std::make_shared<Epetra_CrsMatrix>(*prolongation_operator), Core::LinAlg::View);
 
   return prolongator;
 }
@@ -135,30 +142,30 @@ Core::LinAlg::SparseMatrix Core::LinAlg::create_interpolation_matrix(const Spars
 /*----------------------------------------------------------------------*
  |  create a Core::LinAlg::Vector<double>                                   mwgee 12/06|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Core::LinAlg::create_vector(
+std::shared_ptr<Core::LinAlg::Vector<double>> Core::LinAlg::create_vector(
     const Epetra_BlockMap& rowmap, const bool init)
 {
-  return Teuchos::make_rcp<Core::LinAlg::Vector<double>>(rowmap, init);
+  return std::make_shared<Core::LinAlg::Vector<double>>(rowmap, init);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::LinAlg::create_multi_vector(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::LinAlg::create_multi_vector(
     const Epetra_BlockMap& rowmap, const int numrows, const bool init)
 {
-  return Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(rowmap, numrows, init);
+  return std::make_shared<Core::LinAlg::MultiVector<double>>(rowmap, numrows, init);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::create_map(
+std::shared_ptr<Epetra_Map> Core::LinAlg::create_map(
     const std::set<int>& gids, const Epetra_Comm& comm)
 {
   std::vector<int> mapvec;
   mapvec.reserve(gids.size());
   mapvec.assign(gids.begin(), gids.end());
-  Teuchos::RCP<Epetra_Map> map =
-      Teuchos::make_rcp<Epetra_Map>(-1, mapvec.size(), mapvec.data(), 0, comm);
+  std::shared_ptr<Epetra_Map> map =
+      std::make_shared<Epetra_Map>(-1, mapvec.size(), mapvec.data(), 0, comm);
   mapvec.clear();
   return map;
 }
@@ -166,15 +173,15 @@ Teuchos::RCP<Epetra_Map> Core::LinAlg::create_map(
 /*----------------------------------------------------------------------*
  | create epetra_map with out-of-bound check                 farah 06/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::LinAlg::create_map(
+std::shared_ptr<Epetra_Map> Core::LinAlg::create_map(
     const std::vector<int>& gids, const Epetra_Comm& comm)
 {
-  Teuchos::RCP<Epetra_Map> map;
+  std::shared_ptr<Epetra_Map> map;
 
   if ((int)gids.size() > 0)
-    map = Teuchos::make_rcp<Epetra_Map>(-1, gids.size(), gids.data(), 0, comm);
+    map = std::make_shared<Epetra_Map>(-1, gids.size(), gids.data(), 0, comm);
   else
-    map = Teuchos::make_rcp<Epetra_Map>(-1, gids.size(), nullptr, 0, comm);
+    map = std::make_shared<Epetra_Map>(-1, gids.size(), nullptr, 0, comm);
 
   return map;
 }
@@ -211,7 +218,7 @@ void Core::LinAlg::create_map_extractor_from_discretization(
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> conddofmap = std::make_shared<Epetra_Map>(
       -1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.get_comm());
   conddofmapvec.clear();
 
@@ -219,11 +226,11 @@ void Core::LinAlg::create_map_extractor_from_discretization(
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> otherdofmap = std::make_shared<Epetra_Map>(
       -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.get_comm());
   otherdofmapvec.clear();
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
+  std::vector<std::shared_ptr<const Epetra_Map>> maps(2);
   maps[0] = otherdofmap;
   maps[1] = conddofmap;
   extractor.setup(*dis.dof_row_map(), maps);
@@ -261,7 +268,7 @@ void Core::LinAlg::create_map_extractor_from_discretization(const Core::FE::Disc
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> conddofmap = std::make_shared<Epetra_Map>(
       -1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.get_comm());
   conddofmapvec.clear();
 
@@ -269,7 +276,7 @@ void Core::LinAlg::create_map_extractor_from_discretization(const Core::FE::Disc
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> otherdofmap = std::make_shared<Epetra_Map>(
       -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.get_comm());
   otherdofmapvec.clear();
 
@@ -316,7 +323,7 @@ void Core::LinAlg::create_map_extractor_from_discretization(const Core::FE::Disc
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> conddofmap = std::make_shared<Epetra_Map>(
       -1, conddofmapvec.size(), conddofmapvec.data(), 0, dis.get_comm());
   conddofmapvec.clear();
 
@@ -324,11 +331,11 @@ void Core::LinAlg::create_map_extractor_from_discretization(const Core::FE::Disc
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> otherdofmap = std::make_shared<Epetra_Map>(
       -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, dis.get_comm());
   otherdofmapvec.clear();
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps(2);
+  std::vector<std::shared_ptr<const Epetra_Map>> maps(2);
   maps[0] = otherdofmap;
   maps[1] = conddofmap;
   extractor.setup(*dis.dof_row_map(), maps);

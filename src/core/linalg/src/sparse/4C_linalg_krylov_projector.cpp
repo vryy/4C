@@ -32,45 +32,41 @@ FOUR_C_NAMESPACE_OPEN
    -------------------------------------------------------------------- */
 Core::LinAlg::KrylovProjector::KrylovProjector(
     const std::vector<int> modeids, const std::string* weighttype, const Epetra_BlockMap* map)
-    : complete_(false),
-      modeids_(modeids),
-      weighttype_(weighttype),
-      p_(Teuchos::null),
-      pt_(Teuchos::null)
+    : complete_(false), modeids_(modeids), weighttype_(weighttype), p_(nullptr), pt_(nullptr)
 {
   nsdim_ = modeids_.size();
-  c_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*map, nsdim_, false);
+  c_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*map, nsdim_, false);
   if (*weighttype_ == "integration")
-    w_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*map, nsdim_, false);
+    w_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*map, nsdim_, false);
   else if (*weighttype_ == "pointvalues")
     w_ = c_;
   else
     FOUR_C_THROW("No permissible weight type.");
 
-  invw_tc_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_);
+  invw_tc_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_);
 }  // Core::LinAlg::KrylovProjector::KrylovProjector
 
 
 /* --------------------------------------------------------------------
-                  Give out Teuchos::RCP to c_ for change
+                  Give out std::shared_ptr to c_ for change
    -------------------------------------------------------------------- */
-Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
 Core::LinAlg::KrylovProjector::get_non_const_kernel()
 {
   // since c_ will be changed, need to call fill_complete() to recompute invwTc_
   complete_ = false;
 
   // projector matrices will change
-  p_ = Teuchos::null;
-  pt_ = Teuchos::null;
+  p_ = nullptr;
+  pt_ = nullptr;
 
   return c_;
 }
 
 /* --------------------------------------------------------------------
-                  Give out Teuchos::RCP to w_ for change
+                  Give out std::shared_ptr to w_ for change
    -------------------------------------------------------------------- */
-Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
 Core::LinAlg::KrylovProjector::get_non_const_weights()
 {
   if ((*weighttype_) == "pointvalues")
@@ -82,8 +78,8 @@ Core::LinAlg::KrylovProjector::get_non_const_weights()
   complete_ = false;
 
   // projector matrices will change
-  p_ = Teuchos::null;
-  pt_ = Teuchos::null;
+  p_ = nullptr;
+  pt_ = nullptr;
 
   return w_;
 }
@@ -91,11 +87,11 @@ Core::LinAlg::KrylovProjector::get_non_const_weights()
 void Core::LinAlg::KrylovProjector::set_cw(Core::LinAlg::MultiVector<double>& c0,
     Core::LinAlg::MultiVector<double>& w0, const Epetra_BlockMap* newmap)
 {
-  c_ = Teuchos::null;
-  w_ = Teuchos::null;
+  c_ = nullptr;
+  w_ = nullptr;
 
-  c_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*newmap, nsdim_, false);
-  w_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*newmap, nsdim_, false);
+  c_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*newmap, nsdim_, false);
+  w_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*newmap, nsdim_, false);
   *c_ = c0;
   *w_ = w0;
   return;
@@ -114,12 +110,12 @@ void Core::LinAlg::KrylovProjector::set_cw(
    -------------------------------------------------------------------- */
 void Core::LinAlg::KrylovProjector::fill_complete()
 {
-  if (c_ == Teuchos::null)
+  if (c_ == nullptr)
   {
     FOUR_C_THROW("No kernel vector supplied for projection");
   }
 
-  if (w_ == Teuchos::null)
+  if (w_ == nullptr)
   {
     FOUR_C_THROW("No weight vector supplied for projection");
   }
@@ -135,8 +131,8 @@ void Core::LinAlg::KrylovProjector::fill_complete()
   }
 
   // projector matrices will change
-  p_ = Teuchos::null;
-  pt_ = Teuchos::null;
+  p_ = nullptr;
+  pt_ = nullptr;
 
   // loop all kernel basis vectors
   for (int mm = 0; mm < nsdim_; ++mm)
@@ -172,7 +168,7 @@ void Core::LinAlg::KrylovProjector::fill_complete()
   using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
   using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
   Teuchos::SerialDenseSolver<ordinalType, scalarType> densesolver;
-  densesolver.setMatrix(invw_tc_);
+  densesolver.setMatrix(Teuchos::rcpFromRef(*invw_tc_));
   int err = densesolver.invert();
   if (err)
     FOUR_C_THROW(
@@ -201,7 +197,7 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_p()
     FOUR_C_THROW(
         "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
-  if (p_ == Teuchos::null)
+  if (p_ == nullptr)
   {
     create_projector(p_, w_, c_, invw_tc_);
   }
@@ -223,18 +219,18 @@ Core::LinAlg::SparseMatrix Core::LinAlg::KrylovProjector::get_pt()
     FOUR_C_THROW(
         "Krylov space projector is not complete. Call fill_complete() after changing c_ or w_.");
 
-  if (pt_ == Teuchos::null)
+  if (pt_ == nullptr)
   {
     if ((*weighttype_) == "pointvalues")
     {
-      if (p_ == Teuchos::null)
+      if (p_ == nullptr)
         FOUR_C_THROW("When using type pointvalues, first get P_ than PT_. Don't ask - do it!");
       pt_ = p_;
     }
     else
     {
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> invwTcT =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(*invw_tc_, Teuchos::TRANS);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> invwTcT =
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>(*invw_tc_, Teuchos::TRANS);
       create_projector(pt_, c_, w_, invwTcT);
     }
   }
@@ -283,7 +279,7 @@ int Core::LinAlg::KrylovProjector::apply_pt(Core::LinAlg::MultiVector<double>& Y
 /* --------------------------------------------------------------------
                   give out projection P^T A P
    -------------------------------------------------------------------- */
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
     const Core::LinAlg::SparseMatrix& A) const
 {
   /*
@@ -302,17 +298,17 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
 
   // auxiliary preliminary products
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> w_invwTc =
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> w_invwTc =
       multiply_multi_vector_dense_matrix(w_, invw_tc_);
 
   // here: matvec = A c_;
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> matvec =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(c_->Map(), nsdim_, false);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> matvec =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(c_->Map(), nsdim_, false);
   A.epetra_matrix()->Multiply(false, *c_, *matvec);
 
   // compute serial dense matrix c^T A c
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> cTAc =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_, false);
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> cTAc =
+      std::make_shared<Core::LinAlg::SerialDenseMatrix>(nsdim_, nsdim_, false);
   for (int i = 0; i < nsdim_; ++i)
     for (int j = 0; j < nsdim_; ++j) (*c_)(i).Dot((*matvec)(j), &((*cTAc)(i, j)));
   // std::cout << *matvec << std::endl;
@@ -320,13 +316,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
 
   // std::cout << *w_invwTc << std::endl;
   // compute and add matrices
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat1 =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat1 =
       multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
   {
     // put in brackets to delete mat2 immediately after being added to mat1
     // here: matvec = A^T c_;
     A.epetra_matrix()->Multiply(true, *c_, *matvec);
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mat2 =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mat2 =
         multiply_multi_vector_multi_vector(w_invwTc, matvec, 2, true);
     mat1->add(*mat2, false, 1.0, 1.0);
     mat1->complete();
@@ -334,7 +330,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
 
   // here: matvec = w (c^T w)^-1 (c^T A c);
   matvec = multiply_multi_vector_dense_matrix(w_invwTc, cTAc);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat3 =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat3 =
       multiply_multi_vector_multi_vector(matvec, w_invwTc, 1, false);
   mat3->add(*mat1, false, -1.0, 1.0);
   mat3->add(A, false, 1.0, 1.0);
@@ -350,10 +346,10 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::KrylovProjector::project(
 /* --------------------------------------------------------------------
                     Create projector (for direct solvers)
    -------------------------------------------------------------------- */
-void Core::LinAlg::KrylovProjector::create_projector(Teuchos::RCP<Core::LinAlg::SparseMatrix>& P,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& v1,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& v2,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2)
+void Core::LinAlg::KrylovProjector::create_projector(std::shared_ptr<Core::LinAlg::SparseMatrix>& P,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v1,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& v2,
+    const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& inv_v1Tv2)
 {
   /*
    *               /  T  \ -1    T
@@ -364,7 +360,7 @@ void Core::LinAlg::KrylovProjector::create_projector(Teuchos::RCP<Core::LinAlg::
    */
 
   // compute temp1
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> temp1 =
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> temp1 =
       multiply_multi_vector_dense_matrix(v2, inv_v1Tv2);
   temp1->Scale(-1.0);
 
@@ -458,17 +454,17 @@ int Core::LinAlg::KrylovProjector::apply_projector(Core::LinAlg::MultiVector<dou
 
 /* --------------------------------------------------------------------
    -------------------------------------------------------------------- */
-Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
 Core::LinAlg::KrylovProjector::multiply_multi_vector_dense_matrix(
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& dm) const
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv,
+    const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& dm) const
 {
-  if (mv == Teuchos::null or dm == Teuchos::null)
-    FOUR_C_THROW("Either the multivector or the densematrix point to Teuchos::null");
+  if (mv == nullptr or dm == nullptr)
+    FOUR_C_THROW("Either the multivector or the densematrix point to nullptr");
 
   // create empty multivector mvout
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> mvout =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(mv->Map(), nsdim_);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> mvout =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(mv->Map(), nsdim_);
 
   // loop over all vectors of mvout
   for (int rr = 0; rr < nsdim_; ++rr)
@@ -490,16 +486,17 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_dense_matrix(
 /* --------------------------------------------------------------------
                   outer product of two Epetra_MultiVectors
    -------------------------------------------------------------------- */
-Teuchos::RCP<Core::LinAlg::SparseMatrix>
+std::shared_ptr<Core::LinAlg::SparseMatrix>
 Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv1,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& mv2, const int id, const bool fill) const
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv1,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& mv2, const int id,
+    const bool fill) const
 {
-  if (mv1 == Teuchos::null or mv2 == Teuchos::null)
-    FOUR_C_THROW("At least one multi-vector points to Teuchos::null.");
+  if (mv1 == nullptr or mv2 == nullptr)
+    FOUR_C_THROW("At least one multi-vector points to nullptr.");
 
   // compute information about density of P^T A P
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> temp = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> temp = nullptr;
   if (id == 1)
     temp = mv1;
   else if (id == 2)
@@ -520,8 +517,8 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
   Epetra_Map mv1map(mv1->Map().NumGlobalElements(), mv1->Map().NumMyElements(),
       mv1->Map().MyGlobalElements(), 0, mv1->Map().Comm());
   // initialization of mat with map of mv1
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(mv1map, glob_numnonzero, false);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(mv1map, glob_numnonzero, false);
 
   //-------------------------------
   // make mv2 redundant on all procs:
@@ -535,7 +532,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
       mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm());
 
   // fully redundant/overlapping map
-  Teuchos::RCP<Epetra_Map> redundant_map = Core::LinAlg::allreduce_e_map(mv2map);
+  std::shared_ptr<Epetra_Map> redundant_map = Core::LinAlg::allreduce_e_map(mv2map);
   // initialize global mv2 without setting to 0
   Core::LinAlg::MultiVector<double> mv2glob(*redundant_map, nsdim_);
   // create importer with redundant target map and distributed source map

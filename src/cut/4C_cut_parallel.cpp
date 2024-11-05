@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*------------------------------------------------------------------------------------------------*
  * basic CUT parallel constructor                                                    schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
-Cut::Parallel::Parallel(const Teuchos::RCP<Core::FE::Discretization>& discret, Cut::Mesh& mesh,
+Cut::Parallel::Parallel(const std::shared_ptr<Core::FE::Discretization>& discret, Cut::Mesh& mesh,
     Cut::ParentIntersection& parentintersection)
     : discret_(discret),
       myrank_(discret_->get_comm().MyPID()),
@@ -511,7 +511,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
     // send current DofSetData to next proc and receive a new map from previous proc
     {
       Core::Communication::PackBuffer dataSend;  // data to be sent
-      for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
+      for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator data =
                dof_set_data_.begin();
            data != dof_set_data_.end(); data++)
       {
@@ -546,7 +546,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
         extract_from_pack(data_recv_buffer, node_dofsetnumber_map);
 
         // create a new dofSetData object with unpacked data
-        dof_set_data_.push_back(Teuchos::make_rcp<Cut::MeshIntersection::DofSetData>(
+        dof_set_data_.push_back(std::make_shared<Cut::MeshIntersection::DofSetData>(
             set_index, (bool)inside_cell, cut_points_coords, peid, node_dofsetnumber_map));
       }
 
@@ -560,7 +560,7 @@ void Cut::Parallel::export_dof_set_data(bool include_inner)
     //---------------------------------- fill maps with data from current proc
     //-------------------------------------
     //---------------------------------------------------------------------------------------------------------------
-    for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator vc_data =
+    for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator vc_data =
              dof_set_data_.begin();
          vc_data != dof_set_data_.end(); vc_data++)
     {
@@ -742,7 +742,7 @@ void Cut::Parallel::distribute_dof_set_data()
 {
   // back to the original proc
 
-  for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator data =
+  for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator data =
            dof_set_data_.begin();
        data != dof_set_data_.end(); data++)
   {
@@ -1214,7 +1214,8 @@ void Cut::Parallel::send_data(Core::Communication::PackBuffer& dataSend, int& de
  *------------------------------------------------------------------------------------------------*/
 void Cut::Parallel::print_dof_set_data()
 {
-  for (std::vector<Teuchos::RCP<MeshIntersection::DofSetData>>::iterator i = dof_set_data_.begin();
+  for (std::vector<std::shared_ptr<MeshIntersection::DofSetData>>::iterator i =
+           dof_set_data_.begin();
        i != dof_set_data_.end(); i++)
   {
     (*i)->print();

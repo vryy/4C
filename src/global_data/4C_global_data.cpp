@@ -80,10 +80,10 @@ void Global::Problem::done()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Global::Problem::Problem()
-    : probtype_(Core::ProblemType::none), restartstep_(0), communicators_(Teuchos::null)
+    : probtype_(Core::ProblemType::none), restartstep_(0), communicators_(nullptr)
 {
-  materials_ = Teuchos::make_rcp<Mat::PAR::Bundle>();
-  contactconstitutivelaws_ = Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::Bundle>();
+  materials_ = std::make_shared<Mat::PAR::Bundle>();
+  contactconstitutivelaws_ = std::make_shared<CONTACT::CONSTITUTIVELAW::Bundle>();
 }
 
 
@@ -138,17 +138,17 @@ std::function<const Teuchos::ParameterList&(int)> Global::Problem::solver_params
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Global::Problem::set_communicators(
-    Teuchos::RCP<Core::Communication::Communicators> communicators)
+    std::shared_ptr<Core::Communication::Communicators> communicators)
 {
-  if (communicators_ != Teuchos::null) FOUR_C_THROW("Communicators were already set.");
+  if (communicators_ != nullptr) FOUR_C_THROW("Communicators were already set.");
   communicators_ = communicators;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Communication::Communicators> Global::Problem::get_communicators() const
+std::shared_ptr<Core::Communication::Communicators> Global::Problem::get_communicators() const
 {
-  if (communicators_ == Teuchos::null) FOUR_C_THROW("No communicators allocated yet.");
+  if (communicators_ == nullptr) FOUR_C_THROW("No communicators allocated yet.");
   return communicators_;
 }
 
@@ -161,7 +161,7 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
 {
   if (restart())
   {
-    inputcontrol_ = Teuchos::make_rcp<Core::IO::InputControl>(restartkenner, comm);
+    inputcontrol_ = std::make_shared<Core::IO::InputControl>(restartkenner, comm);
 
     if (restartstep_ < 0)
     {
@@ -170,7 +170,7 @@ void Global::Problem::open_control_file(const Epetra_Comm& comm, const std::stri
     }
   }
 
-  outputcontrol_ = Teuchos::make_rcp<Core::IO::OutputControl>(comm, problem_name(),
+  outputcontrol_ = std::make_shared<Core::IO::OutputControl>(comm, problem_name(),
       spatial_approximation_type(), inputfile, restartkenner, std::move(prefix), n_dim(), restart(),
       io_params().get<int>("FILESTEPS"), io_params().get<bool>("OUTPUT_BIN"), true);
 
@@ -198,7 +198,8 @@ void Global::Problem::write_input_parameters()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::set_parameter_list(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list)
+void Global::Problem::set_parameter_list(
+    std::shared_ptr<Teuchos::ParameterList> const& parameter_list)
 {
   try
   {
@@ -219,7 +220,7 @@ void Global::Problem::set_parameter_list(Teuchos::RCP<Teuchos::ParameterList> co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_valid_parameters() const
+std::shared_ptr<const Teuchos::ParameterList> Global::Problem::get_valid_parameters() const
 {
   // call the external method to get the valid parameters
   // this way the parameter configuration is separate from the source
@@ -227,7 +228,7 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_valid_parameters
 }
 
 
-Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_parameter_list() const
+std::shared_ptr<const Teuchos::ParameterList> Global::Problem::get_parameter_list() const
 {
   return parameters_;
 }
@@ -235,10 +236,11 @@ Teuchos::RCP<const Teuchos::ParameterList> Global::Problem::get_parameter_list()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::Problem::add_dis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis)
+void Global::Problem::add_dis(
+    const std::string& name, std::shared_ptr<Core::FE::Discretization> dis)
 {
   // safety checks
-  if (dis == Teuchos::null) FOUR_C_THROW("Received Teuchos::null.");
+  if (dis == nullptr) FOUR_C_THROW("Received nullptr.");
   if (dis->name().empty()) FOUR_C_THROW("discretization has empty name string.");
 
   if (!discretizationmap_.insert(std::make_pair(name, dis)).second)
@@ -253,7 +255,7 @@ void Global::Problem::add_dis(const std::string& name, Teuchos::RCP<Core::FE::Di
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Global::Problem::get_dis(const std::string& name) const
+std::shared_ptr<Core::FE::Discretization> Global::Problem::get_dis(const std::string& name) const
 {
   auto iter = discretizationmap_.find(name);
 
@@ -264,7 +266,7 @@ Teuchos::RCP<Core::FE::Discretization> Global::Problem::get_dis(const std::strin
   else
   {
     FOUR_C_THROW("Could not find discretization '%s'.", name.c_str());
-    return Teuchos::null;
+    return nullptr;
   }
 }
 

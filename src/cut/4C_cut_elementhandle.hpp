@@ -126,14 +126,14 @@ namespace Cut
         Core::FE::GaussPointsComposite& gpc, Cut::VolumeCell* vc);
 
     void append_volume_cell_gauss_points_direct_divergence(
-        Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc);
+        std::shared_ptr<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc);
 
 
     /*!
      \brief Collect the Gaussian points of all the volume-cells belonging to this element.
             The integration rules over all the volume-cells are connected.
      */
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gauss_points_connected(
+    std::shared_ptr<Core::FE::GaussPointsComposite> gauss_points_connected(
         plain_volumecell_set& cells, VCellGaussPts gausstype);
 
 
@@ -249,8 +249,8 @@ namespace Cut
      integation-cells to the local coordinates of background element
      */
     template <Core::FE::CellType distype>
-    Teuchos::RCP<Core::FE::GaussPoints> create_projected(
-        const std::vector<Cut::Point*>& cpoints, Teuchos::RCP<Core::FE::GaussPoints> gp_ic);
+    std::shared_ptr<Core::FE::GaussPoints> create_projected(
+        const std::vector<Cut::Point*>& cpoints, std::shared_ptr<Core::FE::GaussPoints> gp_ic);
 
     std::map<Point*, Core::LinAlg::Matrix<3, 1>> local_coordinates_;
 

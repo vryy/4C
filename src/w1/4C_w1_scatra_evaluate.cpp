@@ -34,10 +34,10 @@ void Discret::Elements::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
     if (discretization.has_state(1, "scalarfield"))
     {
       // check if you can get the scalar state
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> phinp =
           discretization.get_state(1, "scalarfield");
 
-      if (phinp == Teuchos::null) FOUR_C_THROW("pre_evaluate: Cannot get state vector 'phinp' ");
+      if (phinp == nullptr) FOUR_C_THROW("pre_evaluate: Cannot get state vector 'phinp' ");
 
       // extract local values of the global vectors
       std::vector<double> myphi(la[1].lm_.size());
@@ -51,12 +51,12 @@ void Discret::Elements::Wall1Scatra::pre_evaluate(Teuchos::ParameterList& params
       params.set<double>("scalar", meanphi);
     }
     // Get pointer for scatra material in the same element
-    Teuchos::RCP<Core::FE::Discretization> scatradis = Teuchos::null;
+    std::shared_ptr<Core::FE::Discretization> scatradis = nullptr;
     scatradis = Global::Problem::instance()->get_dis("scatra");
     Core::Elements::Element* scatraele = scatradis->g_element(id());
-    Teuchos::RCP<Core::Mat::Material> scatramat =
-        Teuchos::rcp_dynamic_cast<Core::Mat::Material>(scatraele->material());
-    params.set<Teuchos::RCP<Core::Mat::Material>>("scatramat", scatramat);
+    std::shared_ptr<Core::Mat::Material> scatramat =
+        std::dynamic_pointer_cast<Core::Mat::Material>(scatraele->material());
+    params.set<std::shared_ptr<Core::Mat::Material>>("scatramat", scatramat);
   }
   Core::LinAlg::Matrix<2, 1> xrefe(true);
   for (int i = 0; i < numnode; ++i)

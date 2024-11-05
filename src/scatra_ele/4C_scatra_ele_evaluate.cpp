@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 |  Call the element to set all basic parameter                         |
 *----------------------------------------------------------------------*/
 void Discret::Elements::TransportType::pre_evaluate(Core::FE::Discretization& dis,
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
 {
   const auto action = Teuchos::getIntegralValue<ScaTra::Action>(p, "action");
 
@@ -164,7 +164,7 @@ int Discret::Elements::Transport::evaluate(Teuchos::ParameterList& params,
 
       // get the material of the first element
       // we assume here, that the material is equal for all elements in this discretization
-      Teuchos::RCP<Core::Mat::Material> material = Transport::material();
+      std::shared_ptr<Core::Mat::Material> material = Transport::material();
       if (material->material_type() == Core::Materials::m_elchmat)
       {
         const auto* actmat = static_cast<const Mat::ElchMat*>(material.get());

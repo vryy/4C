@@ -21,7 +21,8 @@
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -70,117 +71,117 @@ namespace Adapter
     \brief initialize routine
 
     */
-    virtual void setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    virtual void setup(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond);
 
-    virtual void setup_spring_dashpot(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis,
-        Teuchos::RCP<Core::Conditions::Condition> spring, const int coupling_id,
+    virtual void setup_spring_dashpot(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis,
+        std::shared_ptr<Core::Conditions::Condition> spring, const int coupling_id,
         const Epetra_Comm& comm);
 
     virtual void integrate_lin_d(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> veclm);
 
     virtual void integrate_lin_dm(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> veclm);
 
     virtual void integrate_all(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> veclm);
 
     virtual void evaluate_sliding(const std::string& statename,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> vec,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> veclm);
+        const std::shared_ptr<Core::LinAlg::Vector<double>> vec,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> veclm);
 
     virtual void print_interface(std::ostream& os);
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> d_lin_matrix()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> d_lin_matrix()
     {
-      if (DLin_ == Teuchos::null) FOUR_C_THROW("ERROR: DLin Matrix is null pointer!");
+      if (DLin_ == nullptr) FOUR_C_THROW("ERROR: DLin Matrix is null pointer!");
       return DLin_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> m_lin_matrix()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> m_lin_matrix()
     {
-      if (MLin_ == Teuchos::null) FOUR_C_THROW("ERROR: MLin Matrix is null pointer!");
+      if (MLin_ == nullptr) FOUR_C_THROW("ERROR: MLin Matrix is null pointer!");
       return MLin_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> h_matrix()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> h_matrix()
     {
-      if (H_ == Teuchos::null) FOUR_C_THROW("ERROR: H Matrix is null pointer!");
+      if (H_ == nullptr) FOUR_C_THROW("ERROR: H Matrix is null pointer!");
       return H_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> t_matrix()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> t_matrix()
     {
-      if (T_ == Teuchos::null) FOUR_C_THROW("ERROR: T Matrix is null pointer!");
+      if (T_ == nullptr) FOUR_C_THROW("ERROR: T Matrix is null pointer!");
       return T_;
     };
 
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> n_matrix()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> n_matrix()
     {
-      if (N_ == Teuchos::null) FOUR_C_THROW("ERROR: N Matrix is null pointer!");
+      if (N_ == nullptr) FOUR_C_THROW("ERROR: N Matrix is null pointer!");
       return N_;
     };
 
     // create projection operator Dinv*M
     void create_p() override;
 
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> gap()
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> gap()
     {
-      if (gap_ == Teuchos::null) FOUR_C_THROW("ERROR: gap vector is null pointer!");
+      if (gap_ == nullptr) FOUR_C_THROW("ERROR: gap vector is null pointer!");
       return gap_;
     };
 
     /// the mortar interface itself
-    Teuchos::RCP<CONTACT::Interface> interface() const { return interface_; }
+    std::shared_ptr<CONTACT::Interface> interface() const { return interface_; }
 
    protected:
     /*!
     \brief Read Mortar Condition
 
     */
-    virtual void read_mortar_condition(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    virtual void read_mortar_condition(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements);
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements);
 
     /*!
     \brief Add Mortar Nodes
 
     */
-    virtual void add_mortar_nodes(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    virtual void add_mortar_nodes(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         Teuchos::ParameterList& input, std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+        std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof);
 
     /*!
     \brief Add Mortar Elements
 
     */
-    virtual void add_mortar_elements(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof);
+    virtual void add_mortar_elements(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+        std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof);
 
     /*!
     \brief complete interface, store as internal variable
            store maps as internal variable and do parallel redist.
 
     */
-    virtual void complete_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<CONTACT::Interface>& interface);
+    virtual void complete_interface(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<CONTACT::Interface>& interface);
 
     /*!
     \brief initialize matrices (interla variables)
@@ -192,8 +193,8 @@ namespace Adapter
     \brief create strategy object if required
 
     */
-    virtual void create_strategy(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+    virtual void create_strategy(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof);
 
     /*!
@@ -212,30 +213,32 @@ namespace Adapter
     }
 
    protected:
-    bool issetup_;                    ///< check for setup
-    Teuchos::RCP<Epetra_Comm> comm_;  ///< communicator
-    int myrank_;                      ///< my proc id
+    bool issetup_;                       ///< check for setup
+    std::shared_ptr<Epetra_Comm> comm_;  ///< communicator
+    int myrank_;                         ///< my proc id
 
-    Teuchos::RCP<Epetra_Map> slavenoderowmap_;  ///< map of slave row nodes (after parallel redist.)
-    Teuchos::RCP<Epetra_Map>
-        pslavenoderowmap_;                  ///< map of slave row nodes (before parallel redist.)
-    Teuchos::RCP<Epetra_Map> smdofrowmap_;  ///< map of sm merged row dofs (after parallel redist.)
-    Teuchos::RCP<Epetra_Map>
+    std::shared_ptr<Epetra_Map>
+        slavenoderowmap_;  ///< map of slave row nodes (after parallel redist.)
+    std::shared_ptr<Epetra_Map>
+        pslavenoderowmap_;  ///< map of slave row nodes (before parallel redist.)
+    std::shared_ptr<Epetra_Map>
+        smdofrowmap_;  ///< map of sm merged row dofs (after parallel redist.)
+    std::shared_ptr<Epetra_Map>
         psmdofrowmap_;  ///< map of sm merged row dofs (before parallel redist.)
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> DLin_;  ///< linearization of D matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> MLin_;  ///< linearization of M matrix
+    std::shared_ptr<Core::LinAlg::SparseMatrix> DLin_;  ///< linearization of D matrix
+    std::shared_ptr<Core::LinAlg::SparseMatrix> MLin_;  ///< linearization of M matrix
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         H_;  ///< Matrix containing the tangent derivatives with respect to slave dofs
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         T_;  ///< Matrix containing the tangent vectors of the slave nodes
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         N_;  ///< Matrix containing the (weighted) gap derivatives
              ///< with respect to master and slave dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gap_;  ///< gap vector
+    std::shared_ptr<Core::LinAlg::Vector<double>> gap_;  ///< gap vector
 
-    Teuchos::RCP<CONTACT::Interface> interface_;  ///< interface
+    std::shared_ptr<CONTACT::Interface> interface_;  ///< interface
   };
 }  // namespace Adapter
 

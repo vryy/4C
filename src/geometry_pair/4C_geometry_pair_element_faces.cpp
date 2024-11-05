@@ -22,8 +22,8 @@ FOUR_C_NAMESPACE_OPEN
  */
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::setup(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get the DOF GIDs of this face.
   patch_dof_gid_.clear();
@@ -47,8 +47,8 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::setup(
  */
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get all displacements for the current face / patch.
   std::vector<double> patch_displacement;
@@ -125,8 +125,8 @@ void GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>::evaluate_face_norma
  */
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Call setup of the base class.
   base_class::setup(discret, face_elements);
@@ -134,8 +134,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
   // We need to get a UID for the surface element. If the surface is a face element (at the moment
   // the only suported case), we simply take the GID of the parent element.
   const auto face_element =
-      Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(this->core_element_);
-  if (face_element == Teuchos::null)
+      std::dynamic_pointer_cast<const Core::Elements::FaceElement>(this->core_element_);
+  if (face_element == nullptr)
     FOUR_C_THROW("For FaceElementPatchTemplate the surface must be a Core::Elements::FaceElement");
   const int element_uid = face_element->parent_element_id();
 
@@ -246,8 +246,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::setup(
  */
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get all displacements for the current face / patch.
   std::vector<double> patch_displacement;
@@ -286,8 +286,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
     for (const auto& value : connected_faces_)
     {
       // Get the connected face element.
-      const Teuchos::RCP<const my_type>& face_element =
-          Teuchos::rcp_dynamic_cast<const my_type>(face_elements.at(value.first));
+      const std::shared_ptr<const my_type>& face_element =
+          std::dynamic_pointer_cast<const my_type>(face_elements.at(value.first));
 
       // Setup an element data container for the other element, but with the FAD type and ordering
       // for this patch
@@ -324,7 +324,7 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::set_state(
 template <typename Surface, typename ScalarType>
 void GEOMETRYPAIR::FaceElementPatchTemplate<Surface,
     ScalarType>::calculate_averaged_reference_normals(const std::unordered_map<int,
-    Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Parameter coordinates corresponding to LIDs of nodes.
   Core::LinAlg::Matrix<2, 1, double> xi(true);
@@ -342,8 +342,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface,
   for (const auto& value : connected_faces_)
   {
     // Get the connected face element.
-    const Teuchos::RCP<const my_type>& face_element =
-        Teuchos::rcp_dynamic_cast<const my_type>(face_elements.at(value.first));
+    const std::shared_ptr<const my_type>& face_element =
+        std::dynamic_pointer_cast<const my_type>(face_elements.at(value.first));
 
     // Evaluate the normals at the shared nodes.
     for (const auto& node_map_iterator : value.second.node_lid_map_)
@@ -418,12 +418,12 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<Surface, ScalarType>::average_nodal_
  */
 template <typename Surface, typename ScalarType, typename Volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::setup(
-    const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   const auto face_element =
-      Teuchos::rcp_dynamic_cast<const Core::Elements::FaceElement>(this->core_element_, true);
-  if (face_element == Teuchos::null)
+      std::dynamic_pointer_cast<const Core::Elements::FaceElement>(this->core_element_);
+  if (face_element == nullptr)
     FOUR_C_THROW("For ExtendedVolume coupling the surface must be a Core::Elements::FaceElement");
 
   // Get the DOF GIDs of this face and volume element.
@@ -545,8 +545,8 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume
  */
 template <typename Surface, typename ScalarType, typename Volume>
 void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType, Volume>::set_state(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement,
-    const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement,
+    const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements)
 {
   // Get all displacements for the current face / volume.
   std::vector<double> volume_displacement;
@@ -658,8 +658,8 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<Surface, ScalarType,
 /**
  *
  */
-Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
-    const Teuchos::RCP<const Core::Elements::Element>& core_element, const int fad_order,
+std::shared_ptr<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
+    const std::shared_ptr<const Core::Elements::Element>& core_element, const int fad_order,
     const Inpar::GEOMETRYPAIR::SurfaceNormals surface_normal_strategy)
 {
   const bool is_fad = fad_order > 0;
@@ -668,32 +668,32 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
     switch (core_element->shape())
     {
       case Core::FE::CellType::quad4:
-        return Teuchos::make_rcp<
+        return std::make_shared<
             FaceElementPatchTemplate<t_quad4, line_to_surface_scalar_type<t_hermite, t_quad4>>>(
 
             core_element, false);
       case Core::FE::CellType::quad8:
-        return Teuchos::make_rcp<
+        return std::make_shared<
             FaceElementPatchTemplate<t_quad8, line_to_surface_scalar_type<t_hermite, t_quad8>>>(
 
             core_element, false);
       case Core::FE::CellType::quad9:
-        return Teuchos::make_rcp<
+        return std::make_shared<
             FaceElementPatchTemplate<t_quad9, line_to_surface_scalar_type<t_hermite, t_quad9>>>(
 
             core_element, false);
       case Core::FE::CellType::tri3:
-        return Teuchos::make_rcp<
+        return std::make_shared<
             FaceElementPatchTemplate<t_tri3, line_to_surface_scalar_type<t_hermite, t_tri3>>>(
 
             core_element, false);
       case Core::FE::CellType::tri6:
-        return Teuchos::make_rcp<
+        return std::make_shared<
             FaceElementPatchTemplate<t_tri6, line_to_surface_scalar_type<t_hermite, t_tri6>>>(
 
             core_element, false);
       case Core::FE::CellType::nurbs9:
-        return Teuchos::make_rcp<
+        return std::make_shared<
             FaceElementTemplate<t_nurbs9, line_to_surface_scalar_type<t_hermite, t_nurbs9>>>(
 
             core_element);
@@ -712,29 +712,29 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
           switch (core_element->shape())
           {
             case Core::FE::CellType::quad4:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type_1st_order>>(
                   core_element, true);
             case Core::FE::CellType::quad8:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type_1st_order>>(
                   core_element, true);
             case Core::FE::CellType::quad9:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type_1st_order>>(
                   core_element, true);
             case Core::FE::CellType::tri3:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type_1st_order>>(
 
                   core_element, true);
             case Core::FE::CellType::tri6:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type_1st_order>>(
 
                   core_element, true);
             case Core::FE::CellType::nurbs9:
-              return Teuchos::make_rcp<FaceElementTemplate<t_nurbs9,
+              return std::make_shared<FaceElementTemplate<t_nurbs9,
                   line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>>>(
                   core_element);
             default:
@@ -747,32 +747,32 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
           switch (core_element->shape())
           {
             case Core::FE::CellType::quad4:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_quad4, line_to_surface_patch_scalar_type>>(
 
                   core_element, true);
             case Core::FE::CellType::quad8:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_quad8, line_to_surface_patch_scalar_type>>(
 
                   core_element, true);
             case Core::FE::CellType::quad9:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_quad9, line_to_surface_patch_scalar_type>>(
 
                   core_element, true);
             case Core::FE::CellType::tri3:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_tri3, line_to_surface_patch_scalar_type>>(
 
                   core_element, true);
             case Core::FE::CellType::tri6:
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   FaceElementPatchTemplate<t_tri6, line_to_surface_patch_scalar_type>>(
 
                   core_element, true);
             case Core::FE::CellType::nurbs9:
-              return Teuchos::make_rcp<FaceElementTemplate<t_nurbs9,
+              return std::make_shared<FaceElementTemplate<t_nurbs9,
                   line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>>>(core_element);
             default:
               FOUR_C_THROW("Wrong discretization type given.");
@@ -788,15 +788,15 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
       switch (core_element->shape())
       {
         case Core::FE::CellType::quad4:
-          return Teuchos::make_rcp<FaceElementTemplateExtendedVolume<t_quad4,
+          return std::make_shared<FaceElementTemplateExtendedVolume<t_quad4,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hex8>>(
               core_element);
         case Core::FE::CellType::quad8:
-          return Teuchos::make_rcp<FaceElementTemplateExtendedVolume<t_quad8,
+          return std::make_shared<FaceElementTemplateExtendedVolume<t_quad8,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hex20>>(
               core_element);
         case Core::FE::CellType::quad9:
-          return Teuchos::make_rcp<FaceElementTemplateExtendedVolume<t_quad9,
+          return std::make_shared<FaceElementTemplateExtendedVolume<t_quad9,
               line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hex27>>(
               core_element);
         default:
@@ -808,7 +808,7 @@ Teuchos::RCP<GEOMETRYPAIR::FaceElement> GEOMETRYPAIR::face_element_factory(
   }
 
   FOUR_C_THROW("Could not create a face element.");
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

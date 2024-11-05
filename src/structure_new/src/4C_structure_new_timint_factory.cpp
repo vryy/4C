@@ -27,10 +27,10 @@ Solid::TimeInt::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_strategy(
+std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
+  std::shared_ptr<Solid::TimeInt::Base> ti_strategy = nullptr;
 
   const auto intstrat =
       Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
@@ -43,7 +43,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_strategy(
       ti_strategy = build_implicit_strategy(sdyn);
       // If there was no suitable implicit time integrator check for the
       // explicit case
-      if (ti_strategy.is_null()) ti_strategy = build_explicit_strategy(sdyn);
+      if (!ti_strategy) ti_strategy = build_explicit_strategy(sdyn);
       break;
     }
     default:
@@ -56,10 +56,10 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_strategy(
+std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
+  std::shared_ptr<Solid::TimeInt::Base> ti_strategy = nullptr;
 
   // get the dynamic type
   const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
@@ -70,17 +70,17 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_implicit_strat
   if (is_prestress or dyntype == Inpar::Solid::dyna_statics or  // dynamic type
       dyntype == Inpar::Solid::dyna_genalpha or dyntype == Inpar::Solid::dyna_genalpha_liegroup or
       dyntype == Inpar::Solid::dyna_onesteptheta)
-    ti_strategy = Teuchos::make_rcp<Solid::TimeInt::Implicit>();
+    ti_strategy = std::make_shared<Solid::TimeInt::Implicit>();
 
   return ti_strategy;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strategy(
+std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strategy(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<Solid::TimeInt::Base> ti_strategy = Teuchos::null;
+  std::shared_ptr<Solid::TimeInt::Base> ti_strategy = nullptr;
 
   // what's the current problem type?
   Core::ProblemType probtype = Global::Problem::instance()->get_problem_type();
@@ -94,17 +94,17 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::Factory::build_explicit_strat
 
   if (dyntype == Inpar::Solid::dyna_expleuler or dyntype == Inpar::Solid::dyna_centrdiff or
       dyntype == Inpar::Solid::dyna_ab2 or dyntype == Inpar::Solid::dyna_ab4)
-    ti_strategy = Teuchos::make_rcp<Solid::TimeInt::Explicit>();
+    ti_strategy = std::make_shared<Solid::TimeInt::Explicit>();
 
   return ti_strategy;
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_sdyn(
+std::shared_ptr<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_sdyn(
     const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyndata_ptr = Teuchos::null;
+  std::shared_ptr<Solid::TimeInt::BaseDataSDyn> sdyndata_ptr = nullptr;
 
   const auto dyntype = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdyn, "DYNAMICTYP");
 
@@ -112,16 +112,16 @@ Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_s
   {
     case Inpar::Solid::dyna_genalpha:
     case Inpar::Solid::dyna_genalpha_liegroup:
-      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::GenAlphaDataSDyn>();
+      sdyndata_ptr = std::make_shared<Solid::TimeInt::GenAlphaDataSDyn>();
       break;
     case Inpar::Solid::dyna_onesteptheta:
-      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::OneStepThetaDataSDyn>();
+      sdyndata_ptr = std::make_shared<Solid::TimeInt::OneStepThetaDataSDyn>();
       break;
     case Inpar::Solid::dyna_expleuler:
-      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::ExplEulerDataSDyn>();
+      sdyndata_ptr = std::make_shared<Solid::TimeInt::ExplEulerDataSDyn>();
       break;
     default:
-      sdyndata_ptr = Teuchos::make_rcp<Solid::TimeInt::BaseDataSDyn>();
+      sdyndata_ptr = std::make_shared<Solid::TimeInt::BaseDataSDyn>();
       break;
   }
 
@@ -130,16 +130,16 @@ Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::Factory::build_data_s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> Solid::TimeInt::Factory::build_data_global_state()
-    const
+std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>
+Solid::TimeInt::Factory::build_data_global_state() const
 {
-  return Teuchos::make_rcp<Solid::TimeInt::BaseDataGlobalState>();
+  return std::make_shared<Solid::TimeInt::BaseDataGlobalState>();
 }
 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::build_strategy(
+std::shared_ptr<Solid::TimeInt::Base> Solid::TimeInt::build_strategy(
     const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
@@ -148,7 +148,7 @@ Teuchos::RCP<Solid::TimeInt::Base> Solid::TimeInt::build_strategy(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::build_data_sdyn(
+std::shared_ptr<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::build_data_sdyn(
     const Teuchos::ParameterList& sdyn)
 {
   Factory factory;
@@ -157,7 +157,7 @@ Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> Solid::TimeInt::build_data_sdyn(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> Solid::TimeInt::build_data_global_state()
+std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> Solid::TimeInt::build_data_global_state()
 {
   Factory factory;
   return factory.build_data_global_state();

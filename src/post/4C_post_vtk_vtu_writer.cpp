@@ -79,7 +79,7 @@ void PostVtuWriter::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<Core::FE::Discretization> dis = this->get_field()->discretization();
+  std::shared_ptr<Core::FE::Discretization> dis = this->get_field()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
@@ -232,7 +232,7 @@ void PostVtuWriter::write_geo()
 
 
 void PostVtuWriter::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -241,7 +241,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
@@ -251,7 +251,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
   int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData;
+  std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -265,7 +265,8 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Epetra_Map rowmap(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dofvec = Core::LinAlg::create_vector(rowmap, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> dofvec =
+        Core::LinAlg::create_vector(rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
     ghostedData = Core::LinAlg::create_vector(*colmap, true);
@@ -353,7 +354,7 @@ void PostVtuWriter::write_dof_result_step(std::ofstream& file,
 
 
 void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -361,7 +362,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -372,13 +373,13 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
       colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
   {
     ghostedData =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -448,7 +449,7 @@ void PostVtuWriter::write_nodal_result_step(std::ofstream& file,
 
 
 void PostVtuWriter::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -457,7 +458,7 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   int ncomponents = numdf;
   if (numdf > 1 && numdf == field_->problem()->num_dim()) ncomponents = 3;
@@ -470,12 +471,12 @@ void PostVtuWriter::write_element_result_step(std::ofstream& file,
   if (numdf + from > numcol)
     FOUR_C_THROW("violated column range of Core::LinAlg::MultiVector<double>: %d", numcol);
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> importedData;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> importedData;
   if (dis->element_row_map()->SameAs(data->Map()))
     importedData = data;
   else
   {
-    importedData = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+    importedData = std::make_shared<Core::LinAlg::MultiVector<double>>(
         *dis->element_row_map(), data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *importedData);
   }
@@ -590,7 +591,7 @@ void PostVtuWriter::write_geo_nurbs_ele(const Core::Elements::Element* ele,
   const std::vector<int>& numbering =
       Core::IO::get_vtk_cell_type_from_element_cell_type(mapped_dis_type).second;
 
-  Teuchos::RCP<const Core::FE::Discretization> dis = this->get_field()->discretization();
+  std::shared_ptr<const Core::FE::Discretization> dis = this->get_field()->discretization();
 
   celltypes.push_back(Core::IO::get_vtk_cell_type_from_element_cell_type(mapped_dis_type).first);
 
@@ -692,7 +693,7 @@ void PostVtuWriter::write_geo_beam_ele(const Discret::Elements::Beam3Base* beame
 
 void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData, const int from,
+    std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData, const int from,
     const bool fillzeros) const
 {
   using namespace FourC;
@@ -755,7 +756,7 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
   const unsigned NUMNODES = Core::FE::num_nodes<nurbs_type>;
   const unsigned DIM = Core::FE::dim<nurbs_type>;
 
-  const Teuchos::RCP<const Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<const Core::FE::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
   const Core::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);
@@ -822,7 +823,8 @@ void PostVtuWriter::wirte_dof_result_step_nurbs_ele(const Core::Elements::Elemen
 
 void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::Elements::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& ghostedData, const int& from, const bool fillzeros)
+    std::shared_ptr<Core::LinAlg::Vector<double>>& ghostedData, const int& from,
+    const bool fillzeros)
 {
   using namespace FourC;
 
@@ -833,7 +835,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::Elements::Beam
         "restricted to centerline displacements where numdof = ncomponents = 3");
   }
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = this->get_field()->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = this->get_field()->discretization();
   std::vector<int> nodedofs;
   std::vector<double> elementdofvals;
 
@@ -882,7 +884,7 @@ void PostVtuWriter::write_dof_result_step_beam_ele(const Discret::Elements::Beam
 
 void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData) const
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> ghostedData) const
 {
   using namespace FourC;
 
@@ -943,7 +945,7 @@ void PostVtuWriter::write_nodal_result_step_nurbs_ele(const Core::Elements::Elem
   const unsigned NUMNODES = Core::FE::num_nodes<nurbs_type>;
   const unsigned DIM = Core::FE::dim<nurbs_type>;
 
-  const Teuchos::RCP<const Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<const Core::FE::Discretization> dis = field_->discretization();
   std::vector<int> nodedofs;
 
   const Core::FE::CellType mapped_dis_type = map_nurbs_dis_type_to_lagrange_dis_type(nurbs_type);

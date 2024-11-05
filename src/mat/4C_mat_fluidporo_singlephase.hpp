@@ -47,7 +47,7 @@ namespace Mat
       FluidPoroSinglePhase(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// initialize
       void initialize();
@@ -84,7 +84,7 @@ namespace Mat
       FluidPoroSingleVolFrac(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// initialize
       void initialize();
@@ -123,7 +123,7 @@ namespace Mat
       FluidPoroVolFracPressure(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// initialize
       void initialize();
@@ -277,9 +277,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<FluidPoroSinglePhase>(*this);
+      return std::make_shared<FluidPoroSinglePhase>(*this);
     }
 
     /// return density
@@ -422,9 +422,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<FluidPoroSingleVolFrac>(*this);
+      return std::make_shared<FluidPoroSingleVolFrac>(*this);
     }
 
     /// Return quick accessible material parameter data
@@ -517,9 +517,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<FluidPoroVolFracPressure>(*this);
+      return std::make_shared<FluidPoroVolFracPressure>(*this);
     }
 
     /// Return quick accessible material parameter data

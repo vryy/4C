@@ -109,26 +109,27 @@ namespace Cut
     \brief Generate boundary cells for the considered facet. May need to perform triangulatio
     */
     void generate_divergence_cells(
-        bool divergenceRule, Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
+        bool divergenceRule, Mesh &mesh, std::list<std::shared_ptr<BoundaryCell>> &divCells);
 
     /*!
     \brief Generate boundary cells for the considered facet. May need to perform triangulatio
     */
     void generate_divergence_cells_new(bool divergenceRule, Mesh &mesh,
-        std::list<Teuchos::RCP<BoundaryCell>> &divCells, const std::vector<Point *> &cornersGlobal);
+        std::list<std::shared_ptr<BoundaryCell>> &divCells,
+        const std::vector<Point *> &cornersGlobal);
 
 
     /*!
     \brief Temporarily create Tri3 cell. This is not stored in Mesh
     */
     void temporary_tri3(
-        const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
+        const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells);
 
     /*!
     \brief Temporarily create Quad4 cell. This is not stored in Mesh
     */
     void temporary_quad4(
-        const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells);
+        const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells);
 
     //! considered facet
     Facet *face1_;
@@ -154,7 +155,7 @@ namespace Cut
     //! equation of plane that contains the facet
     std::vector<double> eqn_plane_;
 
-    std::list<Teuchos::RCP<BoundaryCell>> boundarycells_;
+    std::list<std::shared_ptr<BoundaryCell>> boundarycells_;
   };
 }  // namespace Cut
 

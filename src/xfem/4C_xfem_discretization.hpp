@@ -34,7 +34,8 @@ namespace XFEM
     \param name (in): name of this discretization
     \param comm (in): An epetra comm object associated with this discretization
     */
-    DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationXFEM(
+        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
 
     /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
@@ -168,10 +169,10 @@ namespace XFEM
     }
 
 
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> get_initial_dof_set_proxy(int nds)
+    std::shared_ptr<Core::DOFSets::DofSetInterface> get_initial_dof_set_proxy(int nds)
     {
       FOUR_C_ASSERT(nds < (int)initialdofsets_.size(), "undefined dof set");
-      return Teuchos::make_rcp<Core::DOFSets::DofSetProxy>(&*initialdofsets_[nds]);
+      return std::make_shared<Core::DOFSets::DofSetProxy>(&*initialdofsets_[nds]);
     }
 
     /*!
@@ -211,7 +212,7 @@ namespace XFEM
     If the vector is supplied in DofColMap() a reference to it will be stored.
     If the vector is NOT supplied in DofColMap(), but in dof_row_map(),
      a vector with column map is allocated and the supplied vector is exported to it.
-    Everything is stored/referenced using Teuchos::RCP.
+    Everything is stored/referenced using std::shared_ptr.
 
     \param nds (in): number of dofset
     \param name (in): Name of data
@@ -220,7 +221,7 @@ namespace XFEM
     \note This class will not take ownership or in any way modify the solution vector.
     */
     virtual void set_initial_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state);
 
     /** \brief Get number of standard (w/o enrichment) dofs for given node.
      *
@@ -253,21 +254,21 @@ namespace XFEM
     \param uniquenumbering (in) : Assign unique number to additional dofsets
 
     */
-    Teuchos::RCP<Epetra_Map> extend_map(
+    std::shared_ptr<Epetra_Map> extend_map(
         const Epetra_Map* srcmap, int numdofspernodedofset, int numdofsets, bool uniquenumbering);
 
     /// initial set of dofsets
-    std::vector<Teuchos::RCP<Core::DOFSets::DofSetInterface>> initialdofsets_;
+    std::vector<std::shared_ptr<Core::DOFSets::DofSetInterface>> initialdofsets_;
 
     /// bool if discretisation is initialized
     bool initialized_;
 
     /// full (with all reserved dofs) dof row map of initial state
-    Teuchos::RCP<Epetra_Map> initialfulldofrowmap_;
+    std::shared_ptr<Epetra_Map> initialfulldofrowmap_;
 
     /// permuted (with duplicated gids of first dofset - to all other dofsets) dof row map of
     /// initial state
-    Teuchos::RCP<Epetra_Map> initialpermdofrowmap_;
+    std::shared_ptr<Epetra_Map> initialpermdofrowmap_;
 
 
   };  // class DiscretizationXFEM

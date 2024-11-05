@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
     BeamContactAssemblyManagerDirect(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
+        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
             assembly_contact_elepairs)
     : BeamContactAssemblyManager(), assembly_contact_elepairs_(assembly_contact_elepairs)
 {
@@ -33,9 +33,10 @@ BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::
  *
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManagerDirect::evaluate_force_stiff(
-    Teuchos::RCP<Core::FE::Discretization> discret,
-    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-    Teuchos::RCP<Epetra_FEVector> fe_sysvec, Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
+    std::shared_ptr<Core::FE::Discretization> discret,
+    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+    std::shared_ptr<Epetra_FEVector> fe_sysvec,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat)
 {
   // resulting discrete element force vectors of the two interacting elements
   std::vector<Core::LinAlg::SerialDenseVector> eleforce(2);

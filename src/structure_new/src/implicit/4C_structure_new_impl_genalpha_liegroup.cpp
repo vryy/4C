@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::IMPLICIT::GenAlphaLieGroup::GenAlphaLieGroup() : accn_mod_(Teuchos::null)
+Solid::IMPLICIT::GenAlphaLieGroup::GenAlphaLieGroup() : accn_mod_(nullptr)
 {
   // empty constructor
 }
@@ -37,7 +37,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::setup()
   // setup additional state vectors of modified acceleration
   // ---------------------------------------------------------------------------
   accn_mod_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   // Call the setup() of the parent GenAlpha class
   GenAlpha::setup();
@@ -62,7 +62,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::post_setup()
     if (tim_int().is_restarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
+    std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -101,7 +101,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::set_state(const Core::LinAlg::Vector<dou
   // ---------------------------------------------------------------------------
   // new end-point displacements
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().extract_displ_entries(x);
   global_state().get_dis_np()->Scale(1.0, *disnp_ptr);
 
   /* ToDo in case we want to handle rotation vector DoFs correctly on time
@@ -223,7 +223,7 @@ void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
 void Solid::IMPLICIT::GenAlphaLieGroup::add_visco_mass_contributions(
     Core::LinAlg::SparseOperator& jac) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_ptr = global_state().extract_displ_block(jac);
   const double& dt = (*global_state().get_delta_time())[0];
   // add inertial contributions to structural stiffness block
   stiff_ptr->add(*global_state().get_mass_matrix(), false,
@@ -240,9 +240,9 @@ void Solid::IMPLICIT::GenAlphaLieGroup::predict_const_dis_consist_vel_acc(
     Core::LinAlg::Vector<double>& accnp) const
 {
   check_init_setup();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn = global_state().get_dis_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> veln = global_state().get_vel_n();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> accn = global_state().get_acc_n();
   const double& dt = (*global_state().get_delta_time())[0];
 
   // constant predictor: displacement in domain

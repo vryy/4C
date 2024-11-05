@@ -45,12 +45,12 @@ namespace Core::DOFSets
     \brief Standard Constructor
     */
     explicit TransparentIndependentDofSet(
-        Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel);
+        std::shared_ptr<Core::FE::Discretization> sourcedis, bool parallel);
 
 
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override { return Teuchos::make_rcp<IndependentDofSet>(*this); }
+    std::shared_ptr<DofSet> clone() override { return std::make_shared<IndependentDofSet>(*this); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
     int assign_degrees_of_freedom(

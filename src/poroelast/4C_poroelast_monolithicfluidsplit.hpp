@@ -24,7 +24,7 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     explicit MonolithicFluidSplit(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     /*! do the setup for the monolithic system
 
@@ -51,8 +51,8 @@ namespace PoroElast
    private:
     //! build block vector from field vectors
     void setup_vector(Core::LinAlg::Vector<double>& f,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv, const Core::LinAlg::Vector<double>& fv,
-        double fluidscale);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> sv,
+        const Core::LinAlg::Vector<double>& fv, double fluidscale);
 
     //! extract the field vectors from a given composed vector
     /*!
@@ -60,9 +60,9 @@ namespace PoroElast
      \param sx (o) structural vector (e.g. displacements)
      \param fx (o) fluid vector (e.g. velocities and pressure)
      */
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false) override;
+    void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx, bool firstcall = false) override;
 
     //! recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time
     //! step (i.e. condensed forces onto the structure) needed for rhs in next time step
@@ -70,32 +70,32 @@ namespace PoroElast
 
     //! @name matrix transformation
     //! transform object for fluid interface matrix \f$F_{\Gamma \Gamma}\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> fggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> fggtransform_;
     //! transform object for fluid interface matrix \f$F_{\Gamma I}\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> fgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> fgitransform_;
     //! transform object for fluid interface matrix \f$F_{I \Gamma}\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> figtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> figtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma \Gamma}^F\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> cfggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> cfggtransform_;
     //! transform object for structure coupling matrix \f$C_{\Gamma \Gamma}^S\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> csggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> csggtransform_;
     //! transform object for fluid coupling matrix \f$C_{\Gamma I}^F\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> cfgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> cfgitransform_;
     //! transform object for structure coupling matrix \f$C_{I \Gamma}^S\f$
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> csigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> csigtransform_;
     //!@}
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> fgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> fgicur_;
 
     //! block \f$F_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> fggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> fggcur_;
 
     //! block \f$C_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> cgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> cgicur_;
 
     //! block \f$C_{\Gamma\Gamma,i+1}\f$ of fluid matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> cggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseOperator> cggcur_;
 
     //!@}
   };

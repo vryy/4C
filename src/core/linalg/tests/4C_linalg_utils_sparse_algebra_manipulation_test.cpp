@@ -23,10 +23,10 @@ namespace
   {
    public:
     //! Testing parameters
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
 
    protected:
-    SparseAlgebraManipulationTest() { comm_ = Teuchos::rcp(new Epetra_MpiComm(MPI_COMM_WORLD)); }
+    SparseAlgebraManipulationTest() { comm_ = std::make_shared<Epetra_MpiComm>(MPI_COMM_WORLD); }
   };
 
   /** The test setup is based on a simple 1d poisson problem with the given matrix "poisson1d.mm"
@@ -42,11 +42,11 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
     const double tol = 1.1;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_thresh =
         Core::LinAlg::threshold_matrix(A_sparse, tol);
 
     // Check for global entries
@@ -68,11 +68,11 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/filter.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
     const double tol = 1e-5;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> A_thresh =
+    std::shared_ptr<Core::LinAlg::SparseMatrix> A_thresh =
         Core::LinAlg::threshold_matrix(A_sparse, tol);
 
     // Check for global entries
@@ -94,11 +94,11 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/filter.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
     const double tol = 1e-5;
-    Teuchos::RCP<Epetra_CrsGraph> G = Core::LinAlg::threshold_matrix_graph(A_sparse, tol);
+    std::shared_ptr<Epetra_CrsGraph> G = Core::LinAlg::threshold_matrix_graph(A_sparse, tol);
 
     // Check for global entries
     const int A_thresh_nnz = G->NumGlobalNonzeros();
@@ -118,12 +118,12 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/poisson1d.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
     {
       const int power = 0;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries
@@ -132,7 +132,7 @@ namespace
 
     {
       const int power = -3;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries
@@ -141,7 +141,7 @@ namespace
 
     {
       const int power = 1;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries
@@ -150,7 +150,7 @@ namespace
 
     {
       const int power = 2;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries
@@ -159,7 +159,7 @@ namespace
 
     {
       const int power = 3;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries
@@ -168,7 +168,7 @@ namespace
 
     {
       const int power = 4;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries
@@ -183,12 +183,12 @@ namespace
     int err = EpetraExt::MatrixMarketFileToCrsMatrix(
         TESTING::get_support_file_path("test_matrices/beam.mm").c_str(), *comm_, A);
     if (err != 0) FOUR_C_THROW("Matrix read failed.");
-    Teuchos::RCP<Epetra_CrsMatrix> A_crs = Teuchos::rcpFromRef(*A);
+    std::shared_ptr<Epetra_CrsMatrix> A_crs = Core::Utils::shared_ptr_from_ref(*A);
     Core::LinAlg::SparseMatrix A_sparse(A_crs, Core::LinAlg::Copy);
 
     {
       const int power = 3;
-      Teuchos::RCP<Epetra_CrsGraph> graph_enriched =
+      std::shared_ptr<Epetra_CrsGraph> graph_enriched =
           Core::LinAlg::enrich_matrix_graph(A_sparse, power);
 
       // Check for global entries

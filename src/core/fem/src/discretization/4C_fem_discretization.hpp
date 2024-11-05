@@ -155,7 +155,7 @@ namespace Core::FE
     \param comm: Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
+    Discretization(const std::string& name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
 
     /**
      * Virtual destructor.
@@ -195,7 +195,7 @@ namespace Core::FE
     \warning This routine does not verify if a valid Core::IO::DiscretizationWriter has
     been set. If not, this will cause a segmentation fault.
     */
-    [[nodiscard]] virtual Teuchos::RCP<Core::IO::DiscretizationWriter> writer() const
+    [[nodiscard]] virtual std::shared_ptr<Core::IO::DiscretizationWriter> writer() const
     {
       return writer_;
     }
@@ -330,8 +330,8 @@ namespace Core::FE
     @param[in] newdofset New DofSet to be used in this discretization
     @param[in] replaceinstatdofsets Replace also in static dofsets?
     */
-    virtual void replace_dof_set(
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, bool replaceinstatdofsets = false);
+    virtual void replace_dof_set(std::shared_ptr<Core::DOFSets::DofSetInterface> newdofset,
+        bool replaceinstatdofsets = false);
 
     /*!
     \brief Get master to slave coupling in case of periodic boundary conditions
@@ -341,7 +341,7 @@ namespace Core::FE
     /*!
     \brief Get slave to master connectivity in case of periodic boundary conditions
     */
-    virtual Teuchos::RCP<std::map<int, int>> get_pbc_slave_to_master_node_connectivity();
+    virtual std::shared_ptr<std::map<int, int>> get_pbc_slave_to_master_node_connectivity();
 
     //@}
 
@@ -644,19 +644,20 @@ namespace Core::FE
                    Sets havedof_ to false.
     */
     virtual void replace_dof_set(unsigned nds,
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset, bool replaceinstatdofsets = false);
+        std::shared_ptr<Core::DOFSets::DofSetInterface> newdofset,
+        bool replaceinstatdofsets = false);
 
     /*!
     \brief Add a new dofset to the discretisation.
 
     Sets havedof_ to false only if the new dofset is not properly filled yet.
     */
-    virtual int add_dof_set(Teuchos::RCP<Core::DOFSets::DofSetInterface> newdofset);
+    virtual int add_dof_set(std::shared_ptr<Core::DOFSets::DofSetInterface> newdofset);
 
     /*!
     \brief Get proxy to dof set.
     */
-    virtual Teuchos::RCP<Core::DOFSets::DofSetInterface> get_dof_set_proxy(int nds = 0);
+    virtual std::shared_ptr<Core::DOFSets::DofSetInterface> get_dof_set_proxy(int nds = 0);
 
     /*!
     \brief Get degree of freedom row map (Filled()==true prerequisite)
@@ -928,7 +929,7 @@ namespace Core::FE
 
     \note Sets Filled()=false
     */
-    virtual void set_comm(Teuchos::RCP<Epetra_Comm> comm)
+    virtual void set_comm(std::shared_ptr<Epetra_Comm> comm)
     {
       filled_ = false;
       comm_ = comm;
@@ -937,7 +938,7 @@ namespace Core::FE
     /*!
     \brief Set a DiscretizationWriter
     */
-    virtual void set_writer(Teuchos::RCP<Core::IO::DiscretizationWriter> writer)
+    virtual void set_writer(std::shared_ptr<Core::IO::DiscretizationWriter> writer)
     {
       writer_ = writer;
     }
@@ -955,7 +956,7 @@ namespace Core::FE
 
     \note Sets Filled()=false
     */
-    virtual void add_element(Teuchos::RCP<Core::Elements::Element> ele);
+    virtual void add_element(std::shared_ptr<Core::Elements::Element> ele);
 
     /*!
     \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
@@ -970,7 +971,7 @@ namespace Core::FE
 
     \note Sets Filled()=false
     */
-    virtual void add_node(Teuchos::RCP<Core::Nodes::Node> node);
+    virtual void add_node(std::shared_ptr<Core::Nodes::Node> node);
 
     /*!
     \brief Delete an node from the discretization (Filled()==true NOT prerequisite)
@@ -988,7 +989,7 @@ namespace Core::FE
 
     \note Sets Filled()=false and calls reset() upon discretization.
     */
-    virtual bool delete_node(Teuchos::RCP<Core::Nodes::Node> node);
+    virtual bool delete_node(std::shared_ptr<Core::Nodes::Node> node);
 
     /*!
     \brief Delete an node with global id gid from the discretization
@@ -1043,7 +1044,7 @@ namespace Core::FE
 
     \note Sets Filled()=false and calls reset() upon discretization.
     */
-    virtual bool delete_element(Teuchos::RCP<Core::Elements::Element> ele);
+    virtual bool delete_element(std::shared_ptr<Core::Elements::Element> ele);
 
     /*!
     \brief Delete an element with global id gid from the discretization
@@ -1151,7 +1152,7 @@ namespace Core::FE
 
     */
     virtual void set_condition(
-        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
+        const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond);
 
     /*!
     \brief Replace a condition with a certain name (Filled()==false on exit)
@@ -1164,7 +1165,7 @@ namespace Core::FE
 
     \author hiermeier \date 11/16 */
     void replace_conditions(const std::string& name,
-        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds);
+        const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds);
 
     /*!
     \brief Get all conditions with a certain name
@@ -1186,8 +1187,8 @@ namespace Core::FE
     virtual void get_condition(
         const std::string& name, std::vector<Core::Conditions::Condition*>& out) const;
 
-    virtual void get_condition(
-        const std::string& name, std::vector<Teuchos::RCP<Core::Conditions::Condition>>& out) const;
+    virtual void get_condition(const std::string& name,
+        std::vector<std::shared_ptr<Core::Conditions::Condition>>& out) const;
 
     /*! \brief Get a condition with a certain name
 
@@ -1211,7 +1212,7 @@ namespace Core::FE
     virtual void get_condition_names(std::vector<std::string>& names) const;
 
     /// return all conditions defined on this discretization
-    virtual std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>&
+    virtual std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>&
     get_all_conditions()
     {
       return condition_;
@@ -1329,8 +1330,8 @@ namespace Core::FE
     only builds maps!
 
     */
-    virtual std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> build_element_row_column(
-        const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const;
+    virtual std::pair<std::shared_ptr<Epetra_Map>, std::shared_ptr<Epetra_Map>>
+    build_element_row_column(const Epetra_Map& noderowmap, const Epetra_Map& nodecolmap) const;
 
     /*!
     \brief Export the nodes to a different parallel layout
@@ -1478,7 +1479,7 @@ namespace Core::FE
     \return Graph of discretization distributed across processors according to
             the discretization distribution
     */
-    virtual Teuchos::RCP<Epetra_CrsGraph> build_node_graph() const;
+    virtual std::shared_ptr<Epetra_CrsGraph> build_node_graph() const;
 
     /*!
     \brief Build nodal coordinate vector of this discretization based on a nodal rowmap
@@ -1493,8 +1494,8 @@ namespace Core::FE
                submap of the full node rowmap returned from NodeRowMap())
     @return Vector containing the coordinates of all nodes which are present in the given noderowmap
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> build_node_coordinates(
-        Teuchos::RCP<const Epetra_Map> noderowmap = Teuchos::null) const;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> build_node_coordinates(
+        std::shared_ptr<const Epetra_Map> noderowmap = nullptr) const;
 
     //@}
 
@@ -1511,14 +1512,15 @@ namespace Core::FE
     If the vector is supplied in DofColMap() a reference to it will be stored.
     If the vector is NOT supplied in DofColMap(), but in dof_row_map(),
      a vector with column map is allocated and the supplied vector is exported to it.
-    Everything is stored/referenced using Teuchos::RCP.
+    Everything is stored/referenced using std::shared_ptr.
 
     \param name (in): Name of data
     \param state (in): vector of some data
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    void set_state(const std::string& name, Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
+    void set_state(
+        const std::string& name, std::shared_ptr<const Core::LinAlg::Vector<double>> state)
     {
       set_state(0, name, state);
     }
@@ -1534,7 +1536,7 @@ namespace Core::FE
     If the vector is supplied in DofColMap() a reference to it will be stored.
     If the vector is NOT supplied in DofColMap(), but in dof_row_map(),
      a vector with column map is allocated and the supplied vector is exported to it.
-    Everything is stored/referenced using Teuchos::RCP.
+    Everything is stored/referenced using std::shared_ptr.
 
     \param nds (in): number of dofset
     \param name (in): Name of data
@@ -1543,7 +1545,7 @@ namespace Core::FE
     \note This class will not take ownership or in any way modify the solution vector.
     */
     virtual void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state);
 
     /*!
     \brief Get a reference to a data vector at the default dofset (0)
@@ -1556,7 +1558,7 @@ namespace Core::FE
 
     \return Reference to solution state
     */
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> get_state(
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> get_state(
         const std::string& name) const
     {
       return get_state(0, name);
@@ -1574,12 +1576,12 @@ namespace Core::FE
 
     \return Reference to solution state
     */
-    [[nodiscard]] virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> get_state(
+    [[nodiscard]] virtual std::shared_ptr<const Core::LinAlg::Vector<double>> get_state(
         unsigned nds, const std::string& name) const
     {
       FOUR_C_ASSERT(
           nds < dofsets_.size(), "undefined dof set found in discretization %s!", name_.c_str());
-      if (state_.size() <= nds) return Teuchos::null;
+      if (state_.size() <= nds) return nullptr;
 
       auto state_iterator = state_[nds].find(name);
       FOUR_C_THROW_UNLESS(state_iterator != state_[nds].end(),
@@ -1640,7 +1642,7 @@ namespace Core::FE
 
     */
     virtual void add_multi_vector_to_parameter_list(Teuchos::ParameterList& p,
-        const std::string name, Teuchos::RCP<const Core::LinAlg::MultiVector<double>> vec);
+        const std::string name, std::shared_ptr<const Core::LinAlg::MultiVector<double>> vec);
 
     /*!
     \brief Call elements to evaluate
@@ -1664,37 +1666,37 @@ namespace Core::FE
                         containing assembly intructions
     \param systemmatrix1 (out)   : Sparse matrix that may be filled by
                                    assembly of element contributions.
-                                   May be Teuchos::null on entry.
+                                   May be nullptr on entry.
                                    Matrix must be systemmatrix1->Filled()==false on input.
     \param systemmatrix2 (out):    Sparse matrix that may be filled by
                                    assembly of element contributions.
-                                   May be Teuchos::null on entry.
+                                   May be nullptr on entry.
                                    Matrix must be systemmatrix2->Filled()==false on input.
     \param systemvector1 (out):    Distributed vector that may be filled by
                                    aasembly of element contributions.
-                                   May be Teuchos::null on entry.
+                                   May be nullptr on entry.
                                    Vector will NOT be initialized to zero by
                                    the underlying assembly methods that add element
                                    contributions.
     \param systemvector2 (out):    Distributed vector that may be filled by
                                    aasembly of element contributions.
-                                   May be Teuchos::null on entry.
+                                   May be nullptr on entry.
                                    Vector will NOT be initialized to zero by
                                    the underlying assembly methods that add element
                                    contributions.
     \param systemvector3 (out):    Distributed vector that may be filled by
                                    aasembly of element contributions.
-                                   May be Teuchos::null on entry.
+                                   May be nullptr on entry.
                                    Vector will NOT be initialized to zero by
                                    the underlying assembly methods that add element
                                    contributions.
     */
     virtual void evaluate(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3);
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3);
 
     /// Call elements to evaluate
     virtual void evaluate(Teuchos::ParameterList& params, Core::FE::AssembleStrategy& strategy);
@@ -1723,18 +1725,18 @@ namespace Core::FE
                           containing assembly intructions
       \param systemmatrix (out) : Sparse matrix that may be filled by
                                   assembly of element contributions.
-                                  May not be Teuchos::null.
+                                  May not be nullptr.
                                   Matrix must be systemmatrix->Filled()==false on input.
       \param systemvector (out) : Distributed vector that may be filled by
                                   assembly of element contributions.
-                                  May not be Teuchos::null.
+                                  May not be nullptr.
                                   Vector will NOT be initialized to zero by
                                   the underlying assembly methods that add element
                                   contributions.
      */
     void evaluate(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector);
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector);
 
 
     /// Call elements to evaluate
@@ -1809,11 +1811,11 @@ namespace Core::FE
                                   Dirichlet boundary conditions and the remaining/free DOFs
     */
     virtual void evaluate_dirichlet(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd,
-        Teuchos::RCP<Core::LinAlg::Vector<int>> toggle,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmapextractor = Teuchos::null) const;
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvectord,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvectordd,
+        std::shared_ptr<Core::LinAlg::Vector<int>> toggle,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmapextractor = nullptr) const;
 
     /// Evaluate a specific condition using assemble strategy
     virtual void evaluate_condition(Teuchos::ParameterList& params,
@@ -1832,11 +1834,11 @@ namespace Core::FE
      *  \param condstring    (in): Name of condition to be evaluated
      *  \param condid        (in): condition ID */
     void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector, const std::string& condstring,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector, const std::string& condstring,
         const int condid = -1)
     {
-      evaluate_condition(params, Teuchos::null, Teuchos::null, systemvector, Teuchos::null,
-          Teuchos::null, condstring, condid);
+      evaluate_condition(
+          params, nullptr, nullptr, systemvector, nullptr, nullptr, condstring, condid);
     }
 
     /** \brief Evaluate a specified condition
@@ -1852,8 +1854,7 @@ namespace Core::FE
     void evaluate_condition(
         Teuchos::ParameterList& params, const std::string& condstring, const int condid = -1)
     {
-      evaluate_condition(params, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
-          Teuchos::null, condstring, condid);
+      evaluate_condition(params, nullptr, nullptr, nullptr, nullptr, nullptr, condstring, condid);
     }
 
     /*!
@@ -1870,11 +1871,11 @@ namespace Core::FE
       \param params (in):        List of parameters for use at element level
       \param systemmatrix1 (out): Sparse matrix that may be changed by
                                  assembly of boundary element contributions.
-                                 May not be Teuchos::null.
+                                 May not be nullptr.
                                  Matrix must be systemmatrix->Filled()==false on input.
       \param systemmatrix2 (out): Sparse matrix that may be changed by
                                  assembly of boundary element contributions.
-                                 May not be Teuchos::null.
+                                 May not be nullptr.
                                  Matrix must be systemmatrix->Filled()==false on input.
       \param systemvector1 (out):Vector to assemble BCs to.
                                  The vector is NOT initialized to zero by this method.
@@ -1886,11 +1887,11 @@ namespace Core::FE
       \param condid (in):        Condition ID
       */
     virtual void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
         const int condid = -1);
 
     /*!
@@ -1920,7 +1921,7 @@ namespace Core::FE
      * \author bborn \date 08/08
      */
     virtual void evaluate_scalars(
-        Teuchos::ParameterList& params, Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars);
+        Teuchos::ParameterList& params, std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars);
 
     /*!
      * \brief Assemble scalar quantities across conditioned elements
@@ -1987,7 +1988,7 @@ namespace Core::FE
 
       \note Filled()=true is a prerequisite
      */
-    Teuchos::RCP<std::vector<char>> pack_my_elements() const;
+    std::shared_ptr<std::vector<char>> pack_my_elements() const;
 
     /*!
       \brief Pack local nodes (row map) into buffer.
@@ -1997,7 +1998,7 @@ namespace Core::FE
 
       \note Filled()=true is a prerequisite
      */
-    Teuchos::RCP<std::vector<char>> pack_my_nodes() const;
+    std::shared_ptr<std::vector<char>> pack_my_nodes() const;
 
     /*!
       \brief Unpack element buffer and create local elements.
@@ -2122,7 +2123,7 @@ namespace Core::FE
 
     */
     virtual bool build_linesin_condition(
-        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
+        const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of surfaces for a certain surface condition.
@@ -2136,14 +2137,14 @@ namespace Core::FE
 
     \version rework by Andreas Rauch ( rauch 10/16 )       */
     virtual bool build_surfacesin_condition(
-        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
+        const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond);
 
     /*!
     \brief Build the geometry of volumes for a certain volume condition
 
     */
     virtual bool build_volumesin_condition(
-        const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond);
+        const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond);
 
     /*!
     \brief Reset all maps and set Filled()=false (Filled()==true NOT prerequisite)
@@ -2200,18 +2201,18 @@ namespace Core::FE
      *  \author h.kue
      *  \date 09/07    */
     virtual void assign_global_i_ds(const Epetra_Comm& comm,
-        const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalgeometry);
+        const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& finalgeometry);
 
 
     //! Name of this discretization
     std::string name_;
 
     //! Epetra_comm
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
 
     //! DiscretizationWriter
-    Teuchos::RCP<Core::IO::DiscretizationWriter> writer_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> writer_;
 
     //! Flag indicating whether fill_complete() has been called
     bool filled_;
@@ -2224,10 +2225,10 @@ namespace Core::FE
     //! @{
 
     //! Unique distribution of element ownerships
-    Teuchos::RCP<Epetra_Map> elerowmap_;
+    std::shared_ptr<Epetra_Map> elerowmap_;
 
     //! Distribution of elements including ghost elements
-    Teuchos::RCP<Epetra_Map> elecolmap_;
+    std::shared_ptr<Epetra_Map> elecolmap_;
 
     //! Vector of pointers to row elements for faster access
     std::vector<Core::Elements::Element*> elerowptr_;
@@ -2236,7 +2237,7 @@ namespace Core::FE
     std::vector<Core::Elements::Element*> elecolptr_;
 
     //! Map of elements
-    std::map<int, Teuchos::RCP<Core::Elements::Element>> element_;
+    std::map<int, std::shared_ptr<Core::Elements::Element>> element_;
 
     //! @}
 
@@ -2244,10 +2245,10 @@ namespace Core::FE
     //! @{
 
     //! Unique distribution of nodal ownerships
-    Teuchos::RCP<Epetra_Map> noderowmap_;
+    std::shared_ptr<Epetra_Map> noderowmap_;
 
     //! Distribution of nodes including ghost nodes
-    Teuchos::RCP<Epetra_Map> nodecolmap_;
+    std::shared_ptr<Epetra_Map> nodecolmap_;
 
     //! Vector of pointers to row nodes for faster access
     std::vector<Core::Nodes::Node*> noderowptr_;
@@ -2256,21 +2257,21 @@ namespace Core::FE
     std::vector<Core::Nodes::Node*> nodecolptr_;
 
     //! Map from nodal Gid to node pointers
-    std::map<int, Teuchos::RCP<Core::Nodes::Node>> node_;
+    std::map<int, std::shared_ptr<Core::Nodes::Node>> node_;
 
     //! @}
 
     //! Map of references to solution states
-    std::vector<std::map<std::string, Teuchos::RCP<const Core::LinAlg::Vector<double>>>> state_;
+    std::vector<std::map<std::string, std::shared_ptr<const Core::LinAlg::Vector<double>>>> state_;
 
     ///< Map of import objects for states
-    std::vector<Teuchos::RCP<Epetra_Import>> stateimporter_;
+    std::vector<std::shared_ptr<Epetra_Import>> stateimporter_;
 
     ///< Some conditions e.g. boundary conditions
-    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> condition_;
+    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>> condition_;
 
     //! Vector of DofSets
-    std::vector<Teuchos::RCP<Core::DOFSets::DofSetInterface>> dofsets_;
+    std::vector<std::shared_ptr<Core::DOFSets::DofSetInterface>> dofsets_;
 
     //! number of space dimension
     const unsigned int n_dim_;

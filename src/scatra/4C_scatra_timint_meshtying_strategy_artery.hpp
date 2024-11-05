@@ -58,7 +58,7 @@ namespace ScaTra
     const Epetra_Map& dof_row_map() const override;
 
     //! return global map of degrees of freedom
-    Teuchos::RCP<const Epetra_Map> art_scatra_dof_row_map() const;
+    std::shared_ptr<const Epetra_Map> art_scatra_dof_row_map() const;
 
     //! evaluate mesh-tying
     //! \note  nothing is done here
@@ -72,20 +72,20 @@ namespace ScaTra
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override
+    std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
           "'system_matrix_initialization_needed()' to return true");
       // dummy return
-      return Teuchos::null;
+      return nullptr;
     }
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyArtery.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! setup
@@ -98,24 +98,25 @@ namespace ScaTra
     void init_conv_check_strategy() override;
 
     //! solve resulting linear system of equations
-    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
+    void solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,         //!< solver
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
         const int iteration,  //!< number of current Newton-Raphson iteration
         Core::LinAlg::SolverParams& solver_params) const override;
 
     void setup_system(
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual       //!< residual vector
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual       //!< residual vector
     ) const;
 
     //! init the convergence check
-    void set_artery_scatra_time_integrator(Teuchos::RCP<ScaTra::ScaTraTimIntImpl> artscatratimint);
+    void set_artery_scatra_time_integrator(
+        std::shared_ptr<ScaTra::ScaTraTimIntImpl> artscatratimint);
 
     //! set the artery time integrator
-    void set_artery_time_integrator(Teuchos::RCP<Adapter::ArtNet> arttimint);
+    void set_artery_time_integrator(std::shared_ptr<Adapter::ArtNet> arttimint);
 
     //! set the element pairs that are close as found by search algorithm
     void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs);
@@ -130,28 +131,28 @@ namespace ScaTra
     void apply_mesh_movement();
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> combined_system_matrix()
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> combined_system_matrix()
     {
       return comb_systemmatrix_;
     }
 
     //! get the combined rhs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> combined_rhs() const { return rhs_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> combined_rhs() const { return rhs_; }
 
     //! get the combined increment
-    Teuchos::RCP<Core::LinAlg::Vector<double>> combined_increment() const
+    std::shared_ptr<Core::LinAlg::Vector<double>> combined_increment() const
     {
       return comb_increment_;
     }
 
     //! access to time integrator
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> art_scatra_field() { return artscatratimint_; }
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> art_scatra_field() { return artscatratimint_; }
 
     //! check if initial fields match
     void check_initial_fields() const;
 
     //! update increment of 1D discretization
-    void update_art_scatra_iter(Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_inc);
+    void update_art_scatra_iter(std::shared_ptr<const Core::LinAlg::Vector<double>> combined_inc);
 
     /*!
      * extract single field vectors
@@ -159,32 +160,32 @@ namespace ScaTra
      * @param[o] vec_cont  3D vector
      * @param[o] vec_art   1D vector
      */
-    void extract_single_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art) const;
+    void extract_single_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> globalvec,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_art) const;
 
    private:
     //! initialize the linear solver
     void initialize_linear_solver(const Teuchos::ParameterList& scatraparams);
     //! time integrators
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> artscatratimint_;
-    Teuchos::RCP<Adapter::ArtNet> arttimint_;
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> artscatratimint_;
+    std::shared_ptr<Adapter::ArtNet> arttimint_;
 
     //! mesh tying object
-    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
+    std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoscatracoupling_;
 
     //! the two discretizations
-    Teuchos::RCP<Core::FE::Discretization> artscatradis_;
-    Teuchos::RCP<Core::FE::Discretization> scatradis_;
+    std::shared_ptr<Core::FE::Discretization> artscatradis_;
+    std::shared_ptr<Core::FE::Discretization> scatradis_;
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! combined rhs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
     //! combined rhs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> comb_increment_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> comb_increment_;
 
   };  // class MeshtyingStrategyArtery
 

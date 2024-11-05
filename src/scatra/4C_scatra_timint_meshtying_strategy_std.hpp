@@ -54,11 +54,11 @@ namespace ScaTra
     \author rauch
     */
     void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
         const int condid) override
     {
       FOUR_C_THROW("evaluate_condition(...) is not implemented in MeshtyingStrategyStd.");
@@ -70,33 +70,33 @@ namespace ScaTra
     //! init meshtying objects
     void init_meshtying() override;
 
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       FOUR_C_THROW("InterfaceMaps() is not implemented in MeshtyingStrategyStd.");
-      return Teuchos::null;
+      return nullptr;
     }
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override
+    std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
           "'system_matrix_initialization_needed()' to return true");
       // dummy return
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! setup meshtying objects
     void setup_meshtying() override;
 
     //! solve resulting linear system of equations
-    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,         //!< solver
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
+    void solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,         //!< solver
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
         const int iteration,  //!< number of current Newton-Raphson iteration
         Core::LinAlg::SolverParams& solver_params) const override;
 

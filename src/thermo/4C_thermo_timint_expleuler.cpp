@@ -20,11 +20,11 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Thermo::TimIntExplEuler::TimIntExplEuler(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntExpl(ioparams, tdynparams, xparams, actdis, solver, output),
-      fextn_(Teuchos::null),
-      fintn_(Teuchos::null)
+      fextn_(nullptr),
+      fintn_(nullptr)
 {
   // info to user
   if (myrank_ == 0)
@@ -78,8 +78,8 @@ void Thermo::TimIntExplEuler::integrate_step()
   // ordinary internal force and conductivity matrix
   {
     // temperature increment in step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tempinc =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*tempn_);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tempinc =
+        std::make_shared<Core::LinAlg::Vector<double>>(*tempn_);
     tempinc->Update(-1.0, *(*temp_)(0), 1.0);
     // create an empty parameter list for the discretisation
     Teuchos::ParameterList p;
@@ -88,7 +88,7 @@ void Thermo::TimIntExplEuler::integrate_step()
   }
 
   // determine time derivative of capacity vector, ie \f$\dot{P} = C . \dot{T}_{n=1}\f$
-  Teuchos::RCP<Core::LinAlg::Vector<double>> frimpn =
+  std::shared_ptr<Core::LinAlg::Vector<double>> frimpn =
       Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   frimpn->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
 
@@ -100,7 +100,7 @@ void Thermo::TimIntExplEuler::integrate_step()
   }
 
   if ((lumpcapa_ == false) or
-      (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_) == Teuchos::null))
+      (std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(tang_) == nullptr))
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised
@@ -113,15 +113,15 @@ void Thermo::TimIntExplEuler::integrate_step()
   else
   {
     // extract the diagonal values of the mass matrix
-    Teuchos::RCP<Core::LinAlg::Vector<double>> diag = Core::LinAlg::create_vector(
-        (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->row_map(), false);
-    (Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(tang_))->extract_diagonal_copy(*diag);
+    std::shared_ptr<Core::LinAlg::Vector<double>> diag = Core::LinAlg::create_vector(
+        (std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(tang_))->row_map());
+    (std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(tang_))->extract_diagonal_copy(*diag);
     // R_{n+1} = C^{-1} . ( -fint + fext )
     raten_->ReciprocalMultiply(1.0, *diag, *frimpn, 0.0);
   }
 
   // apply Dirichlet BCs on temperature rates
-  apply_dirichlet_bc(timen_, Teuchos::null, raten_, false);
+  apply_dirichlet_bc(timen_, nullptr, raten_, false);
 
   // wassup?
   return;
@@ -161,7 +161,7 @@ void Thermo::TimIntExplEuler::update_step_element()
   // --> be careful: this action does nothing
   p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements and do nothing
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
 
 }  // update_step_element()
 
@@ -181,7 +181,7 @@ void Thermo::TimIntExplEuler::read_restart_force()
  | read restart forces                                       dano 07/13 |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntExplEuler::write_restart_force(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   // do nothing
   return;

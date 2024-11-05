@@ -14,8 +14,7 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_functionvariables.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -117,7 +116,7 @@ namespace Core::Utils
      * the @p variables vector.
      */
     SymbolicFunctionOfSpaceTime(const std::vector<std::string>& expressions,
-        std::vector<Teuchos::RCP<FunctionVariable>> variables);
+        std::vector<std::shared_ptr<FunctionVariable>> variables);
 
     double evaluate(const double* x, double t, std::size_t component) const override;
 
@@ -131,10 +130,10 @@ namespace Core::Utils
 
    private:
     /// vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> expr_;
+    std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double>>> expr_;
 
     /// vector of the function variables and all their definitions
-    std::vector<Teuchos::RCP<FunctionVariable>> variables_;
+    std::vector<std::shared_ptr<FunctionVariable>> variables_;
   };
 
 
@@ -240,10 +239,10 @@ namespace Core::Utils
     using ValueType = double;
 
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<ValueType>>> expr_;
+    std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<ValueType>>> expr_;
 
     //! vector of the function variables and all their definitions
-    std::vector<std::vector<Teuchos::RCP<FunctionVariable>>> variables_;
+    std::vector<std::vector<std::shared_ptr<FunctionVariable>>> variables_;
 
    private:
     //! constants from input
@@ -251,11 +250,11 @@ namespace Core::Utils
   };
 
   /// try to create SymbolicFunctionOfAnything from a given line definition
-  Teuchos::RCP<FunctionOfAnything> try_create_symbolic_function_of_anything(
+  std::shared_ptr<FunctionOfAnything> try_create_symbolic_function_of_anything(
       const std::vector<Input::LineDefinition>& function_line_defs);
 
   /// create a vector function from multiple expressions
-  Teuchos::RCP<FunctionOfSpaceTime> try_create_symbolic_function_of_space_time(
+  std::shared_ptr<FunctionOfSpaceTime> try_create_symbolic_function_of_space_time(
       const std::vector<Input::LineDefinition>& function_line_defs);
 }  // namespace Core::Utils
 

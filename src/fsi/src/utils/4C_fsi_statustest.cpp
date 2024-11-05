@@ -179,7 +179,7 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
   Core::LinAlg::Vector<double> f_copy(f.getEpetraVector());
   // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v = extractor_.extract_vector(f_copy, blocknum_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> v = extractor_.extract_vector(f_copy, blocknum_);
 
   double norm = FSI::GenericNormF::compute_norm(*v);
 
@@ -197,7 +197,8 @@ double NOX::FSI::PartialNormF::compute_norm(const ::NOX::Abstract::Group& grp)
 NOX::FSI::PartialSumNormF::PartialSumNormF(std::string name,
     const Core::LinAlg::MapExtractor& extractor1, double scale1,
     const Core::LinAlg::MapExtractor& extractor2, double scale2,
-    Teuchos::RCP<Coupling::Adapter::CouplingConverter> converter, double tolerance, ScaleType stype)
+    std::shared_ptr<Coupling::Adapter::CouplingConverter> converter, double tolerance,
+    ScaleType stype)
     : AdaptiveNewtonNormF(name, tolerance, ::NOX::Abstract::Vector::TwoNorm, stype),
       extractor1_(extractor1),
       extractor2_(extractor2),
@@ -222,10 +223,10 @@ double NOX::FSI::PartialSumNormF::compute_norm(const ::NOX::Abstract::Group& grp
 
   // extract the inner vector elements we are interested in
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v1 = extractor1_.extract_cond_vector(f);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v2 = extractor2_.extract_cond_vector(f);
+  std::shared_ptr<Core::LinAlg::Vector<double>> v1 = extractor1_.extract_cond_vector(f);
+  std::shared_ptr<Core::LinAlg::Vector<double>> v2 = extractor2_.extract_cond_vector(f);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> v = converter_->src_to_dst(v2);
+  std::shared_ptr<Core::LinAlg::Vector<double>> v = converter_->src_to_dst(v2);
   v->Update(scale1_, *v1, scale2_);
 
   double norm = FSI::GenericNormF::compute_norm(*v);
@@ -301,12 +302,13 @@ NOX::FSI::GenericNormUpdate::GenericNormUpdate(std::string name, double tol, Sca
   const ::NOX::Abstract::Vector& oldSoln = problem.getPreviousSolutionGroup().getX();
   const ::NOX::Abstract::Vector& curSoln = problem.getSolutionGroup().getX();
 
-  if (Teuchos::is_null(update_vector_ptr_)) update_vector_ptr_ = curSoln.clone();
+  if (!update_vector_ptr_)
+    update_vector_ptr_ = std::shared_ptr<::NOX::Abstract::Vector>(curSoln.clone().release().get());
 
   update_vector_ptr_->update(1.0, curSoln, -1.0, oldSoln, 0.0);
 
   compute_norm(
-      Teuchos::rcp_dynamic_cast<::NOX::Epetra::Vector>(update_vector_ptr_)->getEpetraVector());
+      std::dynamic_pointer_cast<::NOX::Epetra::Vector>(update_vector_ptr_)->getEpetraVector());
 
   status_ =
       (norm_update_ < tolerance_) ? ::NOX::StatusTest::Converged : ::NOX::StatusTest::Unconverged;

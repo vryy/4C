@@ -75,7 +75,7 @@ namespace Solid
     void convert_model_type2_sol_type(std::vector<enum NOX::Nln::SolutionType>& soltypes,
         std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>>& slinsolvers,
         const std::set<enum Inpar::Solid::ModelType>& modeltypes,
-        const std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>&
+        const std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>&
             mlinsolvers);
 
     /*! \brief Convert the structural model type enumerator to a nox nln solution

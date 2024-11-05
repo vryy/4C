@@ -30,20 +30,20 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
+std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
 PoroMultiPhaseScaTra::Utils::create_poro_multi_phase_scatra_algorithm(
     Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields solscheme,
     const Teuchos::ParameterList& timeparams, const Epetra_Comm& comm)
 {
   // Creation of Coupled Problem algorithm.
-  Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo;
+  std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase> algo;
 
   switch (solscheme)
   {
     case Inpar::PoroMultiPhaseScaTra::solscheme_twoway_partitioned_nested:
     {
       // call constructor
-      algo = Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested>(
+      algo = std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWayNested>(
           comm, timeparams);
       break;
     }
@@ -51,7 +51,7 @@ PoroMultiPhaseScaTra::Utils::create_poro_multi_phase_scatra_algorithm(
     {
       // call constructor
       algo =
-          Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential>(
+          std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWaySequential>(
               comm, timeparams);
       break;
     }
@@ -61,13 +61,13 @@ PoroMultiPhaseScaTra::Utils::create_poro_multi_phase_scatra_algorithm(
       if (!artery_coupl)
       {
         // call constructor
-        algo = Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay>(
+        algo = std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWay>(
             comm, timeparams);
       }
       else
       {
         // call constructor
-        algo = Teuchos::make_rcp<
+        algo = std::make_shared<
             PoroMultiPhaseScaTra::PoroMultiPhaseScaTraMonolithicTwoWayArteryCoupling>(
 
             comm, timeparams);
@@ -84,15 +84,16 @@ PoroMultiPhaseScaTra::Utils::create_poro_multi_phase_scatra_algorithm(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
+std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
 PoroMultiPhaseScaTra::Utils::create_and_init_artery_coupling_strategy(
-    Teuchos::RCP<Core::FE::Discretization> arterydis,
-    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& meshtyingparams,
-    const std::string& condname, const std::string& artcoupleddofname,
-    const std::string& contcoupleddofname, const bool evaluate_on_lateral_surface)
+    std::shared_ptr<Core::FE::Discretization> arterydis,
+    std::shared_ptr<Core::FE::Discretization> contdis,
+    const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
+    const std::string& artcoupleddofname, const std::string& contcoupleddofname,
+    const bool evaluate_on_lateral_surface)
 {
   // Creation of coupling strategy.
-  Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> strategy;
+  std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> strategy;
 
   auto arterycoupl =
       Teuchos::getIntegralValue<Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod>(
@@ -104,22 +105,22 @@ PoroMultiPhaseScaTra::Utils::create_and_init_artery_coupling_strategy(
     case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::mp:
     {
       if (evaluate_on_lateral_surface)
-        strategy = Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased>(
+        strategy = std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplSurfBased>(
             arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname);
       else
-        strategy = Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased>(
+        strategy = std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplLineBased>(
             arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname);
       break;
     }
     case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::nodal:
     {
-      strategy = Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased>(
+      strategy = std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeBased>(
           arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname);
       break;
     }
     case Inpar::ArteryNetwork::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
     {
-      strategy = Teuchos::make_rcp<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint>(
+      strategy = std::make_shared<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplNodeToPoint>(
           arterydis, contdis, meshtyingparams, condname, artcoupleddofname, contcoupleddofname);
       break;
     }
@@ -156,9 +157,9 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::Utils::setup_discretizations_
 
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   // fill scatra discretization by cloning structure discretization
   Core::FE::clone_discretization<PoroElastScaTra::Utils::PoroScatraCloneStrategy>(
@@ -168,11 +169,11 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::Utils::setup_discretizations_
   // the problem is two way coupled, thus each discretization must know the other discretization
 
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
   // build a proxy of the fluid discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> fluiddofset = fluiddis->get_dof_set_proxy();
   // build a proxy of the fluid discretization for the structure/fluid field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
 
   // check if ScatraField has 2 discretizations, so that coupling is possible
   if (scatradis->add_dof_set(structdofset) != 1)
@@ -192,8 +193,8 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::Utils::setup_discretizations_
 
   if (artery_coupl)
   {
-    Teuchos::RCP<Core::FE::Discretization> artdis = problem->get_dis("artery");
-    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
+    std::shared_ptr<Core::FE::Discretization> artdis = problem->get_dis("artery");
+    std::shared_ptr<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
 
     if (!artdis->filled()) FOUR_C_THROW("artery discretization should be filled at this point");
 
@@ -202,8 +203,8 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::Utils::setup_discretizations_
         *artdis, *artscatradis, Global::Problem::instance()->cloning_material_map());
     artscatradis->fill_complete();
 
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> arterydofset = artdis->get_dof_set_proxy();
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> artscatradofset =
+    std::shared_ptr<Core::DOFSets::DofSetInterface> arterydofset = artdis->get_dof_set_proxy();
+    std::shared_ptr<Core::DOFSets::DofSetInterface> artscatradofset =
         artscatradis->get_dof_set_proxy();
 
     // get MAXNUMSEGPERARTELE
@@ -212,9 +213,9 @@ std::map<int, std::set<int>> PoroMultiPhaseScaTra::Utils::setup_discretizations_
                                     .get<int>("MAXNUMSEGPERARTELE");
 
     // curr_seg_lengths: defined as element-wise quantity
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
+    std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
     dofsetaux =
-        Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, maxnumsegperele, 0, false);
+        std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, maxnumsegperele, 0, false);
     // add it to artery-scatra discretization
     artscatradis->add_dof_set(dofsetaux);
 
@@ -241,17 +242,17 @@ void PoroMultiPhaseScaTra::Utils::assign_material_pointers(const std::string& st
 
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis(struct_disname);
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis(fluid_disname);
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis(scatra_disname);
 
   PoroElast::Utils::set_material_pointers_matching_grid(*structdis, *scatradis);
   PoroElast::Utils::set_material_pointers_matching_grid(*fluiddis, *scatradis);
 
   if (artery_coupl)
   {
-    Teuchos::RCP<Core::FE::Discretization> arterydis = problem->get_dis("artery");
-    Teuchos::RCP<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
+    std::shared_ptr<Core::FE::Discretization> arterydis = problem->get_dis("artery");
+    std::shared_ptr<Core::FE::Discretization> artscatradis = problem->get_dis("artery_scatra");
 
     Arteries::Utils::set_material_pointers_matching_grid(*arterydis, *artscatradis);
   }

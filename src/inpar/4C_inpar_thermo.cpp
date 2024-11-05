@@ -149,20 +149,20 @@ void Inpar::Thermo::set_valid_parameters(Teuchos::ParameterList& list)
 
 
 void Inpar::Thermo::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*--------------------------------------------------------------------*/
   // Convective heat transfer (Newton's law of heat transfer)
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoconvect =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linethermoconvect =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN THERMO CONVECTION LINE CONDITIONS", "ThermoConvections",
           "Line Thermo Convections", Core::Conditions::ThermoConvections, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoconvect =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfthermoconvect =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN THERMO CONVECTION SURF CONDITIONS", "ThermoConvections",
           "Surface Thermo Convections", Core::Conditions::ThermoConvections, true,
           Core::Conditions::geometry_type_surface);
@@ -173,7 +173,7 @@ void Inpar::Thermo::set_valid_conditions(
     // --> Tempn (old temperature T_n)
     // or if the exact solution is needed
     // --> Tempnp (current temperature solution T_n+1) with linearisation
-    cond->add_component(Teuchos::make_rcp<Input::SelectionComponent>("temperature state", "Tempnp",
+    cond->add_component(std::make_shared<Input::SelectionComponent>("temperature state", "Tempnp",
         Teuchos::tuple<std::string>("Tempnp", "Tempn"),
         Teuchos::tuple<std::string>("Tempnp", "Tempn")));
     add_named_real(cond, "coeff", "heat transfer coefficient h");
@@ -191,14 +191,14 @@ void Inpar::Thermo::set_valid_conditions(
   /*--------------------------------------------------------------------*/
   // Robin boundary conditions for heat transfer
   // NOTE: this condition must be
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> thermorobinline =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN THERMO ROBIN LINE CONDITIONS", "ThermoRobin", "Thermo Robin boundary condition",
-          Core::Conditions::ThermoRobin, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> thermorobinsurf =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN THERMO ROBIN SURF CONDITIONS", "ThermoRobin", "Thermo Robin boundary condition",
-          Core::Conditions::ThermoRobin, true, Core::Conditions::geometry_type_surface);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> thermorobinline =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN THERMO ROBIN LINE CONDITIONS",
+          "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
+          Core::Conditions::geometry_type_line);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> thermorobinsurf =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN THERMO ROBIN SURF CONDITIONS",
+          "ThermoRobin", "Thermo Robin boundary condition", Core::Conditions::ThermoRobin, true,
+          Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {thermorobinline, thermorobinsurf})
   {

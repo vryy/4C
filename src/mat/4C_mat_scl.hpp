@@ -67,7 +67,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
@@ -138,9 +138,9 @@ namespace Mat
     Core::Materials::MaterialType material_type() const override { return Core::Materials::m_scl; }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Scl>(*this);
+      return std::make_shared<Scl>(*this);
     }
 
     /// valence (= charge number)

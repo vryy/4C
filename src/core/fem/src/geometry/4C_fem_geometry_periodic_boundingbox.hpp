@@ -16,7 +16,7 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_random.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -53,7 +53,7 @@ namespace Core::Geo
 
       /// setup bounding box object, setup call is needed in case of box dirichlet
       void setup(const Teuchos::ParameterList& io_params,
-          Teuchos::RCP<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+          std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
           int n_dim, const Core::IO::OutputControl& output_control);
 
       /// get edge length
@@ -72,8 +72,9 @@ namespace Core::Geo
       double operator()(int i, int j) const { return box_(i, j); }
 
       /// initialize bounding box discretization
-      void setup_bounding_box_discretization(Teuchos::RCP<Core::FE::Discretization> boundingbox_dis,
-          const Epetra_Comm& comm, const int n_dim);
+      void setup_bounding_box_discretization(
+          std::shared_ptr<Core::FE::Discretization> boundingbox_dis, const Epetra_Comm& comm,
+          const int n_dim);
 
       /*!
       \brief shift node (if outside) back in box if periodic boundary conditions
@@ -275,10 +276,10 @@ namespace Core::Geo
 
      private:
       /// discretization with one volume element representing the box ( used e.g. for output)
-      Teuchos::RCP<Core::FE::Discretization> boxdiscret_;
+      std::shared_ptr<Core::FE::Discretization> boxdiscret_;
       /// box displacement vector
-      Teuchos::RCP<Core::LinAlg::Vector<double>> disn_row_;
-      Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> disn_row_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> disn_col_;
 
       bool empty_;
       /// set global pbc flag
@@ -293,7 +294,7 @@ namespace Core::Geo
       double edgelength_[3];
 
       //! bounding box discretization runtime visualization writer
-      Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh>
+      std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh>
           visualization_output_writer_ptr_;
     };
 

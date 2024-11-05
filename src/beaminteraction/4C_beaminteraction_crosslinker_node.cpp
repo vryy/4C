@@ -77,7 +77,7 @@ void CrossLinking::CrosslinkerNodeDataContainer::unpack(Core::Communication::Unp
  *----------------------------------------------------------------------------*/
 CrossLinking::CrosslinkerNode::CrosslinkerNode(
     int id, const std::vector<double>& coords, const int owner)
-    : Core::Nodes::Node(id, coords, owner), mat_(Teuchos::null)
+    : Core::Nodes::Node(id, coords, owner), mat_(nullptr)
 {
   return;
 }
@@ -141,7 +141,7 @@ void CrossLinking::CrosslinkerNode::pack(Core::Communication::PackBuffer& data) 
   Core::Nodes::Node::pack(data);
 
   // add material
-  bool hasmat = (mat_ != Teuchos::null);
+  bool hasmat = (mat_ != nullptr);
   add_to_pack(data, hasmat);
   if (hasmat) mat_->pack(data);
 
@@ -173,11 +173,11 @@ void CrossLinking::CrosslinkerNode::unpack(Core::Communication::UnpackBuffer& bu
     Mat::CrosslinkerMat* mat = dynamic_cast<Mat::CrosslinkerMat*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack material
-    mat_ = Teuchos::RCP(mat);
+    mat_ = std::shared_ptr<Mat::CrosslinkerMat>(mat);
   }
   else
   {
-    mat_ = Teuchos::null;
+    mat_ = nullptr;
   }
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
@@ -190,7 +190,7 @@ void CrossLinking::CrosslinkerNode::unpack(Core::Communication::UnpackBuffer& bu
 // void CrossLinking::CrosslinkerNode::initialize_data_container()
 //{
 //  // only initialize if not yet done
-//  if (cldata_ ==Teuchos::null)
+//  if (cldata_ ==nullptr)
 //    cldata_ = Teuchos::rcp(new CrossLinking::CrosslinkerNodeDataContainer());
 //
 //  return;
@@ -201,19 +201,20 @@ void CrossLinking::CrosslinkerNode::unpack(Core::Communication::UnpackBuffer& bu
  *---------------------------------------------------------------------------*/
 void CrossLinking::CrosslinkerNode::set_material(int const matnum)
 {
-  Teuchos::RCP<Mat::CrosslinkerMat> mat =
-      Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(Mat::factory(matnum));
-  if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
+  std::shared_ptr<Mat::CrosslinkerMat> mat =
+      std::dynamic_pointer_cast<Mat::CrosslinkerMat>(Mat::factory(matnum));
+  if (mat == nullptr) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }
 
 /*----------------------------------------------------------------------------*
  |  create material class (public)                             eichinger 10/16|
  *---------------------------------------------------------------------------*/
-void CrossLinking::CrosslinkerNode::set_material(Teuchos::RCP<Core::Mat::Material> material)
+void CrossLinking::CrosslinkerNode::set_material(std::shared_ptr<Core::Mat::Material> material)
 {
-  Teuchos::RCP<Mat::CrosslinkerMat> mat = Teuchos::rcp_dynamic_cast<Mat::CrosslinkerMat>(material);
-  if (mat == Teuchos::null) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
+  std::shared_ptr<Mat::CrosslinkerMat> mat =
+      std::dynamic_pointer_cast<Mat::CrosslinkerMat>(material);
+  if (mat == nullptr) FOUR_C_THROW("Invalid material given to crosslinker node. \n");
   mat_ = mat;
 }
 
@@ -222,8 +223,8 @@ void CrossLinking::CrosslinkerNode::set_material(Teuchos::RCP<Core::Mat::Materia
 // *----------------------------------------------------------------------------*/
 // void CrossLinking::CrosslinkerNode::ResetDataContainer()
 //{
-//  // reset to Teuchos::null
-//  cldata_  = Teuchos::null;
+//  // reset to nullptr
+//  cldata_  = nullptr;
 //
 //  return;
 //}

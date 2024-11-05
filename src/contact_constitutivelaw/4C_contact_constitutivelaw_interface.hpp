@@ -44,7 +44,7 @@ namespace CONTACT
     \param icontact (in): Global contact parameter list
     \param selfcontact (in): Flag for self contact status
     */
-    ConstitutivelawInterface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData,
+    ConstitutivelawInterface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData,
         const int id, const Epetra_Comm& comm, const int dim,
         const Teuchos::ParameterList& icontact, bool selfcontact,
         const int contactconstitutivelawid);
@@ -84,7 +84,7 @@ namespace CONTACT
     /** \brief return the multi-scale constitutive law used for the contact containing information
      i.e. on the micro roughness
      */
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> get_constitutive_contact_law()
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> get_constitutive_contact_law()
     {
       return coconstlaw_;
     }
@@ -93,7 +93,7 @@ namespace CONTACT
     /** \brief multi-scale constitutive law used for the contact containing information
      i.e. on the micro roughness
      */
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw_;
   };  // class Interface
 }  // namespace CONTACT
 

@@ -13,9 +13,8 @@
 
 #include "4C_post_vtk_writer.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -71,20 +70,20 @@ class PostVtiWriter : public PostVtkWriter
 
   //! Write a single result step
   void write_dof_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) override;
 
   //! Write a single result step
   void write_nodal_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
   void write_element_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;

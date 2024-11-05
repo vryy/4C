@@ -28,7 +28,8 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps)
     : dis_(dis), dbcmaps_(dbcmaps), curve_(-1), numveldof_(3)
 {
   active_ = false;
@@ -195,8 +196,8 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::transfer(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const double time)
+    const std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp, const double time)
 {
   const Epetra_Map* dofrowmap = dis_->dof_row_map();
 
@@ -627,9 +628,9 @@ void FLD::TransferTurbulentInflowCondition::pack_local_master_values(std::vector
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp)
 {
-  const Teuchos::RCP<const Epetra_Map> activedbcdofs = dbcmaps_->cond_map();
+  const std::shared_ptr<const Epetra_Map> activedbcdofs = dbcmaps_->cond_map();
 
   for (unsigned nn = 0; nn < mymasters.size(); ++nn)
   {
@@ -693,7 +694,8 @@ void FLD::TransferTurbulentInflowCondition::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 6;
@@ -710,8 +712,8 @@ FLD::TransferTurbulentInflowConditionXW::TransferTurbulentInflowConditionXW(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowConditionXW::transfer(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp, const double time)
+    const std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp, const double time)
 {
   const Epetra_Map* dofrowmap = dis_->dof_row_map();
 
@@ -845,9 +847,9 @@ void FLD::TransferTurbulentInflowConditionXW::transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp)
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp)
 {
-  const Teuchos::RCP<const Epetra_Map> activedbcdofs = dbcmaps_->cond_map();
+  const std::shared_ptr<const Epetra_Map> activedbcdofs = dbcmaps_->cond_map();
 
   for (unsigned nn = 0; nn < mymasters.size(); ++nn)
   {
@@ -927,7 +929,8 @@ void FLD::TransferTurbulentInflowConditionXW::set_values_available_on_this_proc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNodal(
-    Teuchos::RCP<Core::FE::Discretization> dis, Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps)
+    std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps)
     : TransferTurbulentInflowCondition(dis, dbcmaps)
 {
   numveldof_ = 1;
@@ -944,8 +947,8 @@ FLD::TransferTurbulentInflowConditionNodal::TransferTurbulentInflowConditionNoda
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowConditionNodal::transfer(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> invec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> outvec, const double time)
+    const std::shared_ptr<Core::LinAlg::Vector<double>> invec,
+    std::shared_ptr<Core::LinAlg::Vector<double>> outvec, const double time)
 {
   std::vector<int> mymasters;
   std::vector<std::vector<double>> mymasters_vec(numveldof_);
@@ -1034,7 +1037,7 @@ void FLD::TransferTurbulentInflowConditionNodal::transfer(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowConditionNodal::set_values_available_on_this_proc(
     std::vector<int>& mymasters, std::vector<std::vector<double>>& mymasters_vec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> outvec)
+    std::shared_ptr<Core::LinAlg::Vector<double>> outvec)
 {
   for (unsigned nn = 0; nn < mymasters.size(); ++nn)
   {

@@ -65,7 +65,7 @@ namespace Solid
 
       //! compute the scaling operator for element based scaling using PTC (derived)
       void compute_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
 
       //! Assemble the right hand side
       bool assemble_force(Core::LinAlg::Vector<double>& f,

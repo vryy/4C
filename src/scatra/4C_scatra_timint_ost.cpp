@@ -22,13 +22,13 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::TimIntOneStepTheta::TimIntOneStepTheta(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, const int probnum)
+ScaTra::TimIntOneStepTheta::TimIntOneStepTheta(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, const int probnum)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output, probnum),
       theta_(params_->get<double>("THETA")),
-      fsphinp_(Teuchos::null)
+      fsphinp_(nullptr)
 {
   // DO NOT DEFINE ANY STATE VECTORS HERE (i.e., vectors based on row or column maps)
   // this is important since we have problems which require an extended ghosting and
@@ -86,7 +86,7 @@ void ScaTra::TimIntOneStepTheta::setup()
   {
     if (extraparams_->sublist("TURBULENCE MODEL").get<std::string>("SCALAR_FORCING") == "isotropic")
     {
-      homisoturb_forcing_ = Teuchos::make_rcp<ScaTra::HomIsoTurbScalarForcing>(this);
+      homisoturb_forcing_ = std::make_shared<ScaTra::HomIsoTurbScalarForcing>(this);
       // initialize forcing algorithm
       homisoturb_forcing_->set_initial_spectrum(
           Teuchos::getIntegralValue<Inpar::ScaTra::InitialField>(*params_, "INITIALFIELD"));
@@ -106,8 +106,7 @@ void ScaTra::TimIntOneStepTheta::setup()
         "action", ScaTra::Action::micro_scale_initialize, eleparams);
 
     // loop over macro-scale elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 }
 
@@ -133,8 +132,7 @@ void ScaTra::TimIntOneStepTheta::set_element_time_parameter(bool forcedincrement
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*--------------------------------------------------------------------------*
@@ -211,7 +209,7 @@ void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cs()
   {
     // perform filtering and computation of Prt
     // compute averaged values for LkMk and MkMk
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     DynSmag_->apply_filter_for_dynamic_computation_of_prt(
         phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
@@ -223,7 +221,7 @@ void ScaTra::TimIntOneStepTheta::dynamic_computation_of_cv()
 {
   if (turbmodel_ == Inpar::FLUID::dynamic_vreman)
   {
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle = dirichlet_toggle();
     Vrem_->apply_filter_for_dynamic_computation_of_dt(
         phinp_, 0.0, dirichtoggle, *extraparams_, nds_vel());
   }
@@ -257,7 +255,7 @@ void ScaTra::TimIntOneStepTheta::compute_time_derivative()
   // However, we do not want to break the linear relationship
   // as stated above. We do not want to set Dirichlet values for
   // dependent values like phidtnp_. This turned out to be inconsistent.
-  // apply_dirichlet_bc(time_,Teuchos::null,phidtnp_);
+  // apply_dirichlet_bc(time_,nullptr,phidtnp_);
 }
 
 /*----------------------------------------------------------------------*
@@ -289,7 +287,7 @@ void ScaTra::TimIntOneStepTheta::update()
   phidtn_->Update(1.0, *phidtnp_, 0.0);
 
   // call time update of forcing routine
-  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->time_update_forcing();
+  if (homisoturb_forcing_ != nullptr) homisoturb_forcing_->time_update_forcing();
 
   // update micro scale in multi-scale simulations if necessary
   if (macro_scale_)
@@ -302,8 +300,7 @@ void ScaTra::TimIntOneStepTheta::update()
         "action", ScaTra::Action::micro_scale_update, eleparams);
 
     // loop over macro-scale elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 }
 
@@ -325,19 +322,19 @@ void ScaTra::TimIntOneStepTheta::write_restart() const
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
 void ScaTra::TimIntOneStepTheta::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   // call base class routine
   ScaTraTimIntImpl::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
   {
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   }
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   time_ = reader->read_double("time");
   step_ = reader->read_int("step");
@@ -414,12 +411,12 @@ void ScaTra::TimIntOneStepTheta::post_calc_initial_time_derivative()
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-void ScaTra::TimIntOneStepTheta::set_state(Teuchos::RCP<Core::LinAlg::Vector<double>> phin,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtn,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hist,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output,
+void ScaTra::TimIntOneStepTheta::set_state(std::shared_ptr<Core::LinAlg::Vector<double>> phin,
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtn,
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> hist,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output,
     std::shared_ptr<Core::IO::DiscretizationVisualizationWriterMesh> visualization_writer,
     const std::vector<double>& phinp_macro, const int step, const double time)
 {
@@ -440,12 +437,12 @@ void ScaTra::TimIntOneStepTheta::set_state(Teuchos::RCP<Core::LinAlg::Vector<dou
  *--------------------------------------------------------------------*/
 void ScaTra::TimIntOneStepTheta::clear_state()
 {
-  phin_ = Teuchos::null;
-  phinp_ = Teuchos::null;
-  phidtn_ = Teuchos::null;
-  phidtnp_ = Teuchos::null;
-  hist_ = Teuchos::null;
-  output_ = Teuchos::null;
+  phin_ = nullptr;
+  phinp_ = nullptr;
+  phidtn_ = nullptr;
+  phidtnp_ = nullptr;
+  hist_ = nullptr;
+  output_ = nullptr;
   phinp_macro_.clear();
   dq_dphi_.clear();
   step_ = -1;

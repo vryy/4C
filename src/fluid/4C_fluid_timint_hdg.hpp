@@ -26,10 +26,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntHDG(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /*!
     \brief initialization
@@ -112,7 +112,7 @@ namespace FLD
            numerical solution of a test problems
 
     */
-    Teuchos::RCP<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
+    std::shared_ptr<std::vector<double>> evaluate_error_compared_to_analytical_sol() override;
 
     /*!
     \brief Reset state vectors
@@ -129,9 +129,9 @@ namespace FLD
     \brief accessor to interior velocity
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_velnp() { return intvelnp_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_veln() { return intveln_; }
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> return_int_velnm() { return intvelnm_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> return_int_velnp() { return intvelnp_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> return_int_veln() { return intveln_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> return_int_velnm() { return intvelnm_; }
 
 
    protected:
@@ -152,25 +152,27 @@ namespace FLD
 
     //! @name velocity gradient, velocity and pressure at time n+1, n, n-1
     //!  and n+alpha_F for element interior in HDG
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intveln_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelnm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intvelaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intvelnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> intvelaf_;
     //@}
 
     //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
     //!  and n-1 for element interior in HDG
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intaccnp_;  ///< acceleration at time \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intaccn_;   ///< acceleration at time \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        intaccnp_;                                           ///< acceleration at time \f$t^{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> intaccn_;  ///< acceleration at time \f$t^{n}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         intaccam_;  ///< acceleration at time \f$t^{n+\alpha_M}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intaccnm_;  ///< acceleration at time \f$t^{n-1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        intaccnm_;  ///< acceleration at time \f$t^{n-1}\f$
     //@}
 
     //! @name other HDG-specific auxiliary vectors, like velocity for output
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> interpolatedVelocity_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedPressure_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> interpolatedVelocity_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedPressure_;
     //@}
 
     /*!

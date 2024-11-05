@@ -1249,7 +1249,7 @@ void inline Mortar::IntegratorCalc<distype_s, distype_m>::gp_3d_dm_quad(Mortar::
  |  Output is an LinAlg::SerialDenseMatrix holding the int. values       |
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
-Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>
+std::shared_ptr<Core::LinAlg::SerialDenseMatrix>
 Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod_2d(Mortar::Element& sele, double& sxia,
     double& sxib, Mortar::Element& mele, double& mxia, double& mxib)
 {
@@ -1268,13 +1268,13 @@ Mortar::IntegratorCalc<distype_s, distype_m>::integrate_mmod_2d(Mortar::Element&
   if ((mxia < -1.0) || (mxib > 1.0))
     FOUR_C_THROW("IntegrateMmod2D called with infeasible master limits!");
 
-  // create empty mmodseg object and wrap it with Teuchos::RCP
+  // create empty mmodseg object and wrap it with std::shared_ptr
   int nrow = sele.num_node();
   int nrowdof = ndim_;
   int ncol = mele.num_node();
   int ncoldof = ndim_;
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mmodseg =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(nrow * nrowdof, ncol * ncoldof);
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mmodseg =
+      std::make_shared<Core::LinAlg::SerialDenseMatrix>(nrow * nrowdof, ncol * ncoldof);
 
   // create empty vectors for shape fct. evaluation
   Core::LinAlg::SerialDenseVector sval(nrow);
@@ -1506,8 +1506,8 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_ele_based_3d(Mortar
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
-    Mortar::Element& sele, Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm)
+    Mortar::Element& sele, Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell,
+    double* auxn, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shapefcn_ == Inpar::Mortar::shape_undefined)
@@ -1525,7 +1525,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
   if ((!sele.is_slave()) || (mele.is_slave()))
     FOUR_C_THROW(
         "integrate_deriv_cell_3d_aux_plane called on a wrong type of Mortar::Element pair!");
-  if (cell == Teuchos::null)
+  if (cell == nullptr)
     FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane called without integration cell");
 
   // number of nodes (slave, master)
@@ -1687,7 +1687,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane(
 template <Core::FE::CellType distype_s, Core::FE::CellType distype_m>
 void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_quad(
     Mortar::Element& sele, Mortar::Element& mele, Mortar::IntElement& sintele,
-    Mortar::IntElement& mintele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn)
+    Mortar::IntElement& mintele, std::shared_ptr<Mortar::IntCell> cell, double* auxn)
 {
   // get LMtype
   Inpar::Mortar::LagMultQuad lmtype = lmquadtype_;
@@ -1716,7 +1716,7 @@ void Mortar::IntegratorCalc<distype_s, distype_m>::integrate_cell_3d_aux_plane_q
     FOUR_C_THROW(
         "ERROR: integrate_deriv_cell_3d_aux_plane_quad called on a wrong type of Mortar::Element "
         "pair!");
-  if (cell == Teuchos::null)
+  if (cell == nullptr)
     FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane_quad called without integration cell");
 
   // number of nodes (slave, master)

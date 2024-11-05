@@ -43,7 +43,7 @@ namespace Cut
     /*!
     \brief Generate integration points on the facets of the volumecell
     */
-    Teuchos::RCP<Core::FE::GaussPoints> vc_integration_rule(std::vector<double>& RefPlaneEqn);
+    std::shared_ptr<Core::FE::GaussPoints> vc_integration_rule(std::vector<double>& RefPlaneEqn);
 
     /*!
     \brief Compute and set correspondingly the volume of the considered volumecell from the

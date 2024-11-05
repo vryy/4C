@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
-    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
+    std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
     : is_scatra_manifold_(is_scatra_manifold),
       ssi_maps_(ssi_maps),
       ssi_structure_meshtying_(std::move(ssi_structure_meshtying))
@@ -35,53 +35,53 @@ SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategySparse::MeshtyingStrategySparse(const bool is_scatra_manifold_value,
-    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
+    std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
     : MeshtyingStrategyBase(is_scatra_manifold_value, ssi_maps, ssi_structure_meshtying)
 {
   temp_scatra_struct_mat_ =
-      SSI::Utils::SSIMatrices::setup_sparse_matrix(*ssi_maps()->scatra_dof_row_map());
+      SSI::Utils::SSIMatrices::setup_sparse_matrix(*ssi_maps->scatra_dof_row_map());
 
   if (is_scatra_manifold())
   {
     temp_scatramanifold_struct_mat_ =
-        SSI::Utils::SSIMatrices::setup_sparse_matrix(*ssi_maps()->scatra_manifold_dof_row_map());
+        SSI::Utils::SSIMatrices::setup_sparse_matrix(*ssi_maps->scatra_manifold_dof_row_map());
   }
 
   temp_struct_scatra_mat_ =
-      SSI::Utils::SSIMatrices::setup_sparse_matrix(*ssi_maps()->structure_dof_row_map());
+      SSI::Utils::SSIMatrices::setup_sparse_matrix(*ssi_maps->structure_dof_row_map());
 }
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifold_value,
-    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
+    std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
     : MeshtyingStrategyBase(is_scatra_manifold_value, ssi_maps, ssi_structure_meshtying),
-      block_position_scatra_(ssi_maps()->get_block_positions(SSI::Subproblem::scalar_transport)),
-      position_structure_(ssi_maps()->get_block_positions(SSI::Subproblem::structure).at(0))
+      block_position_scatra_(ssi_maps->get_block_positions(SSI::Subproblem::scalar_transport)),
+      position_structure_(ssi_maps->get_block_positions(SSI::Subproblem::structure).at(0))
 {
   temp_scatra_struct_mat_ = SSI::Utils::SSIMatrices::setup_block_matrix(
-      *ssi_maps()->block_map_scatra(), *ssi_maps()->block_map_structure());
+      *ssi_maps->block_map_scatra(), *ssi_maps->block_map_structure());
 
   if (is_scatra_manifold())
   {
     temp_scatramanifold_struct_mat_ = SSI::Utils::SSIMatrices::setup_block_matrix(
-        *ssi_maps()->block_map_scatra_manifold(), *ssi_maps()->block_map_structure());
+        *ssi_maps->block_map_scatra_manifold(), *ssi_maps->block_map_structure());
   }
 
   temp_struct_scatra_mat_ = SSI::Utils::SSIMatrices::setup_block_matrix(
-      *ssi_maps()->block_map_structure(), *ssi_maps()->block_map_scatra());
+      *ssi_maps->block_map_structure(), *ssi_maps->block_map_scatra());
 
   if (is_scatra_manifold())
-    block_position_scatra_manifold_ = ssi_maps()->get_block_positions(SSI::Subproblem::manifold);
+    block_position_scatra_manifold_ = ssi_maps->get_block_positions(SSI::Subproblem::manifold);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBase::apply_meshtying_to_structure_matrix(
     Core::LinAlg::SparseMatrix& ssi_structure_matrix,
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> structure_matrix, const bool do_uncomplete)
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> structure_matrix, const bool do_uncomplete)
 {
   /* Transform and assemble the structure matrix into the ssi structure matrix block by block:
    * S_i:  structure interior dofs
@@ -229,7 +229,8 @@ Core::LinAlg::Vector<double> SSI::MeshtyingStrategyBase::apply_meshtying_to_stru
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::apply_meshtying_to_scatra_manifold_structure(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
+    std::shared_ptr<Core::LinAlg::SparseOperator> manifold_structure_matrix,
+    const bool do_uncomplete)
 {
   temp_scatramanifold_struct_mat_->zero();
   auto temp_scatramanifold_struct_sparse_matrix =
@@ -250,7 +251,8 @@ void SSI::MeshtyingStrategySparse::apply_meshtying_to_scatra_manifold_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlock::apply_meshtying_to_scatra_manifold_structure(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> manifold_structure_matrix, const bool do_uncomplete)
+    std::shared_ptr<Core::LinAlg::SparseOperator> manifold_structure_matrix,
+    const bool do_uncomplete)
 {
   temp_scatramanifold_struct_mat_->zero();
   auto temp_scatramanifold_struct_block_matrix =
@@ -275,7 +277,7 @@ void SSI::MeshtyingStrategyBlock::apply_meshtying_to_scatra_manifold_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::apply_meshtying_to_scatra_structure(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
 {
   temp_scatra_struct_mat_->zero();
   auto temp_scatra_struct_domain_sparse_matrix =
@@ -295,7 +297,7 @@ void SSI::MeshtyingStrategySparse::apply_meshtying_to_scatra_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlock::apply_meshtying_to_scatra_structure(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix, const bool do_uncomplete)
 {
   temp_scatra_struct_mat_->zero();
   auto temp_scatra_struct_domain_block_sparse_matrix =
@@ -320,7 +322,7 @@ void SSI::MeshtyingStrategyBlock::apply_meshtying_to_scatra_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategySparse::apply_meshtying_to_structure_scatra(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
+    std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->zero();
   auto temp_struct_scatra_sparse_matrix =
@@ -341,7 +343,7 @@ void SSI::MeshtyingStrategySparse::apply_meshtying_to_structure_scatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::MeshtyingStrategyBlock::apply_meshtying_to_structure_scatra(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
+    std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix, const bool do_uncomplete)
 {
   temp_struct_scatra_mat_->zero();
   auto temp_struct_scatra_block_matrix =
@@ -428,25 +430,25 @@ void SSI::MeshtyingStrategyBase::finalize_meshtying_structure_matrix(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::MeshtyingStrategyBase> SSI::build_meshtying_strategy(
+std::shared_ptr<SSI::MeshtyingStrategyBase> SSI::build_meshtying_strategy(
     const bool is_scatra_manifold, const Core::LinAlg::MatrixType matrixtype_scatra,
-    Teuchos::RCP<SSI::Utils::SSIMaps> ssi_maps,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
+    std::shared_ptr<SSI::Utils::SSIMaps> ssi_maps,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssi_structure_meshtying)
 {
-  Teuchos::RCP<SSI::MeshtyingStrategyBase> meshtying_strategy = Teuchos::null;
+  std::shared_ptr<SSI::MeshtyingStrategyBase> meshtying_strategy = nullptr;
 
   switch (matrixtype_scatra)
   {
     case Core::LinAlg::MatrixType::block_condition:
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
-      meshtying_strategy = Teuchos::make_rcp<SSI::MeshtyingStrategyBlock>(
+      meshtying_strategy = std::make_shared<SSI::MeshtyingStrategyBlock>(
           is_scatra_manifold, ssi_maps, ssi_structure_meshtying);
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      meshtying_strategy = Teuchos::make_rcp<SSI::MeshtyingStrategySparse>(
+      meshtying_strategy = std::make_shared<SSI::MeshtyingStrategySparse>(
           is_scatra_manifold, ssi_maps, ssi_structure_meshtying);
       break;
     }

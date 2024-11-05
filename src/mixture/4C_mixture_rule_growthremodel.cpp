@@ -16,11 +16,11 @@
 
 #include <Epetra_ConfigDefs.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <algorithm>
 #include <cmath>
 #include <iosfwd>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

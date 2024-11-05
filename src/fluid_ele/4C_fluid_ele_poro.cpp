@@ -29,20 +29,20 @@ Core::Communication::ParObject* Discret::Elements::FluidPoroEleType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidPoroEleType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidPoroEleType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDPORO")
   {
-    return Teuchos::make_rcp<Discret::Elements::FluidPoro>(id, owner);
+    return std::make_shared<Discret::Elements::FluidPoro>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidPoroEleType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidPoroEleType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::FluidPoro>(id, owner);
+  return std::make_shared<Discret::Elements::FluidPoro>(id, owner);
 }
 
 void Discret::Elements::FluidPoroEleType::setup_element_definition(
@@ -152,12 +152,12 @@ void Discret::Elements::FluidPoro::unpack(Core::Communication::UnpackBuffer& buf
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidPoro::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidPoro::lines()
 {
   return Core::Communication::get_element_lines<FluidPoroBoundary, FluidPoro>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::FluidPoro::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::FluidPoro::surfaces()
 {
   return Core::Communication::get_element_surfaces<FluidPoroBoundary, FluidPoro>(*this);
 }

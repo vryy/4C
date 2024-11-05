@@ -73,9 +73,9 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi) override;
 
       //! get diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCondMultiScale> diff_manager() const
+      std::shared_ptr<ScaTraEleDiffManagerElchDiffCondMultiScale> diff_manager() const
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(
+        return std::static_pointer_cast<ScaTraEleDiffManagerElchDiffCondMultiScale>(
             my::diffmanager_);
       };
 

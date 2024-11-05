@@ -23,7 +23,7 @@ POROFLUIDMULTIPHASE::ElementUtils::get_single_reaction_mat_from_multi_reactions_
 {
   // get the single phase material by its ID
   const int matid = multiphasereacmat.reac_id(phasenum);
-  Teuchos::RCP<Core::Mat::Material> singlemat = multiphasereacmat.material_by_id(matid);
+  std::shared_ptr<Core::Mat::Material> singlemat = multiphasereacmat.material_by_id(matid);
 
   // safety check and cast
   if (singlemat->material_type() != Core::Materials::m_fluidporo_singlereaction)
@@ -41,7 +41,7 @@ POROFLUIDMULTIPHASE::ElementUtils::get_single_phase_mat_from_multi_material(
 {
   // get the single phase material by its ID
   const int matid = multiphasemat.mat_id(phasenum);
-  Teuchos::RCP<Core::Mat::Material> singlemat = multiphasemat.material_by_id(matid);
+  std::shared_ptr<Core::Mat::Material> singlemat = multiphasemat.material_by_id(matid);
 
   // safety check and cast
   if (singlemat->material_type() != Core::Materials::m_fluidporo_singlephase)
@@ -79,7 +79,7 @@ POROFLUIDMULTIPHASE::ElementUtils::get_single_vol_frac_mat_from_multi_material(
 {
   // get the single phase material by its ID
   const int matid = multiphasemat.mat_id(volfracnum);
-  Teuchos::RCP<Core::Mat::Material> singlemat = multiphasemat.material_by_id(matid);
+  std::shared_ptr<Core::Mat::Material> singlemat = multiphasemat.material_by_id(matid);
 
   // safety check and cast
   if (singlemat->material_type() != Core::Materials::m_fluidporo_singlevolfrac)
@@ -117,7 +117,7 @@ POROFLUIDMULTIPHASE::ElementUtils::get_vol_frac_pressure_mat_from_multi_material
 {
   // get the single phase material by its ID
   const int matid = multiphasemat.mat_id(volfracnum);
-  Teuchos::RCP<Core::Mat::Material> singlemat = multiphasemat.material_by_id(matid);
+  std::shared_ptr<Core::Mat::Material> singlemat = multiphasemat.material_by_id(matid);
 
   // safety check and cast
   if (singlemat->material_type() != Core::Materials::m_fluidporo_volfracpressure)

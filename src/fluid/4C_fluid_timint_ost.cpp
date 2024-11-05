@@ -22,14 +22,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntOneStepTheta::TimIntOneStepTheta(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       startalgo_(false),
-      external_loadsn_(Teuchos::null),
-      external_loadsnp_(Teuchos::null)
+      external_loadsn_(nullptr),
+      external_loadsnp_(nullptr)
 {
 }
 
@@ -103,11 +103,11 @@ void FLD::TimIntOneStepTheta::set_state_tim_int()
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::calculate_acceleration(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,
+    const std::shared_ptr<Core::LinAlg::Vector<double>> accnp)
 {
   /*
 
@@ -145,12 +145,12 @@ void FLD::TimIntOneStepTheta::sep_multiply() { Sep_->multiply(false, *velnp_, *f
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::outputof_filtered_vel(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
+    std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> row_finescaleveltmp;
+  row_finescaleveltmp = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
@@ -191,8 +191,7 @@ void FLD::TimIntOneStepTheta::set_element_time_parameter()
   eleparams.set<bool>("ost new", params_->get<bool>("ost new"));
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void FLD::TimIntOneStepTheta::set_theta()
@@ -225,17 +224,17 @@ void FLD::TimIntOneStepTheta::set_theta()
 | apply external forces to the fluid                      ghamm 12/2014 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::apply_external_forces(
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fext)
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> fext)
 {
   // initialize external force for t_n
   if (step_ <= numstasteps_)
   {
-    external_loadsn_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*fext)(0));
+    external_loadsn_ = std::make_shared<Core::LinAlg::Vector<double>>((*fext)(0));
     external_loadsnp_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     external_loads_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
   }
 
-  if (external_loadsn_ == Teuchos::null)
+  if (external_loadsn_ == nullptr)
   {
     FOUR_C_THROW(
         "Starting algorithm for OST missing: Increase number of start steps"
@@ -258,7 +257,7 @@ void FLD::TimIntOneStepTheta::output_external_forces()
   // call base class
   FLD::FluidImplicitTimeInt::output_external_forces();
 
-  if (external_loadsn_ != Teuchos::null)
+  if (external_loadsn_ != nullptr)
   {
     output_->write_vector("fexternal_n", external_loadsn_);
   }
@@ -296,7 +295,7 @@ void FLD::TimIntOneStepTheta::read_restart(int step)
  *----------------------------------------------------------------------*/
 void FLD::TimIntOneStepTheta::time_update_external_forces()
 {
-  if (external_loadsn_ != Teuchos::null) external_loadsn_->Update(1.0, *external_loadsnp_, 0.0);
+  if (external_loadsn_ != nullptr) external_loadsn_->Update(1.0, *external_loadsnp_, 0.0);
 }
 
 /*----------------------------------------------------------------------*|

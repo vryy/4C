@@ -15,7 +15,7 @@
 #include "4C_io_input_parameter_container.hpp"
 #include "4C_material_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -26,7 +26,7 @@ namespace Mat
   const int NUM_STRESS_3D = 6;  ///< 6 stresses for 3D
 
   /// create element material object given the number of a material definition
-  Teuchos::RCP<Core::Mat::Material> factory(int matnum  ///< material ID
+  std::shared_ptr<Core::Mat::Material> factory(int matnum  ///< material ID
   );
 
   /**

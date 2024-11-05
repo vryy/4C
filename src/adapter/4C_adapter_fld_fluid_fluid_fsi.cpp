@@ -16,18 +16,17 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> xfluidfluid, Teuchos::RCP<Fluid> embfluid,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    bool isale, bool dirichletcond)
+Adapter::FluidFluidFSI::FluidFluidFSI(std::shared_ptr<Fluid> xfluidfluid,
+    std::shared_ptr<Fluid> embfluid, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params, bool isale, bool dirichletcond)
     : FluidFSI(xfluidfluid, embfluid->discretization(), solver, params,
           embfluid->discretization()->writer(), isale, dirichletcond)
 {
   // cast fluid to XFluidFluid
-  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluidfluid);
-  if (xfluidfluid_ == Teuchos::null)
-    FOUR_C_THROW("Failed to cast Adapter::Fluid to FLD::XFluidFluid.");
-  fluidimpl_ = Teuchos::rcp_dynamic_cast<FLD::FluidImplicitTimeInt>(embfluid);
-  if (fluidimpl_ == Teuchos::null)
+  xfluidfluid_ = std::dynamic_pointer_cast<FLD::XFluidFluid>(xfluidfluid);
+  if (xfluidfluid_ == nullptr) FOUR_C_THROW("Failed to cast Adapter::Fluid to FLD::XFluidFluid.");
+  fluidimpl_ = std::dynamic_pointer_cast<FLD::FluidImplicitTimeInt>(embfluid);
+  if (fluidimpl_ == nullptr)
     FOUR_C_THROW("Failed to cast Adapter::Fluid to FLD::FluidImplicitTimInt.");
 }
 
@@ -55,7 +54,7 @@ void Adapter::FluidFluidFSI::init()
 
   // create map extractor for combined fluid domains
   // (to distinguish between FSI interface DOF / merged inner embedded & background fluid DOF)
-  mergedfluidinterface_ = Teuchos::make_rcp<FLD::Utils::MapExtractor>();
+  mergedfluidinterface_ = std::make_shared<FLD::Utils::MapExtractor>();
   // call base class init
   FluidFSI::init();
 }
@@ -79,7 +78,7 @@ void Adapter::FluidFluidFSI::prepare_time_step()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Adapter::FluidFluidFSI::dof_row_map()
+std::shared_ptr<const Epetra_Map> Adapter::FluidFluidFSI::dof_row_map()
 {
   return xfluidfluid_->dof_row_map();
 }
@@ -128,7 +127,7 @@ void Adapter::FluidFluidFSI::update()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::Utils::XFluidFluidMapExtractor> const&
+std::shared_ptr<FLD::Utils::XFluidFluidMapExtractor> const&
 Adapter::FluidFluidFSI::x_fluid_fluid_map_extractor()
 {
   return xfluidfluid_->x_fluid_fluid_map_extractor();
@@ -137,10 +136,10 @@ Adapter::FluidFluidFSI::x_fluid_fluid_map_extractor()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FluidFluidFSI::apply_mesh_displacement(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluiddisp)
 {
   // store old state
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
       meshmap_->extract_cond_vector(*fluidimpl_->dispnp());
   meshmap_->insert_cond_vector(*disp, *xfluidfluid_->write_access_disp_old_state());
   // apply mesh displacement and update grid velocity
@@ -151,24 +150,24 @@ void Adapter::FluidFluidFSI::apply_mesh_displacement(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::block_system_matrix()
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::block_system_matrix()
 {
-  if (mergedfluidinterface_ == Teuchos::null)
+  if (mergedfluidinterface_ == nullptr)
     FOUR_C_THROW(
         "Uninitialized map FSI/inner fluid map extractor! Failed to create fluid block matrix.");
 
   // Create a local copy of the inner & conditioned map
   // Reason: the matrix splitting method from Core::LINALG expects non-const maps
-  Teuchos::RCP<Epetra_Map> innermap =
-      Teuchos::make_rcp<Epetra_Map>(*mergedfluidinterface_->other_map());
-  Teuchos::RCP<Epetra_Map> condmap =
-      Teuchos::make_rcp<Epetra_Map>(*mergedfluidinterface_->fsi_cond_map());
+  std::shared_ptr<Epetra_Map> innermap =
+      std::make_shared<Epetra_Map>(*mergedfluidinterface_->other_map());
+  std::shared_ptr<Epetra_Map> condmap =
+      std::make_shared<Epetra_Map>(*mergedfluidinterface_->fsi_cond_map());
   return xfluidfluid_->block_system_matrix(innermap, condmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Adapter::FluidFluidFSI::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+void Adapter::FluidFluidFSI::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
         stepinc  ///< solution increment between time step n and n+1
 )
 {
@@ -188,35 +187,35 @@ void Adapter::FluidFluidFSI::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<do
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::grid_vel()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::grid_vel()
 {
   return fluidimpl_->grid_vel();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::write_access_grid_vel()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::write_access_grid_vel()
 {
   return fluidimpl_->write_access_grid_vel();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispnp()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispnp()
 {
   return fluidimpl_->dispnp();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::write_access_dispnp()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::write_access_dispnp()
 {
   return fluidimpl_->write_access_dispnp();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispn()
+std::shared_ptr<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispn()
 {
   return fluidimpl_->dispn();
 }
@@ -224,23 +223,23 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Adapter::FluidFluidFSI::dispn()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<Core::FE::Discretization>& Adapter::FluidFluidFSI::discretization()
+const std::shared_ptr<Core::FE::Discretization>& Adapter::FluidFluidFSI::discretization()
 {
   return fluidimpl_->discretization();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Adapter::FluidFluidFSI::velocity_row_map()
+std::shared_ptr<const Epetra_Map> Adapter::FluidFluidFSI::velocity_row_map()
 {
   // in case of fsi with fluidsplit, return the embedded velocity DOF
   // (to understand the motivation behind this, have a look at the recovery of the
   // Lagrange multiplier in standard ALE-FSI class (fluidsplit) in case of active
   // shape derivatives)
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   maps.push_back(xfluidfluid_->x_fluid_fluid_map_extractor()->fluid_map());
   maps.push_back(xfluidfluid_->velocity_row_map());
-  Teuchos::RCP<const Epetra_Map> innervelocitymap =
+  std::shared_ptr<const Epetra_Map> innervelocitymap =
       Core::LinAlg::MultiMapExtractor::intersect_maps(maps);
   return innervelocitymap;
 }
@@ -261,7 +260,7 @@ bool Adapter::FluidFluidFSI::is_ale_relaxation_step(int step) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::shape_derivatives()
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> Adapter::FluidFluidFSI::shape_derivatives()
 {
   return xfluidfluid_->extended_shape_derivatives();
 }
@@ -273,7 +272,7 @@ void Adapter::FluidFluidFSI::setup_interface(const int nds_master)
   // check nds_master
   if (nds_master != 0) FOUR_C_THROW("nds_master is supposed to be 0 here");
 
-  if (mergedfluidinterface_ == Teuchos::null)
+  if (mergedfluidinterface_ == nullptr)
   {
     std::stringstream errmsg;
     errmsg
@@ -285,7 +284,7 @@ void Adapter::FluidFluidFSI::setup_interface(const int nds_master)
   FluidFSI::setup_interface();
 
   // get background fluid map
-  Teuchos::RCP<const Epetra_Map> xfluidmap =
+  std::shared_ptr<const Epetra_Map> xfluidmap =
       xfluidfluid_->x_fluid_fluid_map_extractor()->x_fluid_map();
   // do the setup
   mergedfluidinterface_->setup(xfluidmap, *FluidFSI::interface());
@@ -298,8 +297,8 @@ void Adapter::FluidFluidFSI::setup_interface(const int nds_master)
 void Adapter::FluidFluidFSI::prepare_shape_derivatives()
 {
   // the dof-maps may have changed: create a new shape derivatives matrix
-  Teuchos::RCP<std::set<int>> condelements =
-      mergedfluidinterface_->conditioned_element_map(*fluidimpl_->discretization()());
+  std::shared_ptr<std::set<int>> condelements =
+      mergedfluidinterface_->conditioned_element_map(*fluidimpl_->discretization());
   xfluidfluid_->prepare_shape_derivatives(*mergedfluidinterface_, condelements);
 }
 

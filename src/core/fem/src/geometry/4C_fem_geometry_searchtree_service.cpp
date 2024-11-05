@@ -60,7 +60,7 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_dis(const Core::FE::Discretiz
  | given elements with their current postions for sliding ALE           |
  *----------------------------------------------------------------------*/
 Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_eles(
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions)
 {
   Core::LinAlg::Matrix<3, 2> XAABB(true);
@@ -75,10 +75,10 @@ Core::LinAlg::Matrix<3, 2> Core::Geo::get_xaab_bof_eles(
     XAABB(dim, 1) = pos(dim) + Core::Geo::TOL7;
   }
 
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::const_iterator elemiter;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
-    Teuchos::RCP<Core::Elements::Element> currelement = elemiter->second;
+    std::shared_ptr<Core::Elements::Element> currelement = elemiter->second;
     const Core::LinAlg::SerialDenseMatrix xyze_element(
         Core::Geo::get_current_nodal_positions(*currelement, currentpositions));
     Core::Geo::EleGeoType eleGeoType(Core::Geo::HIGHERORDER);
@@ -296,7 +296,7 @@ void Core::Geo::search_collisions(const std::map<int, Core::LinAlg::Matrix<9, 2>
  | tree node; object is either a node or a line                         |
  *----------------------------------------------------------------------*/
 void Core::Geo::nearest_2d_object_in_node(const Core::FE::Discretization& dis,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
     Core::LinAlg::Matrix<3, 1>& minDistCoords)
@@ -363,7 +363,7 @@ void Core::Geo::nearest_2d_object_in_node(const Core::FE::Discretization& dis,
  | line or node, a random adjacent surface id is returned               |
  *----------------------------------------------------------------------*/
 int Core::Geo::nearest_3d_object_in_node(const Core::FE::Discretization& dis,
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
     const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
     const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
     Core::LinAlg::Matrix<3, 1>& minDistCoords)
@@ -396,7 +396,7 @@ int Core::Geo::nearest_3d_object_in_node(const Core::FE::Discretization& dis,
       }
 
       // run over all line elements
-      const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = element->lines();
+      const std::vector<std::shared_ptr<Core::Elements::Element>> eleLines = element->lines();
       for (int i = 0; i < element->num_line(); i++)
       {
         pointFound = Core::Geo::get_distance_to_line(
@@ -465,7 +465,7 @@ Core::Geo::ObjectType Core::Geo::nearest_3d_object_on_element(
   }
 
   // run over all line elements
-  const std::vector<Teuchos::RCP<Core::Elements::Element>> eleLines = surfaceelement->lines();
+  const std::vector<std::shared_ptr<Core::Elements::Element>> eleLines = surfaceelement->lines();
   for (int i = 0; i < surfaceelement->num_line(); i++)
   {
     pointFound = Core::Geo::get_distance_to_line(
@@ -716,7 +716,7 @@ void Core::Geo::check_rough_geo_type(const Core::Elements::Element* element,
 
 /*----------------------------------------------------------------------*
  | determines the geometry type of an element                 u.may 09/09|
- |  -->needed for Teuchos::RCP on element                                |
+ |  -->needed for std::shared_ptr on element                                |
  *----------------------------------------------------------------------*/
 void Core::Geo::check_rough_geo_type(const Core::Elements::Element& element,
     const Core::LinAlg::SerialDenseMatrix xyze_element, Core::Geo::EleGeoType& eleGeoType)

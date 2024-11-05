@@ -47,7 +47,7 @@ Discret::Elements::FluidEleCalcLoma<distype>::FluidEleCalcLoma()
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcLoma<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -69,7 +69,7 @@ int Discret::Elements::FluidEleCalcLoma<distype>::evaluate(Discret::Elements::Fl
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -184,12 +184,12 @@ int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Discret::Elements:
   double CiDeltaSq = 0.0;
   if (my::fldpara_->turb_mod_action() == Inpar::FLUID::dynamic_smagorinsky)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_CsDeltaSq =
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_CsDeltaSq =
         params.sublist("TURBULENCE MODEL")
-            .get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Cs_delta_sq");
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ele_CiDeltaSq =
+            .get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_Cs_delta_sq");
+    std::shared_ptr<Core::LinAlg::Vector<double>> ele_CiDeltaSq =
         params.sublist("TURBULENCE MODEL")
-            .get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Ci_delta_sq");
+            .get<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_Ci_delta_sq");
     const int id = ele->lid();
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
@@ -220,7 +220,7 @@ int Discret::Elements::FluidEleCalcLoma<distype>::evaluate_od(Teuchos::Parameter
     const Core::LinAlg::Matrix<nen_, 1>& escadtam, const Core::LinAlg::Matrix<nen_, 1>& escabofoaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& eveln, const Core::LinAlg::Matrix<nen_, 1>& escaam,
     const Core::LinAlg::Matrix<nsd_, nen_>& edispnp, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
-    Teuchos::RCP<Core::Mat::Material> mat, bool isale, double CsDeltaSq, double CiDeltaSq,
+    std::shared_ptr<Core::Mat::Material> mat, bool isale, double CsDeltaSq, double CiDeltaSq,
     const Core::FE::GaussIntegration& intpoints)
 {
   // flag for higher order elements
@@ -283,7 +283,7 @@ void Discret::Elements::FluidEleCalcLoma<distype>::sysmat_od(
     const Core::LinAlg::Matrix<nsd_, nen_>& edispnp, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nen_>& estif, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    std::shared_ptr<const Core::Mat::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
     bool isale, const Core::FE::GaussIntegration& intpoints)
 {
   // definition of temperature-based residual vector for continuity

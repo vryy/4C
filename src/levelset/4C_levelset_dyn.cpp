@@ -16,11 +16,11 @@
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <iostream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,7 +34,7 @@ void levelset_dyn(int restart)
   Global::Problem* problem = Global::Problem::instance();
 
   // access the scatra discretization
-  Teuchos::RCP<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
+  std::shared_ptr<Core::FE::Discretization> scatradis = problem->get_dis("scatra");
 
   // access the communicator
   const Epetra_Comm& comm = scatradis->get_comm();
@@ -65,13 +65,13 @@ void levelset_dyn(int restart)
         "Please set LINEAR_SOLVER in SCALAR TRANSPORT DYNAMIC to a valid number!");
 
   // create instance of scalar transport basis algorithm (empty fluid discretization)
-  Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatrabase =
-      Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(
+  std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatrabase =
+      std::make_shared<Adapter::ScaTraBaseAlgorithm>(
           levelsetcontrol, scatradyn, problem->solver_params(linsolvernumber));
 
   // add proxy of velocity related degrees of freedom to scatra discretization
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
           Global::Problem::instance()->n_dim() + 1, 0, 0, true);
   if (scatradis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
@@ -95,7 +95,7 @@ void levelset_dyn(int restart)
   scatrabase->setup();
 
   // get pointer to time integrator
-  Teuchos::RCP<ScaTra::ScaTraTimIntImpl> levelsetalgo = scatrabase->scatra_field();
+  std::shared_ptr<ScaTra::ScaTraTimIntImpl> levelsetalgo = scatrabase->scatra_field();
 
   // read the restart information, set vectors and variables
   if (restart) levelsetalgo->read_restart(restart);
@@ -108,7 +108,7 @@ void levelset_dyn(int restart)
   //       evaluate the velocity function and curve.
   // bool true allows for setting old convective velocity required for particle coupling
   // old particle framework removed -> todo: requires clean up
-  Teuchos::rcp_dynamic_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->set_velocity_field(true);
+  std::dynamic_pointer_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->set_velocity_field(true);
 
   // time measurement: time loop
   TEUCHOS_FUNC_TIME_MONITOR("LEVEL SET:  + time loop");
@@ -120,7 +120,7 @@ void levelset_dyn(int restart)
   Teuchos::TimeMonitor::summarize();
 
   // perform result test if required
-  Teuchos::rcp_dynamic_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->test_results();
+  std::dynamic_pointer_cast<ScaTra::LevelSetAlgorithm>(levelsetalgo)->test_results();
 
   return;
 

@@ -116,11 +116,11 @@ void Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   const int ndsvel = my::scatraparams_->nds_vel();
 
   // get velocity values at nodes
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> convel =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> convel =
       discretization.get_state(ndsvel, "convective velocity field");
 
   // safety check
-  if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+  if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
   // get values of velocity field from secondary dof-set
   const std::vector<int>& lmvel = la[ndsvel].lm_;
@@ -147,10 +147,10 @@ void Discret::Elements::ScaTraEleBoundaryCalcLoma<distype, probdim>::calc_loma_t
   temp << k;
   std::string name = "flux_phi_" + temp.str();
   // try to get the pointer to the entry (and check if type is
-  // Teuchos::RCP<Core::LinAlg::MultiVector<double>>)
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>>* f =
-      params.getPtr<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>(name);
-  // check: field has been set and is not of type Teuchos::null
+  // std::shared_ptr<Core::LinAlg::MultiVector<double>>)
+  std::shared_ptr<Core::LinAlg::MultiVector<double>>* f =
+      params.getPtr<std::shared_ptr<Core::LinAlg::MultiVector<double>>>(name);
+  // check: field has been set and is not of type nullptr
   if (f != nullptr)
     Core::FE::extract_my_node_based_values(peleptr, eflux, **f, 3);
   else

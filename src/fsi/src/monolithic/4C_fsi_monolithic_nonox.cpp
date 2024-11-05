@@ -32,25 +32,25 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::MonolithicNoNOX::MonolithicNoNOX(
     const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams)
-    : MonolithicBase(comm, timeparams), zeros_(Teuchos::null)
+    : MonolithicBase(comm, timeparams), zeros_(nullptr)
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
   const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
   // use taylored fluid- and ALE-wrappers
-  fluid_ = Teuchos::rcp_dynamic_cast<Adapter::FluidFluidFSI>(MonolithicBase::fluid_field());
-  ale_ = Teuchos::rcp_dynamic_cast<Adapter::AleXFFsiWrapper>(MonolithicBase::ale_field());
+  fluid_ = std::dynamic_pointer_cast<Adapter::FluidFluidFSI>(MonolithicBase::fluid_field());
+  ale_ = std::dynamic_pointer_cast<Adapter::AleXFFsiWrapper>(MonolithicBase::ale_field());
 
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
   {
-    sdbg_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_field()->discretization());
+    sdbg_ = std::make_shared<Utils::DebugWriter>(structure_field()->discretization());
     // fdbg_ = Teuchos::rcp(new Utils::DebugWriter(fluid_field()->discretization()));
   }
 
   std::string s = Global::Problem::instance()->output_control_file()->file_name();
   s.append(".iteration");
-  log_ = Teuchos::make_rcp<std::ofstream>(s.c_str());
+  log_ = std::make_shared<std::ofstream>(s.c_str());
   itermax_ = fsimono.get<int>("ITEMAX");
   normtypeinc_ = Teuchos::getIntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_INC");
   normtypefres_ = Teuchos::getIntegralValue<Inpar::FSI::ConvNorm>(fsimono, "NORM_RESF");
@@ -289,7 +289,7 @@ bool FSI::MonolithicNoNOX::converged()
 void FSI::MonolithicNoNOX::linear_solve()
 {
   // merge blockmatrix to SparseMatrix and solve
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> sparse = systemmatrix_->merge();
 
   // apply Dirichlet BCs to system of equations
   if (firstcall_)
@@ -301,7 +301,7 @@ void FSI::MonolithicNoNOX::linear_solve()
 
   const Teuchos::ParameterList& fdyn = Global::Problem::instance()->fluid_dynamic_params();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  solver_ = std::make_shared<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(fluidsolver), get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -319,9 +319,9 @@ void FSI::MonolithicNoNOX::linear_solve()
 /*----------------------------------------------------------------------*/
 void FSI::MonolithicNoNOX::evaluate(const Core::LinAlg::Vector<double>& step_increment)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> sx;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fx;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> ax;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> sx;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> fx;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> ax;
 
   // Save the inner fluid map that includes the background fluid DOF in order to
   // determine a change.
@@ -343,7 +343,7 @@ void FSI::MonolithicNoNOX::evaluate(const Core::LinAlg::Vector<double>& step_inc
 
     extract_field_vectors(x_sum_, sx, fx, ax);
 
-    if (sdbg_ != Teuchos::null)
+    if (sdbg_ != nullptr)
     {
       sdbg_->new_iteration();
       sdbg_->write_vector("x", *structure_field()->interface()->extract_fsi_cond_vector(*sx));
@@ -366,7 +366,7 @@ void FSI::MonolithicNoNOX::evaluate(const Core::LinAlg::Vector<double>& step_inc
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid(ale_field()->dispnp());
+  std::shared_ptr<Core::LinAlg::Vector<double>> fluiddisp = ale_to_fluid(ale_field()->dispnp());
   fluid_field()->apply_mesh_displacement(fluiddisp);
 
   {
@@ -377,9 +377,10 @@ void FSI::MonolithicNoNOX::evaluate(const Core::LinAlg::Vector<double>& step_inc
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::set_dof_row_maps(const std::vector<Teuchos::RCP<const Epetra_Map>>& maps)
+void FSI::MonolithicNoNOX::set_dof_row_maps(
+    const std::vector<std::shared_ptr<const Epetra_Map>>& maps)
 {
-  Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
+  std::shared_ptr<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(maps);
   blockrowdofmap_.setup(*fullmap, maps);
 }
 
@@ -415,8 +416,6 @@ void FSI::MonolithicNoNOX::set_default_parameters(
 
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
   dirParams.set<std::string>("Method", "User Defined");
-  //   Teuchos::RCP<::NOX::Direction::UserDefinedFactory> newtonfactory = Teuchos::rcp(this,false);
-  //   dirParams.set("User Defined Direction Factory",newtonfactory);
 
   // status tests are expensive, but instructive
   // solverOptions.set<std::string>("Status Test Check Type","Minimal");
@@ -631,7 +630,7 @@ void FSI::MonolithicNoNOX::prepare_time_step()
   // as we have to deal with a new map extrator
   create_combined_dof_row_map();
   systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           extractor(), extractor(), 81, false, true);
 }
 

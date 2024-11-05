@@ -152,15 +152,15 @@ namespace Discret
           ) override;
 
       //! evaluate Soret material
-      void mat_soret(const Teuchos::RCP<const Core::Mat::Material> material,  //!< Soret material
+      void mat_soret(const std::shared_ptr<const Core::Mat::Material> material,  //!< Soret material
           double& densn,   //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );
 
       void mat_fourier(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< Fourier material
-          double& densn,                                           //!< density at time t_(n)
+          const std::shared_ptr<const Core::Mat::Material> material,  //!< Fourier material
+          double& densn,                                              //!< density at time t_(n)
           double& densnp,  //!< density at time t_(n+1) or t_(n+alpha_F)
           double& densam   //!< density at time t_(n+alpha_M)
       );
@@ -169,20 +169,20 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! get thermo diffusion manager
-      Teuchos::RCP<ScaTraEleDiffManagerSTIThermo> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerSTIThermo> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerSTIThermo>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerSTIThermo>(my::diffmanager_);
       };
 
       //! get internal variable manager for heat transfer within electrochemical substances
-      Teuchos::RCP<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerSTIElch<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 
       //! diffusion manager for diffusion-conduction formulation
-      Teuchos::RCP<ScaTraEleDiffManagerElchDiffCond> diffmanagerdiffcond_;
+      std::shared_ptr<ScaTraEleDiffManagerElchDiffCond> diffmanagerdiffcond_;
 
       //! utility class supporting element evaluation for diffusion-conduction formulation
       Discret::Elements::ScaTraEleUtilsElchDiffCond<distype>* utils_;

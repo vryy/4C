@@ -91,7 +91,7 @@ namespace Mat
       virtual Core::Materials::MaterialType material_type() const = 0;
 
       /// Create summand object by input parameter ID
-      static Teuchos::RCP<Summand> factory(int matnum  ///< material ID
+      static std::shared_ptr<Summand> factory(int matnum  ///< material ID
       );
 
       /*!

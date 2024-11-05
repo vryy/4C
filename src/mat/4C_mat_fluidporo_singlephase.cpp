@@ -27,7 +27,7 @@ Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Param
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
@@ -74,9 +74,9 @@ Mat::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(const Core::Mat::PAR::Param
 /*----------------------------------------------------------------------*
  *  Create Material (public)                             vuong 08/16      |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSinglePhase::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::FluidPoroSinglePhase::create_material()
 {
-  return Teuchos::make_rcp<Mat::FluidPoroSinglePhase>(this);
+  return std::make_shared<Mat::FluidPoroSinglePhase>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -150,7 +150,7 @@ void Mat::FluidPoroSinglePhase::unpack(Core::Communication::UnpackBuffer& buffer
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -266,7 +266,7 @@ Mat::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
@@ -302,9 +302,9 @@ Mat::PAR::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac(
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 10/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroSingleVolFrac::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::FluidPoroSingleVolFrac::create_material()
 {
-  return Teuchos::make_rcp<Mat::FluidPoroSingleVolFrac>(this);
+  return std::make_shared<Mat::FluidPoroSingleVolFrac>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -374,7 +374,7 @@ void Mat::FluidPoroSingleVolFrac::unpack(Core::Communication::UnpackBuffer& buff
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -413,7 +413,7 @@ Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
   const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
 
   // for the sake of safety
-  if (Global::Problem::instance(probinst)->materials() == Teuchos::null)
+  if (Global::Problem::instance(probinst)->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
   // yet another safety check
   if (Global::Problem::instance(probinst)->materials()->num() == 0)
@@ -427,9 +427,9 @@ Mat::PAR::FluidPoroVolFracPressure::FluidPoroVolFracPressure(
 /*----------------------------------------------------------------------*
  *  Create Material (public)                           kremheller 02/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroVolFracPressure::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::FluidPoroVolFracPressure::create_material()
 {
-  return Teuchos::make_rcp<Mat::FluidPoroVolFracPressure>(this);
+  return std::make_shared<Mat::FluidPoroVolFracPressure>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -499,7 +499,7 @@ void Mat::FluidPoroVolFracPressure::unpack(Core::Communication::UnpackBuffer& bu
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

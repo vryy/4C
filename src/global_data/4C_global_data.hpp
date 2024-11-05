@@ -20,7 +20,6 @@
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <memory>
 #include <vector>
@@ -167,7 +166,7 @@ namespace Global
     /// set restart step which was read from the command line
     void set_restart_step(int r);
 
-    void set_input_control_file(Teuchos::RCP<Core::IO::InputControl>& input)
+    void set_input_control_file(std::shared_ptr<Core::IO::InputControl>& input)
     {
       inputcontrol_ = input;
     }
@@ -213,10 +212,10 @@ namespace Global
         std::string prefix, const std::string& restartkenner);
 
     /// control file for restart read
-    Teuchos::RCP<Core::IO::InputControl> input_control_file() { return inputcontrol_; }
+    std::shared_ptr<Core::IO::InputControl> input_control_file() { return inputcontrol_; }
 
     /// control file for normal output
-    Teuchos::RCP<Core::IO::OutputControl> output_control_file() { return outputcontrol_; }
+    std::shared_ptr<Core::IO::OutputControl> output_control_file() { return outputcontrol_; }
 
     /// write parameters read from input file for documentation
     void write_input_parameters();
@@ -226,21 +225,21 @@ namespace Global
     /// @name Parameters read from file
 
     /// Set parameters from a parameter list and return with default values.
-    void set_parameter_list(Teuchos::RCP<Teuchos::ParameterList> const& parameter_list);
+    void set_parameter_list(std::shared_ptr<Teuchos::ParameterList> const& parameter_list);
 
     /// Return a const parameter list of all of the valid parameters that
     /// this->setParameterList(...) will accept.
-    Teuchos::RCP<const Teuchos::ParameterList> get_valid_parameters() const;
+    std::shared_ptr<const Teuchos::ParameterList> get_valid_parameters() const;
 
-    Teuchos::RCP<const Teuchos::ParameterList> get_parameter_list() const;
+    std::shared_ptr<const Teuchos::ParameterList> get_parameter_list() const;
 
     /// @name Communicators and their parallel groups
 
     /// set communicators
-    void set_communicators(Teuchos::RCP<Core::Communication::Communicators> communicators);
+    void set_communicators(std::shared_ptr<Core::Communication::Communicators> communicators);
 
     /// return communicators
-    Teuchos::RCP<Core::Communication::Communicators> get_communicators() const;
+    std::shared_ptr<Core::Communication::Communicators> get_communicators() const;
 
     //@}
 
@@ -338,7 +337,7 @@ namespace Global
     }
     const Teuchos::ParameterList& embedded_mesh_coupling_params() const
     {
-      return parameters_()->sublist("EMBEDDED MESH COUPLING");
+      return parameters_->sublist("EMBEDDED MESH COUPLING");
     }
     const Teuchos::ParameterList& x_fluid_dynamic_params() const
     {
@@ -452,7 +451,7 @@ namespace Global
     }
     const Teuchos::ParameterList& embedded_mesh_params() const
     {
-      return parameters_()->sublist("EMBEDDED MESH COUPLING");
+      return parameters_->sublist("EMBEDDED MESH COUPLING");
     }
     const Teuchos::ParameterList& volmortar_params() const
     {
@@ -484,13 +483,14 @@ namespace Global
     /// @name Discretizations
 
     /// get access to a particular discretization
-    Teuchos::RCP<Core::FE::Discretization> get_dis(const std::string& name) const;
+    std::shared_ptr<Core::FE::Discretization> get_dis(const std::string& name) const;
 
     auto discretization_range() { return std_20::ranges::views::all(discretizationmap_); }
 
     auto discretization_range() const { return std_20::ranges::views::all(discretizationmap_); }
 
-    const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map() const
+    const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map()
+        const
     {
       return discretizationmap_;
     }
@@ -505,7 +505,7 @@ namespace Global
     bool does_exist_dis(const std::string& name) const;
 
     /// add a discretization to the global problem
-    void add_dis(const std::string& name, Teuchos::RCP<Core::FE::Discretization> dis);
+    void add_dis(const std::string& name, std::shared_ptr<Core::FE::Discretization> dis);
 
 
     //@}
@@ -513,10 +513,10 @@ namespace Global
     /// @name Materials
 
     /// return pointer to materials bundled to the problem
-    Teuchos::RCP<Mat::PAR::Bundle> materials() { return materials_; }
+    std::shared_ptr<Mat::PAR::Bundle> materials() { return materials_; }
 
     // return pointer to contact constitutive law bundled to the problem
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contact_constitutive_laws()
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::Bundle> contact_constitutive_laws()
     {
       return contactconstitutivelaws_;
     }
@@ -556,7 +556,7 @@ namespace Global
     void test_all(const Epetra_Comm& comm) { resulttest_.test_all(comm); }
 
     /// add field specific result test object
-    void add_field_test(Teuchos::RCP<Core::Utils::ResultTest> test)
+    void add_field_test(std::shared_ptr<Core::Utils::ResultTest> test)
     {
       resulttest_.add_field_test(test);
     }
@@ -598,13 +598,13 @@ namespace Global
     int restartstep_;
 
     /// discretizations of this problem
-    std::map<std::string, Teuchos::RCP<Core::FE::Discretization>> discretizationmap_;
+    std::map<std::string, std::shared_ptr<Core::FE::Discretization>> discretizationmap_;
 
     /// material bundle
-    Teuchos::RCP<Mat::PAR::Bundle> materials_;
+    std::shared_ptr<Mat::PAR::Bundle> materials_;
 
     /// bundle containing all read-in contact constitutive laws
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Bundle> contactconstitutivelaws_;
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::Bundle> contactconstitutivelaws_;
 
     /// all particles that are read in
     std::vector<std::shared_ptr<PARTICLEENGINE::ParticleObject>> particles_;
@@ -620,12 +620,12 @@ namespace Global
     std::map<std::pair<std::string, std::string>, std::map<int, int>> clonefieldmatmap_;
 
     /// communicators
-    Teuchos::RCP<Core::Communication::Communicators> communicators_;
+    std::shared_ptr<Core::Communication::Communicators> communicators_;
 
     /// @name File IO
 
-    Teuchos::RCP<Core::IO::InputControl> inputcontrol_;
-    Teuchos::RCP<Core::IO::OutputControl> outputcontrol_;
+    std::shared_ptr<Core::IO::InputControl> inputcontrol_;
+    std::shared_ptr<Core::IO::OutputControl> outputcontrol_;
 
     //@}
 
@@ -636,7 +636,7 @@ namespace Global
     Core::IO::RestartManager restartmanager_;
 
     //! The central list of all paramters read from input.
-    Teuchos::RCP<Teuchos::ParameterList> parameters_;
+    std::shared_ptr<Teuchos::ParameterList> parameters_;
   };
 
 }  // namespace Global

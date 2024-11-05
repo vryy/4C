@@ -13,6 +13,7 @@
 #include "4C_post_filter_base.hpp"
 
 #include <fstream>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -33,7 +34,7 @@ struct SpecialFieldInterface
   virtual ~SpecialFieldInterface() = default;
   virtual std::vector<int> num_df_map() = 0;
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  virtual void operator()(std::vector<std::shared_ptr<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::vector<std::string>& names) = 0;
 };
@@ -121,7 +122,7 @@ class PostWriterBase
    \brief Write one step of a nodal result
    */
   virtual void write_nodal_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) = 0;
 
@@ -129,7 +130,7 @@ class PostWriterBase
    \brief Write one step of an element result
    */
   virtual void write_element_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from) = 0;
 

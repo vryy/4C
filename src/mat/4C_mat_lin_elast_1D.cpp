@@ -27,9 +27,9 @@ Mat::PAR::LinElast1D::LinElast1D(const Core::Mat::PAR::Parameter::Data& matdata)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::LinElast1D::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::LinElast1D::create_material()
 {
-  return Teuchos::make_rcp<Mat::LinElast1D>(this);
+  return std::make_shared<Mat::LinElast1D>(this);
 }
 
 Mat::LinElast1DType Mat::LinElast1DType::instance_;
@@ -74,7 +74,7 @@ void Mat::LinElast1D::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -107,9 +107,9 @@ Mat::PAR::LinElast1DGrowth::LinElast1DGrowth(const Core::Mat::PAR::Parameter::Da
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::LinElast1DGrowth::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::LinElast1DGrowth::create_material()
 {
-  return Teuchos::make_rcp<Mat::LinElast1DGrowth>(this);
+  return std::make_shared<Mat::LinElast1DGrowth>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -167,7 +167,7 @@ void Mat::LinElast1DGrowth::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   growth_params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

@@ -14,8 +14,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_poromultiphase_adapter.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -39,7 +38,7 @@ namespace POROMULTIPHASE
         const std::string& struct_disname, const std::string& fluid_disname);
 
     /// create solution algorithm depending on input file
-    Teuchos::RCP<POROMULTIPHASE::PoroMultiPhase> create_poro_multi_phase_algorithm(
+    std::shared_ptr<POROMULTIPHASE::PoroMultiPhase> create_poro_multi_phase_algorithm(
         Inpar::POROMULTIPHASE::SolutionSchemeOverFields
             solscheme,                             //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,  //!< problem parameters (i)

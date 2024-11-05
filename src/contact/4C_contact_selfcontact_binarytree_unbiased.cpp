@@ -20,7 +20,8 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor UnbiasedSelfBinaryTree (public)                   schmidt 01/19|
  *----------------------------------------------------------------------*/
 CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Core::FE::Discretization& discret,
-    const Teuchos::ParameterList& iparams, Teuchos::RCP<Epetra_Map> elements, int dim, double eps)
+    const Teuchos::ParameterList& iparams, std::shared_ptr<Epetra_Map> elements, int dim,
+    double eps)
     : SelfBinaryTree(discret, iparams, elements, dim, eps),
       two_half_pass_(iparams.get<bool>("Two_half_pass")),
       check_nonsmooth_selfcontactsurface_(iparams.get<bool>("Check_nonsmooth_selfcontactsurface")),
@@ -36,7 +37,7 @@ CONTACT::UnbiasedSelfBinaryTree::UnbiasedSelfBinaryTree(Core::FE::Discretization
  | Add tree nodes to the contact pairs vector  (private)   schmidt 01/19|
  *----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::add_tree_nodes_to_contact_pairs(
-    Teuchos::RCP<SelfBinaryTreeNode> treenode1, Teuchos::RCP<SelfBinaryTreeNode> treenode2)
+    std::shared_ptr<SelfBinaryTreeNode> treenode1, std::shared_ptr<SelfBinaryTreeNode> treenode2)
 {
   bool addcontactpair(true);
 
@@ -57,7 +58,7 @@ void CONTACT::UnbiasedSelfBinaryTree::add_tree_nodes_to_contact_pairs(
  | Calculate dual graph processor specific  (private)      schmidt 01/19|
  *----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
-    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>* dualGraph,
+    std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>* dualGraph,
     const std::vector<int>& elelist, const int p)
 {
   // loop over all self contact elements
@@ -70,8 +71,8 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
     // ... vector of adjacent tree nodes (elements) of current element
     // ... vector of adjacent dual edges containing current element
     // ... vector of global IDs of possible adjacent elements
-    std::vector<Teuchos::RCP<SelfBinaryTreeNode>> adjtreenodes;
-    std::vector<Teuchos::RCP<SelfDualEdge>> adjdualedges;
+    std::vector<std::shared_ptr<SelfBinaryTreeNode>> adjtreenodes;
+    std::vector<std::shared_ptr<SelfDualEdge>> adjdualedges;
     std::vector<int> possadjids;
 
     // get current elements and its nodes
@@ -85,7 +86,7 @@ void CONTACT::UnbiasedSelfBinaryTree::calculate_proc_specific_dual_graph(
 
     // first tree node of one dual edge which includes current element
     // is the element itself saved as a tree node
-    Teuchos::RCP<SelfBinaryTreeNode> node1 = leafsmap()[gid];
+    std::shared_ptr<SelfBinaryTreeNode> node1 = leafsmap()[gid];
 
     // for 2D only: get the finite element nodes of the element and save them as end nodes of the
     // tree node
@@ -184,7 +185,8 @@ void CONTACT::UnbiasedSelfBinaryTree::define_search_elements()
  |  Get the contracted node (private)                      schmidt 01/19|
  *----------------------------------------------------------------------*/
 void CONTACT::UnbiasedSelfBinaryTree::get_contracted_node(
-    Teuchos::RCP<SelfDualEdge>& contractedEdge, Teuchos::RCP<SelfBinaryTreeNode>& contractedNode)
+    std::shared_ptr<SelfDualEdge>& contractedEdge,
+    std::shared_ptr<SelfBinaryTreeNode>& contractedNode)
 {
   // call the base class
   CONTACT::SelfBinaryTree::get_contracted_node(contractedEdge, contractedNode);
@@ -215,13 +217,13 @@ void CONTACT::UnbiasedSelfBinaryTree::init()
   init_leaf_nodes_and_map(elelist);
 
   // initialize and calculate processor specific dual graph
-  std::map<int, std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>
+  std::map<int, std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>>
       procdualgraph;
 
   // loop over all interface processors
   for (int p = 0; p < get_comm().NumProc(); ++p)
   {
-    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualgraph;
+    std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>> dualgraph;
 
     calculate_proc_specific_dual_graph(&dualgraph, elelist, p);
     procdualgraph[p] = dualgraph;
@@ -237,23 +239,23 @@ void CONTACT::UnbiasedSelfBinaryTree::init()
  | Initialize tree bottom-up based on processor specific                |
  | dual graph (private)                                    schmidt 01/19|
  *----------------------------------------------------------------------*/
-void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
-    std::map<int, std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>*
+void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(std::map<int,
+    std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>>*
         procdualGraph)
 {
   // vector collecting root nodes
   set_roots().resize(0);
 
   std::map<int,
-      std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>::iterator
+      std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>>::iterator
       iterator = procdualGraph->begin();
   std::map<int,
-      std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>>::iterator
+      std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>>::iterator
       iterator_end = procdualGraph->end();
 
   while (iterator != iterator_end)
   {
-    std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>> dualGraph =
+    std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>> dualGraph =
         iterator->second;
 
     //**********************************************************************
@@ -263,10 +265,10 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
     {
       // get the edge with lowest costs (= the first edge in the dual graph as
       // the map is automatically sorted by the costs)  to contract it
-      std::map<Teuchos::RCP<SelfDualEdge>, std::vector<Teuchos::RCP<SelfDualEdge>>>::iterator iter =
-          dualGraph.begin();
-      Teuchos::RCP<SelfDualEdge> contractedEdge = iter->first;
-      Teuchos::RCP<SelfBinaryTreeNode> newNode(Teuchos::null);
+      std::map<std::shared_ptr<SelfDualEdge>, std::vector<std::shared_ptr<SelfDualEdge>>>::iterator
+          iter = dualGraph.begin();
+      std::shared_ptr<SelfDualEdge> contractedEdge = iter->first;
+      std::shared_ptr<SelfBinaryTreeNode> newNode(nullptr);
       get_contracted_node(contractedEdge, newNode);
 
       // update dualGraph
@@ -275,7 +277,7 @@ void CONTACT::UnbiasedSelfBinaryTree::initialize_tree_bottom_up(
       // have to check if the tree is nearly complete
 
       // get the adjacent edges of the contracted edge
-      std::vector<Teuchos::RCP<SelfDualEdge>> adjEdges = iter->second;
+      std::vector<std::shared_ptr<SelfDualEdge>> adjEdges = iter->second;
 
       // check if the new tree node includes whole self contact-surface in this case the tree node
       // has saved itself as adjacent edge
@@ -436,7 +438,7 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
 {
   // check is root node available
   if (roots().size() == 0) FOUR_C_THROW("No root node for search!");
-  if (roots()[0] == Teuchos::null) FOUR_C_THROW("No root node for search!");
+  if (roots()[0] == nullptr) FOUR_C_THROW("No root node for search!");
 
   // reset contact pairs from last iteration
   set_contact_pairs().clear();
@@ -484,8 +486,8 @@ void CONTACT::UnbiasedSelfBinaryTree::search_contact()
   //**********************************************************************
   // STEP 5: all contact elements have to be slave elements
   //**********************************************************************
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter = set_leafsmap().begin();
-  std::map<int, Teuchos::RCP<SelfBinaryTreeNode>>::iterator leafiter_end = set_leafsmap().end();
+  std::map<int, std::shared_ptr<SelfBinaryTreeNode>>::iterator leafiter = set_leafsmap().begin();
+  std::map<int, std::shared_ptr<SelfBinaryTreeNode>>::iterator leafiter_end = set_leafsmap().end();
 
   // set all contact elements and nodes to slave
   while (leafiter != leafiter_end)

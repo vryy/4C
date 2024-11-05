@@ -417,7 +417,7 @@ int runtests(char** argv, std::map<std::string, testfunct>& functable, std::stri
 void set_problem_dimension(const std::map<std::string, testfunct>& functable)
 {
   Global::Problem& problem = (*Global::Problem::instance());
-  Teuchos::RCP<Teuchos::ParameterList> pptr = Teuchos::make_rcp<Teuchos::ParameterList>();
+  std::shared_ptr<Teuchos::ParameterList> pptr = std::make_shared<Teuchos::ParameterList>();
   Teuchos::ParameterList& size_params = pptr->sublist("PROBLEM SIZE", false);
   int probdim = 3;
   //  for ( std::map<std::string, testfunct>::const_iterator cit=functable.begin();

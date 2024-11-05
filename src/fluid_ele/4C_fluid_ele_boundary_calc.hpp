@@ -268,8 +268,8 @@ namespace Discret
 
       //! get density
       void get_density(
-          Teuchos::RCP<const Core::Mat::Material> material,  ///< reference pointer to material
-          const Core::LinAlg::Matrix<bdrynen_, 1>& escaaf,   ///< scalar at time n+alpha_f / n+1
+          std::shared_ptr<const Core::Mat::Material> material,  ///< reference pointer to material
+          const Core::LinAlg::Matrix<bdrynen_, 1>& escaaf,      ///< scalar at time n+alpha_f / n+1
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
           const Core::LinAlg::Matrix<bdrynen_, 1>& epreaf);  ///< pressure at time n+alpha_f / n+1
 

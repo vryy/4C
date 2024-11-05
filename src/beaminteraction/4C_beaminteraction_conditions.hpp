@@ -15,9 +15,8 @@
 #include "4C_inpar_beaminteraction.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -70,7 +69,7 @@ namespace BEAMINTERACTION
      * @param condition_line (in) The line condition containing the beam elements.
      */
     BeamInteractionConditionBase(
-        const Teuchos::RCP<const Core::Conditions::Condition>& condition_line);
+        const std::shared_ptr<const Core::Conditions::Condition>& condition_line);
 
     /**
      * \brief Destructor.
@@ -83,14 +82,15 @@ namespace BEAMINTERACTION
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      * @return Pointer to the created pair.
      */
-    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    virtual std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs) = 0;
 
     /**
      * \brief Build the ID sets for this condition. The ID sets will be used to check if an element
      * is in this condition.
      */
-    virtual void build_id_sets(const Teuchos::RCP<const Core::FE::Discretization>& discretization);
+    virtual void build_id_sets(
+        const std::shared_ptr<const Core::FE::Discretization>& discretization);
 
     /**
      * \brief Set the displacement state.
@@ -98,8 +98,8 @@ namespace BEAMINTERACTION
      * @param discret (in) discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>&
+    virtual void set_state(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>&
             beaminteraction_data_state)
     {
     }
@@ -108,7 +108,7 @@ namespace BEAMINTERACTION
      * \brief Setup geometry data.
      * @param discret (in) discretization.
      */
-    virtual void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
+    virtual void setup(const std::shared_ptr<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data.
@@ -126,15 +126,15 @@ namespace BEAMINTERACTION
      * @param discret (in) discretization.
      * @return Pointer to created assembly manager.
      */
-    virtual Teuchos::RCP<SUBMODELEVALUATOR::BeamContactAssemblyManager>
-    create_indirect_assembly_manager(const Teuchos::RCP<const Core::FE::Discretization>& discret)
+    virtual std::shared_ptr<SUBMODELEVALUATOR::BeamContactAssemblyManager>
+    create_indirect_assembly_manager(const std::shared_ptr<const Core::FE::Discretization>& discret)
     {
-      return Teuchos::null;
+      return nullptr;
     };
 
    protected:
     //! Pointer to the beam condition.
-    Teuchos::RCP<const Core::Conditions::Condition> condition_line_;
+    std::shared_ptr<const Core::Conditions::Condition> condition_line_;
 
     //! Set containing the beam element IDs.
     std::set<int> line_ids_;
@@ -172,7 +172,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Build the ID sets on all contained beam interaction conditions.
      */
-    void build_id_sets(Teuchos::RCP<Core::FE::Discretization> discretization);
+    void build_id_sets(std::shared_ptr<Core::FE::Discretization> discretization);
 
     /**
      * \brief Set the displacement state.
@@ -180,15 +180,15 @@ namespace BEAMINTERACTION
      * @param discret (in) discretization.
      * @param beaminteraction_data_state (in) Datastate of the beaminteraction model evaluator.
      */
-    virtual void set_state(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>&
+    virtual void set_state(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>&
             beaminteraction_data_state);
 
     /**
      * \brief Setup data in the conditions.
      * @param discret (in) discretization.
      */
-    virtual void setup(const Teuchos::RCP<const Core::FE::Discretization>& discret);
+    virtual void setup(const std::shared_ptr<const Core::FE::Discretization>& discret);
 
     /**
      * \brief Clear not reusable data in the conditions.
@@ -204,7 +204,7 @@ namespace BEAMINTERACTION
      *
      * @param ele_ptrs (in) Pointer to the two elements contained in the pair.
      */
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> create_contact_pair(
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> create_contact_pair(
         const std::vector<Core::Elements::Element const*>& ele_ptrs);
 
     /**
@@ -214,15 +214,16 @@ namespace BEAMINTERACTION
      * interaction submodel evaluator.
      */
     void create_indirect_assembly_managers(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+        const std::shared_ptr<const Core::FE::Discretization>& discret,
+        std::vector<
+            std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
             assembly_managers);
 
     /**
      * \brief Return a const reference to the condition map.
      */
     inline const std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
-        std::vector<Teuchos::RCP<BeamInteractionConditionBase>>>&
+        std::vector<std::shared_ptr<BeamInteractionConditionBase>>>&
     get_condition_map() const
     {
       return condition_map_;
@@ -232,7 +233,7 @@ namespace BEAMINTERACTION
      * \brief Return a mutable reference to the condition map.
      */
     inline std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
-        std::vector<Teuchos::RCP<BeamInteractionConditionBase>>>&
+        std::vector<std::shared_ptr<BeamInteractionConditionBase>>>&
     get_condition_map()
     {
       return condition_map_;
@@ -265,7 +266,7 @@ namespace BEAMINTERACTION
     //! interaction type, the values are vectors with conditions (since we can have multiple
     //! conditions of the same interaction type).
     std::map<Inpar::BEAMINTERACTION::BeamInteractionConditions,
-        std::vector<Teuchos::RCP<BeamInteractionConditionBase>>>
+        std::vector<std::shared_ptr<BeamInteractionConditionBase>>>
         condition_map_;
   };
 

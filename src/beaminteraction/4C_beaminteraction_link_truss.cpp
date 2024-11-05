@@ -16,7 +16,7 @@
 #include "4C_truss3.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,7 +39,7 @@ Core::Communication::ParObject* BEAMINTERACTION::BeamLinkTrussType::create(
  *----------------------------------------------------------------------------*/
 BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss()
     : BeamLinkPinJointed(),
-      linkele_(Teuchos::null),
+      linkele_(nullptr),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
 }
@@ -50,19 +50,19 @@ BEAMINTERACTION::BeamLinkTruss::BeamLinkTruss(const BEAMINTERACTION::BeamLinkTru
     : BEAMINTERACTION::BeamLinkPinJointed(old),
       bspotforces_(2, Core::LinAlg::SerialDenseVector(true))
 {
-  if (linkele_ != Teuchos::null)
-    linkele_ = Teuchos::rcp_dynamic_cast<Discret::Elements::Truss3>(
-        Teuchos::RCP(old.linkele_->clone(), true));
+  if (linkele_ != nullptr)
+    linkele_ = std::dynamic_pointer_cast<Discret::Elements::Truss3>(
+        std::shared_ptr<Core::Elements::Element>(old.linkele_->clone()));
   else
-    linkele_ = Teuchos::null;
+    linkele_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::clone() const
+std::shared_ptr<BEAMINTERACTION::BeamLink> BEAMINTERACTION::BeamLinkTruss::clone() const
 {
-  Teuchos::RCP<BEAMINTERACTION::BeamLinkTruss> newlinker =
-      Teuchos::make_rcp<BEAMINTERACTION::BeamLinkTruss>(*this);
+  std::shared_ptr<BEAMINTERACTION::BeamLinkTruss> newlinker =
+      std::make_shared<BEAMINTERACTION::BeamLinkTruss>(*this);
   return newlinker;
 }
 
@@ -98,7 +98,7 @@ void BEAMINTERACTION::BeamLinkTruss::setup(const int matnum)
    *
    *       We really only use it as a calculation routine for a sophisticated
    *       (displacement-reaction force) relation here! */
-  linkele_ = Teuchos::make_rcp<Discret::Elements::Truss3>(-1, 0);
+  linkele_ = std::make_shared<Discret::Elements::Truss3>(-1, 0);
 
   // set material
   linkele_->set_material(0, Mat::factory(matnum));
@@ -139,7 +139,7 @@ void BEAMINTERACTION::BeamLinkTruss::pack(Core::Communication::PackBuffer& data)
   BeamLinkPinJointed::pack(data);
 
   // pack linker element
-  if (linkele_ != Teuchos::null) linkele_->pack(data);
+  if (linkele_ != nullptr) linkele_->pack(data);
 
   return;
 }
@@ -166,10 +166,10 @@ void BEAMINTERACTION::BeamLinkTruss::unpack(Core::Communication::UnpackBuffer& b
         Core::Communication::factory(elebuffer);  // Unpack is done here
     Discret::Elements::Truss3* linkele = dynamic_cast<Discret::Elements::Truss3*>(object);
     if (linkele == nullptr) FOUR_C_THROW("failed to unpack Truss3 object within BeamLinkTruss");
-    linkele_ = Teuchos::RCP(linkele);
+    linkele_ = std::shared_ptr<Discret::Elements::Truss3>(linkele);
   }
   else
-    linkele_ = Teuchos::null;
+    linkele_ = nullptr;
 
   return;
 }

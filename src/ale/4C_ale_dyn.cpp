@@ -12,7 +12,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_global_data.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -23,13 +23,13 @@ void dyn_ale_drt()
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::instance()->get_dis("ale");
+  std::shared_ptr<Core::FE::Discretization> actdis = Global::Problem::instance()->get_dis("ale");
 
   // -------------------------------------------------------------------
   // ask ALE::AleBaseAlgorithm for the ale time integrator
   // -------------------------------------------------------------------
   Adapter::AleBaseAlgorithm ale(Global::Problem::instance()->ale_dynamic_params(), actdis);
-  Teuchos::RCP<Adapter::Ale> aletimint = ale.ale_field();
+  std::shared_ptr<Adapter::Ale> aletimint = ale.ale_field();
 
   // -------------------------------------------------------------------
   // read the restart information, set vectors and variables if necessary

@@ -29,10 +29,10 @@ namespace
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_structure_function(
+  std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_structure_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    if (function_line_defs.size() != 1) return Teuchos::null;
+    if (function_line_defs.size() != 1) return nullptr;
 
     const auto& function_lin_def = function_line_defs.front();
 
@@ -48,7 +48,7 @@ namespace
       // get materials
       auto fparams = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::make_rcp<Solid::WeaklyCompressibleEtienneFSIStructureFunction>(fparams);
+      return std::make_shared<Solid::WeaklyCompressibleEtienneFSIStructureFunction>(fparams);
     }
     else if (function_lin_def.container().get_or(
                  "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE", false))
@@ -66,11 +66,11 @@ namespace
       // get materials
       auto fparams = get_svk_mat_pars(mat_id_struc);
 
-      return Teuchos::make_rcp<Solid::WeaklyCompressibleEtienneFSIStructureForceFunction>(fparams);
+      return std::make_shared<Solid::WeaklyCompressibleEtienneFSIStructureForceFunction>(fparams);
     }
     else
     {
-      return Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>(nullptr);
+      return std::shared_ptr<Core::Utils::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace

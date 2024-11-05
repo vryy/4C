@@ -42,11 +42,12 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntElch(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntElch(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     //! initialize algorithm
     void init() override;
@@ -64,11 +65,11 @@ namespace ScaTra
     //! additional, to standard partitioning in scatra, the global system matrix in elch can be
     //! partitioned into concentration and potential dofs
     void build_block_maps(
-        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& partitioningconditions,
-        std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const override;
+        const std::vector<std::shared_ptr<Core::Conditions::Condition>>& partitioningconditions,
+        std::vector<std::shared_ptr<const Epetra_Map>>& blockmaps) const override;
 
     void build_block_null_spaces(
-        Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const override;
+        std::shared_ptr<Core::LinAlg::Solver> solver, int init_block_number) const override;
 
     /*========================================================================*/
     //! @name general framework
@@ -83,7 +84,7 @@ namespace ScaTra
     //! calculate error compared to analytical solution
     void evaluate_error_compared_to_analytical_sol() override;
 
-    Teuchos::RCP<Core::Utils::ResultTest> create_scatra_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_scatra_field_test() override;
 
     /*========================================================================*/
     //! @name ELCH methods
@@ -120,15 +121,15 @@ namespace ScaTra
     //! \param condid      ID of condition to be evaluated
     //! \param condstring  name of condition to be evaluated
     //! \return            evaluated scalars
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> evaluate_single_electrode_info(
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> evaluate_single_electrode_info(
         int condid, const std::string& condstring);
 
     //! \brief evaluate status information on single point electrode
     //!
     //! \param condition   condition to be evaluated
     //! \return            evaluated scalars
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> evaluate_single_electrode_info_point(
-        Teuchos::RCP<Core::Conditions::Condition> condition);
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> evaluate_single_electrode_info_point(
+        std::shared_ptr<Core::Conditions::Condition> condition);
 
     //! \brief post-process status information on single electrode
     //!
@@ -165,7 +166,10 @@ namespace ScaTra
     double get_current_temperature() const;
 
     //! return elch parameter list
-    Teuchos::RCP<const Teuchos::ParameterList> elch_parameter_list() const { return elchparams_; }
+    std::shared_ptr<const Teuchos::ParameterList> elch_parameter_list() const
+    {
+      return elchparams_;
+    }
 
     //! return states of charge of resolved electrodes
     const std::map<int, double>& electrode_soc() const { return electrodesoc_; };
@@ -186,7 +190,7 @@ namespace ScaTra
     const double& cell_voltage() const { return cellvoltage_; };
 
     //! return map extractor for macro scale in multi-scale simulations
-    const Teuchos::RCP<const Core::LinAlg::MultiMapExtractor>& splitter_macro() const
+    const std::shared_ptr<const Core::LinAlg::MultiMapExtractor>& splitter_macro() const
     {
       return splitter_macro_;
     };
@@ -294,8 +298,8 @@ namespace ScaTra
     //! \param rhs             global right-hand side vector
     //! \param condstring      name of condition to be evaluated
     void evaluate_electrode_kinetics_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs, const std::string& condstring);
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs, const std::string& condstring);
 
     //! \brief evaluate point boundary conditions for electrode kinetics
     //!
@@ -311,13 +315,14 @@ namespace ScaTra
     virtual void electrode_kinetics_time_update() = 0;
 
     void evaluate_solution_depending_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) override;
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs) override;
 
-    void apply_dirichlet_bc(double time, Teuchos::RCP<Core::LinAlg::Vector<double>> phinp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phidt) override;
+    void apply_dirichlet_bc(double time, std::shared_ptr<Core::LinAlg::Vector<double>> phinp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> phidt) override;
 
-    void apply_neumann_bc(const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads) override;
+    void apply_neumann_bc(
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& neumann_loads) override;
 
     void perform_aitken_relaxation(Core::LinAlg::Vector<double>& phinp,
         const Core::LinAlg::Vector<double>& phinp_inc_diff) override;
@@ -334,7 +339,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! the parameter list for elch problems
-    Teuchos::RCP<const Teuchos::ParameterList> elchparams_;
+    std::shared_ptr<const Teuchos::ParameterList> elchparams_;
 
     //! type of closing equation for electric potential
     Inpar::ElCh::EquPot equpot_;
@@ -359,11 +364,11 @@ namespace ScaTra
 
     //! electro-kinetics toggle
     //! Toggle which defines dof's with Nernst-BC or Dirichlet condition
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ektoggle_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ektoggle_;
 
     //! dirichlet toggle
     //! Toggle which defines dof's with a Dirichlet condition
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dctoggle_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dctoggle_;
 
     //! initial volumes of resolved electrodes
     std::map<int, double> electrodeinitvols_;
@@ -392,7 +397,7 @@ namespace ScaTra
     //! cell voltage from previous time step
     double cellvoltage_old_;
 
-    Teuchos::RCP<ScaTra::CCCVCondition> cccv_condition_;
+    std::shared_ptr<ScaTra::CCCVCondition> cccv_condition_;
 
     //! cell C rate
     double cellcrate_;
@@ -413,7 +418,7 @@ namespace ScaTra
     int last_dt_change_;
 
     //! map extractor for macro scale in multi-scale simulations
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> splitter_macro_;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> splitter_macro_;
 
     //! CSV writers for SOC, c-rate and cell voltage
     std::map<int, std::optional<Core::IO::RuntimeCsvWriter>> runtime_csvwriter_soc_;
@@ -461,7 +466,7 @@ namespace ScaTra
     //! return maximum number of transported scalars per node (not including potential and current
     //! density)
     int num_scal_in_condition(const Core::Conditions::Condition& condition,
-        const Teuchos::RCP<const Core::FE::Discretization>& discret) const override;
+        const std::shared_ptr<const Core::FE::Discretization>& discret) const override;
 
     /*========================================================================*/
     //! @name Internal variables

@@ -15,7 +15,7 @@
 #include "4C_mat_so3_material.hpp"
 #include "4C_material_parameter_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,7 +46,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class MicroMaterial
 
@@ -135,9 +135,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MicroMaterial>(*this);
+      return std::make_shared<MicroMaterial>(*this);
     }
 
     /// evaluate micro material on a processor with macro scale
@@ -188,7 +188,7 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
    private:
-    std::map<int, Teuchos::RCP<MicroMaterialGP>> matgp_;
+    std::map<int, std::shared_ptr<MicroMaterialGP>> matgp_;
 
     double density_;
 

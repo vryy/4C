@@ -27,11 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Solid::TimeInt::NoxInterface::NoxInterface()
-    : isinit_(false),
-      issetup_(false),
-      gstate_ptr_(Teuchos::null),
-      int_ptr_(Teuchos::null),
-      dbc_ptr_(Teuchos::null)
+    : isinit_(false), issetup_(false), gstate_ptr_(nullptr), int_ptr_(nullptr), dbc_ptr_(nullptr)
 {
   // empty constructor
 }
@@ -39,9 +35,9 @@ Solid::TimeInt::NoxInterface::NoxInterface()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::NoxInterface::init(
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<Solid::Integrator>& int_ptr, const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
-    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const std::shared_ptr<Solid::Integrator>& int_ptr, const std::shared_ptr<Solid::Dbc>& dbc_ptr,
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr)
 {
   // reset the setup flag
   issetup_ = false;
@@ -256,7 +252,7 @@ double Solid::TimeInt::NoxInterface::get_primary_solution_update_rms(const Epetr
 
       model_incr_ptr.Update(1.0, *model_xnew_ptr, -1.0);
       rms = NOX::Nln::Aux::root_mean_square_norm(atol, rtol, *model_xnew_ptr,
-          *Teuchos::make_rcp<Core::LinAlg::Vector<double>>(model_incr_ptr),
+          *std::make_shared<Core::LinAlg::Vector<double>>(model_incr_ptr),
           disable_implicit_weighting);
 
       break;
@@ -415,10 +411,11 @@ double Solid::TimeInt::NoxInterface::get_previous_primary_solution_norms(const E
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double Solid::TimeInt::NoxInterface::calculate_norm(Teuchos::RCP<Epetra_Vector> quantity,
+double Solid::TimeInt::NoxInterface::calculate_norm(std::shared_ptr<Epetra_Vector> quantity,
     const ::NOX::Abstract::Vector::NormType type, const bool isscaled) const
 {
-  const ::NOX::Epetra::Vector quantity_nox(quantity, ::NOX::Epetra::Vector::CreateView);
+  const ::NOX::Epetra::Vector quantity_nox(
+      Teuchos::rcpFromRef(*quantity), ::NOX::Epetra::Vector::CreateView);
 
   double norm = quantity_nox.norm(type);
   // do the scaling if desired
@@ -580,7 +577,9 @@ Solid::TimeInt::NoxInterface::calc_jacobian_contributions_from_element_level_for
   check_init_setup();
   Teuchos::RCP<Core::LinAlg::SparseMatrix> scalingMatrixOpPtr =
       Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*gstate_ptr_->dof_row_map(), 81, true, true);
-  int_ptr_->compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
+
+  auto scalingMatrixOp = Core::Utils::shared_ptr_from_ref(*scalingMatrixOpPtr);
+  int_ptr_->compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOp);
 
   return scalingMatrixOpPtr;
 }
@@ -619,7 +618,7 @@ void Solid::TimeInt::NoxInterface::get_dofs_from_elements(
 {
   check_init_setup();
 
-  Teuchos::RCP<const Core::FE::Discretization> discret_ptr = gstate_ptr_->get_discret();
+  std::shared_ptr<const Core::FE::Discretization> discret_ptr = gstate_ptr_->get_discret();
 
   for (int egid : my_ele_gids)
   {

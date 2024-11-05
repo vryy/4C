@@ -15,7 +15,7 @@
 #include "4C_mortar_node.hpp"
 #include "4C_so3_surface.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,10 +34,10 @@ Core::Communication::ParObject* Mortar::ElementType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Mortar::ElementType::create(const int id, const int owner)
+std::shared_ptr<Core::Elements::Element> Mortar::ElementType::create(const int id, const int owner)
 {
   // return Teuchos::rcp( new Mortar::Element( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -62,9 +62,9 @@ Mortar::MortarEleDataContainer::MortarEleDataContainer()
 {
   // initialize area
   area() = 0.0;
-  dualshapecoeff_ = Teuchos::null;
-  derivdualshapecoeff_ = Teuchos::null;
-  trafocoeff_ = Teuchos::null;
+  dualshapecoeff_ = nullptr;
+  derivdualshapecoeff_ = nullptr;
+  trafocoeff_ = nullptr;
 
   return;
 }
@@ -90,8 +90,8 @@ void Mortar::MortarEleDataContainer::unpack(Core::Communication::UnpackBuffer& b
   // area_
   extract_from_pack(buffer, area_);
 
-  dualshapecoeff_ = Teuchos::null;
-  derivdualshapecoeff_ = Teuchos::null;
+  dualshapecoeff_ = nullptr;
+  derivdualshapecoeff_ = nullptr;
   return;
 }
 
@@ -211,7 +211,7 @@ void Mortar::Element::pack(Core::Communication::PackBuffer& data) const
   }
 
   // add modata_
-  bool hasdata = (modata_ != Teuchos::null);
+  bool hasdata = (modata_ != nullptr);
   add_to_pack(data, hasdata);
   if (hasdata) modata_->pack(data);
 
@@ -268,12 +268,12 @@ void Mortar::Element::unpack(Core::Communication::UnpackBuffer& buffer)
   bool hasdata = extract_int(buffer);
   if (hasdata)
   {
-    modata_ = Teuchos::make_rcp<Mortar::MortarEleDataContainer>();
+    modata_ = std::make_shared<Mortar::MortarEleDataContainer>();
     modata_->unpack(buffer);
   }
   else
   {
-    modata_ = Teuchos::null;
+    modata_ = nullptr;
   }
 
   // physical type
@@ -1580,7 +1580,7 @@ double Mortar::Element::max_edge_size() const
 void Mortar::Element::initialize_data_container()
 {
   // only initialize if not yet done
-  if (modata_ == Teuchos::null) modata_ = Teuchos::make_rcp<Mortar::MortarEleDataContainer>();
+  if (modata_ == nullptr) modata_ = std::make_shared<Mortar::MortarEleDataContainer>();
 
   if (parent_element() != nullptr)
   {
@@ -1596,8 +1596,8 @@ void Mortar::Element::initialize_data_container()
  *----------------------------------------------------------------------*/
 void Mortar::Element::reset_data_container()
 {
-  // reset to Teuchos::null
-  modata_ = Teuchos::null;
+  // reset to nullptr
+  modata_ = nullptr;
 
   return;
 }
@@ -1677,25 +1677,25 @@ Mortar::ElementNitscheContainer& Mortar::Element::get_nitsche_container()
 {
   if (!parent_element()) FOUR_C_THROW("parent element pointer not set");
 
-  if (nitsche_container_ == Teuchos::null)
+  if (nitsche_container_ == nullptr)
   {
     switch (parent_element()->shape())
     {
       case Core::FE::CellType::hex8:
         nitsche_container_ =
-            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::hex8>>();
+            std::make_shared<Mortar::ElementNitscheData<Core::FE::CellType::hex8>>();
         break;
       case Core::FE::CellType::tet4:
         nitsche_container_ =
-            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::tet4>>();
+            std::make_shared<Mortar::ElementNitscheData<Core::FE::CellType::tet4>>();
         break;
       case Core::FE::CellType::hex27:
         nitsche_container_ =
-            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::hex27>>();
+            std::make_shared<Mortar::ElementNitscheData<Core::FE::CellType::hex27>>();
         break;
       case Core::FE::CellType::nurbs27:
         nitsche_container_ =
-            Teuchos::make_rcp<Mortar::ElementNitscheData<Core::FE::CellType::nurbs27>>();
+            std::make_shared<Mortar::ElementNitscheData<Core::FE::CellType::nurbs27>>();
         break;
       default:
         FOUR_C_THROW("Nitsche data container not ready. Just add it here...");

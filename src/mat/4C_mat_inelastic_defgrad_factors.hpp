@@ -15,7 +15,7 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -64,7 +64,7 @@ namespace Mat
      public:
       explicit InelasticDefgradNoGrowth(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; }
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
     };
 
 
@@ -80,7 +80,7 @@ namespace Mat
      public:
       explicit InelasticDefgradScalar(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; }
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
 
       /// scalar that causes growth
       int scalar1() const { return scalar1_; }
@@ -108,7 +108,7 @@ namespace Mat
      public:
       explicit InelasticDefgradTimeFunct(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; }
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; }
 
       /// function number that sets determinant of inelastic def. grad.
       int funct_num() const { return funct_num_; }
@@ -156,7 +156,7 @@ namespace Mat
 
      private:
       /// calculation of direction of inelastic deformation
-      Teuchos::RCP<const InelasticDeformationDirection> growth_dir_;
+      std::shared_ptr<const InelasticDeformationDirection> growth_dir_;
     };
 
     /*----------------------------------------------------------------------
@@ -248,7 +248,7 @@ namespace Mat
 
      private:
       /// pointer to object, that calculates and holds direction of inelastic deformation
-      Teuchos::RCP<InelasticDeformationDirection> growth_dir_;
+      std::shared_ptr<InelasticDeformationDirection> growth_dir_;
     };
 
     /*----------------------------------------------------------------------
@@ -262,7 +262,7 @@ namespace Mat
      public:
       explicit InelasticDefgradLinTempIso(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override { return Teuchos::null; };
+      std::shared_ptr<Core::Mat::Material> create_material() override { return nullptr; };
 
       /// return temperature related growth factor
       double get_temp_growth_fac() const { return temp_growth_fac_; };
@@ -397,7 +397,7 @@ namespace Mat
      * @param[in] matnum  material ID
      * @return pointer to material that is defined by material ID
      */
-    static Teuchos::RCP<InelasticDefgradFactors> factory(int matnum);
+    static std::shared_ptr<InelasticDefgradFactors> factory(int matnum);
 
     /// provide material type
     virtual Core::Materials::MaterialType material_type() const = 0;
@@ -619,13 +619,13 @@ namespace Mat
     //! Get vector of concentration at current Gauss point
     [[nodiscard]] const std::vector<double>& get_concentration_gp() const
     {
-      FOUR_C_THROW_UNLESS(concentrations_ != Teuchos::null, "Concentrations are not set");
+      FOUR_C_THROW_UNLESS(concentrations_ != nullptr, "Concentrations are not set");
       return *concentrations_;
     };
 
    private:
     /// vector of concentations at the gauss points
-    Teuchos::RCP<std::vector<double>> concentrations_{};
+    std::shared_ptr<std::vector<double>> concentrations_{};
   };
 
   /*--------------------------------------------------------------------*/
@@ -694,7 +694,7 @@ namespace Mat
 
    private:
     /// pointer to class that evaluates the polynomial growth law
-    Teuchos::RCP<InelasticDefgradPolynomialShape> polynomial_growth_;
+    std::shared_ptr<InelasticDefgradPolynomialShape> polynomial_growth_;
   };
 
   /*----------------------------------------------------------------------*/
@@ -748,7 +748,7 @@ namespace Mat
 
    private:
     /// pointer to class that evaluates the linear growth law
-    Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
+    std::shared_ptr<InelasticDefgradLinearShape> linear_growth_;
   };  // namespace Mat
 
   /*----------------------------------------------------------------------*/
@@ -809,7 +809,7 @@ namespace Mat
 
    private:
     /// store pointer to class that evaluates the linear growth law
-    Teuchos::RCP<InelasticDefgradLinearShape> linear_growth_;
+    std::shared_ptr<InelasticDefgradLinearShape> linear_growth_;
   };  // end of InelasticDefgradLinScalarAniso
 
   /*--------------------------------------------------------------------*/

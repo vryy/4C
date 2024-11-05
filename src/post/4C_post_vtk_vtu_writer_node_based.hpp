@@ -78,20 +78,20 @@ class PostVtuWriterNode : public PostVtuWriter
 
   //! Write a single result step
   void write_dof_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
       const bool fillzeros) override;
 
   //! Write a single result step
   void write_nodal_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
   void write_element_result_step(std::ofstream& file,
-      const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+      const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf,
       const int from) override;
@@ -112,17 +112,18 @@ class PostVtuWriterNode : public PostVtuWriter
   //! Write a single result step for one Nurbs Element
   virtual void wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele, int ncomponents,
       const int numdf, std::vector<double>& solution,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData, const int from, const bool fillzeros);
+      std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData, const int from,
+      const bool fillzeros);
 
   void write_dof_result_step_beam_ele(const Discret::Elements::Beam3Base* beamele,
       const int& ncomponents, const int& numdf, std::vector<double>& solution,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& ghostedData, const int& from,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& ghostedData, const int& from,
       const bool fillzeros) override;
 
   //! Write a single result step for one Nurbs Element
   virtual void write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
       int ncomponents, const int numdf, std::vector<double>& solution,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData);
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> ghostedData);
 };
 
 FOUR_C_NAMESPACE_CLOSE

@@ -242,8 +242,8 @@ namespace Discret
 
       //! evaluate material
       virtual void materials(
-          const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
-          double& densn,                                     //!< density at t_(n)
+          const std::shared_ptr<Core::Mat::Material> material,  //!< pointer to current material
+          double& densn,                                        //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
@@ -253,8 +253,8 @@ namespace Discret
 
       //! material Lubrication
       virtual void mat_lubrication(
-          const Teuchos::RCP<Core::Mat::Material> material,  //!< pointer to current material
-          double& densn,                                     //!< density at t_(n)
+          const std::shared_ptr<Core::Mat::Material> material,  //!< pointer to current material
+          double& densn,                                        //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
@@ -366,10 +366,10 @@ namespace Discret
       /*========================================================================*/
 
       //! manager for viscosity
-      Teuchos::RCP<LubricationEleViscManager> viscmanager_;
+      std::shared_ptr<LubricationEleViscManager> viscmanager_;
 
       //! variable manager for Gauss point values
-      Teuchos::RCP<LubricationEleInternalVariableManager<nsd_, nen_>> lubricationvarmanager_;
+      std::shared_ptr<LubricationEleInternalVariableManager<nsd_, nen_>> lubricationvarmanager_;
 
       /*========================================================================*/
       //! @name can be very useful

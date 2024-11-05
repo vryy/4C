@@ -82,7 +82,8 @@ bool CONTACT::Coupling3d::auxiliary_plane()
 /*----------------------------------------------------------------------*
  |  Integration of cells (3D)                                 popp 11/08|
  *----------------------------------------------------------------------*/
-bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+bool CONTACT::Coupling3d::integrate_cells(
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   /**********************************************************************/
   /* INTEGRATION                                                        */
@@ -98,7 +99,7 @@ bool CONTACT::Coupling3d::integrate_cells(const Teuchos::RCP<Mortar::ParamsInter
 
   // create a CONTACT integrator instance with correct num_gp and Dim
   // it is sufficient to do this once as all IntCells are triangles
-  Teuchos::RCP<CONTACT::Integrator> integrator =
+  std::shared_ptr<CONTACT::Integrator> integrator =
       CONTACT::INTEGRATOR::build_integrator(stype_, imortar_, cells()[0]->shape(), get_comm());
   // loop over all integration cells
   for (int i = 0; i < (int)(cells().size()); ++i)
@@ -1088,7 +1089,7 @@ CONTACT::Coupling3dQuadManager::Coupling3dQuadManager(Core::FE::Discretization& 
  |  Evaluate mortar coupling pairs                            popp 03/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dManager::integrate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm
   auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
@@ -1108,7 +1109,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling3d object and push back
-      coupling().push_back(Teuchos::make_rcp<Coupling3d>(
+      coupling().push_back(std::make_shared<Coupling3d>(
           idiscret_, dim_, false, imortar_, slave_element(), master_element(m)));
 
       // do coupling
@@ -1159,7 +1160,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
       find_feasible_master_elements(feasible_ma_eles);
 
       // create an integrator instance with correct num_gp and Dim
-      Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
+      std::shared_ptr<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
           stype_, imortar_, slave_element().shape(), get_comm());
 
       // Perform integration and linearization
@@ -1175,7 +1176,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
           for (int m = 0; m < (int)master_elements().size(); ++m)
           {
             // create Coupling3d object and push back
-            coupling().push_back(Teuchos::make_rcp<Coupling3d>(
+            coupling().push_back(std::make_shared<Coupling3d>(
                 idiscret_, dim_, false, imortar_, slave_element(), master_element(m)));
 
             // do coupling
@@ -1240,7 +1241,7 @@ void CONTACT::Coupling3dManager::integrate_coupling(
  |  Evaluate coupling pairs                                 farah 09/14 |
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3dManager::evaluate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
   auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(imortar_, "ALGORITHM");
@@ -1270,7 +1271,7 @@ bool CONTACT::Coupling3dManager::evaluate_coupling(
  |  Evaluate mortar coupling pairs for Quad-coupling         farah 09/14|
  *----------------------------------------------------------------------*/
 void CONTACT::Coupling3dQuadManager::integrate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // get algorithm type
   auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(
@@ -1290,8 +1291,8 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     coupling().resize(0);
 
     // build linear integration elements from quadratic Mortar::Elements
-    std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
-    std::vector<std::vector<Teuchos::RCP<Mortar::IntElement>>> mauxelements(
+    std::vector<std::shared_ptr<Mortar::IntElement>> sauxelements(0);
+    std::vector<std::vector<std::shared_ptr<Mortar::IntElement>>> mauxelements(
         master_elements().size());
     split_int_elements(slave_element(), sauxelements);
 
@@ -1307,7 +1308,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
       {
         for (int j = 0; j < (int)mauxelements[m].size(); ++j)
         {
-          coupling().push_back(Teuchos::make_rcp<Coupling3dQuad>(discret(), n_dim(), true, params(),
+          coupling().push_back(std::make_shared<Coupling3dQuad>(discret(), n_dim(), true, params(),
               slave_element(), *master_elements()[m], *sauxelements[i], *mauxelements[m][j]));
 
           coupling()[coupling().size() - 1]->evaluate_coupling();
@@ -1354,7 +1355,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
     if ((int)master_elements().size() == 0) return;
 
     // create an integrator instance with correct num_gp and Dim
-    Teuchos::RCP<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
+    std::shared_ptr<CONTACT::Integrator> integrator = CONTACT::INTEGRATOR::build_integrator(
         stype_, params(), slave_element().shape(), get_comm());
 
     bool boundary_ele = false;
@@ -1371,8 +1372,8 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
         coupling().resize(0);
 
         // build linear integration elements from quadratic Mortar::Elements
-        std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
-        std::vector<std::vector<Teuchos::RCP<Mortar::IntElement>>> mauxelements(
+        std::vector<std::shared_ptr<Mortar::IntElement>> sauxelements(0);
+        std::vector<std::vector<std::shared_ptr<Mortar::IntElement>>> mauxelements(
             master_elements().size());
         split_int_elements(slave_element(), sauxelements);
 
@@ -1388,7 +1389,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
           {
             for (int j = 0; j < (int)mauxelements[m].size(); ++j)
             {
-              coupling().push_back(Teuchos::make_rcp<Coupling3dQuad>(discret(), n_dim(), true,
+              coupling().push_back(std::make_shared<Coupling3dQuad>(discret(), n_dim(), true,
                   params(), slave_element(), *master_elements()[m], *sauxelements[i],
                   *mauxelements[m][j]));
 
@@ -1441,7 +1442,7 @@ void CONTACT::Coupling3dQuadManager::integrate_coupling(
  |  Evaluate coupling pairs for Quad-coupling                farah 01/13|
  *----------------------------------------------------------------------*/
 bool CONTACT::Coupling3dQuadManager::evaluate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of coupling should be evaluated
   auto algo = Teuchos::getIntegralValue<Inpar::Mortar::AlgorithmType>(params(), "ALGORITHM");
@@ -1685,7 +1686,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
 
   // Dual shape functions coefficient matrix and linearization
   slave_element().mo_data().deriv_dual_shape() =
-      Teuchos::make_rcp<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
+      std::make_shared<Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>>(
           (nnodes + mnodes) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nnodes, nnodes));
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix>& derivae =
       *(slave_element().mo_data().deriv_dual_shape());
@@ -1721,7 +1722,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
     // loop over all integration cells
     for (int c = 0; c < (int)coupling()[m]->cells().size(); ++c)
     {
-      Teuchos::RCP<Mortar::IntCell> currcell = coupling()[m]->cells()[c];
+      std::shared_ptr<Mortar::IntCell> currcell = coupling()[m]->cells()[c];
 
       A_tot += currcell->area();
 
@@ -1948,7 +1949,7 @@ void CONTACT::Coupling3dManager::consistent_dual_shape()
   }
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ae);
+  slave_element().mo_data().dual_shape() = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ae);
 
   return;
 }

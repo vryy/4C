@@ -194,7 +194,7 @@ namespace FLD
     }
     // push coordinates in vectors
     {
-      coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+      coordinates_ = std::make_shared<std::vector<double>>();
 
       for (std::set<double, LineSortCriterion>::iterator coord1 = coords.begin();
            coord1 != coords.end(); ++coord1)
@@ -209,16 +209,16 @@ namespace FLD
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::make_rcp<std::vector<double>>();
+      wavenumbers_ = std::make_shared<std::vector<double>>();
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
     }
 
     // set size of energy-spectrum vector
-    energyspectrum_n_ = Teuchos::make_rcp<std::vector<double>>();
+    energyspectrum_n_ = std::make_shared<std::vector<double>>();
     energyspectrum_n_->resize(wavenumbers_->size());
-    energyspectrum_np_ = Teuchos::make_rcp<std::vector<double>>();
+    energyspectrum_np_ = std::make_shared<std::vector<double>>();
     energyspectrum_np_->resize(wavenumbers_->size());
     // and initialize with zeros, just to be sure
     for (std::size_t rr = 0; rr < energyspectrum_n_->size(); rr++)
@@ -228,7 +228,7 @@ namespace FLD
     }
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
-    force_fac_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+    force_fac_ = std::make_shared<Core::LinAlg::SerialDenseVector>(
         nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     return;
@@ -1173,7 +1173,7 @@ namespace FLD
 
     // push wave numbers in vector
     {
-      wavenumbers_ = Teuchos::make_rcp<std::vector<double>>();
+      wavenumbers_ = std::make_shared<std::vector<double>>();
 
       wavenumbers_->resize((std::size_t)nummodes_);
       for (std::size_t rr = 0; rr < wavenumbers_->size(); rr++) (*wavenumbers_)[rr] = rr;
@@ -1190,7 +1190,7 @@ namespace FLD
     }
 
     // forcing factor: factor to multiply Fourier coefficients of velocity
-    force_fac_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(
+    force_fac_ = std::make_shared<Core::LinAlg::SerialDenseVector>(
         nummodes_ * nummodes_ * (nummodes_ / 2 + 1));
 
     return;
@@ -2004,7 +2004,7 @@ namespace FLD
     // action for elements
     eleparams.set<FLD::Action>("action", FLD::calc_mass_flow_periodic_hill);
 
-    if (myxwall_ != Teuchos::null) myxwall_->set_x_wall_params(eleparams);
+    if (myxwall_ != nullptr) myxwall_->set_x_wall_params(eleparams);
 
     eleparams.set<double>("length", length_);
 

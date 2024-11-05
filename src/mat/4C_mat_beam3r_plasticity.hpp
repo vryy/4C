@@ -18,7 +18,7 @@
 #include "4C_mat_material_factory.hpp"
 #include "4C_material_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace Mat
       //! standard constructor
       BeamReissnerElastPlasticMaterialParams(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! @name Access to plasticity parameters
       //@{
@@ -199,9 +199,9 @@ namespace Mat
 
     /** \brief return copy of this material object
      */
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<BeamPlasticMaterial>(*this);
+      return std::make_shared<BeamPlasticMaterial>(*this);
     }
 
     //@}

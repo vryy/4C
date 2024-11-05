@@ -1414,6 +1414,7 @@ void test_position2d()
   Cut::PositionFactory::specify_general_dist_floattype(Cut::floattype_cln);    // use cln
   Cut::PositionFactory::specify_general_pos_floattype(Cut::floattype_double);  // use
                                                                                // double
-  Teuchos::RCP<Cut::Position> pos = Cut::Position::create(side_xyze, xyz, Core::FE::CellType::tri3);
+  std::shared_ptr<Cut::Position> pos =
+      Cut::Position::create(side_xyze, xyz, Core::FE::CellType::tri3);
   pos->compute();
 }

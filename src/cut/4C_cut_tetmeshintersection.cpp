@@ -45,7 +45,7 @@ FOUR_C_NAMESPACE_OPEN
 Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element,
     const std::vector<std::vector<int>>& tets, const std::vector<int>& accept_tets,
     const std::vector<Point*>& points, const plain_side_set& cut_sides)
-    : pp_(Teuchos::make_rcp<PointPool>()), mesh_(options, 1, pp_), cut_mesh_(options, 1, pp_, true)
+    : pp_(std::make_shared<PointPool>()), mesh_(options, 1, pp_), cut_mesh_(options, 1, pp_, true)
 {
   // Create the nodes and make the connectivity to the parent_mesh.
   for (std::vector<Point*>::const_iterator i = points.begin(); i != points.end(); ++i)
@@ -206,8 +206,8 @@ Cut::TetMeshIntersection::TetMeshIntersection(Options& options, Element* element
 void Cut::TetMeshIntersection::find_edge_cuts()
 {
   plain_edge_set cut_edges;
-  const std::map<plain_int_set, Teuchos::RCP<Edge>>& c_edges = mesh_.edges();
-  for (std::map<plain_int_set, Teuchos::RCP<Edge>>::const_iterator i = c_edges.begin();
+  const std::map<plain_int_set, std::shared_ptr<Edge>>& c_edges = mesh_.edges();
+  for (std::map<plain_int_set, std::shared_ptr<Edge>>::const_iterator i = c_edges.begin();
        i != c_edges.end(); ++i)
   {
     Edge* e = &*i->second;
@@ -217,7 +217,7 @@ void Cut::TetMeshIntersection::find_edge_cuts()
   for (plain_edge_set::iterator i = cut_edges.begin(); i != cut_edges.end(); ++i)
   {
     Edge* ce = *i;
-    Teuchos::RCP<BoundingBox> edgebox = Teuchos::RCP(BoundingBox::create(*ce));
+    std::shared_ptr<BoundingBox> edgebox(BoundingBox::create(*ce));
     plain_edge_set edges;
     pp_->collect_edges(*edgebox, edges);
     // edges.erase( ce );
@@ -576,8 +576,8 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
             std::inserter(done_child_cells, done_child_cells.begin()));
       }
 
-      const std::list<Teuchos::RCP<VolumeCell>>& all_child_cells = mesh_.volume_cells();
-      for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = all_child_cells.begin();
+      const std::list<std::shared_ptr<VolumeCell>>& all_child_cells = mesh_.volume_cells();
+      for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = all_child_cells.begin();
            i != all_child_cells.end(); ++i)
       {
         VolumeCell* child_vc = &**i;
@@ -615,8 +615,8 @@ void Cut::TetMeshIntersection::map_volume_cells(Mesh& parent_mesh, Element* elem
       }
 
       bool found = false;
-      const std::list<Teuchos::RCP<VolumeCell>>& all_child_cells = mesh_.volume_cells();
-      for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = all_child_cells.begin();
+      const std::list<std::shared_ptr<VolumeCell>>& all_child_cells = mesh_.volume_cells();
+      for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = all_child_cells.begin();
            i != all_child_cells.end(); ++i)
       {
         VolumeCell* child_vc = &**i;
@@ -746,8 +746,8 @@ void Cut::TetMeshIntersection::seed_cells(Mesh& parent_mesh,
   // look at all points of each free child volume cell and see if there is a
   // unique parent volume cell to these points
 
-  const std::list<Teuchos::RCP<VolumeCell>>& all_child_cells = mesh_.volume_cells();
-  for (std::list<Teuchos::RCP<VolumeCell>>::const_iterator i = all_child_cells.begin();
+  const std::list<std::shared_ptr<VolumeCell>>& all_child_cells = mesh_.volume_cells();
+  for (std::list<std::shared_ptr<VolumeCell>>::const_iterator i = all_child_cells.begin();
        i != all_child_cells.end(); ++i)
   {
     VolumeCell* child_vc = &**i;

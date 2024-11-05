@@ -16,8 +16,9 @@
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseSolver.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -64,7 +65,7 @@ namespace Arteries
       /*!
       \brief Standard Constructor
       */
-      ArtJunctionWrapper(Teuchos::RCP<Core::FE::Discretization> actdis,
+      ArtJunctionWrapper(std::shared_ptr<Core::FE::Discretization> actdis,
           Core::IO::DiscretizationWriter &output, Teuchos::ParameterList &params, double dta);
 
       /*!
@@ -76,7 +77,7 @@ namespace Arteries
       /*!
       \brief Wrapper for ArtJunctionBc::update_residual
      */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(std::shared_ptr<Core::LinAlg::Vector<double>> residual);
 
       /*!
       \brief Standard solver
@@ -94,16 +95,16 @@ namespace Arteries
       /*!
       \brief all single junction conditions
      */
-      std::map<const int, Teuchos::RCP<class ArtJunctionBc>> ajunmap_;
+      std::map<const int, std::shared_ptr<class ArtJunctionBc>> ajunmap_;
 
       /*!
       \brief all parameters connected to junctions
       */
-      //      Teuchos::RCP<map<const int, Teuchos::RCP<JunctionNodeParams> > >  nodalParams_;
-      // map<const int, Teuchos::RCP<Teuchos::ParameterList> >  nodalParams_;
+      //      std::shared_ptr<map<const int, std::shared_ptr<JunctionNodeParams> > >  nodalParams_;
+      // map<const int, std::shared_ptr<Teuchos::ParameterList> >  nodalParams_;
 
       //! 1d artery discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
       //! the output writer
       Core::IO::DiscretizationWriter &output_;
@@ -131,7 +132,7 @@ namespace Arteries
       /*!
       \brief Standard Constructor
      */
-      ArtJunctionBc(Teuchos::RCP<Core::FE::Discretization> actdis,
+      ArtJunctionBc(std::shared_ptr<Core::FE::Discretization> actdis,
           Core::IO::DiscretizationWriter &output, std::vector<Core::Conditions::Condition *> conds,
           std::vector<int> IOart_flag, double dta, int condid, int numcond);
 
@@ -190,11 +191,11 @@ namespace Arteries
       /*!
       \Update the Residual
       */
-      void update_residual(Teuchos::RCP<Core::LinAlg::Vector<double>> residual);
+      void update_residual(std::shared_ptr<Core::LinAlg::Vector<double>> residual);
 
 
      protected:
-      Teuchos::RCP<Core::LinAlg::Vector<double>> junctionbc_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> junctionbc_;
 
      private:
       //! ID of present condition
@@ -210,7 +211,7 @@ namespace Arteries
       int myrank_;
 
       //! fluid discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_;
+      std::shared_ptr<Core::FE::Discretization> discret_;
 
       //! the output writer
       Core::IO::DiscretizationWriter &output_;

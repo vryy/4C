@@ -18,7 +18,8 @@
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -264,7 +265,7 @@ namespace Core::LinAlg
    \author bborn
    \date 10/08
    */
-  Teuchos::RCP<Core::LinAlg::MapExtractor> convert_dirichlet_toggle_vector_to_maps(
+  std::shared_ptr<Core::LinAlg::MapExtractor> convert_dirichlet_toggle_vector_to_maps(
       const Core::LinAlg::Vector<double>& dbctoggle);
 
 }  // namespace Core::LinAlg

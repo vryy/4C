@@ -14,8 +14,7 @@
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <unordered_map>
 #include <vector>
 
@@ -52,9 +51,9 @@ namespace BEAMINTERACTION
    * @param write_unique_ids (in) If unique IDs should be written.
    */
   void add_beam_interaction_nodal_forces(
-      const Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
-      const Teuchos::RCP<const Core::FE::Discretization>& discret_ptr,
-      const Teuchos::RCP<const Core::LinAlg::MultiVector<double>>& displacement,
+      const std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>& visualization,
+      const std::shared_ptr<const Core::FE::Discretization>& discret_ptr,
+      const std::shared_ptr<const Core::LinAlg::MultiVector<double>>& displacement,
       const Core::LinAlg::MultiVector<double>& force, const bool write_unique_ids = false);
 
   /**
@@ -68,7 +67,7 @@ namespace BEAMINTERACTION
    */
   void add_averaged_nodal_normals(
       BEAMINTERACTION::BeamToSolidOutputWriterVisualization& output_writer_base_ptr,
-      const std::unordered_map<int, Teuchos::RCP<GEOMETRYPAIR::FaceElement>>& face_elements,
+      const std::unordered_map<int, std::shared_ptr<GEOMETRYPAIR::FaceElement>>& face_elements,
       const int condition_coupling_id, const bool write_unique_ids = false);
 
   /**

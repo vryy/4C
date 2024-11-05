@@ -15,7 +15,8 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -563,7 +564,7 @@ namespace Core::LinAlg
    \author gjb
    \date 11/07
    */
-  Teuchos::RCP<Epetra_Map> allreduce_e_map(const Epetra_Map& emap, const int pid);
+  std::shared_ptr<Epetra_Map> allreduce_e_map(const Epetra_Map& emap, const int pid);
 
   /*!
    \brief Create an allreduced Epetra_Map from the given Epetra_Map
@@ -583,7 +584,7 @@ namespace Core::LinAlg
    \author tk
    \date 04/08
    */
-  Teuchos::RCP<Epetra_Map> allreduce_e_map(const Epetra_Map& emap);
+  std::shared_ptr<Epetra_Map> allreduce_e_map(const Epetra_Map& emap);
 
   /*!
    \brief Create an allreduced Epetra_Map from the given Epetra_Map
@@ -595,7 +596,7 @@ namespace Core::LinAlg
    \author u.kue
    \date 08/09
    */
-  Teuchos::RCP<Epetra_Map> allreduce_overlapping_e_map(const Epetra_Map& emap);
+  std::shared_ptr<Epetra_Map> allreduce_overlapping_e_map(const Epetra_Map& emap);
 
   /*!
    \brief Create an allreduced Epetra_Map from the given Epetra_Map
@@ -607,7 +608,7 @@ namespace Core::LinAlg
    \author ghamm
    \date 10/14
    */
-  Teuchos::RCP<Epetra_Map> allreduce_overlapping_e_map(const Epetra_Map& emap, const int pid);
+  std::shared_ptr<Epetra_Map> allreduce_overlapping_e_map(const Epetra_Map& emap, const int pid);
 
   /*!
    \brief Find position of my map elements in a consecutive vector

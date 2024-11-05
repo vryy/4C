@@ -27,8 +27,8 @@
 
 #include <Teuchos_dyn_cast.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <optional>
 
 FOUR_C_NAMESPACE_OPEN
@@ -722,7 +722,7 @@ void Discret::Elements::SolidEleCalcEas<celltype, eastype, kinematic_type>::reco
     const std::vector<int>& lm, Teuchos::ParameterList& params)
 {
   FourC::Solid::Elements::ParamsInterface& params_interface =
-      *Teuchos::rcp_dynamic_cast<FourC::Solid::Elements::ParamsInterface>(
+      *std::dynamic_pointer_cast<FourC::Solid::Elements::ParamsInterface>(
           ele.params_interface_ptr());
 
   const double step_length = params_interface.get_step_length();

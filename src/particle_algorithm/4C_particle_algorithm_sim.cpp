@@ -11,8 +11,9 @@
 #include "4C_global_data.hpp"
 #include "4C_particle_algorithm.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -56,16 +57,16 @@ void particle_drt()
 
     // add particle field specific result test objects
     for (auto& resulttest : allresulttests)
-      if (resulttest) problem->add_field_test(Teuchos::rcp(resulttest));
+      if (resulttest) problem->add_field_test(resulttest);
 
     // perform all tests
     problem->test_all(comm);
   }
 
   // print summary statistics for all timers
-  Teuchos::RCP<const Teuchos::Comm<int>> TeuchosComm =
+  std::shared_ptr<const Teuchos::Comm<int>> TeuchosComm =
       Core::Communication::to_teuchos_comm<int>(comm);
-  Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+  Teuchos::TimeMonitor::summarize(Teuchos::Ptr(TeuchosComm.get()), std::cout, false, true, false);
 }
 
 FOUR_C_NAMESPACE_CLOSE

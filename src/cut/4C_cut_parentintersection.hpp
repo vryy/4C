@@ -99,7 +99,7 @@ namespace Cut
 
     /// constructur for ParentIntersecton class
     ParentIntersection(int myrank = -1)
-        : pp_(Teuchos::make_rcp<PointPool>()),
+        : pp_(std::make_shared<PointPool>()),
           mesh_(options_, 1, pp_, false, myrank),
           myrank_(myrank)
     {
@@ -180,12 +180,13 @@ namespace Cut
     void create_nodal_dof_set(bool include_inner, const Core::FE::Discretization& dis);
 
     /// fill parallel DofSetData with information that has to be communicated
-    void fill_parallel_dof_set_data(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
+    void fill_parallel_dof_set_data(std::vector<std::shared_ptr<DofSetData>>& parallel_dofSetData,
         const Core::FE::Discretization& dis, bool include_inner);
 
     /// create parallel DofSetData for a volumecell that has to be communicated
-    void create_parallel_dof_set_data_vc(std::vector<Teuchos::RCP<DofSetData>>& parallel_dofSetData,
-        int eid, int set_index, bool inside, VolumeCell* cell, std::map<int, int>& node_dofset_map);
+    void create_parallel_dof_set_data_vc(
+        std::vector<std::shared_ptr<DofSetData>>& parallel_dofSetData, int eid, int set_index,
+        bool inside, VolumeCell* cell, std::map<int, int>& node_dofset_map);
 
     /// find cell sets around each node (especially for quadratic elements)
     void find_nodal_cell_sets(bool include_inner, std::set<int>& eids,
@@ -265,11 +266,11 @@ namespace Cut
     //! @name protected class variables
     /*========================================================================*/
 
-    Teuchos::RCP<PointPool> pp_;  ///< pointpool (octTree) whose nodes consist of bounding boxes,
-                                  ///< each bb contains a set of Teuchos::RCPs to points
-    Options options_;             ///< options
-    MeshHandle mesh_;             ///< the background mesh
-    int myrank_;                  ///< my processor Id
+    std::shared_ptr<PointPool> pp_;  ///< pointpool (octTree) whose nodes consist of bounding boxes,
+                                     ///< each bb contains a set of std::shared_ptrs to points
+    Options options_;                ///< options
+    MeshHandle mesh_;                ///< the background mesh
+    int myrank_;                     ///< my processor Id
   };
 
 }  // namespace Cut

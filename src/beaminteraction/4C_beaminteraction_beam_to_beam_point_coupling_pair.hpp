@@ -86,10 +86,10 @@ namespace BEAMINTERACTION
      * @param stiffness_matrix (in / out) Global stiffness matrix.
      * @param displacement_vector (in) Global displacement vector.
      */
-    void evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) override;
+    void evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
 
     /**
      * \brief No need to update pair state vectors, as everything is done in the
@@ -176,8 +176,8 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void evaluate_and_assemble_positional_coupling(const Core::FE::Discretization& discret,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& displacement_vector) const;
 
     /**
@@ -190,8 +190,8 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) Global displacement vector.
      */
     void evaluate_and_assemble_rotational_coupling(const Core::FE::Discretization& discret,
-        const Teuchos::RCP<Epetra_FEVector>& force_vector,
-        const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+        const std::shared_ptr<Epetra_FEVector>& force_vector,
+        const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
         const Core::LinAlg::Vector<double>& displacement_vector) const;
 
    private:

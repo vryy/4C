@@ -43,7 +43,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
   // -------------------------------------------------------------------
   // Read in the 3D parameters exported to the reduced D problem
   // -------------------------------------------------------------------
-  Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams;
+  std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams;
 
   // -------------------------------------------------------------------
   // Read in global time
@@ -125,7 +125,7 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
     // Read in the 3D parameters exported to the reduced D problem
     // -------------------------------------------------------------------
     CoupledTo3DParams =
-        params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
+        params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
 
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
@@ -164,8 +164,9 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
     // -----------------------------------------------------------------
 
     int ID = condition->parameters().get<int>("ConditionID");
-    Teuchos::RCP<std::map<std::string, double>> map3D;
-    map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>("3D map of values");
+    std::shared_ptr<std::map<std::string, double>> map3D;
+    map3D =
+        CoupledTo3DParams->get<std::shared_ptr<std::map<std::string, double>>>("3D map of values");
 
     // find the applied boundary variable
     std::stringstream stringID;
@@ -464,8 +465,8 @@ void Arteries::Utils::solve_prescribed_terminal_bc(Core::FE::Discretization& act
     // -----------------------------------------------------------------
 
     int ID = condition->parameters().get<int>("ConditionID");
-    Teuchos::RCP<std::map<std::string, double>> map1D;
-    map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
+    std::shared_ptr<std::map<std::string, double>> map1D;
+    map1D = CoupledTo3DParams->get<std::shared_ptr<std::map<std::string, double>>>(
         "reducedD map of values");
 
     std::string returnedBC = (condition->parameters().get<std::string>("ReturnedVariable"));

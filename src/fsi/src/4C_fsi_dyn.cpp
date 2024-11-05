@@ -87,7 +87,7 @@ void fluid_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
   // check for xfem discretization
   if (problem->x_fluid_dynamic_params().sublist("GENERAL").get<bool>("XFLUIDFLUID"))
   {
@@ -98,7 +98,7 @@ void fluid_ale_drt()
     fluiddis->fill_complete();
   }
 
-  Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
+  std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
   aledis->fill_complete();
 
   // create ale elements if the ale discretization is empty
@@ -121,7 +121,7 @@ void fluid_ale_drt()
           "Use either the ALE cloning functionality or ensure non-overlapping node numbering!");
   }
 
-  Teuchos::RCP<FSI::FluidAleAlgorithm> fluid = Teuchos::make_rcp<FSI::FluidAleAlgorithm>(comm);
+  std::shared_ptr<FSI::FluidAleAlgorithm> fluid = std::make_shared<FSI::FluidAleAlgorithm>(comm);
   const int restart = problem->restart();
   if (restart)
   {
@@ -143,7 +143,7 @@ void fluid_xfem_drt()
 
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> soliddis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> soliddis = problem->get_dis("structure");
   soliddis->fill_complete();
 
   FLD::XFluid::setup_fluid_discretization();
@@ -153,7 +153,7 @@ void fluid_xfem_drt()
 
   if (alefluid)  // in ale case
   {
-    Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
+    std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
     aledis->fill_complete();
 
     // create ale elements if the ale discretization is empty
@@ -231,7 +231,7 @@ void fsi_immersed_drt()
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
   const Epetra_Comm& comm = structdis->get_comm();
 
   auto correct_node = [](const Core::Nodes::Node& node) -> decltype(auto)
@@ -246,7 +246,7 @@ void fsi_immersed_drt()
 
   auto determine_relevant_points = [correct_node](const Core::FE::Discretization& discret,
                                        const Core::Elements::Element& ele,
-                                       Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
+                                       std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
     if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
@@ -278,10 +278,10 @@ void fsi_immersed_drt()
   problem->get_dis("fluid")->fill_complete();
 
   // get discretizations
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
 
   // create vector of discr.
-  std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+  std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
   dis.push_back(fluiddis);
   dis.push_back(structdis);
 
@@ -292,7 +292,7 @@ void fsi_immersed_drt()
       binning_params);
 
 
-  auto binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
+  auto binningstrategy = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
       Global::Problem::instance()->output_control_file(), comm, comm.MyPID(), correct_node,
       determine_relevant_points, dis);
 
@@ -304,9 +304,9 @@ void fsi_immersed_drt()
   // redistribute discr. with help of binning strategy
   if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::binning)
   {
-    std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
-    std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
-    Teuchos::RCP<Epetra_Map> rowbins =
+    std::vector<std::shared_ptr<Epetra_Map>> stdelecolmap;
+    std::vector<std::shared_ptr<Epetra_Map>> stdnodecolmap;
+    std::shared_ptr<Epetra_Map> rowbins =
         binningstrategy
             ->do_weighted_partitioning_of_bins_and_extend_ghosting_of_discret_to_one_bin_layer(
                 dis, stdelecolmap, stdnodecolmap);
@@ -319,21 +319,21 @@ void fsi_immersed_drt()
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
 
   // Any partitioned algorithm.
-  Teuchos::RCP<FSI::Partitioned> fsi;
+  std::shared_ptr<FSI::Partitioned> fsi;
 
   auto method = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
       fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
   if (method == Inpar::FSI::DirichletNeumann)
   {
     fsi = FSI::DirichletNeumannFactory::create_algorithm(comm, fsidyn);
-    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
+    std::dynamic_pointer_cast<FSI::DirichletNeumann>(fsi)->setup();
   }
   else
     FOUR_C_THROW("unsupported partitioned FSI scheme");
 
   if (presort_strategy == Inpar::FBI::BeamToFluidPreSortStrategy::binning)
   {
-    Teuchos::rcp_dynamic_cast<FSI::DirichletNeumannVel>(fsi, true)->set_binning(binningstrategy);
+    std::dynamic_pointer_cast<FSI::DirichletNeumannVel>(fsi)->set_binning(binningstrategy);
   }
 
   const int restart = Global::Problem::instance()->restart();
@@ -343,7 +343,7 @@ void fsi_immersed_drt()
     fsi->read_restart(restart);
   }
 
-  fsi->timeloop(fsi);
+  fsi->timeloop(Teuchos::rcpFromRef(*fsi));
 
   // create result tests for single fields
   Global::Problem::instance()->add_field_test(fsi->mb_fluid_field()->create_field_test());
@@ -360,7 +360,7 @@ void fsi_ale_drt()
 {
   Global::Problem* problem = Global::Problem::instance();
 
-  Teuchos::RCP<Core::FE::Discretization> structdis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> structdis = problem->get_dis("structure");
   const Epetra_Comm& comm = structdis->get_comm();
 
   // make sure the three discretizations are filled in the right order
@@ -381,7 +381,7 @@ void fsi_ale_drt()
 
   auto determine_relevant_points = [correct_node](const Core::FE::Discretization& discret,
                                        const Core::Elements::Element& ele,
-                                       Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)
+                                       std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)
       -> std::vector<std::array<double, 3>>
   {
     if (dynamic_cast<const Discret::Elements::Beam3Base*>(&ele))
@@ -421,8 +421,8 @@ void fsi_ale_drt()
   problem->get_dis("ale")->fill_complete();
 
   // get discretizations
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
-  Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
+  std::shared_ptr<Core::FE::Discretization> fluiddis = problem->get_dis("fluid");
+  std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
 
   // create ale elements if the ale discretization is empty
   if (aledis->num_global_nodes() == 0)  // empty ale discretization
@@ -447,13 +447,13 @@ void fsi_ale_drt()
         (not problem->fsi_dynamic_params().get<bool>("MATCHGRID_STRUCTALE")))
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+      std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
       dis.push_back(structdis);
       dis.push_back(fluiddis);
       dis.push_back(aledis);
 
-      std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
-      std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
+      std::vector<std::shared_ptr<Epetra_Map>> stdelecolmap;
+      std::vector<std::shared_ptr<Epetra_Map>> stdnodecolmap;
 
       // redistribute discr. with help of binning strategy
       if (structdis->get_comm().NumProc() > 1)
@@ -492,7 +492,7 @@ void fsi_ale_drt()
       // monolithic solver settings
       const Teuchos::ParameterList& fsimono = fsidyn.sublist("MONOLITHIC SOLVER");
 
-      Teuchos::RCP<FSI::Monolithic> fsi;
+      std::shared_ptr<FSI::Monolithic> fsi;
 
       auto linearsolverstrategy =
           Teuchos::getIntegralValue<Inpar::FSI::LinearBlockSolver>(fsimono, "LINEARBLOCKSOLVER");
@@ -500,39 +500,39 @@ void fsi_ale_drt()
       // call constructor to initialize the base class
       if (coupling == fsi_iter_monolithicfluidsplit)
       {
-        fsi = Teuchos::make_rcp<FSI::MonolithicFluidSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::MonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_monolithicstructuresplit)
       {
-        fsi = Teuchos::make_rcp<FSI::MonolithicStructureSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::MonolithicStructureSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_mortar_monolithicstructuresplit)
       {
-        fsi = Teuchos::make_rcp<FSI::MortarMonolithicStructureSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::MortarMonolithicStructureSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_mortar_monolithicfluidsplit)
       {
-        fsi = Teuchos::make_rcp<FSI::MortarMonolithicFluidSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::MortarMonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
       {
-        fsi = Teuchos::make_rcp<FSI::MortarMonolithicFluidSplitSaddlePoint>(comm, fsidyn);
+        fsi = std::make_shared<FSI::MortarMonolithicFluidSplitSaddlePoint>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
       {
-        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicFluidSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::FluidFluidMonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
       {
-        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicStructureSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::FluidFluidMonolithicStructureSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_sliding_monolithicfluidsplit)
       {
-        fsi = Teuchos::make_rcp<FSI::SlidingMonolithicFluidSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::SlidingMonolithicFluidSplit>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_sliding_monolithicstructuresplit)
       {
-        fsi = Teuchos::make_rcp<FSI::SlidingMonolithicStructureSplit>(comm, fsidyn);
+        fsi = std::make_shared<FSI::SlidingMonolithicStructureSplit>(comm, fsidyn);
       }
       else
       {
@@ -564,7 +564,8 @@ void fsi_ale_drt()
       Global::Problem::instance()->add_field_test(fsi->structure_field()->create_field_test());
 
       // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::make_rcp<FSI::FSIResultTest>(fsi, fsidyn);
+      std::shared_ptr<FSI::FSIResultTest> fsitest =
+          std::make_shared<FSI::FSIResultTest>(fsi, fsidyn);
       Global::Problem::instance()->add_field_test(fsitest);
 
       // do the actual testing
@@ -575,14 +576,14 @@ void fsi_ale_drt()
     case fsi_iter_fluidfluid_monolithicfluidsplit_nonox:
     case fsi_iter_fluidfluid_monolithicstructuresplit_nonox:
     {
-      Teuchos::RCP<FSI::MonolithicNoNOX> fsi;
+      std::shared_ptr<FSI::MonolithicNoNOX> fsi;
       if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit_nonox)
       {
-        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicFluidSplitNoNOX>(comm, fsidyn);
+        fsi = std::make_shared<FSI::FluidFluidMonolithicFluidSplitNoNOX>(comm, fsidyn);
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox)
       {
-        fsi = Teuchos::make_rcp<FSI::FluidFluidMonolithicStructureSplitNoNOX>(comm, fsidyn);
+        fsi = std::make_shared<FSI::FluidFluidMonolithicStructureSplitNoNOX>(comm, fsidyn);
       }
       else
         FOUR_C_THROW("Unsupported monolithic XFFSI scheme");
@@ -609,7 +610,8 @@ void fsi_ale_drt()
       Global::Problem::instance()->add_field_test(fsi->structure_field()->create_field_test());
 
       // create fsi specific result test
-      Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::make_rcp<FSI::FSIResultTest>(fsi, fsidyn);
+      std::shared_ptr<FSI::FSIResultTest> fsitest =
+          std::make_shared<FSI::FSIResultTest>(fsi, fsidyn);
       Global::Problem::instance()->add_field_test(fsitest);
 
       // do the actual testing
@@ -621,7 +623,7 @@ void fsi_ale_drt()
     {
       // Any partitioned algorithm.
 
-      Teuchos::RCP<FSI::Partitioned> fsi;
+      std::shared_ptr<FSI::Partitioned> fsi;
 
       auto method = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
           fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
@@ -632,7 +634,7 @@ void fsi_ale_drt()
         case Inpar::FSI::DirichletNeumannSlideale:
         case Inpar::FSI::DirichletNeumannVolCoupl:
           fsi = FSI::DirichletNeumannFactory::create_algorithm(comm, fsidyn);
-          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
+          std::dynamic_pointer_cast<FSI::DirichletNeumann>(fsi)->setup();
           break;
         default:
           FOUR_C_THROW("unsupported partitioned FSI scheme");
@@ -645,7 +647,7 @@ void fsi_ale_drt()
         fsi->read_restart(restart);
       }
 
-      fsi->timeloop(fsi);
+      fsi->timeloop(Teuchos::rcpFromRef(*fsi));
 
       // create result tests for single fields
       Global::Problem::instance()->add_field_test(fsi->mb_fluid_field()->create_field_test());
@@ -684,22 +686,22 @@ void xfsi_drt()
   Global::Problem* problem = Global::Problem::instance();
   const Teuchos::ParameterList& fsidyn = problem->fsi_dynamic_params();
 
-  Teuchos::RCP<Core::FE::Discretization> soliddis = problem->get_dis("structure");
+  std::shared_ptr<Core::FE::Discretization> soliddis = problem->get_dis("structure");
   soliddis->fill_complete();
 
   FLD::XFluid::setup_fluid_discretization();
 
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis(
+  std::shared_ptr<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
   // CREATE ALE
   const Teuchos::ParameterList& xfdyn = problem->x_fluid_dynamic_params();
   bool ale = xfdyn.sublist("GENERAL").get<bool>("ALE_XFluid");
-  Teuchos::RCP<Core::FE::Discretization> aledis;
+  std::shared_ptr<Core::FE::Discretization> aledis;
   if (ale)
   {
     aledis = problem->get_dis("ale");
-    if (aledis == Teuchos::null) FOUR_C_THROW("XFSI DYNAMIC: ALE discretization empty!!!");
+    if (aledis == nullptr) FOUR_C_THROW("XFSI DYNAMIC: ALE discretization empty!!!");
 
     aledis->fill_complete(true, true, true);
 
@@ -759,7 +761,7 @@ void xfsi_drt()
       fsi.structure_poro()->test_results(Global::Problem::instance());
 
       //    // create FSI specific result test
-      //    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new
+      //    std::shared_ptr<FSI::FSIResultTest> fsitest = Teuchos::rcp(new
       //    FSI::FSIResultTest(fsi,fsidyn)); Global::Problem::instance()->AddFieldTest(fsitest);
 
       // do the actual testing
@@ -775,7 +777,7 @@ void xfsi_drt()
     {
       // Any partitioned algorithm. Stable of working horses.
 
-      Teuchos::RCP<FSI::Partitioned> fsi;
+      std::shared_ptr<FSI::Partitioned> fsi;
 
       auto method = Teuchos::getIntegralValue<Inpar::FSI::PartitionedCouplingMethod>(
           fsidyn.sublist("PARTITIONED SOLVER"), "PARTITIONED");
@@ -784,7 +786,7 @@ void xfsi_drt()
       {
         case Inpar::FSI::DirichletNeumann:
           fsi = FSI::DirichletNeumannFactory::create_algorithm(comm, fsidyn);
-          Teuchos::rcp_dynamic_cast<FSI::DirichletNeumann>(fsi, true)->setup();
+          std::dynamic_pointer_cast<FSI::DirichletNeumann>(fsi)->setup();
           break;
         default:
           FOUR_C_THROW("only Dirichlet-Neumann partitioned schemes with XFEM");
@@ -798,7 +800,7 @@ void xfsi_drt()
         fsi->read_restart(restart);
       }
 
-      fsi->timeloop(fsi);
+      fsi->timeloop(Teuchos::rcpFromRef(*fsi));
 
       Global::Problem::instance()->add_field_test(fsi->mb_fluid_field()->create_field_test());
       Global::Problem::instance()->add_field_test(fsi->structure_field()->create_field_test());
@@ -838,16 +840,16 @@ void xfpsi_drt()
 
   // setup of discretization for xfluid
   FLD::XFluid::setup_fluid_discretization();
-  Teuchos::RCP<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis(
+  std::shared_ptr<Core::FE::Discretization> fluiddis = Global::Problem::instance()->get_dis(
       "fluid");  // at the moment, 'fluid'-discretization is used for ale!!!
 
-  Teuchos::RCP<Core::FE::Discretization> aledis;
+  std::shared_ptr<Core::FE::Discretization> aledis;
   const Teuchos::ParameterList& xfdyn = problem->x_fluid_dynamic_params();
   bool ale = xfdyn.sublist("GENERAL").get<bool>("ALE_XFluid");
   if (ale)
   {
     aledis = problem->get_dis("ale");
-    if (aledis == Teuchos::null) FOUR_C_THROW("Ale discretization empty!");
+    if (aledis == nullptr) FOUR_C_THROW("Ale discretization empty!");
 
     aledis->fill_complete(true, true, true);
 

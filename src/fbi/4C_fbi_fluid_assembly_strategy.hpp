@@ -14,8 +14,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -66,10 +66,10 @@ namespace FBI
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      virtual void assemble_fluid_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
-          const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& elemat,
-          const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
-          const std::vector<int>& lmcol);
+      virtual void assemble_fluid_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> cff,
+          int elegid, const std::vector<int>& lmstride,
+          const Core::LinAlg::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
+          const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
       /**
        * \brief Assembles element coupling contributions into global coupling matrices and force
@@ -94,11 +94,11 @@ namespace FBI
           const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
           std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
           std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
-          Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& c11,
-          Teuchos::RCP<Core::LinAlg::SparseOperator> c22,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& c12,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& c21);
+          std::shared_ptr<Epetra_FEVector>& f1, std::shared_ptr<Epetra_FEVector>& f2,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& c11,
+          std::shared_ptr<Core::LinAlg::SparseOperator> c22,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& c12,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& c21);
     };
   }  // namespace Utils
 }  // namespace FBI

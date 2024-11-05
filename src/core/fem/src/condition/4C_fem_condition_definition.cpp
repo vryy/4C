@@ -41,7 +41,7 @@ Core::Conditions::ConditionDefinition::ConditionDefinition(std::string sectionna
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::Conditions::ConditionDefinition::add_component(
-    const Teuchos::RCP<Input::LineComponent>& c)
+    const std::shared_ptr<Input::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -49,8 +49,8 @@ void Core::Conditions::ConditionDefinition::add_component(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Conditions::ConditionDefinition::read(
-    Core::IO::InputFile& input, std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap)
+void Core::Conditions::ConditionDefinition::read(Core::IO::InputFile& input,
+    std::multimap<int, std::shared_ptr<Core::Conditions::Condition>>& cmap)
 {
   // read the range into a vector
   std::vector<std::string> section_vec;
@@ -100,7 +100,7 @@ void Core::Conditions::ConditionDefinition::read(
 
   for (auto i = section_vec.begin() + 1; i != section_vec.end(); ++i)
   {
-    Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(*i);
+    std::shared_ptr<std::stringstream> condline = std::make_shared<std::stringstream>(*i);
 
     // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
     // reading the last entry inside This is required since the material parameters can be
@@ -117,8 +117,8 @@ void Core::Conditions::ConditionDefinition::read(
     const int dobjid = parser_content.read<int>() - 1;
     parser_content.consume("-");
 
-    Teuchos::RCP<Core::Conditions::Condition> condition =
-        Teuchos::make_rcp<Core::Conditions::Condition>(dobjid, condtype_, buildgeometry_, gtype_);
+    std::shared_ptr<Core::Conditions::Condition> condition =
+        std::make_shared<Core::Conditions::Condition>(dobjid, condtype_, buildgeometry_, gtype_);
 
     for (auto& j : inputline_)
     {
@@ -126,7 +126,7 @@ void Core::Conditions::ConditionDefinition::read(
     }
 
     //------------------------------- put condition in map of conditions
-    cmap.insert(std::pair<int, Teuchos::RCP<Core::Conditions::Condition>>(dobjid, condition));
+    cmap.insert(std::pair<int, std::shared_ptr<Core::Conditions::Condition>>(dobjid, condition));
   }
 }
 

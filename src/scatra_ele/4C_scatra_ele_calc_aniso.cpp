@@ -52,7 +52,7 @@ Discret::Elements::ScaTraEleCalcAniso<distype, probdim>::ScaTraEleCalcAniso(
           numdofpernode, numscal, disname)
 {
   // get diffusion manager for anisotropic diffusivity / diffusivities (in case of systems)
-  my::diffmanager_ = Teuchos::make_rcp<ScaTraEleDiffManagerAniso<nsd_>>(my::numscal_);
+  my::diffmanager_ = std::make_shared<ScaTraEleDiffManagerAniso<nsd_>>(my::numscal_);
 }
 
 

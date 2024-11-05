@@ -31,9 +31,9 @@ Mat::PAR::ParticleMaterialSPHBoundary::ParticleMaterialSPHBoundary(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHBoundary::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHBoundary::create_material()
 {
-  return Teuchos::make_rcp<Mat::ParticleMaterialSPHBoundary>(this);
+  return std::make_shared<Mat::ParticleMaterialSPHBoundary>(this);
 }
 
 /*---------------------------------------------------------------------------*
@@ -92,7 +92,7 @@ void Mat::ParticleMaterialSPHBoundary::unpack(Core::Communication::UnpackBuffer&
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       // note: dynamic_cast needed due diamond inheritance structure

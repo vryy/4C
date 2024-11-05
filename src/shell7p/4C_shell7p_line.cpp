@@ -16,10 +16,10 @@ Discret::Elements::Shell7pLineType& Discret::Elements::Shell7pLineType::instance
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pLineType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pLineType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 Discret::Elements::Shell7pLine::Shell7pLine(int id, int owner, int nnode, const int* nodeids,

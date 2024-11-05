@@ -13,8 +13,7 @@
 #include "4C_cut_boundingbox.hpp"
 #include "4C_cut_point.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -48,7 +47,9 @@ namespace Cut
   {
    public:
     /// empty constructor
-    OctTreeNode(double norm) : bb_(Teuchos::RCP(BoundingBox::create())), norm_(norm) {}
+    OctTreeNode(double norm) : bb_(std::shared_ptr<BoundingBox>(BoundingBox::create())), norm_(norm)
+    {
+    }
 
     /*========================================================================*/
     //! @name create and get points
@@ -64,7 +65,7 @@ namespace Cut
         PointpoolMergeStrategy merge_strategy);
 
     /// Simply insert p into the pointpool and correspondingly modify the boundingbox size
-    void add_point(const double* x, Teuchos::RCP<Point> p);
+    void add_point(const double* x, std::shared_ptr<Point> p);
 
 
     /*========================================================================*/
@@ -75,7 +76,7 @@ namespace Cut
     unsigned size() const { return points_.size(); }
 
     /// is the current tree-node a leaf of the tree?
-    bool is_leaf() const { return nodes_[0] == Teuchos::null; }
+    bool is_leaf() const { return nodes_[0] == nullptr; }
 
     /*========================================================================*/
     //! @name collect adjacent objects
@@ -117,7 +118,7 @@ namespace Cut
     /*========================================================================*/
 
     /// Create a point with the specified ID
-    Teuchos::RCP<Point> create_point(
+    std::shared_ptr<Point> create_point(
         unsigned newid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
     /// get the leaf where the point with the given coordinates lies in
@@ -132,13 +133,13 @@ namespace Cut
     /*========================================================================*/
 
     /// children of the current OctTreeNode
-    Teuchos::RCP<OctTreeNode> nodes_[8];
+    std::shared_ptr<OctTreeNode> nodes_[8];
 
     /// set of points contained in the bounding box related to this tree-node
     RCPPointSet points_;
 
     /// bounding box related to this tree-node
-    Teuchos::RCP<BoundingBox> bb_;
+    std::shared_ptr<BoundingBox> bb_;
 
     /// point coordinates where the current bounding box is split into 8 children bboxes
     Core::LinAlg::Matrix<3, 1> splitpoint_;

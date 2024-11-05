@@ -65,12 +65,12 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
   const int kineticmodel = my::scatraparamsboundary_->kinetic_model();
 
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::null;
+  std::shared_ptr<const Mat::Electrode> matelectrode = nullptr;
   if (ele->parent_element()->material()->material_type() ==
       Core::Materials::MaterialType::m_electrode)
   {
     matelectrode =
-        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
+        std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
   }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -138,23 +138,24 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 template <Core::FE::CellType distype_master>
-void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
-    probdim>::evaluate_s2_i_coupling_at_integration_point(const Teuchos::RCP<const Mat::Electrode>&
-                                                              matelectrode,
-    const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
-    const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>>& emasterphinp,
-    const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
-    const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& emastertempnp,
-    const double pseudo_contact_fac, const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
-    const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
-    const Core::LinAlg::Matrix<nen_, 1>& test_slave,
-    const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& test_master,
-    const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-    const double timefacfac, const double timefacrhsfac, const double detF, double frt,
-    const int num_dof_per_node, Core::LinAlg::SerialDenseMatrix& k_ss,
-    Core::LinAlg::SerialDenseMatrix& k_sm, Core::LinAlg::SerialDenseMatrix& k_ms,
-    Core::LinAlg::SerialDenseMatrix& k_mm, Core::LinAlg::SerialDenseVector& r_s,
-    Core::LinAlg::SerialDenseVector& r_m)
+void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::
+    evaluate_s2_i_coupling_at_integration_point(
+        const std::shared_ptr<const Mat::Electrode>& matelectrode,
+        const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
+        const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>>&
+            emasterphinp,
+        const Core::LinAlg::Matrix<nen_, 1>& eslavetempnp,
+        const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& emastertempnp,
+        const double pseudo_contact_fac, const Core::LinAlg::Matrix<nen_, 1>& funct_slave,
+        const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& funct_master,
+        const Core::LinAlg::Matrix<nen_, 1>& test_slave,
+        const Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>& test_master,
+        const Discret::Elements::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
+        const double timefacfac, const double timefacrhsfac, const double detF, double frt,
+        const int num_dof_per_node, Core::LinAlg::SerialDenseMatrix& k_ss,
+        Core::LinAlg::SerialDenseMatrix& k_sm, Core::LinAlg::SerialDenseMatrix& k_ms,
+        Core::LinAlg::SerialDenseMatrix& k_mm, Core::LinAlg::SerialDenseVector& r_s,
+        Core::LinAlg::SerialDenseVector& r_m)
 {
   // get condition specific parameters
   const auto condition_type = scatra_parameter_boundary->condition_type();
@@ -207,7 +208,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
     case Inpar::S2I::kinetics_butlervolmerresistance:
     case Inpar::S2I::kinetics_butlervolmerreducedresistance:
     {
-      if (matelectrode == Teuchos::null)
+      if (matelectrode == nullptr)
         FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
       // extract saturation value of intercalated lithium concentration from electrode material
@@ -574,12 +575,12 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
     Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseMatrix& eslavematrix)
 {
-  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::null;
+  std::shared_ptr<const Mat::Electrode> matelectrode = nullptr;
   if (ele->parent_element()->material()->material_type() ==
       Core::Materials::MaterialType::m_electrode)
   {
     matelectrode =
-        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
+        std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
   }
 
   // get condition specific parameters
@@ -659,7 +660,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
         const double alphac = my::scatraparamsboundary_->alpha_c();
         const double kr = my::scatraparamsboundary_->charge_transfer_constant();
 
-        if (matelectrode == Teuchos::null)
+        if (matelectrode == nullptr)
           FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
@@ -942,7 +943,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 double Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::get_valence(
-    const Teuchos::RCP<const Core::Mat::Material>& material, const int k) const
+    const std::shared_ptr<const Core::Mat::Material>& material, const int k) const
 {
   // valence cannot be computed for electrode material
   FOUR_C_THROW("Valence cannot be computed for electrode material!");
@@ -1151,12 +1152,12 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
   const double faraday = Discret::Elements::ScaTraEleParameterElch::instance("scatra")->faraday();
 
   // access material of parent element
-  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::null;
+  std::shared_ptr<const Mat::Electrode> matelectrode = nullptr;
   if (ele->parent_element()->material()->material_type() ==
       Core::Materials::MaterialType::m_electrode)
   {
     matelectrode =
-        Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material());
+        std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material());
   }
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -1221,7 +1222,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
       case Inpar::S2I::kinetics_butlervolmerresistance:
       case Inpar::S2I::kinetics_butlervolmerreducedresistance:
       {
-        if (matelectrode == Teuchos::null)
+        if (matelectrode == nullptr)
           FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
         // extract saturation value of intercalated lithium concentration from electrode material
@@ -1342,7 +1343,7 @@ void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<distype,
 // explicit instantiation of template methods
 template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::CellType::tri3>::
     evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::tri3>(
-        const Teuchos::RCP<const Mat::Electrode>&,
+        const std::shared_ptr<const Mat::Electrode>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::tri3>, 1>>&,
         const Core::LinAlg::Matrix<nen_, 1>&,
@@ -1358,7 +1359,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::Ce
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::CellType::tri3>::
     evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::quad4>(
-        const Teuchos::RCP<const Mat::Electrode>&,
+        const std::shared_ptr<const Mat::Electrode>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::quad4>, 1>>&,
         const Core::LinAlg::Matrix<nen_, 1>&,
@@ -1374,7 +1375,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::Ce
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::CellType::quad4>::
     evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::tri3>(
-        const Teuchos::RCP<const Mat::Electrode>&,
+        const std::shared_ptr<const Mat::Electrode>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::tri3>, 1>>&,
         const Core::LinAlg::Matrix<nen_, 1>&,
@@ -1390,7 +1391,7 @@ template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::Ce
         Core::LinAlg::SerialDenseVector&);
 template void Discret::Elements::ScaTraEleBoundaryCalcElchElectrode<Core::FE::CellType::quad4>::
     evaluate_s2_i_coupling_at_integration_point<Core::FE::CellType::quad4>(
-        const Teuchos::RCP<const Mat::Electrode>&,
+        const std::shared_ptr<const Mat::Electrode>&,
         const std::vector<Core::LinAlg::Matrix<nen_, 1>>&,
         const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<Core::FE::CellType::quad4>, 1>>&,
         const Core::LinAlg::Matrix<nen_, 1>&,

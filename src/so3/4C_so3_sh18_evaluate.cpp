@@ -199,7 +199,7 @@ void Discret::Elements::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     // calculate the deformation gradient consistent to the modified strains
     // but only if the material needs a deformation gradient (e.g. plasticity)
     Core::LinAlg::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> defgrd;
-    if (Teuchos::rcp_static_cast<Mat::So3Material>(material())->needs_defgrd() ||
+    if (std::static_pointer_cast<Mat::So3Material>(material())->needs_defgrd() ||
         iostrain == Inpar::Solid::strain_ea || iostress == Inpar::Solid::stress_cauchy)
     {
       // compute the deformation gradient - shell-style
@@ -231,7 +231,8 @@ void Discret::Elements::SoSh18::nlnstiffmass(std::vector<int>& lm,  ///< locatio
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, Mat::NUM_STRESS_3D> cmat(true);
     Core::LinAlg::Matrix<Mat::NUM_STRESS_3D, 1> stress(true);
 
-    Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_static_cast<Mat::So3Material>(material());
+    std::shared_ptr<Mat::So3Material> so3mat =
+        std::static_pointer_cast<Mat::So3Material>(material());
     so3mat->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 

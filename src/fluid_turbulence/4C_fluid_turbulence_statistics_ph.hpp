@@ -17,7 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,7 +36,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsPh(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsPh(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -93,7 +94,7 @@ namespace FLD
     int numx1statlocations_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -102,17 +103,17 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! pointer to vel/pres^2 field (space allocated in constructor)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> squaredvelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> squaredvelnp_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglep_;
 
     //! available x1- and x2-coordinates
-    Teuchos::RCP<std::vector<double>> x1coordinates_;
-    Teuchos::RCP<std::vector<double>> x2coordinates_;
+    std::shared_ptr<std::vector<double>> x1coordinates_;
+    std::shared_ptr<std::vector<double>> x2coordinates_;
 
     //! coordinates of locations in x1- and x2-direction for statistical evaluation
     Core::LinAlg::SerialDenseMatrix x1statlocations_;
@@ -121,29 +122,29 @@ namespace FLD
     Core::LinAlg::SerialDenseMatrix x2statlocations_;
 
     //! set coordinates of locations in x1-direction for statistical evaluation
-    Teuchos::RCP<std::vector<double>> x1setstatlocations_;
+    std::shared_ptr<std::vector<double>> x1setstatlocations_;
 
     //! coordinates in x1-direction for sampling velocity gradient at the middle bottom
 
     //! matrices containing values
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumu_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sump_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x1sumf_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sumu_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sump_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x1sumf_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumu_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumv_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sump_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumu_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumv_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sump_;
 
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqu_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqv_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumsqp_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqu_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqv_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumsqp_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumuv_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumuw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> x2sumvw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumuv_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumuw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> x2sumvw_;
   };
 
 }  // namespace FLD

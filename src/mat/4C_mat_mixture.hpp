@@ -50,7 +50,7 @@ namespace Mat
 
       /// @}
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
   }  // namespace PAR
 
@@ -149,9 +149,9 @@ namespace Mat
 
     /// Create a copy of this material
     /// \return copy of this material
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Mixture>(*this);
+      return std::make_shared<Mixture>(*this);
     }
 
 

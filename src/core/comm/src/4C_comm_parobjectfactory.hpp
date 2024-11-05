@@ -14,9 +14,8 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -111,7 +110,7 @@ namespace Core::Communication
     ParObject* create(Core::Communication::UnpackBuffer& buffer);
 
     /// create an element from its name (and dis type if needed)
-    Teuchos::RCP<Core::Elements::Element> create(
+    std::shared_ptr<Core::Elements::Element> create(
         const std::string eletype, const std::string eledistype, const int id, const int owner);
 
     /// initialize all element types
@@ -119,11 +118,11 @@ namespace Core::Communication
 
     /// preevaluate elements (via element types)
     void pre_evaluate(Core::FE::Discretization& dis, Teuchos::ParameterList& p,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3);
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3);
 
     /// setup definition of element input file lines
     void setup_element_definition(

@@ -142,7 +142,7 @@ namespace Solid
 
       //! compute the scaling operator for element based scaling using PTC
       void compute_jacobian_contributions_from_element_level_for_ptc(
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr) override;
 
       /*! \brief Print jacbian into text file for later use in MATLAB
        *

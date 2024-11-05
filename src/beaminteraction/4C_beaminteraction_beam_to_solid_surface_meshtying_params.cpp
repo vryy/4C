@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::BeamToSolidSurfaceMeshtyingParams()
     : BeamToSolidParamsBase(),
       coupling_type_(Inpar::BeamToSolid::BeamToSolidSurfaceCoupling::none),
-      output_params_ptr_(Teuchos::null),
+      output_params_ptr_(nullptr),
       rotational_coupling_penalty_parameter_(-1.0),
       rotational_coupling_triad_construction_(
           Inpar::BeamToSolid::BeamToSolidSurfaceRotationCoupling::none)
@@ -79,7 +79,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::init()
 
   // Setup the output parameter object.
   {
-    output_params_ptr_ = Teuchos::make_rcp<BeamToSolidSurfaceVisualizationOutputParams>();
+    output_params_ptr_ = std::make_shared<BeamToSolidSurfaceVisualizationOutputParams>();
     output_params_ptr_->init();
     output_params_ptr_->setup();
   }
@@ -90,7 +90,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::init()
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
 BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams::get_visualization_output_params_ptr()
 {
   return output_params_ptr_;

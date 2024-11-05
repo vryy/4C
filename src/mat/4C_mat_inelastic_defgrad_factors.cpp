@@ -115,7 +115,7 @@ Mat::PAR::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
 Mat::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradLinScalar(matdata),
-      growth_dir_(Teuchos::make_rcp<InelasticDeformationDirection>(
+      growth_dir_(std::make_shared<InelasticDeformationDirection>(
           matdata.parameters.get<std::vector<double>>("GrowthDirection")))
 {
 }
@@ -125,7 +125,7 @@ Mat::PAR::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
 Mat::PAR::InelasticDefgradPolyIntercalFracAniso::InelasticDefgradPolyIntercalFracAniso(
     const Core::Mat::PAR::Parameter::Data& matdata)
     : InelasticDefgradPolyIntercalFrac(matdata),
-      growth_dir_(Teuchos::make_rcp<InelasticDeformationDirection>(
+      growth_dir_(std::make_shared<InelasticDeformationDirection>(
           matdata.parameters.get<std::vector<double>>("GrowthDirection")))
 {
 }
@@ -195,10 +195,10 @@ Mat::InelasticDefgradFactors::InelasticDefgradFactors(Core::Mat::PAR::Parameter*
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
-Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory(int matnum)
+std::shared_ptr<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory(int matnum)
 {
   // for the sake of safety
-  if (Global::Problem::instance()->materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
 
   // another safety check
@@ -227,7 +227,7 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory
     {
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradNoGrowth*>(curmat);
 
-      return Teuchos::make_rcp<InelasticDefgradNoGrowth>(params);
+      return std::make_shared<InelasticDefgradNoGrowth>(params);
     }
     case Core::Materials::mfi_lin_scalar_aniso:
     {
@@ -235,7 +235,7 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradLinScalarAniso*>(curmat);
 
       // return pointer to inelastic deformation gradient object
-      return Teuchos::make_rcp<InelasticDefgradLinScalarAniso>(params);
+      return std::make_shared<InelasticDefgradLinScalarAniso>(params);
     }
     case Core::Materials::mfi_lin_scalar_iso:
     {
@@ -243,7 +243,7 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradScalar*>(curmat);
 
       // return pointer to inelastic deformation gradient object
-      return Teuchos::make_rcp<InelasticDefgradLinScalarIso>(params);
+      return std::make_shared<InelasticDefgradLinScalarIso>(params);
     }
     case Core::Materials::mfi_poly_intercal_frac_aniso:
     {
@@ -251,7 +251,7 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFracAniso*>(curmat);
 
       // return pointer to inelastic deformation gradient object
-      return Teuchos::make_rcp<InelasticDefgradPolyIntercalFracAniso>(params);
+      return std::make_shared<InelasticDefgradPolyIntercalFracAniso>(params);
     }
     case Core::Materials::mfi_poly_intercal_frac_iso:
     {
@@ -259,31 +259,31 @@ Teuchos::RCP<Mat::InelasticDefgradFactors> Mat::InelasticDefgradFactors::factory
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradPolyIntercalFrac*>(curmat);
 
       // return pointer to inelastic deformation gradient object
-      return Teuchos::make_rcp<InelasticDefgradPolyIntercalFracIso>(params);
+      return std::make_shared<InelasticDefgradPolyIntercalFracIso>(params);
     }
 
     case Core::Materials::mfi_lin_temp_iso:
     {
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradLinTempIso*>(curmat);
-      return Teuchos::make_rcp<InelasticDefgradLinTempIso>(params);
+      return std::make_shared<InelasticDefgradLinTempIso>(params);
     }
     case Core::Materials::mfi_time_funct:
     {
       auto* params = dynamic_cast<Mat::PAR::InelasticDefgradTimeFunct*>(curmat);
-      return Teuchos::make_rcp<InelasticDefgradTimeFunct>(params);
+      return std::make_shared<InelasticDefgradTimeFunct>(params);
     }
 
     default:
       FOUR_C_THROW("cannot deal with type %d", curmat->type());
   }
   // dummy return
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::InelasticDefgradScalar::InelasticDefgradScalar(Core::Mat::PAR::Parameter* params)
-    : InelasticDefgradFactors(params), concentrations_(Teuchos::null)
+    : InelasticDefgradFactors(params), concentrations_(nullptr)
 {
 }
 
@@ -292,7 +292,7 @@ Mat::InelasticDefgradScalar::InelasticDefgradScalar(Core::Mat::PAR::Parameter* p
 void Mat::InelasticDefgradScalar::pre_evaluate(Teuchos::ParameterList& params, const int gp)
 {
   // store scalars of current gauss point
-  concentrations_ = params.get<Teuchos::RCP<std::vector<double>>>("scalars");
+  concentrations_ = params.get<std::shared_ptr<std::vector<double>>>("scalars");
 }
 
 /*--------------------------------------------------------------------*
@@ -309,7 +309,7 @@ Mat::InelasticDefgradPolyIntercalFrac::InelasticDefgradPolyIntercalFrac(
     Core::Mat::PAR::Parameter* params)
     : InelasticDefgradScalar(params)
 {
-  polynomial_growth_ = Teuchos::make_rcp<InelasticDefgradPolynomialShape>(
+  polynomial_growth_ = std::make_shared<InelasticDefgradPolynomialShape>(
       parameter()->poly_coeffs(), parameter()->x_min(), parameter()->x_max());
 
   // get reference intercalation fraction
@@ -360,7 +360,7 @@ Mat::PAR::InelasticSource Mat::InelasticDefgradPolyIntercalFrac::get_inelastic_s
 Mat::InelasticDefgradLinScalarIso::InelasticDefgradLinScalarIso(Core::Mat::PAR::Parameter* params)
     : InelasticDefgradScalar(params)
 {
-  linear_growth_ = Teuchos::make_rcp<InelasticDefgradLinearShape>(
+  linear_growth_ = std::make_shared<InelasticDefgradLinearShape>(
       parameter()->scalar1_molar_growth_fac(), parameter()->scalar1_ref_conc());
 }
 
@@ -479,7 +479,7 @@ Mat::InelasticDefgradLinScalarAniso::InelasticDefgradLinScalarAniso(
     Core::Mat::PAR::Parameter* params)
     : InelasticDefgradScalar(params)
 {
-  linear_growth_ = Teuchos::make_rcp<InelasticDefgradLinearShape>(
+  linear_growth_ = std::make_shared<InelasticDefgradLinearShape>(
       parameter()->scalar1_molar_growth_fac(), parameter()->scalar1_ref_conc());
 }
 

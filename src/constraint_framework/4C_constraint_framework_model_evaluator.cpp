@@ -28,11 +28,11 @@ void Solid::ModelEvaluator::Constraints::setup()
 {
   check_init();
 
-  constraint_stiff_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  constraint_stiff_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
 
   constraint_force_ptr_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   set_sub_model_types();
   create_sub_model_evaluators();
@@ -55,7 +55,7 @@ void Solid::ModelEvaluator::Constraints::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for multi point constraints
   // ---------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> linePeriodicRve, surfPeriodicRve,
       pointLinearCoupledEquation, embeddedMeshConditions;
 
   discret_ptr()->get_condition("LinePeriodicRve", linePeriodicRve);
@@ -90,7 +90,7 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
       case Inpar::CONSTRAINTS::SubModelType::submodel_pbc_rve:
       {
         sub_model_vec_ptr_.emplace_back(
-            Teuchos::make_rcp<CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager>(
+            std::make_shared<CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager>(
                 discret_ptr(), constraint_stiff_ptr_.get()));
 
         break;
@@ -98,7 +98,7 @@ void Solid::ModelEvaluator::Constraints::create_sub_model_evaluators()
       case Inpar::CONSTRAINTS::SubModelType::submodel_embeddedmesh:
       {
         sub_model_vec_ptr_.emplace_back(
-            Teuchos::make_rcp<CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager>(
+            std::make_shared<CONSTRAINTS::SUBMODELEVALUATOR::EmbeddedMeshConstraintManager>(
                 discret_ptr(), *global_state().get_dis_np().get()));
 
         break;
@@ -132,8 +132,8 @@ bool Solid::ModelEvaluator::Constraints::evaluate_force()
   pre_evaluate();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
-        Teuchos::null, constraint_force_ptr_);
+    sme_iter->evaluate_force_stiff(
+        *global_state().get_dis_np().get(), global_state_ptr(), nullptr, constraint_force_ptr_);
   }
 
   return true;
@@ -148,8 +148,8 @@ bool Solid::ModelEvaluator::Constraints::evaluate_stiff()
   constraint_stiff_ptr_->un_complete();
   for (auto& sme_iter : sub_model_vec_ptr_)
   {
-    sme_iter->evaluate_force_stiff(*global_state().get_dis_np().get(), global_state_ptr(),
-        constraint_stiff_ptr_, Teuchos::null);
+    sme_iter->evaluate_force_stiff(
+        *global_state().get_dis_np().get(), global_state_ptr(), constraint_stiff_ptr_, nullptr);
   }
   if (not constraint_stiff_ptr_->filled()) constraint_stiff_ptr_->complete();
   return true;
@@ -195,7 +195,7 @@ bool Solid::ModelEvaluator::Constraints::assemble_force(
 bool Solid::ModelEvaluator::Constraints::assemble_jacobian(
     Core::LinAlg::SparseOperator& jac, const double& timefac_np) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> jac_dd_ptr = global_state().extract_displ_block(jac);
 
   jac_dd_ptr->add(*constraint_stiff_ptr_, false, timefac_np, 1.0);
 
@@ -225,9 +225,10 @@ void Solid::ModelEvaluator::Constraints::predict(const Inpar::Solid::PredEnum& p
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Constraints::update_step_state(const double& timefac_n)
 {
-  if (not constraint_force_ptr_.is_null())
+  if (constraint_force_ptr_)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& fstruct_ptr = global_state().get_fstructure_old();
+    std::shared_ptr<Core::LinAlg::Vector<double>>& fstruct_ptr =
+        global_state().get_fstructure_old();
     fstruct_ptr->Update(timefac_n, *constraint_force_ptr_, 1.0);
   }
 }
@@ -293,14 +294,15 @@ void Solid::ModelEvaluator::Constraints::runtime_output_step_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Constraints::get_block_dof_row_map_ptr() const
+std::shared_ptr<const Epetra_Map> Solid::ModelEvaluator::Constraints::get_block_dof_row_map_ptr()
+    const
 {
   return global_state().dof_row_map();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Constraints::get_current_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
@@ -308,7 +310,7 @@ Solid::ModelEvaluator::Constraints::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Constraints::get_last_time_step_solution_ptr() const
 {
   FOUR_C_THROW("This function is not yet implemented");
@@ -329,7 +331,7 @@ void Solid::ModelEvaluator::Constraints::
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Constraints::assemble_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
 {
   FOUR_C_THROW("This function is not yet implemented");
 }

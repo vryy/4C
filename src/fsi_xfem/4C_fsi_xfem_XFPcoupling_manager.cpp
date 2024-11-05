@@ -18,8 +18,9 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
-    Teuchos::RCP<PoroElast::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)
+XFEM::XfpCouplingManager::XfpCouplingManager(std::shared_ptr<XFEM::ConditionManager> condmanager,
+    std::shared_ptr<PoroElast::PoroBase> poro, std::shared_ptr<FLD::XFluid> xfluid,
+    std::vector<int> idx)
     : CouplingCommManager(poro->structure_field()->discretization(),
           poro->fluid_field()->discretization(), "XFEMSurfFPIMono", 0, 3),
       poro_(poro),
@@ -33,28 +34,27 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
   // Coupling_Comm_Manager create all Coupling Objects now with Structure has idx = 0, Fluid has idx
   // = 1!
 
-  mcfpi_ps_ps_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+  mcfpi_ps_ps_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_ps_ps_));
-  if (mcfpi_ps_ps_ == Teuchos::null)
-    FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porostructure!");
+  if (mcfpi_ps_ps_ == nullptr) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porostructure!");
   mcfpi_ps_ps_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
       *poro_->fluid_structure_coupling().perm_master_dof_map());
 
-  mcfpi_ps_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+  mcfpi_ps_pf_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_ps_pf_));
-  if (mcfpi_ps_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
+  if (mcfpi_ps_pf_ == nullptr) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
   mcfpi_ps_pf_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
       *poro_->fluid_structure_coupling().perm_master_dof_map());
 
-  mcfpi_pf_ps_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+  mcfpi_pf_ps_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_pf_ps_));
-  if (mcfpi_pf_ps_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
+  if (mcfpi_pf_ps_ == nullptr) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
   mcfpi_pf_ps_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
       *poro_->fluid_structure_coupling().perm_master_dof_map());
 
-  mcfpi_pf_pf_ = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(
+  mcfpi_pf_pf_ = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(
       condmanager->get_mesh_coupling(cond_name_pf_pf_));
-  if (mcfpi_pf_pf_ == Teuchos::null) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
+  if (mcfpi_pf_pf_ == nullptr) FOUR_C_THROW(" Failed to get MeshCouplingFPI for Porofluid!");
   mcfpi_pf_pf_->initialize_struc_pres_map(*poro_->fluid_structure_coupling().slave_dof_map(),
       *poro_->fluid_structure_coupling().perm_master_dof_map());
 
@@ -70,8 +70,8 @@ XFEM::XfpCouplingManager::XfpCouplingManager(Teuchos::RCP<XFEM::ConditionManager
 
   // storage of the resulting Robin-type structural forces from the old timestep
   // Recovering of Lagrange multiplier happens on fluid field
-  lambda_ps_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
-  lambda_pf_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
+  lambda_ps_ = std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
+  lambda_pf_ = std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->Map(1), true);
 }
 
 void XFEM::XfpCouplingManager::init_coupling_states()
@@ -95,15 +95,15 @@ void XFEM::XfpCouplingManager::set_coupling_states()
       CouplingCommManager::full_to_partial);
 
   // As interfaces embedded into the background mesh are fully ghosted, we don't know which
-  Teuchos::RCP<Epetra_Map> sfulldofmap =
+  std::shared_ptr<Epetra_Map> sfulldofmap =
       Core::LinAlg::allreduce_e_map(*poro_->structure_field()->discretization()->dof_row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*sfulldofmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dispnp_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*sfulldofmap, true);
   Core::LinAlg::export_to(*poro_->structure_field()->dispnp(), *dispnp_col);
-  Teuchos::RCP<Epetra_Map> ffulldofmap =
+  std::shared_ptr<Epetra_Map> ffulldofmap =
       Core::LinAlg::allreduce_e_map(*poro_->fluid_field()->discretization()->dof_row_map());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ffulldofmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> velnp_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*ffulldofmap, true);
   Core::LinAlg::export_to(*poro_->fluid_field()->velnp(), *velnp_col);
 
   mcfpi_ps_ps_->set_full_state(dispnp_col, velnp_col);
@@ -221,24 +221,24 @@ void XFEM::XfpCouplingManager::add_coupling_matrix(
 ///*-----------------------------------------------------------------------------------------*
 //| Add the coupling rhs                                                        ager 06/2016 |
 //*-----------------------------------------------------------------------------------------*/
-void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+void XFEM::XfpCouplingManager::add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
     const Core::LinAlg::MultiMapExtractor& me, double scaling)
 {
   const double dt = poro_->fluid_field()->dt();
   if (idx_.size() == 2)  // assum that the poro field is not split and we just have a blockmatrix
                          // P/F
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_ps_ps =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_ps_ps =
         xfluid_->rhs_s_vec(cond_name_ps_ps_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_ps_pf =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_ps_pf =
         xfluid_->rhs_s_vec(cond_name_ps_pf_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_pf_ps =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_pf_ps =
         xfluid_->rhs_s_vec(cond_name_pf_ps_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_pf_pf =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_pf_pf =
         xfluid_->rhs_s_vec(cond_name_pf_pf_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> prhs =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> prhs =
+        std::make_shared<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
 
     insert_vector(0, rhs_C_ps_ps, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
     insert_vector(0, rhs_C_ps_pf, 0, prhs, CouplingCommManager::partial_to_global, true, scaling);
@@ -249,7 +249,7 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
         0, rhs_C_pf_pf, 1, prhs, CouplingCommManager::partial_to_global, true, scaling * dt);
 
     // Add lambda contribution
-    if (lambda_ps_ != Teuchos::null && lambda_pf_ != Teuchos::null)
+    if (lambda_ps_ != nullptr && lambda_pf_ != nullptr)
     {
       /*----------------------------------------------------------------------*/
       // get time integration parameters of structure and fluid time integrators
@@ -276,19 +276,19 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
   }
   else if (idx_.size() == 3)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_ps_ps =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_ps_ps =
         xfluid_->rhs_s_vec(cond_name_ps_ps_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_ps_pf =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_ps_pf =
         xfluid_->rhs_s_vec(cond_name_ps_pf_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_pf_ps =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_pf_ps =
         xfluid_->rhs_s_vec(cond_name_pf_ps_);
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_C_pf_pf =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_C_pf_pf =
         xfluid_->rhs_s_vec(cond_name_pf_pf_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> srhs =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pfrhs =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*me.Map(idx_[2]), true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> srhs =
+        std::make_shared<Core::LinAlg::Vector<double>>(*me.Map(idx_[0]), true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> pfrhs =
+        std::make_shared<Core::LinAlg::Vector<double>>(*me.Map(idx_[2]), true);
 
     insert_vector(0, rhs_C_ps_ps, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
     insert_vector(0, rhs_C_ps_pf, 0, srhs, CouplingCommManager::partial_to_full, true, scaling);
@@ -299,7 +299,7 @@ void XFEM::XfpCouplingManager::add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vecto
         0, rhs_C_pf_pf, 1, pfrhs, CouplingCommManager::partial_to_full, true, scaling * dt);
 
     // Add lambda contribution
-    if (lambda_ps_ != Teuchos::null && lambda_pf_ != Teuchos::null)
+    if (lambda_ps_ != nullptr && lambda_pf_ != nullptr)
     {
       /*----------------------------------------------------------------------*/
       // get time integration parameters of structure and fluid time integrators
@@ -360,13 +360,13 @@ void XFEM::XfpCouplingManager::output(Core::IO::DiscretizationWriter& writer)
   // output for Lagrange multiplier field (ie forces onto the structure, Robin-type forces
   // consisting of fluid forces and the Nitsche penalty term contribution)
   //--------------------------------
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
+      std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   insert_vector(0, lambda_ps_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fpilambda_ps", lambdafull);
 
   lambdafull =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   insert_vector(0, lambda_pf_, 0, lambdafull, CouplingCommManager::partial_to_full);
   writer.write_vector("fpilambda_pf", lambdafull);
   return;
@@ -376,13 +376,13 @@ void XFEM::XfpCouplingManager::output(Core::IO::DiscretizationWriter& writer)
  *-----------------------------------------------------------------------*/
 void XFEM::XfpCouplingManager::read_restart(Core::IO::DiscretizationReader& reader)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lambdafull =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> lambdafull =
+      std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   reader.read_vector(lambdafull, "fpilambda_ps");
   insert_vector(0, lambdafull, 0, lambda_ps_, CouplingCommManager::full_to_partial);
 
   lambdafull =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*get_map_extractor(0)->full_map(), true);
   reader.read_vector(lambdafull, "fpilambda_pf");
   insert_vector(0, lambdafull, 0, lambda_pf_, CouplingCommManager::full_to_partial);
   return;

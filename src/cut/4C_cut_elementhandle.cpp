@@ -29,8 +29,8 @@ FOUR_C_NAMESPACE_OPEN
 // integation-cells to the local coordinates of background element
 /*----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
-    const std::vector<Cut::Point*>& cpoints, Teuchos::RCP<Core::FE::GaussPoints> gp_ic)
+std::shared_ptr<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
+    const std::vector<Cut::Point*>& cpoints, std::shared_ptr<Core::FE::GaussPoints> gp_ic)
 {
   const unsigned nen = Core::FE::num_nodes<distype>;
   const unsigned dim = Core::FE::dim<distype>;
@@ -48,8 +48,8 @@ Teuchos::RCP<Core::FE::GaussPoints> Cut::ElementHandle::create_projected(
   }
 
   Core::FE::GaussIntegration intpoints(gp_ic);
-  Teuchos::RCP<Core::FE::CollectedGaussPoints> cgp =
-      Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(gp_ic->num_points());
+  std::shared_ptr<Core::FE::CollectedGaussPoints> cgp =
+      std::make_shared<Core::FE::CollectedGaussPoints>(gp_ic->num_points());
 
   // Perform actual mapping to correct local coordinates
   Core::FE::GaussIntegration::project_gauss_points_local_to_global<distype>(xie, intpoints, *cgp);
@@ -71,8 +71,8 @@ void Cut::ElementHandle::volume_cell_gauss_points(
   {
     Cut::VolumeCell* vc = *i;
 
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-        Teuchos::make_rcp<Core::FE::GaussPointsComposite>(0);
+    std::shared_ptr<Core::FE::GaussPointsComposite> gpc =
+        std::make_shared<Core::FE::GaussPointsComposite>(0);
 
     switch (vc->parent_element()->get_element_integration_type())
     {
@@ -138,7 +138,7 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
   {
     Cut::IntegrationCell* ic = *i;
 
-    Teuchos::RCP<Core::FE::GaussPoints> gp_ic =
+    std::shared_ptr<Core::FE::GaussPoints> gp_ic =
         Core::FE::GaussPointCache::instance().create(ic->shape(), ic->cubature_degree(ic->shape()));
     const std::vector<Cut::Point*>& cpoints = ic->points();
 
@@ -146,42 +146,42 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_tessellation(
     {
       case Core::FE::CellType::tri3:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp =
+        std::shared_ptr<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::tri3>(cpoints, gp_ic);
         gpc.append(gp);
         break;
       }
       case Core::FE::CellType::quad4:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp =
+        std::shared_ptr<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::quad4>(cpoints, gp_ic);
         gpc.append(gp);
         break;
       }
       case Core::FE::CellType::hex8:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp =
+        std::shared_ptr<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
         gpc.append(gp);
         break;
       }
       case Core::FE::CellType::tet4:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp =
+        std::shared_ptr<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
         gpc.append(gp);
         break;
       }
       case Core::FE::CellType::wedge6:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp =
+        std::shared_ptr<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::wedge6>(cpoints, gp_ic);
         gpc.append(gp);
         break;
       }
       case Core::FE::CellType::pyramid5:
       {
-        Teuchos::RCP<Core::FE::GaussPoints> gp =
+        std::shared_ptr<Core::FE::GaussPoints> gp =
             create_projected<Core::FE::CellType::pyramid5>(cpoints, gp_ic);
         gpc.append(gp);
         break;
@@ -205,7 +205,7 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
 
   //---------------------------------------------
   const std::vector<Cut::Point*>& cpoints = vc->parent_element()->points();
-  Teuchos::RCP<Core::FE::GaussPoints> gp_ic = vc->get_gauss_rule();
+  std::shared_ptr<Core::FE::GaussPoints> gp_ic = vc->get_gauss_rule();
 
 
   switch (shape())
@@ -222,14 +222,14 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
     case Core::FE::CellType::hex20:
     case Core::FE::CellType::hex27:
     {
-      Teuchos::RCP<Core::FE::GaussPoints> gp =
+      std::shared_ptr<Core::FE::GaussPoints> gp =
           create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
       gpc.append(gp);
       break;
     }
     case Core::FE::CellType::tet10:
     {
-      Teuchos::RCP<Core::FE::GaussPoints> gp =
+      std::shared_ptr<Core::FE::GaussPoints> gp =
           create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
       gpc.append(gp);
       break;
@@ -244,7 +244,7 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_moment_fitting(
 
 
 void Cut::ElementHandle::append_volume_cell_gauss_points_direct_divergence(
-    Teuchos::RCP<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
+    std::shared_ptr<Core::FE::GaussPointsComposite> gpc, Cut::VolumeCell* vc)
 {
   //-------------------
   // For DirectDivergence, we calculate Gauss points at the correct local coord. during construction
@@ -253,11 +253,11 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_direct_divergence(
   //         --> element volume mapping as done for tessellation and moment fitting do not work
   // 2. Internal Gauss pts can be obtained only if we have correctly mapped main Gauss points
   //-------------------
-  Teuchos::RCP<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
+  std::shared_ptr<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
 
   // volume cell gausspoints are identified to be negligible in
   // Cut::VolumeCell::direct_divergence_gauss_rule
-  if (gp == Teuchos::null) return;
+  if (gp == nullptr) return;
 
   gpc->append(gp);
 }
@@ -266,11 +266,11 @@ void Cut::ElementHandle::append_volume_cell_gauss_points_direct_divergence(
 // Collect the Gaussian points of all the volume-cells belonging to this element.
 // The integration rules over all the volume-cells are connected.
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_connected(
+std::shared_ptr<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_connected(
     plain_volumecell_set& cells, VCellGaussPts gausstype)
 {
-  Teuchos::RCP<Core::FE::GaussPointsComposite> gpc =
-      Teuchos::make_rcp<Core::FE::GaussPointsComposite>(0);
+  std::shared_ptr<Core::FE::GaussPointsComposite> gpc =
+      std::make_shared<Core::FE::GaussPointsComposite>(0);
 
   for (plain_volumecell_set::iterator i = cells.begin(); i != cells.end(); ++i)
   {
@@ -285,7 +285,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_co
       {
         Cut::IntegrationCell* ic = *i;
 
-        Teuchos::RCP<Core::FE::GaussPoints> gp_ic = Core::FE::GaussPointCache::instance().create(
+        std::shared_ptr<Core::FE::GaussPoints> gp_ic = Core::FE::GaussPointCache::instance().create(
             ic->shape(), ic->cubature_degree(ic->shape()));
         const std::vector<Cut::Point*>& cpoints = ic->points();
 
@@ -293,28 +293,28 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_co
         {
           case Core::FE::CellType::hex8:
           {
-            Teuchos::RCP<Core::FE::GaussPoints> gp =
+            std::shared_ptr<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::hex8>(cpoints, gp_ic);
             gpc->append(gp);
             break;
           }
           case Core::FE::CellType::tet4:
           {
-            Teuchos::RCP<Core::FE::GaussPoints> gp =
+            std::shared_ptr<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::tet4>(cpoints, gp_ic);
             gpc->append(gp);
             break;
           }
           case Core::FE::CellType::wedge6:
           {
-            Teuchos::RCP<Core::FE::GaussPoints> gp =
+            std::shared_ptr<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::wedge6>(cpoints, gp_ic);
             gpc->append(gp);
             break;
           }
           case Core::FE::CellType::pyramid5:
           {
-            Teuchos::RCP<Core::FE::GaussPoints> gp =
+            std::shared_ptr<Core::FE::GaussPoints> gp =
                 create_projected<Core::FE::CellType::pyramid5>(cpoints, gp_ic);
             gpc->append(gp);
             break;
@@ -329,7 +329,7 @@ Teuchos::RCP<Core::FE::GaussPointsComposite> Cut::ElementHandle::gauss_points_co
     else if (gausstype == VCellGaussPts_MomentFitting ||
              gausstype == VCellGaussPts_DirectDivergence)
     {
-      Teuchos::RCP<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
+      std::shared_ptr<Core::FE::GaussPoints> gp = vc->get_gauss_rule();
       gpc->append(gp);
     }
   }
@@ -1577,7 +1577,7 @@ Cut::Wedge15ElementHandle::Wedge15ElementHandle(
 void Cut::Hex20ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Cut::Position> pos =
+  std::shared_ptr<Cut::Position> pos =
       Cut::PositionFactory::build_position<3, Core::FE::CellType::hex20>(nodes_, xyz);
 
   bool success = pos->compute(1e-10);
@@ -1604,7 +1604,7 @@ void Cut::Hex20ElementHandle::local_coordinates(
 void Cut::Hex27ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Cut::Position> pos =
+  std::shared_ptr<Cut::Position> pos =
       Cut::PositionFactory::build_position<3, Core::FE::CellType::hex27>(nodes_, xyz);
 
   bool success = pos->compute();
@@ -1621,7 +1621,7 @@ void Cut::Hex27ElementHandle::local_coordinates(
 void Cut::Tet10ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Cut::Position> pos =
+  std::shared_ptr<Cut::Position> pos =
       Cut::PositionFactory::build_position<3, Core::FE::CellType::tet10>(nodes_, xyz);
 
   bool success = pos->compute();
@@ -1637,7 +1637,7 @@ void Cut::Tet10ElementHandle::local_coordinates(
 void Cut::Wedge15ElementHandle::local_coordinates(
     const Core::LinAlg::Matrix<3, 1>& xyz, Core::LinAlg::Matrix<3, 1>& rst)
 {
-  Teuchos::RCP<Cut::Position> pos =
+  std::shared_ptr<Cut::Position> pos =
       Cut::PositionFactory::build_position<3, Core::FE::CellType::wedge15>(nodes_, xyz);
 
   bool success = pos->compute();

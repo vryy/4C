@@ -22,12 +22,12 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -57,7 +57,7 @@ namespace Airway
     \brief Standard Constructor
 
     */
-    RedAirwayImplicitTimeInt(Teuchos::RCP<Core::FE::Discretization> dis,
+    RedAirwayImplicitTimeInt(std::shared_ptr<Core::FE::Discretization> dis,
         std::unique_ptr<Core::LinAlg::Solver> solver, Teuchos::ParameterList& params,
         Core::IO::DiscretizationWriter& output);
 
@@ -78,26 +78,26 @@ namespace Airway
     \brief start time loop for startingalgo, normal problems and restarts
 
     */
-    void integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void integrate(bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams);
 
     /*!
     \brief Do time integration (time loop)
 
     */
-    void time_loop(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void time_loop(bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief Do one step time integration (time loop)
 
     */
     void time_step(bool CoupledTo3D = false,
-        Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
+        std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams = nullptr);
 
     /*!
     \brief Integrate one step
 
     */
-    void integrate_step(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
+    void integrate_step(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams = nullptr);
 
 
     /// setup the variables to do a new time step
@@ -108,13 +108,13 @@ namespace Airway
     \brief solve of airways
 
     */
-    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void solve(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
     \brief nonlinear solver of airways
 
     */
-    void non_lin_solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void non_lin_solve(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams);
 
     /*!
       \brief build linear system matrix and rhs
@@ -152,8 +152,8 @@ namespace Airway
     \brief update configuration and output to file/screen
 
     */
-    void output(bool CoupledTo3D = false,
-        Teuchos::RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
+    void output(
+        bool CoupledTo3D = false, std::shared_ptr<Teuchos::ParameterList> CouplingParams = nullptr);
 
     /*!
     \brief Adjust acini_volume with prestress
@@ -167,7 +167,7 @@ namespace Airway
     */
     void compute_nearest_acinus(const Core::FE::Discretization& search_discret,
         std::set<int>* elecolset, std::set<int>* nodecolset,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep);
+        std::shared_ptr<Core::LinAlg::Vector<double>> airway_acinus_dep);
 
     /*!
     \brief Assembling of the RHS Vector and the LHS Matrix
@@ -179,7 +179,7 @@ namespace Airway
     \brief Evaluate the error residual
 
     */
-    void eval_residual(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void eval_residual(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams);
 
 
     /*!
@@ -197,25 +197,25 @@ namespace Airway
     */
     void read_restart(int step, bool coupledTo3D = false);
 
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test();
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test();
 
 
     //! @name access methods for composite algorithms
     /// Return nodal values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pnp() { return pnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pn() { return pn_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pnm() { return pnm_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_np() { return qin_np_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_np() { return qout_np_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> pnp() { return pnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> pn() { return pn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> pnm() { return pnm_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_np() { return qin_np_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_np() { return qout_np_; }
 
     /// provide access to the Dirichlet map
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mass_matrix()
     {
-      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
+      return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }
-    Teuchos::RCP<Core::FE::Discretization> discretization() { return discret_; }
+    std::shared_ptr<Core::FE::Discretization> discretization() { return discret_; }
 
     double dt() const { return dta_; }
     double time() const { return time_; }
@@ -224,19 +224,19 @@ namespace Airway
     int itemax() const { return params_.get<int>("max nonlin iter steps"); }
     void set_itemax(int itemax) { params_.set<int>("max nonlin iter steps", itemax); }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pext_np() { return p_extnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> pext_np() { return p_extnp_; }
 
     /// Return elemental acini volume
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_volume() { return acini_e_volumenp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_volume() { return acini_e_volumenp_; }
 
     /// Return elemental airway volume
-    Teuchos::RCP<Core::LinAlg::Vector<double>> airway_volume() { return elemVolumenp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> airway_volume() { return elemVolumenp_; }
 
     /// Return elemental airway status regarding opening
-    Teuchos::RCP<Core::LinAlg::Vector<double>> open() { return open_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> open() { return open_; }
 
     /// Return elemental airway trajectory describing opening tendency
-    Teuchos::RCP<Core::LinAlg::Vector<double>> opening_trajectory() { return x_np_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> opening_trajectory() { return x_np_; }
 
     //@}
 
@@ -251,9 +251,9 @@ namespace Airway
     Core::IO::DiscretizationWriter& get_output_writer() { return output_; }
 
     /// Hand over restartreader to redairway_tissue
-    Teuchos::RCP<Core::IO::DiscretizationReader> get_restart_reader(int step)
+    std::shared_ptr<Core::IO::DiscretizationReader> get_restart_reader(int step)
     {
-      return Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+      return std::make_shared<Core::IO::DiscretizationReader>(
           discret_, Global::Problem::instance()->input_control_file(), step);
     }
 
@@ -262,7 +262,7 @@ namespace Airway
    protected:
     //! @name general algorithm parameters
     //! reduced dimensional airway network discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
     std::unique_ptr<Core::LinAlg::Solver> solver_;
     Teuchos::ParameterList params_;
     Core::IO::DiscretizationWriter& output_;
@@ -299,100 +299,100 @@ namespace Airway
     double dtsolve_;
 
     /// (standard) mass matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> massmat_;
 
     /// (standard) system matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat_;
 
     /// maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     /// rhs: right hand side vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
 
     //! @name pressures at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pnm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p_nonlin_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p_nonlin_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> n_intr_ac_ln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> n_intr_ac_ln_;
     //@}
 
     //! @name inlet volumetric flow rates at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_nm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_nm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qi_nl_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qi_nl_np_;
     //@}
 
     //! @trajectory vector x at time n+1 and n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x_np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x_n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> x_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> x_n_;
 
     //! @state of airway open or closed
-    Teuchos::RCP<Core::LinAlg::Vector<double>> open_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> open_;
 
     //! @neighbouring acinus of airway
-    Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> airway_acinus_dep_;
 
     //! @external pressure of airway
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p_extnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p_extn_;
     // p vector in colmap format for computing p_extnp_ and p_extn_
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pnp_colmap_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pn_colmap_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pnp_colmap_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pn_colmap_;
 
     //! @name outlet volumetric flow rates at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_nm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_nm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qo_nl_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qo_nl_np_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qexp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qexp2_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pexp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qexp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qexp2_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pexp_;
     //@}
 
     //! @name element volume at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumenp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumen_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolume0_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemArea0_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolumenp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolumen_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolumenm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolume0_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemArea0_;
 
     //! @name element radius at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemRadiusnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemRadiusnp_;
     //@}
 
     //@}
     //! @name node Id vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> nodeIds_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> nodeIds_;
     //@}
 
     //! @name radii vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> radii_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> radii_;
     //@}
 
     //! @name generations vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> generations_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> generations_;
     //@}
 
     //! @name Dirichlet boundary condition vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> bcval_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_bc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> bcval_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dbctog_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_bc_;
 
     //! @name acinar elementel values
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volume0_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volumen_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volumenp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volume_strain_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_max_strain_location_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_e_volume0_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_e_volumenm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_e_volumen_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_e_volumenp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_e_volume_strain_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_max_strain_location_;
 
     bool calcV0PreStress_;
     double transpulmpress_;
@@ -406,41 +406,41 @@ namespace Airway
     //! @name state saving vectors
 
     // saving vector for pressure
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_pnm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_pn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_pnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_pnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_pn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_pnp_;
 
     // saving vector for inflow rate
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qin_nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qin_n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qin_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qin_nm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qin_n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qin_np_;
 
     // saving vector for trajectory
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_x_n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_x_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_x_n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_x_np_;
 
     // saving vector for outflow rates
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qout_nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qout_n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qout_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qout_nm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qout_n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qout_np_;
 
     // saving vector for acinar volume
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_acini_e_volumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_acini_e_volumen_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_acini_e_volumenp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_acini_e_volumenm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_acini_e_volumen_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_acini_e_volumenp_;
 
     // saving vector for element volume
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumenm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumen_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_elemVolumenp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_elemVolumenm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_elemVolumen_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_elemVolumenp_;
 
     //! Error vector that shows the convergenece of the nonlinear problem
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> bc_residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> bc_residual_;
     //@}
 
     //! connection between master and slave nodes on this proc
-    Teuchos::RCP<std::map<int, std::vector<int>>> pbcmapmastertoslave_;
+    std::shared_ptr<std::map<int, std::vector<int>>> pbcmapmastertoslave_;
     //@}
 
     //!
@@ -459,7 +459,7 @@ namespace Airway
     std::map<int, Core::Conditions::Condition*> coupcond_;
 
     /// map of coupling IDs
-    Teuchos::RCP<Epetra_Map> coupmap_;
+    std::shared_ptr<Epetra_Map> coupmap_;
 
     std::map<int, double> pres_;
 

@@ -32,7 +32,7 @@ namespace Solid
     {
      public:
       //! constructor
-      PartitionedSSI(const Teuchos::RCP<const SSI::SSIPart>
+      PartitionedSSI(const std::shared_ptr<const SSI::SSIPart>
               ssi_part  //!< partitioned algorithm for scalar-structure interaction
       );
 
@@ -58,7 +58,7 @@ namespace Solid
 
      private:
       //! partitioned algorithm for scalar-structure interaction
-      const Teuchos::RCP<const SSI::SSIPart> ssi_part_;
+      const std::shared_ptr<const SSI::SSIPart> ssi_part_;
     };  // class PartitionedSSI
 
   }  // namespace ModelEvaluator

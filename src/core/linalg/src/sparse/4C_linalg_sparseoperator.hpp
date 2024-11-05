@@ -12,11 +12,12 @@
 
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -93,7 +94,10 @@ namespace Core::LinAlg
       \warning Only low level solver routines are interested in the internal
       Epetra_Operator.
      */
-    virtual Teuchos::RCP<Epetra_Operator> epetra_operator() { return Teuchos::rcpFromRef(*this); }
+    virtual std::shared_ptr<Epetra_Operator> epetra_operator()
+    {
+      return Core::Utils::shared_ptr_from_ref(*this);
+    }
 
     /// set matrix to zero
     virtual void zero() = 0;

@@ -50,26 +50,26 @@ Core::Communication::ParObject* Discret::Elements::PoroFluidMultiPhaseType::crea
 /*----------------------------------------------------------------------*
  |  create an element from a dat file specifier             vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "POROFLUIDMULTIPHASE")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::PoroFluidMultiPhase>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::PoroFluidMultiPhase>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::PoroFluidMultiPhase>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::PoroFluidMultiPhase>(id, owner);
   return ele;
 }
 
@@ -156,7 +156,7 @@ Discret::Elements::PoroFluidMultiPhaseBoundaryType::instance()
 /*----------------------------------------------------------------------*
  |  create an empty element                                vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseBoundaryType::create(
     const int id, const int owner)
 {
   // boundary elements are not created as stand-alone elements by the element type,
@@ -167,7 +167,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::PoroFluidMultiPhaseBoun
   // To make this clear, a null pointer is returned.
 
   // return Teuchos::rcp( new PoroFluidMultiPhaseBoundary( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -235,8 +235,8 @@ Core::FE::CellType Discret::Elements::PoroFluidMultiPhase::shape() const { retur
  *----------------------------------------------------------------------*/
 void Discret::Elements::PoroFluidMultiPhase::initialize()
 {
-  Teuchos::RCP<Mat::FluidPoroMultiPhase> actmat =
-      Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(material(), true);
+  std::shared_ptr<Mat::FluidPoroMultiPhase> actmat =
+      std::dynamic_pointer_cast<Mat::FluidPoroMultiPhase>(material());
 
   actmat->initialize();
   return;
@@ -335,7 +335,8 @@ void Discret::Elements::PoroFluidMultiPhase::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::PoroFluidMultiPhase::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::PoroFluidMultiPhase::lines()
 {
   return Core::Communication::get_element_lines<PoroFluidMultiPhaseBoundary, PoroFluidMultiPhase>(
       *this);
@@ -345,7 +346,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::PoroFluidM
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::PoroFluidMultiPhase::surfaces()
 {
   return Core::Communication::get_element_surfaces<PoroFluidMultiPhaseBoundary,
@@ -372,7 +373,7 @@ bool Discret::Elements::PoroFluidMultiPhase::read_element(const std::string& ele
  |  create material class (public)                          vuong 08/16 |
  *----------------------------------------------------------------------*/
 void Discret::Elements::PoroFluidMultiPhase::set_material(
-    const int index, Teuchos::RCP<Core::Mat::Material> mat)
+    const int index, std::shared_ptr<Core::Mat::Material> mat)
 {
   // the standard part:
   Core::Elements::Element::set_material(index, mat);
@@ -503,7 +504,7 @@ int Discret::Elements::PoroFluidMultiPhaseBoundary::num_surface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::PoroFluidMultiPhaseBoundary::lines()
 {
   FOUR_C_THROW("Lines of PoroFluidMultiPhaseBoundary not implemented");
@@ -512,7 +513,7 @@ Discret::Elements::PoroFluidMultiPhaseBoundary::lines()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            vuong 08/16 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::PoroFluidMultiPhaseBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of PoroFluidMultiPhaseBoundary not implemented");

@@ -651,8 +651,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->get_vel_col() != Teuchos::null or
-        walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr or walldatastate->get_force_col() != nullptr)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2d(
@@ -674,9 +673,9 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     if (contacttangential_ or contactrolling_)
     {
       // cast material to particle wall material
-      const Teuchos::RCP<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
-          Teuchos::rcp_dynamic_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
-      if (particlewallmaterial == Teuchos::null)
+      const std::shared_ptr<const Mat::ParticleWallMaterialDEM>& particlewallmaterial =
+          std::dynamic_pointer_cast<const Mat::ParticleWallMaterialDEM>(ele->material());
+      if (particlewallmaterial == nullptr)
         FOUR_C_THROW("cast to Mat::ParticleWallMaterialDEM failed!");
 
       // get tangential contact friction coefficient
@@ -692,7 +691,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->get_vel_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
@@ -800,7 +799,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != nullptr)
     {
       Utils::vec_set_scale(wallcontactforce, -normalcontactforce, particlewallpair.e_ji_);
       Utils::vec_sub(wallcontactforce, tangentialcontactforce);
@@ -821,7 +820,7 @@ void ParticleInteraction::DEMContact::evaluate_particle_wall_contact()
     }
 
     // assemble contact force acting on wall element
-    if (walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_force_col() != nullptr)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);

@@ -13,7 +13,9 @@
 #include "4C_inpar_structure.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <Teuchos_RCPDecl.hpp>
+
+#include <memory>
 
 // forward declaration
 namespace NOX
@@ -54,11 +56,11 @@ namespace Solid
         virtual ~Generic() = default;
 
         //! initialization
-        virtual void init(const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate,
-            const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn,
-            const Teuchos::RCP<Solid::TimeInt::NoxInterface>& noxinterface,
-            const Teuchos::RCP<Solid::Integrator>& integrator,
-            const Teuchos::RCP<const Solid::TimeInt::Base>& timint);
+        virtual void init(const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate,
+            const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn,
+            const std::shared_ptr<Solid::TimeInt::NoxInterface>& noxinterface,
+            const std::shared_ptr<Solid::Integrator>& integrator,
+            const std::shared_ptr<const Solid::TimeInt::Base>& timint);
 
         //! Setup the nonlinear solver configuration
         virtual void setup() = 0;
@@ -102,7 +104,7 @@ namespace Solid
         void check_init() const { FOUR_C_ASSERT(is_init(), "You have to call init() first!"); }
 
         //! Returns the global state data container pointer
-        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> data_global_state_ptr()
+        std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> data_global_state_ptr()
         {
           check_init();
           return gstate_ptr_;
@@ -123,7 +125,7 @@ namespace Solid
         }
 
         //! Returns the structural dynamics data container pointer
-        Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> data_s_dyn_ptr()
+        std::shared_ptr<Solid::TimeInt::BaseDataSDyn> data_s_dyn_ptr()
         {
           check_init();
           return sdyn_ptr_;
@@ -144,7 +146,7 @@ namespace Solid
         }
 
         //! Returns the non-linear solver implicit time integration interface pointer
-        Teuchos::RCP<Solid::TimeInt::NoxInterface> nox_interface_ptr()
+        std::shared_ptr<Solid::TimeInt::NoxInterface> nox_interface_ptr()
         {
           check_init();
           return noxinterface_ptr_;
@@ -198,19 +200,19 @@ namespace Solid
 
        private:
         //! global state data container of the time integrator
-        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+        std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
         //! structural dynamics data container of the time integrator
-        Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
+        std::shared_ptr<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
         //! required interface pointer to the implicit time integrator (call back)
-        Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr_;
+        std::shared_ptr<Solid::TimeInt::NoxInterface> noxinterface_ptr_;
 
         //! pointer to the current time integrator
-        Teuchos::RCP<Solid::Integrator> int_ptr_;
+        std::shared_ptr<Solid::Integrator> int_ptr_;
 
         //! pointer to the time integration strategy
-        Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
+        std::shared_ptr<const Solid::TimeInt::Base> timint_ptr_;
 
         //! nox group
         Teuchos::RCP<::NOX::Abstract::Group> group_ptr_;

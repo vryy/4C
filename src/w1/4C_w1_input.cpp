@@ -44,7 +44,7 @@ bool Discret::Elements::Wall1::read_element(const std::string& eletype, const st
   int material_id = container.get_or<int>("MAT", 0);
   set_material(0, Mat::factory(material_id));
 
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   {
     const Core::FE::IntegrationPoints2D intpoints(gaussrule_);

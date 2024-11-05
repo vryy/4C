@@ -15,8 +15,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -71,15 +71,16 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      virtual void evaluate_force_stiff(Teuchos::RCP<Core::FE::Discretization> discret,
-          const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-          Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat)
+      virtual void evaluate_force_stiff(std::shared_ptr<Core::FE::Discretization> discret,
+          const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+          std::shared_ptr<Epetra_FEVector> fe_sysvec,
+          std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat)
       {
         FOUR_C_THROW("Not implemented!");
       }
 
-      virtual double get_energy(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& disp) const
+      virtual double get_energy(
+          const std::shared_ptr<const Core::LinAlg::Vector<double>>& disp) const
       {
         return 0.0;
       }

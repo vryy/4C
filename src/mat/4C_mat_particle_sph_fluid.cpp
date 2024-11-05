@@ -40,9 +40,9 @@ Mat::PAR::ParticleMaterialSPHFluid::ParticleMaterialSPHFluid(
 /*---------------------------------------------------------------------------*
  | create material instance of matching type with parameters  sfuchs 06/2018 |
  *---------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHFluid::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ParticleMaterialSPHFluid::create_material()
 {
-  return Teuchos::make_rcp<Mat::ParticleMaterialSPHFluid>(this);
+  return std::make_shared<Mat::ParticleMaterialSPHFluid>(this);
 }
 
 /*---------------------------------------------------------------------------*
@@ -100,7 +100,7 @@ void Mat::ParticleMaterialSPHFluid::unpack(Core::Communication::UnpackBuffer& bu
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       // note: dynamic_cast needed due diamond inheritance structure

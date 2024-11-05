@@ -27,24 +27,24 @@ Core::Communication::ParObject* Core::FE::MeshFree::MeshfreeMultiBinType::create
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
+std::shared_ptr<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "MESHFREEMULTIBIN")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Core::FE::MeshFree::MeshfreeMultiBin>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Core::FE::MeshFree::MeshfreeMultiBin>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
+std::shared_ptr<Core::Elements::Element> Core::FE::MeshFree::MeshfreeMultiBinType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Core::FE::MeshFree::MeshfreeMultiBin>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Core::FE::MeshFree::MeshfreeMultiBin>(id, owner);
   return ele;
 }
 

@@ -15,9 +15,9 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <functional>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -37,11 +37,12 @@ namespace Core::Rebalance
      *
     \param vector_of_discretizations (in) : vector containing RCPs to discretizations */
   void rebalance_discretizations_by_binning(const Teuchos::ParameterList& binning_params,
-      Teuchos::RCP<Core::IO::OutputControl> output_control,
-      const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
+      std::shared_ptr<Core::IO::OutputControl> output_control,
+      const std::vector<std::shared_ptr<Core::FE::Discretization>>& vector_of_discretizations,
       std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node = nullptr,
       std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-          const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
+          const Core::Elements::Element&,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)>
           determine_relevant_points = nullptr,
       bool revertextendedghosting = false);
 
@@ -102,13 +103,13 @@ namespace Core::Rebalance
 
   \param name (in): discretization
   \param state (in): vector of some data  */
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> get_col_version_of_row_vector(
+  std::shared_ptr<const Core::LinAlg::Vector<double>> get_col_version_of_row_vector(
       const Core::FE::Discretization& dis,
-      const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int nds = 0);
+      const std::shared_ptr<const Core::LinAlg::Vector<double>> state, const int nds = 0);
 
 
   /// recompute nodecolmap of standard discretization to include all nodes as of subdicretization
-  Teuchos::RCP<Epetra_Map> compute_node_col_map(
+  std::shared_ptr<Epetra_Map> compute_node_col_map(
       const Core::FE::Discretization& sourcedis,  ///< standard discretization we want to rebalance
       const Core::FE::Discretization& subdis      ///< subdiscretization prescribing ghosting
   );

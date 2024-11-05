@@ -15,7 +15,8 @@
 
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,7 +46,7 @@ namespace CONSTRAINTS
     /*!
       \brief Constructor
     */
-    SpringDashpotManager(Teuchos::RCP<Core::FE::Discretization> dis);
+    SpringDashpotManager(std::shared_ptr<Core::FE::Discretization> dis);
 
     /*!
      \brief Return if there are spring dashpots
@@ -53,10 +54,10 @@ namespace CONSTRAINTS
     bool have_spring_dashpot() const { return havespringdashpot_; };
 
     //! add contribution of spring dashpot BC to residual vector and stiffness matrix
-    void stiffness_and_internal_forces(Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist);
+    void stiffness_and_internal_forces(std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fint,
+        std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+        std::shared_ptr<Core::LinAlg::Vector<double>> veln, Teuchos::ParameterList parlist);
 
     //! update for each new time step
     void update();
@@ -66,7 +67,7 @@ namespace CONSTRAINTS
         Core::LinAlg::Vector<double>& disp);
 
     //! output of prestressing offset for restart
-    void output_restart(Teuchos::RCP<Core::IO::DiscretizationWriter> output_restart,
+    void output_restart(std::shared_ptr<Core::IO::DiscretizationWriter> output_restart,
         Core::FE::Discretization& discret, Core::LinAlg::Vector<double>& disp);
 
     /*!
@@ -78,8 +79,8 @@ namespace CONSTRAINTS
     void reset_prestress(Core::LinAlg::Vector<double>& disold);
 
    private:
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;    ///< standard discretization
-    std::vector<Teuchos::RCP<SpringDashpot>> springs_;  ///< all spring dashpot instances
+    std::shared_ptr<Core::FE::Discretization> actdisc_;    ///< standard discretization
+    std::vector<std::shared_ptr<SpringDashpot>> springs_;  ///< all spring dashpot instances
 
     bool havespringdashpot_;  ///< are there any spring dashpot BCs at all?
     int n_conds_;             ///< number of spring dashpot conditions

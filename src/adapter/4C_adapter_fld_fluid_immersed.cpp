@@ -18,7 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 Adapter::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std::string condname)
 {
-  fluid_ = Teuchos::make_rcp<FluidBaseAlgorithm>(
+  fluid_ = std::make_shared<FluidBaseAlgorithm>(
       prbdyn, Global::Problem::instance()->fluid_dynamic_params(), "fluid", false);
   fluidadapter_ = fluid_->fluid_field();
 
@@ -28,7 +28,7 @@ Adapter::FluidImmersed::FluidImmersed(const Teuchos::ParameterList& prbdyn, std:
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Adapter::FluidImmersed::discretization()
+std::shared_ptr<Core::FE::Discretization> Adapter::FluidImmersed::discretization()
 {
   return fluid_field()->discretization();
 }
@@ -36,7 +36,7 @@ Teuchos::RCP<Core::FE::Discretization> Adapter::FluidImmersed::discretization()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<FLD::Utils::MapExtractor> const& Adapter::FluidImmersed::interface() const
+std::shared_ptr<FLD::Utils::MapExtractor> const& Adapter::FluidImmersed::interface() const
 {
   return fluidadapter_->interface();
 }
@@ -68,8 +68,8 @@ double Adapter::FluidImmersed::read_restart(int step)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivel)
+void Adapter::FluidImmersed::nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivel)
 {
   fluid_field()->solve();
 }
@@ -77,8 +77,8 @@ void Adapter::FluidImmersed::nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::relaxation_solve(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt)
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::relaxation_solve(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt)
 {
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1. / dt);
@@ -89,7 +89,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::relaxation_so
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_forces()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_forces()
 {
   return fluid_field()->extract_interface_forces();
 }
@@ -97,7 +97,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_inter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_velnp()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_velnp()
 {
   FOUR_C_THROW("Robin stuff");
   return fluid_field()->extract_interface_velnp();
@@ -106,7 +106,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_inter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_veln()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_interface_veln()
 {
   return fluid_field()->extract_interface_veln();
 }
@@ -114,7 +114,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::extract_inter
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::integrate_interface_shape()
+std::shared_ptr<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::integrate_interface_shape()
 {
   return fluid_field()->integrate_interface_shape();
 }
@@ -122,7 +122,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Adapter::FluidImmersed::integrate_int
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidImmersed::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> Adapter::FluidImmersed::create_field_test()
 {
   return fluid_field()->create_field_test();
 }
@@ -130,14 +130,14 @@ Teuchos::RCP<Core::Utils::ResultTest> Adapter::FluidImmersed::create_field_test(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void Adapter::FluidImmersed::add_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoadd)
 {
   fluid_field()->add_dirich_cond(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Adapter::FluidImmersed::remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void Adapter::FluidImmersed::remove_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoremove)
 {
   fluid_field()->remove_dirich_cond(maptoremove);
 }

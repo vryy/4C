@@ -130,9 +130,9 @@ Mat::PAR::MuscleCombo::MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdat
   if (density_ < 0.0) FOUR_C_THROW("DENS should be positive");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MuscleCombo::create_material()
 {
-  return Teuchos::make_rcp<Mat::MuscleCombo>(this);
+  return std::make_shared<Mat::MuscleCombo>(this);
 }
 
 Mat::MuscleComboType Mat::MuscleComboType::instance_;
@@ -149,7 +149,7 @@ Mat::MuscleCombo::MuscleCombo()
     : params_(nullptr),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0}),
       activation_evaluator_(std::monostate{})
@@ -160,7 +160,7 @@ Mat::MuscleCombo::MuscleCombo(Mat::PAR::MuscleCombo* params)
     : params_(params),
       anisotropy_(),
       anisotropy_extension_(true, 0.0, 0,
-          Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase>(
+          std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase>(
               new Mat::Elastic::StructuralTensorStrategyStandard(nullptr)),
           {0}),
       activation_evaluator_(std::monostate{})
@@ -204,7 +204,7 @@ void Mat::MuscleCombo::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
 
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

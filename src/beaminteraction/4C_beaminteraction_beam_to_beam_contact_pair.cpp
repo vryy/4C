@@ -29,8 +29,9 @@
 #include "4C_structure_timint_impl.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -424,9 +425,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
     if (validpairfound and !allready_found)
     {
       std::pair<int, int> integration_ids = std::make_pair(-2, -2);
-      cpvariables_.push_back(
-          Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
-              closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
+      cpvariables_.push_back(std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+          closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
     }
   }
 }
@@ -881,7 +881,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
                 // number of the Gauss point [numgp] and the number of the integration interval
                 // [interval] are stored in the pair segids_ of the class beamcontactvaribles!)
                 gpvariables_.push_back(
-                    Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+                    std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                         closestpoint, leftpoint_ids, integration_ids, parallel_pp, jacobi));
               }
               // We can leave the k-loop as soon as we have found a valid projection for the given
@@ -1135,7 +1135,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1167,7 +1167,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1199,7 +1199,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1231,7 +1231,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1260,7 +1260,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1290,7 +1290,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1319,7 +1319,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -1348,7 +1348,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::get_activ
         // a \in {0,1} contains the information, if a node of element 1 has been considered as
         // endpoint, b has the same meaning for element 2
         epvariables_.push_back(
-            Teuchos::make_rcp<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
+            std::make_shared<BeamToBeamContactVariables<numnodes, numnodalvalues>>(
                 closestpoint, leftpoint_ids, integration_ids, pp, 1.0));
       }
     }
@@ -4787,7 +4787,8 @@ template <unsigned int numnodes, unsigned int numnodalvalues>
 void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::compute_normal(
     Core::LinAlg::Matrix<3, 1, TYPE>& r1, Core::LinAlg::Matrix<3, 1, TYPE>& r2,
     Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
-    Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables, int contacttype)
+    std::shared_ptr<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
+    int contacttype)
 {
   // compute non-unit normal
   Core::LinAlg::Matrix<3, 1, TYPE> delta_r = Core::FADUtils::diff_vector(r1, r2);
@@ -5360,7 +5361,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 //                                                              Core::LinAlg::Vector<double>& fint,
 //                                                              const double& pp,
 //                                                              std::map<std::pair<int,int>,
-//                                                              Teuchos::RCP<Beam3contactinterface >
+//                                                              std::shared_ptr<Beam3contactinterface
+//                                                              >
 //                                                              >& contactpairmap,
 //                                                              Teuchos::ParameterList&
 //                                                              timeintparams, bool fdcheck)

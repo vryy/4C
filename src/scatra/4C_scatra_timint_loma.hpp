@@ -14,7 +14,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,11 +26,12 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    ScaTraTimIntLoma(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntLoma(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     /*========================================================================*/
     //! @name Preconditioning
@@ -106,7 +108,7 @@ namespace ScaTra
         ) = 0;
 
     //! the parameter list for loma problems
-    Teuchos::RCP<Teuchos::ParameterList> lomaparams_;
+    std::shared_ptr<Teuchos::ParameterList> lomaparams_;
 
     //! initial mass in domain
     double initialmass_;

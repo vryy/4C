@@ -16,7 +16,8 @@
 #include "4C_linalg_mapextractor.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -159,7 +160,7 @@ namespace BEAMINTERACTION
      *-----------------------------------------------------------------------------*/
     template <typename T>
     void set_filament_binding_spot_positions(
-        Teuchos::RCP<Core::FE::Discretization> discret, T& params);
+        std::shared_ptr<Core::FE::Discretization> discret, T& params);
 
     /*-----------------------------------------------------------------------------*
      *-----------------------------------------------------------------------------*/
@@ -222,8 +223,8 @@ namespace BEAMINTERACTION
         const Core::FE::Discretization& discret, std::vector<int> const& elegid,
         std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
         std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
-        Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat);
+        std::shared_ptr<Epetra_FEVector> fe_sysvec,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat);
 
 
     /*----------------------------------------------------------------------------*
@@ -339,14 +340,15 @@ namespace BEAMINTERACTION
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
-    void setup_ele_type_map_extractor(Teuchos::RCP<const Core::FE::Discretization> const& discret,
-        Teuchos::RCP<Core::LinAlg::MultiMapExtractor>& eletypeextractor);
+    void setup_ele_type_map_extractor(
+        std::shared_ptr<const Core::FE::Discretization> const& discret,
+        std::shared_ptr<Core::LinAlg::MultiMapExtractor>& eletypeextractor);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/
     void update_dof_map_of_vector(Core::FE::Discretization& discret,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& dofmapvec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> old = Teuchos::null);
+        std::shared_ptr<Core::LinAlg::Vector<double>>& dofmapvec,
+        std::shared_ptr<Core::LinAlg::Vector<double>> old = nullptr);
 
     /*----------------------------------------------------------------------------*
      *----------------------------------------------------------------------------*/

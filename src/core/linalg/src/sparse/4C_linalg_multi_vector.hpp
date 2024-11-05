@@ -13,7 +13,8 @@
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // Do not lint the file for identifier names, since the naming of the Wrapper functions follow the
 // naming of the Core::LinAlg::MultiVector<double>
@@ -54,9 +55,12 @@ namespace Core::LinAlg
     operator const Epetra_MultiVector &() const { return *vector_; }
 
     //! get pointer of epetra multi vector
-    Teuchos::RCP<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
+    std::shared_ptr<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
 
-    Teuchos::RCP<const Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() const { return vector_; }
+    std::shared_ptr<const Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() const
+    {
+      return vector_;
+    }
 
     //! Compute 1-norm of each vector
     int Norm1(double *Result) const;
@@ -239,20 +243,20 @@ namespace Core::LinAlg
      * Special constructor useful for converting our Vector to our MultiVector.
      * @param view The internals that this MultiVector should view.
      */
-    [[nodiscard]] static Teuchos::RCP<MultiVector<T>> create_view(const Epetra_MultiVector &view)
+    [[nodiscard]] static std::shared_ptr<MultiVector<T>> create_view(const Epetra_MultiVector &view)
     {
-      Teuchos::RCP<MultiVector<T>> ret(new MultiVector<T>);
-      ret->vector_ = Teuchos::make_rcp<Epetra_MultiVector>(
-          Epetra_DataAccess::View, view, 0, view.NumVectors());
+      std::shared_ptr<MultiVector<T>> ret(new MultiVector<T>);
+      ret->vector_ =
+          std::make_shared<Epetra_MultiVector>(Epetra_DataAccess::View, view, 0, view.NumVectors());
       return ret;
     }
 
     //! The actual vector.
-    Teuchos::RCP<Epetra_MultiVector> vector_;
+    std::shared_ptr<Epetra_MultiVector> vector_;
 
     //! Vector view of the single columns stored inside the vector. This is used to allow
     //! access to the single columns of the MultiVector.
-    mutable std::vector<Teuchos::RCP<Vector<T>>> column_vector_view_;
+    mutable std::vector<std::shared_ptr<Vector<T>>> column_vector_view_;
 
     friend class Vector<T>;
     friend class VectorView<MultiVector<T>>;

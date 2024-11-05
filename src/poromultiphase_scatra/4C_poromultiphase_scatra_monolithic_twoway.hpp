@@ -64,13 +64,13 @@ namespace PoroMultiPhaseScaTra
     void time_step() override;
 
     //! extractor to communicate between full monolithic map and block maps
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extractor() const
     {
       return blockrowdofmap_;
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const { return combinedDBCMap_; };
+    std::shared_ptr<const Epetra_Map> combined_dbc_map() const { return combinedDBCMap_; };
 
 
    protected:
@@ -94,10 +94,10 @@ namespace PoroMultiPhaseScaTra
         const Core::LinearSolver::SolverType solvertype);
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map();
+    std::shared_ptr<const Epetra_Map> dof_row_map();
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc);
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc);
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -108,10 +108,10 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    virtual void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& stx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& flx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& scx);
+    virtual void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& stx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& flx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& scx);
 
     //! extract only the 3D field vectors from a given composed vector x.
     /*!
@@ -122,16 +122,17 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
      of 3D field
      */
-    void extract_3d_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& stx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& flx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& scx);
+    void extract_3d_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& stx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& flx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& scx);
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void setup_vector(Core::LinAlg::Vector<double>& f,  //!< vector of length of all dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             pv,  //!< vector containing structural + fluid dofs, i.e. poro dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> sv  //!< vector containing only scatra dofs
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            sv  //!< vector containing only scatra dofs
     );
 
     //! setup monolithic system matrix
@@ -159,28 +160,28 @@ namespace PoroMultiPhaseScaTra
     void update_fields_after_convergence();
 
     //! update the scatra field
-    virtual void update_scatra(Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc);
+    virtual void update_scatra(std::shared_ptr<const Core::LinAlg::Vector<double>> scatrainc);
 
     //! return structure fluid coupling sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> poro_fluid_scatra_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> poro_fluid_scatra_coupling_matrix();
 
     //! return scatra structure coupling sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> scatra_struct_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> scatra_struct_coupling_matrix();
 
     //! return scatra fluid coupling sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> scatra_poro_fluid_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> scatra_poro_fluid_coupling_matrix();
 
     //! evaluate scatra field
     virtual void evaluate_scatra();
 
     //! evaluate porofluid-scatra coupling sparse matrix
-    void apply_poro_fluid_scatra_coupl_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs);
+    void apply_poro_fluid_scatra_coupl_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> k_pfs);
 
     //! evaluate scatra-structure coupling sparse matrix
-    void apply_scatra_struct_coupl_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> k_sps);
+    void apply_scatra_struct_coupl_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> k_sps);
 
     //! evaluate scatra-porofluid coupling sparse matrix
-    void apply_scatra_poro_fluid_coupl_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> k_spf);
+    void apply_scatra_poro_fluid_coupl_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> k_spf);
 
     // update the single fields after convergence
     void print_structure_disabled_info();
@@ -200,32 +201,32 @@ namespace PoroMultiPhaseScaTra
     int itnum_;
 
     //! dof row map (not splitted)
-    Teuchos::RCP<Epetra_Map> fullmap_;
+    std::shared_ptr<Epetra_Map> fullmap_;
 
     //! dof row map splitted in (field) blocks
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<Core::LinAlg::Equilibration> equilibration_;
+    std::shared_ptr<Core::LinAlg::Equilibration> equilibration_;
 
     //! equilibration method applied to system matrix
     Core::LinAlg::EquilibrationMethod equilibration_method_;
 
     //! dirichlet map of monolithic system
-    Teuchos::RCP<Epetra_Map> combinedDBCMap_;
+    std::shared_ptr<Epetra_Map> combinedDBCMap_;
 
     //! @name Global vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  //!< a zero vector of full length
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         iterinc_;  //!< increment between Newton steps k and k+1
     //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of struct-fluid-scatra system
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;  //!< rhs of struct-fluid-scatra system
 
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
-    double solveradaptolbetter_;                 //!< tolerance to which is adpated ?
-    bool solveradapttol_;                        //!< adapt solver tolerance
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  //!< linear algebraic solver
+    double solveradaptolbetter_;                    //!< tolerance to which is adpated ?
+    bool solveradapttol_;                           //!< adapt solver tolerance
 
     // do we solve the structure?
     bool solve_structure_;
@@ -234,18 +235,18 @@ namespace PoroMultiPhaseScaTra
     int struct_offset_;
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> systemmatrix_;
 
     //! structure-scatra coupling matrix --> we do not have it (yet)
-    // Teuchos::RCP<Core::LinAlg::SparseMatrix> k_pss_;
+    // std::shared_ptr<Core::LinAlg::SparseMatrix> k_pss_;
 
     //! fluid-scatra coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_pfs_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_pfs_;
 
     //! scatra-structure coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_sps_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_sps_;
     //! scatra-fluid coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_spf_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_spf_;
 
     double tolinc_;   //!< tolerance residual increment
     double tolfres_;  //!< tolerance force residual
@@ -308,7 +309,7 @@ namespace PoroMultiPhaseScaTra
     void setup_maps() override;
 
     // update the scatra field
-    void update_scatra(Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrainc) override;
+    void update_scatra(std::shared_ptr<const Core::LinAlg::Vector<double>> scatrainc) override;
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -319,10 +320,10 @@ namespace PoroMultiPhaseScaTra
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& stx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& flx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& scx) override;
+    void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& stx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& flx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& scx) override;
 
     //! setup monolithic system matrix
     void setup_system_matrix() override;
@@ -340,10 +341,11 @@ namespace PoroMultiPhaseScaTra
     void setup_system() override;
 
     //! return arteryscatra-artery coupling sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> artery_scatra_artery_coupling_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> artery_scatra_artery_coupling_matrix();
 
     //! evaluate arteryscatra-artery coupling sparse matrix
-    void apply_artery_scatra_artery_coupl_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> k_asa);
+    void apply_artery_scatra_artery_coupl_matrix(
+        std::shared_ptr<Core::LinAlg::SparseOperator> k_asa);
 
     //! build the block null spaces
     void build_block_null_spaces() override;
@@ -352,19 +354,19 @@ namespace PoroMultiPhaseScaTra
     void build_convergence_norms() override;
 
     //! dof row map (not splitted), only artery and porofluid
-    Teuchos::RCP<Epetra_Map> fullmap_artporo_;
+    std::shared_ptr<Epetra_Map> fullmap_artporo_;
 
     //! dof row map splitted in (field) blocks, only artery and porofluid
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artporo_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artporo_;
 
     //! dof row map (not splitted), only artery and artery-scatra
-    Teuchos::RCP<Epetra_Map> fullmap_artscatra_;
+    std::shared_ptr<Epetra_Map> fullmap_artscatra_;
 
     //! dof row map splitted in (field) blocks, only artery and artery-scatra
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artscatra_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockrowdofmap_artscatra_;
 
     //! artscatra-artery coupling matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> k_asa_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> k_asa_;
 
     //! flag if nodal coupling active or not
     bool nodal_coupl_inactive_;

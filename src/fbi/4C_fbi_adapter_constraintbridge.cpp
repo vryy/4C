@@ -20,18 +20,18 @@
 FOUR_C_NAMESPACE_OPEN
 
 Adapter::FBIConstraintBridge::FBIConstraintBridge()
-    : beam_interaction_params_(Teuchos::null),
-      assemblystrategy_(Teuchos::null),
+    : beam_interaction_params_(nullptr),
+      assemblystrategy_(nullptr),
       meshtying_pairs_(
-          Teuchos::make_rcp<std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>>()),
-      geometry_evaluation_data_(Teuchos::null){};
+          std::make_shared<std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>>()),
+      geometry_evaluation_data_(nullptr){};
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetra_Map* fluid_map,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying)
+    std::shared_ptr<Core::LinAlg::SparseOperator> fluidmatrix, bool fluidmeshtying)
 {
   // Create the beaminteraction data container and set the parameters
-  beam_interaction_params_ = Teuchos::make_rcp<FBI::BeamToFluidMeshtyingParams>();
+  beam_interaction_params_ = std::make_shared<FBI::BeamToFluidMeshtyingParams>();
   beam_interaction_params_->init();
   beam_interaction_params_->setup();
 
@@ -40,7 +40,7 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
 
   // Create the beaminteraction data container and set the parameters
   geometry_evaluation_data_ =
-      Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(geometry_parameter_list);
+      std::make_shared<GEOMETRYPAIR::LineTo3DEvaluationData>(geometry_parameter_list);
 
   if (fluidmeshtying)
   {
@@ -50,10 +50,10 @@ void Adapter::FBIConstraintBridge::setup(const Epetra_Map* beam_map, const Epetr
         Inpar::FBI::BeamToFluidDiscretization::mortar)
       FOUR_C_THROW("Fluid Meshtying is not supported when using a mortar discretization!");
 
-    assemblystrategy_ = Teuchos::make_rcp<FBI::Utils::FBIBlockAssemblyStrategy>();
+    assemblystrategy_ = std::make_shared<FBI::Utils::FBIBlockAssemblyStrategy>();
   }
   else
-    assemblystrategy_ = Teuchos::make_rcp<FBI::Utils::FBIAssemblyStrategy>();
+    assemblystrategy_ = std::make_shared<FBI::Utils::FBIAssemblyStrategy>();
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -62,7 +62,7 @@ void Adapter::FBIConstraintBridge::create_pair(
     const std::vector<double> beam_centerline_dofvec, const std::vector<double> fluid_nodal_dofvec)
 {
   // create a new beaminteratcion pair
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair> newinteractionpair =
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair> newinteractionpair =
       FBI::PairFactory::create_pair(elements, *get_params());
 
   // create the underlying geometrypair doing the integration (segment or gauss point projection
@@ -81,7 +81,7 @@ void Adapter::FBIConstraintBridge::create_pair(
 /*----------------------------------------------------------------------*/
 void Adapter::FBIConstraintBridge::reset_pair(const std::vector<double> beam_centerline_dofvec,
     const std::vector<double> fluid_nodal_dofvec,
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> interactionpair)
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> interactionpair)
 {
   // hand in the current position and velocities of the participating elements
   interactionpair->reset_state(beam_centerline_dofvec, fluid_nodal_dofvec);

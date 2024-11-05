@@ -34,9 +34,9 @@ namespace XFEM
     /// constructor
     // in idx ... idx[0] structureal discretization index , idx[1] fluid discretization index in the
     // blockmatrix
-    explicit XfaCouplingManager(Teuchos::RCP<FLD::XFluid> xfluid,
-        Teuchos::RCP<Adapter::AleFpsiWrapper> ale, std::vector<int> idx,
-        Teuchos::RCP<Adapter::Structure> structure = Teuchos::null);
+    explicit XfaCouplingManager(std::shared_ptr<FLD::XFluid> xfluid,
+        std::shared_ptr<Adapter::AleFpsiWrapper> ale, std::vector<int> idx,
+        std::shared_ptr<Adapter::Structure> structure = nullptr);
     //! @name Destruction
     //@{
 
@@ -59,7 +59,7 @@ namespace XFEM
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+    void add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep) -- nothing to do here
@@ -73,19 +73,19 @@ namespace XFEM
 
    private:
     //! Ale Object
-    Teuchos::RCP<Adapter::AleFpsiWrapper> ale_;
+    std::shared_ptr<Adapter::AleFpsiWrapper> ale_;
     //! eXtendedFluid
-    Teuchos::RCP<FLD::XFluid> xfluid_;
+    std::shared_ptr<FLD::XFluid> xfluid_;
 
     // Global Index in the blockmatrix of the coupled sytem [0] = fluid-, [1] = ale- block,
     // [2]struct- block
     std::vector<int> idx_;
 
     //! Structural Object (just set if Ale is coupled to a structure)
-    Teuchos::RCP<Adapter::Structure> structure_;
+    std::shared_ptr<Adapter::Structure> structure_;
 
     //! ALE-Structure coupling object on the matching interface
-    Teuchos::RCP<XFEM::CouplingCommManager> ale_struct_coupling_;
+    std::shared_ptr<XFEM::CouplingCommManager> ale_struct_coupling_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

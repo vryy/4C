@@ -15,8 +15,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <string>
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +45,8 @@ namespace Core::FE
     \param comm : Epetra comm object associated with this discretization
     \param n_dim: number of space dimensions of this discretization
     */
-    DiscretizationHDG(const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
+    DiscretizationHDG(
+        const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
 
 
     /*!
@@ -99,8 +100,8 @@ namespace Core::FE
      *  schoeder 06/14
      */
     void assign_global_i_ds(const Epetra_Comm& comm,
-        const std::map<std::vector<int>, Teuchos::RCP<Core::Elements::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& finalelements) override;
+        const std::map<std::vector<int>, std::shared_ptr<Core::Elements::Element>>& elementmap,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& finalelements) override;
 
   };  // class DiscretizationHDG
 
@@ -118,23 +119,23 @@ namespace Core::FE
      protected:
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
           int hierarchical_order) const override;
 
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
+          const std::shared_ptr<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG
   }     // namespace Utils

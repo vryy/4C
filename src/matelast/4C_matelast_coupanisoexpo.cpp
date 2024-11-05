@@ -15,7 +15,7 @@ FOUR_C_NAMESPACE_OPEN
 
 Mat::Elastic::CoupAnisoExpoAnisotropyExtension::CoupAnisoExpoAnisotropyExtension(
     const int init_mode, const double gamma, const bool adapt_angle,
-    const Teuchos::RCP<Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy,
+    const std::shared_ptr<Elastic::StructuralTensorStrategyBase>& structuralTensorStrategy,
     const int fiber_id)
     : DefaultAnisotropyExtension<1>(
           init_mode, gamma, adapt_angle, structuralTensorStrategy, {fiber_id - 1})

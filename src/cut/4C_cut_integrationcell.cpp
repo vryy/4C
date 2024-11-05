@@ -52,7 +52,7 @@ bool Cut::IntegrationCell::contains(Core::LinAlg::Matrix<probdim, 1>& x)
 
   Core::LinAlg::Matrix<probdim, ncn> coords(xyz_);
 
-  Teuchos::RCP<Cut::Position> pos = Cut::Position::create(coords, x, celltype);
+  std::shared_ptr<Cut::Position> pos = Cut::Position::create(coords, x, celltype);
   pos->compute();
 
   return pos->within_limits();

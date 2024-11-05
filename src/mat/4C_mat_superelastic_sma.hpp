@@ -81,7 +81,7 @@ namespace Mat
       //@}
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
 
     };  // class SuperElasticSMA
@@ -171,9 +171,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<SuperElasticSMA>(*this);
+      return std::make_shared<SuperElasticSMA>(*this);
     }
 
     //! density
@@ -183,7 +183,7 @@ namespace Mat
     Core::Mat::PAR::Parameter* parameter() const override { return params_; }
 
     //! check if history variables are already initialized
-    bool initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
+    bool initialized() const { return (isinit_ and (xi_s_curr_ != nullptr)); }
 
     //! return names of visualization data
     void vis_names(std::map<std::string, int>& names) const override;
@@ -225,12 +225,12 @@ namespace Mat
     Mat::PAR::SuperElasticSMA* params_;
 
     //! Drucker-Prager-type loading of last time step
-    Teuchos::RCP<std::vector<double>> druckerpragerloadinglast_;
-    Teuchos::RCP<std::vector<double>> druckerpragerloadingcurr_;
+    std::shared_ptr<std::vector<double>> druckerpragerloadinglast_;
+    std::shared_ptr<std::vector<double>> druckerpragerloadingcurr_;
 
     //! single variant martensitic fraction
-    Teuchos::RCP<std::vector<double>> xi_s_last_;
-    Teuchos::RCP<std::vector<double>> xi_s_curr_;
+    std::shared_ptr<std::vector<double>> xi_s_last_;
+    std::shared_ptr<std::vector<double>> xi_s_curr_;
 
     //! Calculates the kronecker delta. Returns 1 for i==j otherwise 0
     virtual int kron(int i, int j);

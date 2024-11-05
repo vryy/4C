@@ -13,7 +13,7 @@
 #include "4C_inpar_scatra.hpp"
 #include "4C_poroelast_utils_clonestrategy.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -61,7 +61,7 @@ namespace PoroElastScaTra
       void check_material_type(const int matid);
 
       //! provide cloned element with element specific data (material etc.)
-      void set_element_data(Teuchos::RCP<Core::Elements::Element>
+      void set_element_data(std::shared_ptr<Core::Elements::Element>
                                 newele,     //! current cloned element on target discretization
           Core::Elements::Element* oldele,  //! current element on source discretization
           const int matid,                  //! material of cloned element

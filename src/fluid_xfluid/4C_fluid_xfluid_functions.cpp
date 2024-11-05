@@ -10,6 +10,7 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_utils_function_manager.hpp"
 
+#include <cmath>
 #include <utility>
 #include <vector>
 
@@ -19,16 +20,16 @@ namespace
 {
   using namespace Discret::Utils;
 
-  Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> create_xfluid_function(
+  std::shared_ptr<Core::Utils::FunctionOfSpaceTime> create_xfluid_function(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    if (function_line_defs.size() != 1) return Teuchos::null;
+    if (function_line_defs.size() != 1) return nullptr;
 
     const auto& function_lin_def = function_line_defs.front();
 
     if (function_lin_def.container().get_or<bool>("FORWARDFACINGSTEP", false))
     {
-      return Teuchos::make_rcp<GerstenbergerForwardfacingStep>();
+      return std::make_shared<GerstenbergerForwardfacingStep>();
     }
     else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETCYLINDER", false))
     {
@@ -42,7 +43,7 @@ namespace
 
       auto maxspeed = function_lin_def.container().get<double>("MAXSPEED");
 
-      return Teuchos::make_rcp<MovingLevelSetCylinder>(
+      return std::make_shared<MovingLevelSetCylinder>(
           &origin, radius, &direction, distance, maxspeed);
     }
     else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false) or
@@ -73,22 +74,22 @@ namespace
           function_lin_def.container().get<double>("ROTATION_RAMPTIME");  // revolutions per second
 
       if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUS", false))
-        return Teuchos::make_rcp<MovingLevelSetTorus>(&origin, &orient_vec_torus, radius,
+        return std::make_shared<MovingLevelSetTorus>(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime);
       else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSVELOCITY", false))
-        return Teuchos::make_rcp<MovingLevelSetTorusVelocity>(&origin, &orient_vec_torus, radius,
+        return std::make_shared<MovingLevelSetTorusVelocity>(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime);
       else if (function_lin_def.container().get_or<bool>("MOVINGLEVELSETTORUSSLIPLENGTH", false))
       {
         auto slipfunct = function_lin_def.container().get<int>("SLIP_FUNCT");
-        return Teuchos::make_rcp<MovingLevelSetTorusSliplength>(&origin, &orient_vec_torus, radius,
+        return std::make_shared<MovingLevelSetTorusSliplength>(&origin, &orient_vec_torus, radius,
             radius_tube, &direction, distance, maxspeed, &rot_vec_torus, rotspeed, rotramptime,
             slipfunct);
       }
       else
       {
         FOUR_C_THROW("How did you end up here :)?");
-        return Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>(nullptr);
+        return std::shared_ptr<Core::Utils::FunctionOfSpaceTime>(nullptr);
       }
     }
     else if (function_lin_def.container().get_or<bool>("TAYLORCOUETTEFLOW", false))
@@ -107,7 +108,7 @@ namespace
 
       auto viscosity = function_lin_def.container().get<double>("VISCOSITY");
 
-      return Teuchos::make_rcp<TaylorCouetteFlow>(radius_i, radius_o, vel_theta_i, vel_theta_o,
+      return std::make_shared<TaylorCouetteFlow>(radius_i, radius_o, vel_theta_i, vel_theta_o,
           sliplength_i, sliplength_o, traction_theta_i, traction_theta_o, viscosity);
     }
     else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW", false))
@@ -131,7 +132,7 @@ namespace
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
-      return Teuchos::make_rcp<UrquizaBoxFlow>(
+      return std::make_shared<UrquizaBoxFlow>(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb);
     }
     else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_FORCE", false))
@@ -155,7 +156,7 @@ namespace
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
-      return Teuchos::make_rcp<UrquizaBoxFlowForce>(
+      return std::make_shared<UrquizaBoxFlowForce>(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb);
     }
     else if (function_lin_def.container().get_or<bool>("URQUIZABOXFLOW_TRACTION", false))
@@ -179,12 +180,12 @@ namespace
             "No combination of 2nd and 4th order terms given -> 0 velocity flow. NOT INTERESTING! "
             "DEFINE: COMBINATION C1 C2");
 
-      return Teuchos::make_rcp<UrquizaBoxFlowTraction>(
+      return std::make_shared<UrquizaBoxFlowTraction>(
           lengthx, lengthy, rotation, viscosity, density, functno, lin_comb);
     }
     else
     {
-      return Teuchos::RCP<Core::Utils::FunctionOfSpaceTime>(nullptr);
+      return std::shared_ptr<Core::Utils::FunctionOfSpaceTime>(nullptr);
     }
   }
 }  // namespace
@@ -374,7 +375,7 @@ double Discret::Utils::GerstenbergerForwardfacingStep::evaluate(
   //  }
   //  else
   //  {
-  //      distance = sqrt(((xp[0]-xp_center[0]) * (xp[0]-xp_center[0]))+((xp[1]-xp_center[1]) *
+  //      distance = std::sqrt(((xp[0]-xp_center[0]) * (xp[0]-xp_center[0]))+((xp[1]-xp_center[1]) *
   //      (xp[1]-xp_center[1])))-radius;
   //  }
   //=========================================================
@@ -395,8 +396,8 @@ Discret::Utils::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<doubl
   // Orientation of the geometry (symmetry axis)
   direction_ = *direction;  // needs to be normalized!
 
-  double direction_norm = sqrt(direction_[0] * direction_[0] + direction_[1] * direction_[1] +
-                               direction_[2] * direction_[2]);
+  double direction_norm = std::sqrt(direction_[0] * direction_[0] + direction_[1] * direction_[1] +
+                                    direction_[2] * direction_[2]);
 
   direction_[0] /= direction_norm;
   direction_[1] /= direction_norm;
@@ -438,7 +439,7 @@ double Discret::Utils::MovingLevelSetCylinder::evaluate(
   //  double x2_t = midpoint_trajectory_[2] + direction_[2]*dist;
 
   double lsvalue =
-      sqrt((xp[0] - x0_t) * (xp[0] - x0_t) + (xp[1] - x1_t) * (xp[1] - x1_t)) - radius_;
+      std::sqrt((xp[0] - x0_t) * (xp[0] - x0_t) + (xp[1] - x1_t) * (xp[1] - x1_t)) - radius_;
 
   return lsvalue;
 }
@@ -457,9 +458,9 @@ Discret::Utils::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
 
   // Orientation vector of torus
   orientationvec_torus_ = *orientationvec_torus;
-  double direction_norm_torus = sqrt(orientationvec_torus_[0] * orientationvec_torus_[0] +
-                                     orientationvec_torus_[1] * orientationvec_torus_[1] +
-                                     orientationvec_torus_[2] * orientationvec_torus_[2]);
+  double direction_norm_torus = std::sqrt(orientationvec_torus_[0] * orientationvec_torus_[0] +
+                                          orientationvec_torus_[1] * orientationvec_torus_[1] +
+                                          orientationvec_torus_[2] * orientationvec_torus_[2]);
   orientationvec_torus_[0] /= direction_norm_torus;
   orientationvec_torus_[1] /= direction_norm_torus;
   orientationvec_torus_[2] /= direction_norm_torus;
@@ -472,8 +473,8 @@ Discret::Utils::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
 
   // Orientation of the geometry (symmetry axis)
   direction_ = *direction;  // needs to be normalized!
-  double direction_norm = sqrt(direction_[0] * direction_[0] + direction_[1] * direction_[1] +
-                               direction_[2] * direction_[2]);
+  double direction_norm = std::sqrt(direction_[0] * direction_[0] + direction_[1] * direction_[1] +
+                                    direction_[2] * direction_[2]);
   direction_[0] /= direction_norm;
   direction_[1] /= direction_norm;
   direction_[2] /= direction_norm;
@@ -486,8 +487,8 @@ Discret::Utils::MovingLSTorus::MovingLSTorus(std::vector<double>* origin,
 
   // Rotation vector
   rotvector_ = *rotvector;
-  double rotvector_norm = sqrt(rotvector_[0] * rotvector_[0] + rotvector_[1] * rotvector_[1] +
-                               rotvector_[2] * rotvector_[2]);
+  double rotvector_norm = std::sqrt(rotvector_[0] * rotvector_[0] + rotvector_[1] * rotvector_[1] +
+                                    rotvector_[2] * rotvector_[2]);
   rotvector_[0] /= rotvector_norm;
   rotvector_[1] /= rotvector_norm;
   rotvector_[2] /= rotvector_norm;
@@ -630,9 +631,9 @@ double Discret::Utils::MovingLevelSetTorus::evaluate(
   }
 
   // Level Set value for torus in x-y plane!
-  // double lsvalue = sqrt(
-  //                 (sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
-  //                *(sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
+  // double lsvalue = std::sqrt(
+  //                 (std::sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
+  //                *(std::sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
   //                + (xp[2]-x2_t)*(xp[2]-x2_t)
   //                     ) - radius_tube_ ;
   double ortogonal_val = orientvec_torus_t[0] * x_rot_based_traject[0] +
@@ -647,9 +648,10 @@ double Discret::Utils::MovingLevelSetTorus::evaluate(
   // double lsvalue = 0.0;
 
   double r_base =
-      sqrt(base_vec[0] * base_vec[0] + base_vec[1] * base_vec[1] + base_vec[2] * base_vec[2]);
+      std::sqrt(base_vec[0] * base_vec[0] + base_vec[1] * base_vec[1] + base_vec[2] * base_vec[2]);
   double lsvalue =
-      sqrt((radius_ - r_base) * (radius_ - r_base) + ortogonal_val * ortogonal_val) - radius_tube_;
+      std::sqrt((radius_ - r_base) * (radius_ - r_base) + ortogonal_val * ortogonal_val) -
+      radius_tube_;
 
   //  if(abs(lsvalue)<0.1)
   //    std::cout << "lsvalue: " << lsvalue << std::endl;
@@ -866,9 +868,9 @@ double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
   }
 
   // Level Set value for torus in x-y plane!
-  // double lsvalue = sqrt(
-  //                 (sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
-  //                *(sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
+  // double lsvalue = std::sqrt(
+  //                 (std::sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
+  //                *(std::sqrt( (xp[0]-x0_t)*(xp[0]-x0_t) + (xp[1]-x1_t)*(xp[1]-x1_t) )-radius_)
   //                + (xp[2]-x2_t)*(xp[2]-x2_t)
   //                     ) - radius_tube_ ;
   double ortogonal_val = orientvec_torus_t[0] * x_rot_based_traject[0] +
@@ -881,7 +883,7 @@ double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
   base_vec[2] = x_rot_based_traject[2] - ortogonal_val * orientvec_torus_t[2];
 
   double r_base =
-      sqrt(base_vec[0] * base_vec[0] + base_vec[1] * base_vec[1] + base_vec[2] * base_vec[2]);
+      std::sqrt(base_vec[0] * base_vec[0] + base_vec[1] * base_vec[1] + base_vec[2] * base_vec[2]);
 
   // Do the slip length calculations!!!
   double sliplength = 0.0;
@@ -892,18 +894,18 @@ double Discret::Utils::MovingLevelSetTorusSliplength::evaluate(
   else if (slipfunct_ == 1)
   {
     // Set slip length 2.71.^((r-0.5)/0.01)  [10^(-9),10^(8)]
-    double r_sphere = sqrt(x_based_trajectory[0] * x_based_trajectory[0] +
-                           x_based_trajectory[1] * x_based_trajectory[1] +
-                           x_based_trajectory[2] * x_based_trajectory[2]);
+    double r_sphere = std::sqrt(x_based_trajectory[0] * x_based_trajectory[0] +
+                                x_based_trajectory[1] * x_based_trajectory[1] +
+                                x_based_trajectory[2] * x_based_trajectory[2]);
 
     sliplength = pow(2.7182818284590452353602874, 100.0 * (r_sphere - 0.5));
   }
   else if (slipfunct_ == 2)
   {
     // Set slip length 2.71.^(-(r-0.5)/0.01)  [10^(8),10^(-9)]
-    double r_sphere = sqrt(x_based_trajectory[0] * x_based_trajectory[0] +
-                           x_based_trajectory[1] * x_based_trajectory[1] +
-                           x_based_trajectory[2] * x_based_trajectory[2]);
+    double r_sphere = std::sqrt(x_based_trajectory[0] * x_based_trajectory[0] +
+                                x_based_trajectory[1] * x_based_trajectory[1] +
+                                x_based_trajectory[2] * x_based_trajectory[2]);
 
     sliplength = pow(2.7182818284590452353602874, -100.0 * (r_sphere - 0.5));
   }
@@ -987,7 +989,7 @@ Discret::Utils::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double
 double Discret::Utils::TaylorCouetteFlow::evaluate(
     const double* xp, const double t, const std::size_t component) const
 {
-  double radius = sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
+  double radius = std::sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
 
   double u_theta = c1_ * radius + c2_ / radius;
 

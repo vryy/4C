@@ -27,10 +27,11 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                      als 01/18 |    // TODO als fix
  fluid_timint_stat_hdg because it is not working
  *----------------------------------------------------------------------*/
-FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntStationaryHDG::TimIntStationaryHDG(
+    const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntStationary(actdis, solver, params, output, alefluid),
       first_assembly_(false)
@@ -52,8 +53,8 @@ void FLD::TimIntStationaryHDG::init()
                         : 0;
 
   // set degrees of freedom in the discretization
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, elementndof, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, elementndof, 0, false);
   discret_->add_dof_set(dofsetaux);
   discret_->fill_complete();
 
@@ -77,13 +78,13 @@ void FLD::TimIntStationaryHDG::init()
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> conddofmap = std::make_shared<Epetra_Map>(
       -1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm());
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> otherdofmap = std::make_shared<Epetra_Map>(
       -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm());
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
@@ -139,7 +140,7 @@ void FLD::TimIntStationaryHDG::set_old_part_of_righthandside()
 void FLD::TimIntStationaryHDG::set_state_tim_int()
 {
   const Epetra_Map* intdofrowmap = discret_->dof_row_map(1);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zerovec =
+  std::shared_ptr<Core::LinAlg::Vector<double>> zerovec =
       Core::LinAlg::create_vector(*intdofrowmap, true);
 
   discret_->set_state(0, "velaf", velnp_);
@@ -245,8 +246,7 @@ void FLD::TimIntStationaryHDG::set_element_time_parameter()
   eleparams.set("total time", time_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,8 +13,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -53,7 +53,8 @@ namespace BEAMINTERACTION
        * class.
        */
       PartitionedBeamInteractionAssemblyManager(
-          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs);
+          std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
+              assembly_contact_elepairs);
 
       /**
        * \brief Destructor.
@@ -71,17 +72,17 @@ namespace BEAMINTERACTION
        * \params[inout] cbf  Global stiffness matrix coupling fluid to beam DOFs
        */
       virtual void evaluate_force_stiff(const Core::FE::Discretization& discretization1,
-          const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-          Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel) = 0;
+          const Core::FE::Discretization& discretization2, std::shared_ptr<Epetra_FEVector>& ff,
+          std::shared_ptr<Epetra_FEVector>& fb, std::shared_ptr<Core::LinAlg::SparseOperator> cff,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cbb,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cfb,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cbf,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel) = 0;
 
      protected:
       //! Vector of pairs to be evaluated by this class.
-      std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
+      std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
     };
 
   }  // namespace SUBMODELEVALUATOR

@@ -261,8 +261,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
     Core::LinAlg::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
-    if (walldatastate->get_vel_col() != Teuchos::null or
-        walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr or walldatastate->get_force_col() != nullptr)
     {
       // evaluate shape functions of element at wall contact point
       Core::FE::shape_function_2d(
@@ -279,7 +278,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
     // velocity of wall contact point j
     double vel_j[3] = {0.0, 0.0, 0.0};
 
-    if (walldatastate->get_vel_col() != Teuchos::null)
+    if (walldatastate->get_vel_col() != nullptr)
     {
       // get nodal velocities
       std::vector<double> nodal_vel(numnodes * 3);
@@ -303,7 +302,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
 
     // calculation of wall contact force
     double wallcontactforce[3] = {0.0, 0.0, 0.0};
-    if (writeinteractionoutput or walldatastate->get_force_col() != Teuchos::null)
+    if (writeinteractionoutput or walldatastate->get_force_col() != nullptr)
       Utils::vec_set_scale(wallcontactforce, fac, particlewallpair.e_ij_);
 
     // write interaction output
@@ -325,7 +324,7 @@ void ParticleInteraction::SPHRigidParticleContactElastic::
     }
 
     // assemble contact force acting on wall element
-    if (walldatastate->get_force_col() != Teuchos::null)
+    if (walldatastate->get_force_col() != nullptr)
     {
       // determine nodal forces
       std::vector<double> nodal_force(numnodes * 3);

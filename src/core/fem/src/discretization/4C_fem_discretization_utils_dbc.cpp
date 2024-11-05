@@ -20,43 +20,43 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::evaluate_dirichlet(const Core::FE::Discretization& discret,
     const Teuchos::ParameterList& params,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-    const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle,
-    const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor)
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectordd,
+    const std::shared_ptr<Core::LinAlg::Vector<int>>& toggle,
+    const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor)
 {
   // create const version
-  const Teuchos::RCP<const Core::FE::Utils::Dbc> dbc = build_dbc(&discret);
+  const std::shared_ptr<const Core::FE::Utils::Dbc> dbc = build_dbc(&discret);
   (*dbc)(discret, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::Utils::Dbc> Core::FE::Utils::build_dbc(
+std::shared_ptr<const Core::FE::Utils::Dbc> Core::FE::Utils::build_dbc(
     const Core::FE::Discretization* discret_ptr)
 {
   // HDG discretization
   if (dynamic_cast<const Core::FE::DiscretizationHDG*>(discret_ptr) != nullptr)
-    return Teuchos::RCP<const Core::FE::Utils::Dbc>(new const Core::FE::Utils::DbcHDG());
+    return std::shared_ptr<const Core::FE::Utils::Dbc>(new const Core::FE::Utils::DbcHDG());
 
   // Nurbs discretization
   if (dynamic_cast<const Core::FE::Nurbs::NurbsDiscretization*>(discret_ptr) != nullptr)
-    return Teuchos::RCP<const Core::FE::Utils::Dbc>(new const Core::FE::Utils::DbcNurbs());
+    return std::shared_ptr<const Core::FE::Utils::Dbc>(new const Core::FE::Utils::DbcNurbs());
 
   // default case
-  return Teuchos::make_rcp<const Core::FE::Utils::Dbc>();
+  return std::make_shared<const Core::FE::Utils::Dbc>();
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
     const Teuchos::ParameterList& params,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvector,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectord,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& systemvectordd,
-    const Teuchos::RCP<Core::LinAlg::Vector<int>>& toggle,
-    const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvector,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectord,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& systemvectordd,
+    const std::shared_ptr<Core::LinAlg::Vector<int>>& toggle,
+    const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {
   if (!discret.filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!discret.have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -71,20 +71,20 @@ void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
     FOUR_C_THROW("The 'total time' needs to be specified in your parameter list!");
 
   // vector of DOF-IDs which are Dirichlet BCs
-  std::array<Teuchos::RCP<std::set<int>>, 2> dbcgids = {Teuchos::null, Teuchos::null};
-  if (dbcmapextractor != Teuchos::null) dbcgids[set_row] = Teuchos::make_rcp<std::set<int>>();
+  std::array<std::shared_ptr<std::set<int>>, 2> dbcgids = {nullptr, nullptr};
+  if (dbcmapextractor != nullptr) dbcgids[set_row] = std::make_shared<std::set<int>>();
 
-  const std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> systemvectors = {
+  const std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> systemvectors = {
       systemvector, systemvectord, systemvectordd};
 
   /* If no toggle vector is provided we have to create a temporary one,
-   * i.e. we create a temporary toggle if Teuchos::null.
+   * i.e. we create a temporary toggle if nullptr.
    * We need this to assess the entity hierarchy and to determine which
    * dof has a Dirichlet BC in the end. The highest entity defined for
    * a certain dof in the input file overwrites the corresponding entry
    * in the toggle vector. The entity hierarchy is:
    * point>line>surface>volume */
-  Teuchos::RCP<Core::LinAlg::Vector<int>> toggleaux =
+  std::shared_ptr<Core::LinAlg::Vector<int>> toggleaux =
       create_toggle_vector(toggle, systemvectors.data());
 
   // --------------------------------------------------------------------------
@@ -103,30 +103,30 @@ void Core::FE::Utils::Dbc::operator()(const Core::FE::Discretization& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<int>> Core::FE::Utils::Dbc::create_toggle_vector(
-    const Teuchos::RCP<Core::LinAlg::Vector<int>> toggle_input,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors) const
+std::shared_ptr<Core::LinAlg::Vector<int>> Core::FE::Utils::Dbc::create_toggle_vector(
+    const std::shared_ptr<Core::LinAlg::Vector<int>> toggle_input,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors) const
 {
-  Teuchos::RCP<Core::LinAlg::Vector<int>> toggleaux = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<int>> toggleaux = nullptr;
 
-  if (not toggle_input.is_null())
+  if (toggle_input)
     toggleaux = toggle_input;
   else
   {
-    if (not systemvectors[0].is_null())
+    if (systemvectors[0])
     {
-      toggleaux = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(systemvectors[0]->Map());
+      toggleaux = std::make_shared<Core::LinAlg::Vector<int>>(systemvectors[0]->Map());
     }
-    else if (not systemvectors[1].is_null())
+    else if (systemvectors[1])
     {
-      toggleaux = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(systemvectors[1]->Map());
+      toggleaux = std::make_shared<Core::LinAlg::Vector<int>>(systemvectors[1]->Map());
     }
-    else if (not systemvectors[2].is_null())
+    else if (systemvectors[2])
     {
-      toggleaux = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(systemvectors[2]->Map());
+      toggleaux = std::make_shared<Core::LinAlg::Vector<int>>(systemvectors[2]->Map());
     }
-    else if (systemvectors[0].is_null() and systemvectors[1].is_null() and
-             systemvectors[2].is_null())
+    else if (systemvectors[0] == nullptr and systemvectors[1] == nullptr and
+             systemvectors[2] == nullptr)
     {
       FOUR_C_THROW(
           "At least one systemvector must be provided. Otherwise, calling "
@@ -141,13 +141,13 @@ Teuchos::RCP<Core::LinAlg::Vector<int>> Core::FE::Utils::Dbc::create_toggle_vect
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::evaluate(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
-    Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors, DbcInfo& info,
+    std::shared_ptr<std::set<int>>* dbcgids) const
 {
   // --------------------------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   // --------------------------------------------------------------------------
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> conds(0);
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> conds(0);
   discret.get_condition("Dirichlet", conds);
   read_dirichlet_condition(params, discret, conds, time, info, dbcgids);
   // --------------------------------------------------------------------------
@@ -161,8 +161,8 @@ void Core::FE::Utils::Dbc::evaluate(const Teuchos::ParameterList& params,
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time, DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+    DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids) const
 {
   // read the DBC in descending order of the geometrical hierarchy.
   // Since lower geometry DBC can override the higher one, the order is important for inconsistency
@@ -183,8 +183,8 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time, DbcInfo& info,
-    const Teuchos::RCP<std::set<int>>* dbcgids,
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+    DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
     const enum Core::Conditions::ConditionType& type) const
 {
   int hierarchical_order;
@@ -221,7 +221,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
+    DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids, int hierarchical_order) const
 {
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.get_nodes();
@@ -245,7 +245,7 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
     if (nlid < 0)
     {
       // just skip this node, if we are not interested in column information
-      if (dbcgids[set_col].is_null()) continue;
+      if (dbcgids[set_col] == nullptr) continue;
       // ----------------------------------------------------------------------
       // get a column node, if desired
       // NOTE: the following is not supported for discretization wrappers
@@ -322,10 +322,10 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
           info.toggle[lid] = 0;
 
           // get rid of entry in row DBC map - if it exists
-          if (isrow and (not dbcgids[set_row].is_null())) (*dbcgids[set_row]).erase(gid);
+          if (isrow and (dbcgids[set_row])) (*dbcgids[set_row]).erase(gid);
 
           // get rid of entry in column DBC map - if it exists
-          if (not dbcgids[set_col].is_null()) (*dbcgids[set_col]).erase(gid);
+          if (dbcgids[set_col]) (*dbcgids[set_col]).erase(gid);
 
           // record the current hierarchical order of the DBC dof
           info.hierarchy[lid] = hierarchical_order;
@@ -397,10 +397,10 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
         info.toggle[lid] = 1;
 
         // amend set of row DOF-IDs which are dirichlet BCs
-        if (isrow and (not dbcgids[set_row].is_null())) (*dbcgids[set_row]).insert(gid);
+        if (isrow and (dbcgids[set_row])) (*dbcgids[set_row]).insert(gid);
 
         // amend set of column DOF-IDs which are dirichlet BCs
-        if (not dbcgids[set_col].is_null())
+        if (dbcgids[set_col])
         {
           (*dbcgids[set_col]).insert(gid);
         }
@@ -424,9 +424,9 @@ void Core::FE::Utils::Dbc::read_dirichlet_condition(const Teuchos::ParameterList
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
 {
   do_dirichlet_condition(params, discret, conds, time, systemvectors, toggle, dbcgids,
       Core::Conditions::VolumeDirichlet);
@@ -442,9 +442,9 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret,
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& conds, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids,
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& conds, double time,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids,
     const enum Core::Conditions::ConditionType& type) const
 {
   for (const auto& cond : conds)
@@ -460,10 +460,10 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
  *----------------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& params,
     const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond, double time,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-    const Core::LinAlg::Vector<int>& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
+    const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+    const Core::LinAlg::Vector<int>& toggle, const std::shared_ptr<std::set<int>>* dbcgids) const
 {
-  if (systemvectors[0].is_null() and systemvectors[1].is_null() and systemvectors[2].is_null())
+  if (systemvectors[0] == nullptr and systemvectors[1] == nullptr and systemvectors[2] == nullptr)
     FOUR_C_THROW(
         "At least one systemvector must be provided. Otherwise, "
         "calling this method makes no sense.");
@@ -481,11 +481,11 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
   unsigned deg = 0;  // highest degree of requested time derivative
-  if (systemvectors[0] != Teuchos::null) deg = 0;
+  if (systemvectors[0] != nullptr) deg = 0;
 
-  if (systemvectors[1] != Teuchos::null) deg = 1;
+  if (systemvectors[1] != nullptr) deg = 1;
 
-  if (systemvectors[2] != Teuchos::null) deg = 2;
+  if (systemvectors[2] != nullptr) deg = 2;
 
   // loop nodes to identify and evaluate load curves and spatial distributions
   // of Dirichlet boundary conditions
@@ -561,9 +561,9 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
       }
 
       // assign value
-      if (systemvectors[0] != Teuchos::null) (*systemvectors[0])[lid] = value[0];
-      if (systemvectors[1] != Teuchos::null) (*systemvectors[1])[lid] = value[1];
-      if (systemvectors[2] != Teuchos::null) (*systemvectors[2])[lid] = value[2];
+      if (systemvectors[0] != nullptr) (*systemvectors[0])[lid] = value[0];
+      if (systemvectors[1] != nullptr) (*systemvectors[1])[lid] = value[1];
+      if (systemvectors[2] != nullptr) (*systemvectors[2])[lid] = value[2];
 
     }  // loop over nodal DOFs
   }    // loop over nodes
@@ -574,12 +574,12 @@ void Core::FE::Utils::Dbc::do_dirichlet_condition(const Teuchos::ParameterList& 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::FE::Utils::Dbc::build_dbc_map_extractor(const Core::FE::Discretization& discret,
-    const Teuchos::RCP<const std::set<int>>& dbcrowgids,
-    const Teuchos::RCP<Core::LinAlg::MapExtractor>& dbcmapextractor) const
+    const std::shared_ptr<const std::set<int>>& dbcrowgids,
+    const std::shared_ptr<Core::LinAlg::MapExtractor>& dbcmapextractor) const
 {
-  if (dbcmapextractor.is_null()) return;
+  if (!dbcmapextractor) return;
 
-  FOUR_C_ASSERT(not dbcrowgids.is_null(),
+  FOUR_C_ASSERT(dbcrowgids,
       "The variable `dbcrowgids` in `Core::FE::Utils::Dbc::build_dbc_map_extractor` is a null "
       "pointer. This violates the implicit assumption that it must be non-null when "
       "`dbcmapextractor` is non-null.");
@@ -595,7 +595,7 @@ void Core::FE::Utils::Dbc::build_dbc_map_extractor(const Core::FE::Discretizatio
     nummyelements = dbcgidsv.size();
     myglobalelements = dbcgidsv.data();
   }
-  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::make_rcp<Epetra_Map>(-1, nummyelements,
+  std::shared_ptr<Epetra_Map> dbcmap = std::make_shared<Epetra_Map>(-1, nummyelements,
       myglobalelements, discret.dof_row_map()->IndexBase(), discret.dof_row_map()->Comm());
   // build the map extractor of Dirichlet-conditioned and free DOFs
   dbcmapextractor->setup(*(discret.dof_row_map()), dbcmap);

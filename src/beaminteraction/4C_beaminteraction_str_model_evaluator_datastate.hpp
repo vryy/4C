@@ -14,6 +14,7 @@
 
 #include <Epetra_FEVector.h>
 
+#include <map>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -60,7 +61,7 @@ namespace Solid
       void init();
 
       /// setup of the new class variables
-      void setup(Teuchos::RCP<const Core::FE::Discretization> const& ia_discret);
+      void setup(std::shared_ptr<const Core::FE::Discretization> const& ia_discret);
 
      protected:
       inline const bool& is_init() const { return isinit_; };
@@ -146,49 +147,49 @@ namespace Solid
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_restart() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_restart() const
       {
         check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_restart_col() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_restart_col() const
       {
         check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_np() const
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_col_np() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_col_np() const
       {
         check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_dis_n() const
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_dis_n() const
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<const Epetra_FEVector> get_force_n() const
+      std::shared_ptr<const Epetra_FEVector> get_force_n() const
       {
         check_init_setup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<const Epetra_FEVector> get_force_np() const
+      std::shared_ptr<const Epetra_FEVector> get_force_np() const
       {
         check_init_setup();
         return forcenp_;
@@ -197,7 +198,7 @@ namespace Solid
       /// @name Get system matrices (read only access)
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<const Core::LinAlg::SparseMatrix> get_stiff() const
+      std::shared_ptr<const Core::LinAlg::SparseMatrix> get_stiff() const
       {
         check_init_setup();
         return stiff_;
@@ -208,56 +209,56 @@ namespace Solid
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_restart()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_dis_restart()
       {
         check_init_setup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_restart_col()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_dis_restart_col()
       {
         check_init_setup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_dis_np()
       {
         check_init_setup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& get_dis_col_np()
+      std::shared_ptr<Core::LinAlg::Vector<double>>& get_dis_col_np()
       {
         check_init_setup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> get_dis_n()
+      std::shared_ptr<Core::LinAlg::Vector<double>> get_dis_n()
       {
         check_init_setup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> get_multi_dis()
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> get_multi_dis()
       {
         check_init_setup();
         return dis_;
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<Epetra_FEVector>& get_force_n()
+      std::shared_ptr<Epetra_FEVector>& get_force_n()
       {
         check_init_setup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<Epetra_FEVector>& get_force_np()
+      std::shared_ptr<Epetra_FEVector>& get_force_np()
       {
         check_init_setup();
         return forcenp_;
@@ -268,7 +269,7 @@ namespace Solid
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<Core::LinAlg::SparseMatrix>& get_stiff()
+      std::shared_ptr<Core::LinAlg::SparseMatrix>& get_stiff()
       {
         check_init_setup();
         return stiff_;
@@ -319,21 +320,21 @@ namespace Solid
       std::map<int, std::set<int>> roweletobinmap_;
 
       //! element
-      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> rowelemapextractor_;
+      std::shared_ptr<Core::LinAlg::MultiMapExtractor> rowelemapextractor_;
       ///@}
 
       /// @name Global state vectors
       ///@{
 
       /// global displacements \f${D}_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
+      std::shared_ptr<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>> dis_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_restart_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> dis_restart_;
 
       /// global displacements at the restart step \f${D}_{restart}\f$ at \f$t_{restart}\f$. This
       /// vector will be used to export disrestart_ to the current partitioning.
-      Teuchos::RCP<Core::LinAlg::Vector<double>> dis_restart_col_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> dis_restart_col_;
 
       /// flag if coupling, i.e. mesh tying terms should be evaluated at the restart configuration.
       /// This is stored here, since it is directly related to the vectors dis_restart_ and
@@ -341,22 +342,22 @@ namespace Solid
       bool is_restart_coupling_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> disnp_;
 
       /// global displacements \f${D}_{n+1}\f$ at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> discolnp_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> discolnp_;
 
       /// global internal force vector at \f$t_{n}\f$
-      Teuchos::RCP<Epetra_FEVector> forcen_;
+      std::shared_ptr<Epetra_FEVector> forcen_;
 
       /// global internal force vector at \f$t_{n+1}\f$
-      Teuchos::RCP<Epetra_FEVector> forcenp_;
+      std::shared_ptr<Epetra_FEVector> forcenp_;
       ///@}
 
       /// @name System matrices
       ///@{
       /// supposed to hold the entire jacobian (saddle point system if desired)
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_;
 
       ///@}
     };

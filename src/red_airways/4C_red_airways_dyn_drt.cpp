@@ -31,15 +31,15 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void dyn_red_airways_drt() { dyn_red_airways_drt(false); }
 
-Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D)
+std::shared_ptr<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D)
 {
   if (Global::Problem::instance()->does_exist_dis("red_airway") == false)
   {
-    return Teuchos::null;
+    return nullptr;
   }
 
   // 1. Access the discretization
-  Teuchos::RCP<Core::FE::Discretization> actdis = Teuchos::null;
+  std::shared_ptr<Core::FE::Discretization> actdis = nullptr;
   actdis = Global::Problem::instance()->get_dis("red_airway");
 
   // Set degrees of freedom in the discretization
@@ -51,11 +51,11 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // If discretization is empty, then return empty time integration
   if (actdis->num_global_elements() < 1)
   {
-    return Teuchos::null;
+    return nullptr;
   }
 
   // 2. Context for output and restart
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   // 3. Set pointers and variables for ParameterList rawdyn
@@ -123,8 +123,8 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // integration (call the constructor);
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
-  Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> airwayimplicit =
-      Teuchos::make_rcp<Airway::RedAirwayImplicitTimeInt>(
+  std::shared_ptr<Airway::RedAirwayImplicitTimeInt> airwayimplicit =
+      std::make_shared<Airway::RedAirwayImplicitTimeInt>(
           actdis, std::move(solver), airwaystimeparams, *output);
 
   // Initialize state save vectors
@@ -144,12 +144,12 @@ Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   if (!CoupledTo3D)
   {
     // Call time-integration scheme for 0D problem
-    Teuchos::RCP<Teuchos::ParameterList> param_temp;
+    std::shared_ptr<Teuchos::ParameterList> param_temp;
     airwayimplicit->integrate();
 
     // Create resulttest
-    Teuchos::RCP<Core::Utils::ResultTest> resulttest =
-        Teuchos::make_rcp<Airway::RedAirwayResultTest>(*airwayimplicit);
+    std::shared_ptr<Core::Utils::ResultTest> resulttest =
+        std::make_shared<Airway::RedAirwayResultTest>(*airwayimplicit);
 
     // Resulttest for 0D problem and testing
     Global::Problem::instance()->add_field_test(resulttest);
@@ -172,9 +172,10 @@ void redairway_tissue_dyn()
 {
   const Teuchos::ParameterList& rawdyn =
       Global::Problem::instance()->red_airway_tissue_dynamic_params();
-  Teuchos::RCP<Core::FE::Discretization> actdis = Global::Problem::instance()->get_dis("structure");
-  Teuchos::RCP<Airway::RedAirwayTissue> redairway_tissue =
-      Teuchos::make_rcp<Airway::RedAirwayTissue>(actdis->get_comm(), rawdyn);
+  std::shared_ptr<Core::FE::Discretization> actdis =
+      Global::Problem::instance()->get_dis("structure");
+  std::shared_ptr<Airway::RedAirwayTissue> redairway_tissue =
+      std::make_shared<Airway::RedAirwayTissue>(actdis->get_comm(), rawdyn);
 
   // Read the restart information, set vectors and variables
   const int restart = Global::Problem::instance()->restart();

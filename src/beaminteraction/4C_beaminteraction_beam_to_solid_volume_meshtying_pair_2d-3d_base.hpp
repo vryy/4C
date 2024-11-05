@@ -59,8 +59,8 @@ namespace BEAMINTERACTION
      */
     void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-        override;
+        const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>&
+            geometry_evaluation_data_ptr) override;
 
    protected:
     /**
@@ -79,13 +79,13 @@ namespace BEAMINTERACTION
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    inline Teuchos::RCP<
+    inline std::shared_ptr<
         GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam, Solid>>
     cast_geometry_pair() const
     {
-      return Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::
+      return std::dynamic_pointer_cast<GEOMETRYPAIR::
               GeometryPairLineToVolumeGaussPointProjectionCrossSection<double, Beam, Solid>>(
-          this->geometry_pair_, true);
+          this->geometry_pair_);
     };
 
     /**

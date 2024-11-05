@@ -14,7 +14,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 03/15 |
  *----------------------------------------------------------------------*/
-ScaTra::ElchResultTest::ElchResultTest(Teuchos::RCP<ScaTraTimIntElch> elchtimint)
+ScaTra::ElchResultTest::ElchResultTest(std::shared_ptr<ScaTraTimIntElch> elchtimint)
     : ScaTraResultTest::ScaTraResultTest(elchtimint)
 {
   return;

@@ -16,8 +16,9 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -110,7 +111,7 @@ namespace Solid
     //! Constructor
     TimAda(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
         const Teuchos::ParameterList& tap,            //!< adaptive input flags
-        Teuchos::RCP<TimInt> tis                      //!< marching time integrator
+        std::shared_ptr<TimInt> tis                   //!< marching time integrator
     );
 
     //! Destructor
@@ -128,7 +129,7 @@ namespace Solid
      * and setup() have been called on both the marching time integrator
      * and the auxiliary time integrator if existing (popp 01/2017).
      */
-    virtual void init(Teuchos::RCP<TimInt>& sti) = 0;
+    virtual void init(std::shared_ptr<TimInt>& sti) = 0;
 
     /*! \brief Make one step with auxiliary scheme
      *
@@ -201,7 +202,7 @@ namespace Solid
     //@{
 
     //! get the vector of the local discretization error
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& loc_err_dis() { return locerrdisn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>>& loc_err_dis() { return locerrdisn_; }
 
     //@}
 
@@ -253,7 +254,7 @@ namespace Solid
     //! Check whether step size output file is attached
     bool attached_file_step_size()
     {
-      if (not outsizefile_.is_null())
+      if (outsizefile_)
         return true;
       else
         return false;
@@ -312,11 +313,11 @@ namespace Solid
 
     //! @name General purpose algorithm members
     //@{
-    Teuchos::RCP<TimInt> sti_;                             //!< marching time integrator
-    Teuchos::RCP<Core::FE::Discretization> discret_;       //!< attached discretisation
-    int myrank_;                                           //!< processor ID
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;            //!< linear algebraic solver
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;  //!< binary output
+    std::shared_ptr<TimInt> sti_;                             //!< marching time integrator
+    std::shared_ptr<Core::FE::Discretization> discret_;       //!< attached discretisation
+    int myrank_;                                              //!< processor ID
+    std::shared_ptr<Core::LinAlg::Solver> solver_;            //!< linear algebraic solver
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;  //!< binary output
     //@}
 
     //! @name Plain time integration constants
@@ -356,33 +357,33 @@ namespace Solid
     //@{
     double stepsizepre_;  //!< previous time step size \f$\Delta t_{n-1}\f$
     double stepsize_;     //!< current time step size \f$\Delta t_n\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> locerrdisn_;  //!< current local disp. error
-                                                             //!< estimation \f$l_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> locerrveln_;  //!< current local vel. error
-                                                             //!< estimation \f$\dot{l}_{n+1}\f$
-    int adaptstep_;                                          //!< trial counter, cf. #adaptstepmax_
+    std::shared_ptr<Core::LinAlg::Vector<double>> locerrdisn_;  //!< current local disp. error
+                                                                //!< estimation \f$l_{n+1}\f$
+    std::shared_ptr<Core::LinAlg::Vector<double>> locerrveln_;  //!< current local vel. error
+                                                                //!< estimation \f$\dot{l}_{n+1}\f$
+    int adaptstep_;  //!< trial counter, cf. #adaptstepmax_
     //@}
 
     //! @name Output settings
     //@{
-    bool outsys_;                              //!< do it this step: write system to file
-    bool outstr_;                              //!< do it this step: write stress/strain to file
-    bool outene_;                              //!< do it this step: write energy to file
-    bool outrest_;                             //!< do it this step: write restart data to file
-    double outsysperiod_;                      //!< print system (dis,vel,acc,...)
-                                               //!< every given period of time
-    double outstrperiod_;                      //!< print stress/strain every given
-                                               //!< period of time
-    double outeneperiod_;                      //!< print energies every given
-                                               //!< period of time
-    double outrestperiod_;                     //!< print restart every given
-                                               //!< period of time
-    int outsizeevery_;                         //!< print step size every given step
-    double outsystime_;                        //!< next output time point for system
-    double outstrtime_;                        //!< next output time point for stress/strain
-    double outenetime_;                        //!< next output time point for energy
-    double outresttime_;                       //!< next output time point for restart
-    Teuchos::RCP<std::ofstream> outsizefile_;  //!< outputfile for step sizes
+    bool outsys_;                                 //!< do it this step: write system to file
+    bool outstr_;                                 //!< do it this step: write stress/strain to file
+    bool outene_;                                 //!< do it this step: write energy to file
+    bool outrest_;                                //!< do it this step: write restart data to file
+    double outsysperiod_;                         //!< print system (dis,vel,acc,...)
+                                                  //!< every given period of time
+    double outstrperiod_;                         //!< print stress/strain every given
+                                                  //!< period of time
+    double outeneperiod_;                         //!< print energies every given
+                                                  //!< period of time
+    double outrestperiod_;                        //!< print restart every given
+                                                  //!< period of time
+    int outsizeevery_;                            //!< print step size every given step
+    double outsystime_;                           //!< next output time point for system
+    double outstrtime_;                           //!< next output time point for stress/strain
+    double outenetime_;                           //!< next output time point for energy
+    double outresttime_;                          //!< next output time point for restart
+    std::shared_ptr<std::ofstream> outsizefile_;  //!< outputfile for step sizes
     //@}
 
   };  // class TimAda

@@ -82,7 +82,7 @@ void PostVtuWriterNode::write_geo()
 {
   using namespace FourC;
 
-  Teuchos::RCP<Core::FE::Discretization> dis = this->get_field()->discretization();
+  std::shared_ptr<Core::FE::Discretization> dis = this->get_field()->discretization();
 
   // count number of nodes and number for each processor; output is completely independent of
   // the number of processors involved
@@ -245,7 +245,7 @@ void PostVtuWriterNode::write_geo()
 
 
 void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -254,7 +254,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   // For parallel computations, we need to access all dofs on the elements, including the
   // nodes owned by other processors. Therefore, we need to import that data here.
@@ -264,7 +264,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
   int offset = vecmap.MinAllGID() - dis->dof_row_map()->MinAllGID();
   if (fillzeros) offset = 0;
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData;
+  std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -278,7 +278,8 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
       gids[i] = vecmap.MyGlobalElements()[i] - offset;
     Epetra_Map rowmap(
         vecmap.NumGlobalElements(), vecmap.NumMyElements(), gids.data(), 0, vecmap.Comm());
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dofvec = Core::LinAlg::create_vector(rowmap, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> dofvec =
+        Core::LinAlg::create_vector(rowmap, false);
     for (int i = 0; i < vecmap.NumMyElements(); ++i) (*dofvec)[i] = (*data)[i];
 
     ghostedData = Core::LinAlg::create_vector(*colmap, true);
@@ -343,7 +344,7 @@ void PostVtuWriterNode::write_dof_result_step(std::ofstream& file,
 
 
 void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -351,7 +352,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -362,13 +363,13 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
       colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
   {
     ghostedData =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -417,7 +418,7 @@ void PostVtuWriterNode::write_nodal_result_step(std::ofstream& file,
 
 
 void PostVtuWriterNode::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -445,21 +446,22 @@ void PostVtuWriterNode::write_geo_beam_ele(const Discret::Elements::Beam3Base* b
 
 void PostVtuWriterNode::wirte_dof_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData, const int from, const bool fillzeros)
+    std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData, const int from, const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }
 
 void PostVtuWriterNode::write_dof_result_step_beam_ele(const Discret::Elements::Beam3Base* beamele,
     const int& ncomponents, const int& numdf, std::vector<double>& solution,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& ghostedData, const int& from, const bool fillzeros)
+    std::shared_ptr<Core::LinAlg::Vector<double>>& ghostedData, const int& from,
+    const bool fillzeros)
 {
   FOUR_C_THROW("VTU node based filter cannot handle beam elements");
 }
 
 void PostVtuWriterNode::write_nodal_result_step_nurbs_ele(const Core::Elements::Element* ele,
     int ncomponents, const int numdf, std::vector<double>& solution,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData)
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> ghostedData)
 {
   FOUR_C_THROW("VTU node based filter cannot handle NURBS elements");
 }

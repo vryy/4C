@@ -18,11 +18,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntElchOST::ScaTraTimIntElchOST(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::ScaTraTimIntElchOST::ScaTraTimIntElchOST(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntOneStepTheta(actdis, solver, sctratimintparams, extraparams, output)
@@ -59,8 +59,8 @@ void ScaTra::ScaTraTimIntElchOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
-  apply_dirichlet_bc(time_, phin_, Teuchos::null);
-  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, nullptr);
+  apply_dirichlet_bc(time_, phinp_, nullptr);
   compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
@@ -147,16 +147,16 @@ void ScaTra::ScaTraTimIntElchOST::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchOST::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   TimIntOneStepTheta::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -336,11 +336,11 @@ void ScaTra::ScaTraTimIntElchOST::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::ScaTraTimIntElchBDF2::ScaTraTimIntElchBDF2(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntBDF2(actdis, solver, sctratimintparams, extraparams, output)
@@ -375,8 +375,8 @@ void ScaTra::ScaTraTimIntElchBDF2::setup()
  *-----------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchBDF2::pre_calc_initial_potential_field()
 {
-  apply_dirichlet_bc(time_, phin_, Teuchos::null);
-  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, nullptr);
+  apply_dirichlet_bc(time_, phinp_, nullptr);
   apply_neumann_bc(neumann_loads_);
 }
 
@@ -433,16 +433,16 @@ void ScaTra::ScaTraTimIntElchBDF2::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchBDF2::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   TimIntBDF2::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -610,11 +610,11 @@ void ScaTra::ScaTraTimIntElchBDF2::set_old_part_of_righthandside()
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntElchGenAlpha::ScaTraTimIntElchGenAlpha(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntGenAlpha(actdis, solver, sctratimintparams, extraparams, output)
@@ -652,8 +652,8 @@ void ScaTra::ScaTraTimIntElchGenAlpha::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t = 0
   // the values should match your initial field at the boundary!
-  apply_dirichlet_bc(time_, phin_, Teuchos::null);
-  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, nullptr);
+  apply_dirichlet_bc(time_, phinp_, nullptr);
   compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
@@ -729,16 +729,16 @@ void ScaTra::ScaTraTimIntElchGenAlpha::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchGenAlpha::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   TimIntGenAlpha::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -877,11 +877,11 @@ void ScaTra::ScaTraTimIntElchGenAlpha::compute_time_deriv_pot0(const bool init)
  |  Constructor (public)                                     ehrl 01/14 |
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntElchStationary::ScaTraTimIntElchStationary(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       TimIntStationary(actdis, solver, sctratimintparams, extraparams, output)
@@ -918,8 +918,8 @@ void ScaTra::ScaTraTimIntElchStationary::setup()
  *---------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchStationary::pre_calc_initial_potential_field()
 {
-  apply_dirichlet_bc(time_, phin_, Teuchos::null);
-  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, nullptr);
+  apply_dirichlet_bc(time_, phinp_, nullptr);
   apply_neumann_bc(neumann_loads_);
 }
 
@@ -964,16 +964,16 @@ void ScaTra::ScaTraTimIntElchStationary::write_restart() const
  |                                                            gjb 08/08 |
  -----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchStationary::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   TimIntStationary::read_restart(step, input);
 
-  Teuchos::RCP<Core::IO::DiscretizationReader> reader(Teuchos::null);
-  if (input == Teuchos::null)
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(
+  std::shared_ptr<Core::IO::DiscretizationReader> reader(nullptr);
+  if (input == nullptr)
+    reader = std::make_shared<Core::IO::DiscretizationReader>(
         discret_, Global::Problem::instance()->input_control_file(), step);
   else
-    reader = Teuchos::make_rcp<Core::IO::DiscretizationReader>(discret_, input, step);
+    reader = std::make_shared<Core::IO::DiscretizationReader>(discret_, input, step);
 
   // Initialize Nernst-BC
   init_nernst_bc();
@@ -1052,11 +1052,11 @@ void ScaTra::ScaTraTimIntElchStationary::compute_time_deriv_pot0(const bool init
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 ScaTra::ScaTraTimIntElchSCLOST::ScaTraTimIntElchSCLOST(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, sctratimintparams, extraparams, output),
       ScaTraTimIntElch(actdis, solver, params, sctratimintparams, extraparams, output),
       ScaTraTimIntElchSCL(actdis, solver, params, sctratimintparams, extraparams, output),
@@ -1091,8 +1091,8 @@ void ScaTra::ScaTraTimIntElchSCLOST::pre_calc_initial_potential_field()
 {
   // evaluate Dirichlet boundary conditions at time t=0
   // the values should match your initial field at the boundary!
-  apply_dirichlet_bc(time_, phin_, Teuchos::null);
-  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phin_, nullptr);
+  apply_dirichlet_bc(time_, phinp_, nullptr);
   compute_intermediate_values();
 
   // evaluate Neumann boundary conditions at time t = 0
@@ -1136,7 +1136,7 @@ void ScaTra::ScaTraTimIntElchSCLOST::write_restart() const
 /*----------------------------------------------------------------------*
  -----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntElchSCLOST::read_restart(
-    const int step, Teuchos::RCP<Core::IO::InputControl> input)
+    const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   FOUR_C_THROW("Restart is not implemented for coupled space-charge layers.");
 }

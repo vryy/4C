@@ -54,7 +54,7 @@ namespace Arteries
         Core::Elements::Element* actele, const bool ismyele, std::vector<std::string>& eletype);
 
     //! provide cloned element with element specific data (material etc.)
-    void set_element_data(Teuchos::RCP<Core::Elements::Element>
+    void set_element_data(std::shared_ptr<Core::Elements::Element>
                               newele,     //! current cloned element on target discretization
         Core::Elements::Element* oldele,  //! current element on source discretization
         const int matid,                  //! material of cloned element
@@ -70,9 +70,9 @@ namespace Arteries
   namespace Utils
   {
     // create algorithm depending on time integration scheme
-    Teuchos::RCP<Adapter::ArtNet> create_algorithm(
+    std::shared_ptr<Adapter::ArtNet> create_algorithm(
         Inpar::ArtDyn::TimeIntegrationScheme timintscheme,
-        Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
+        std::shared_ptr<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 

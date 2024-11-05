@@ -56,7 +56,8 @@ namespace FSI
     explicit DirichletNeumann(const Epetra_Comm &comm);
 
     /// Creates the appropriate DirichletNeumann algortihm
-    //    Teuchos::RCP<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYP type); \FIXME
+    //    std::shared_ptr<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYP type);
+    //    \FIXME
 
     /// setup this object
     void setup() override;
@@ -89,8 +90,8 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> icoup, const FillType fillFlag) override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> icoup, const FillType fillFlag) override = 0;
 
     /** \brief interface structural operator
      * \param[in] iforce interface force
@@ -98,10 +99,10 @@ namespace FSI
      *
      * \returns kinematic interface variable
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) override = 0;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override = 0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess() override = 0;
 
    private:
     /**

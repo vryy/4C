@@ -44,14 +44,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     : Algorithm(comm),
-      idispn_(Teuchos::null),
-      iveln_(Teuchos::null),
-      raw_graph_(Teuchos::null),
+      idispn_(nullptr),
+      iveln_(nullptr),
+      raw_graph_(nullptr),
       counter_(7),
       mfresitemax_(0),
-      coupsfm_(Teuchos::null),
+      coupsfm_(nullptr),
       matchingnodes_(false),
-      debugwriter_(Teuchos::null)
+      debugwriter_(nullptr)
 {
   // empty constructor
 }
@@ -78,7 +78,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
     std::cout << "\n setup_coupling in FSI::Partitioned ..." << std::endl;
 
   Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
-  coupsfm_ = Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(
+  coupsfm_ = std::make_shared<Coupling::Adapter::CouplingMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type());
@@ -105,8 +105,8 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
                             // boundary dis and fluid is handled bei XFluid itself
     const int ndim = Global::Problem::instance()->n_dim();
 
-    Teuchos::RCP<Adapter::FluidXFEM> x_movingboundary =
-        Teuchos::rcp_dynamic_cast<Adapter::FluidXFEM>(mb_fluid_field());
+    std::shared_ptr<Adapter::FluidXFEM> x_movingboundary =
+        std::dynamic_pointer_cast<Adapter::FluidXFEM>(mb_fluid_field());
     coupsf.setup_condition_coupling(*structure_field()->discretization(),
         structure_field()->interface()->fsi_cond_map(),
         *x_movingboundary->boundary_discretization(),  // use the matching boundary discretization
@@ -128,7 +128,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
     matchingnodes_ = false;
     coupsfm_->setup(structure_field()->discretization(), mb_fluid_field()->discretization(),
-        (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field()))
+        (std::dynamic_pointer_cast<Adapter::FluidAle>(mb_fluid_field()))
             ->ale_field()
             ->write_access_discretization(),
         coupleddof, "FSICoupling", comm, Global::Problem::instance()->function_manager(),
@@ -144,7 +144,7 @@ void FSI::Partitioned::setup_coupling(const Teuchos::ParameterList& fsidyn, cons
 
   // enable debugging
   if (fsidyn.get<bool>("DEBUGOUTPUT"))
-    debugwriter_ = Teuchos::make_rcp<Utils::DebugWriter>(structure_field()->discretization());
+    debugwriter_ = std::make_shared<Utils::DebugWriter>(structure_field()->discretization());
 }
 
 
@@ -395,18 +395,18 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
 
   // Create printing utilities
-  utils_ = Teuchos::make_rcp<::NOX::Utils>(printParams);
+  utils_ = std::make_shared<::NOX::Utils>(printParams);
 
   // ==================================================================
 
   // log solver iterations
 
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
   if (get_comm().MyPID() == 0)
   {
     std::string s = Global::Problem::instance()->output_control_file()->file_name();
     s.append(".iteration");
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str());
+    log = std::make_shared<std::ofstream>(s.c_str());
     (*log) << "# num procs      = " << get_comm().NumProc() << "\n"
            << "# Method         = " << nlParams.sublist("Direction").get("Method", "Newton") << "\n"
            << "# Jacobian       = " << nlParams.get("Jacobian", "None") << "\n"
@@ -433,7 +433,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // appropriate.
     prepare_time_step();
 
-    if (debugwriter_ != Teuchos::null) debugwriter_->new_time_step(step());
+    if (debugwriter_ != nullptr) debugwriter_->new_time_step(step());
 
     // reset all counters
     std::fill(counter_.begin(), counter_.end(), 0);
@@ -441,18 +441,18 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     linsolvcount_.resize(0);
 
     // start time measurement
-    Teuchos::RCP<Teuchos::TimeMonitor> timemonitor =
-        Teuchos::make_rcp<Teuchos::TimeMonitor>(timer, true);
+    std::shared_ptr<Teuchos::TimeMonitor> timemonitor =
+        std::make_shared<Teuchos::TimeMonitor>(timer, true);
 
     /*----------------- CSD - predictor for itnum==0 --------------------*/
 
     // Begin Nonlinear Solver ************************************
 
     // Get initial guess
-    Teuchos::RCP<Core::LinAlg::Vector<double>> soln = initial_guess();
+    std::shared_ptr<Core::LinAlg::Vector<double>> soln = initial_guess();
 
     ::NOX::Epetra::Vector noxSoln(
-        soln->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+        Teuchos::rcpFromRef(*soln->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
 
     // Create the linear system
     Teuchos::RCP<::NOX::Epetra::LinearSystem> linSys =
@@ -491,7 +491,7 @@ void FSI::Partitioned::timeloop(const Teuchos::RCP<::NOX::Epetra::Interface::Req
     // ==================================================================
 
     // stop time measurement
-    timemonitor = Teuchos::null;
+    timemonitor = nullptr;
 
     if (get_comm().MyPID() == 0)
     {
@@ -632,7 +632,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
       FOUR_C_THROW("unsupported difference type '%s'", dt.c_str());
 
     FD = Teuchos::make_rcp<::NOX::Epetra::FiniteDifference>(
-        printParams, interface, noxSoln, raw_graph_, beta, alpha);
+        printParams, interface, noxSoln, Teuchos::rcpFromRef(*raw_graph_), beta, alpha);
     FD->setDifferenceMethod(dtype);
 
     iJac = FD;
@@ -649,7 +649,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
   // No preconditioning at all.
   if (preconditioner == "None")
   {
-    if (Teuchos::is_null(iJac))
+    if (!(iJac))
     {
       // if no Jacobian has been set this better be the fix point
       // method.
@@ -684,7 +684,7 @@ Teuchos::RCP<::NOX::Epetra::LinearSystem> FSI::Partitioned::create_linear_system
 
     Teuchos::RCP<::NOX::Epetra::FiniteDifference> precFD =
         Teuchos::make_rcp<::NOX::Epetra::FiniteDifference>(
-            printParams, interface, noxSoln, raw_graph_, beta, alpha);
+            printParams, interface, noxSoln, Teuchos::rcpFromRef(*raw_graph_), beta, alpha);
     iPrec = precFD;
     M = precFD;
 
@@ -755,7 +755,7 @@ void FSI::Partitioned::create_status_test(Teuchos::ParameterList& nlParams,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::initial_guess()
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::initial_guess()
 {
   return structure_field()->predict_interface_dispnp();
 }
@@ -763,7 +763,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::initial_guess()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_disp()
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_disp()
 {
   // extract displacements
   return structure_field()->extract_interface_dispnp();
@@ -772,7 +772,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_disp()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_force()
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_force()
 {
   // extract forces
   return fluid_to_struct(mb_fluid_field()->extract_interface_forces());
@@ -801,14 +801,14 @@ bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const 
 
   if (!x.Map().UniqueGIDs()) FOUR_C_THROW("source map not unique");
 
-  if (debugwriter_ != Teuchos::null) debugwriter_->new_iteration();
+  if (debugwriter_ != nullptr) debugwriter_->new_iteration();
 
   const Core::LinAlg::Vector<double> x_new = Core::LinAlg::Vector<double>(x);
   Core::LinAlg::Vector<double> F_new = Core::LinAlg::Vector<double>(F);
   // Do the FSI step. The real work is in here.
   fsi_op(x_new, F_new, fillFlag);
 
-  if (debugwriter_ != Teuchos::null) debugwriter_->write_vector("F", F_new);
+  if (debugwriter_ != nullptr) debugwriter_->write_vector("F", F_new);
   F = F_new;
 
   const double endTime = timer.wallTime();
@@ -832,43 +832,43 @@ void FSI::Partitioned::fsi_op(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_op(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_op(
+    std::shared_ptr<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag)
 {
   if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Fluid operator" << std::endl;
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_op(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_op(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag)
 {
   if (get_comm().MyPID() == 0 and utils_->isPrintType(::NOX::Utils::OuterIteration))
     utils_->out() << std::endl << "Structural operator" << std::endl;
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------*
  | Calculate interface velocity based on given interface displacement   |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_velocity(
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_velocity(
     const Core::LinAlg::Vector<double>& idispnp) const
 {
   const Teuchos::ParameterList& fsidyn = Global::Problem::instance()->fsi_dynamic_params();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ivel = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> ivel = nullptr;
 
   if (fsidyn.get<bool>("SECONDORDER"))
   {
-    ivel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*iveln_);
+    ivel = std::make_shared<Core::LinAlg::Vector<double>>(*iveln_);
     ivel->Update(2. / dt(), idispnp, -2. / dt(), *idispn_, -1.);
   }
   else
   {
-    ivel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*idispn_);
+    ivel = std::make_shared<Core::LinAlg::Vector<double>>(*idispn_);
     ivel->Update(1. / dt(), idispnp, -1. / dt());
   }
   return ivel;
@@ -877,8 +877,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::interface_velocity(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_to_fluid(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_to_fluid(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv)
 {
   const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
@@ -894,8 +894,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::struct_to_fluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv)
 {
   const Coupling::Adapter::Coupling& coupsf = structure_fluid_coupling();
   if (matchingnodes_)
@@ -905,7 +905,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Partitioned::fluid_to_struct(
   else
   {
     // Translate consistent nodal forces to interface loads
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> ishape =
+    const std::shared_ptr<Core::LinAlg::Vector<double>> ishape =
         mb_fluid_field()->integrate_interface_shape();
     Core::LinAlg::Vector<double> iforce(iv->Map());
 
@@ -951,14 +951,12 @@ void FSI::Partitioned::output()
   {
     case fsi_iter_stagg_AITKEN_rel_param:
     {
-      Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory> linesearchfactory =
-          noxparameterlist_.sublist("Line Search")
-              .get<Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory>>(
-                  "User Defined Line Search Factory");
+      auto linesearchfactory = noxparameterlist_.sublist("Line Search")
+                                   .get<Teuchos::RCP<::NOX::LineSearch::UserDefinedFactory>>(
+                                       "User Defined Line Search Factory");
       if (linesearchfactory == Teuchos::null)
         FOUR_C_THROW("Could not get UserDefinedFactory from noxparameterlist_");
-      Teuchos::RCP<NOX::FSI::AitkenFactory> aitkenfactory =
-          Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory, true);
+      auto aitkenfactory = Teuchos::rcp_dynamic_cast<NOX::FSI::AitkenFactory>(linesearchfactory);
 
       // write aitken relaxation parameter
       mb_fluid_field()->fluid_field()->disc_writer()->write_double(
@@ -986,18 +984,18 @@ void FSI::Partitioned::read_restart(int step)
       double omega = -1234.0;
       auto input_control_file = Global::Problem::instance()->input_control_file();
 
-      if (Teuchos::rcp_dynamic_cast<Adapter::FluidImmersed>(mb_fluid_field()) != Teuchos::null ||
-          Teuchos::rcp_dynamic_cast<Adapter::FBIFluidMB>(mb_fluid_field()) != Teuchos::null)
+      if (std::dynamic_pointer_cast<Adapter::FluidImmersed>(mb_fluid_field()) != nullptr ||
+          std::dynamic_pointer_cast<Adapter::FBIFluidMB>(mb_fluid_field()) != nullptr)
       {
         Core::IO::DiscretizationReader reader(
             mb_fluid_field()->fluid_field()->discretization(), input_control_file, step);
         omega = reader.read_double("omega");
       }
-      else if (Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field()) != Teuchos::null)
+      else if (std::dynamic_pointer_cast<Adapter::FluidAle>(mb_fluid_field()) != nullptr)
       {
-        Teuchos::RCP<Adapter::FluidAle> fluidale =
-            Teuchos::rcp_dynamic_cast<Adapter::FluidAle>(mb_fluid_field());
-        Core::IO::DiscretizationReader reader(Teuchos::rcp_const_cast<Core::FE::Discretization>(
+        std::shared_ptr<Adapter::FluidAle> fluidale =
+            std::dynamic_pointer_cast<Adapter::FluidAle>(mb_fluid_field());
+        Core::IO::DiscretizationReader reader(std::const_pointer_cast<Core::FE::Discretization>(
                                                   fluidale->ale_field()->discretization()),
             input_control_file, step);
         omega = reader.read_double("omega");

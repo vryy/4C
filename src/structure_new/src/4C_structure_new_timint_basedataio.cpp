@@ -35,12 +35,12 @@ namespace
 Solid::TimeInt::BaseDataIO::BaseDataIO()
     : isinit_(false),
       issetup_(false),
-      output_(Teuchos::null),
-      writer_every_iter_(Teuchos::null),
-      params_runtime_vtk_output_(Teuchos::null),
-      params_runtime_vtp_output_(Teuchos::null),
-      params_monitor_dbc_(Teuchos::null),
-      energyfile_(Teuchos::null),
+      output_(nullptr),
+      writer_every_iter_(nullptr),
+      params_runtime_vtk_output_(nullptr),
+      params_runtime_vtp_output_(nullptr),
+      params_monitor_dbc_(nullptr),
+      energyfile_(nullptr),
       gmsh_out_(false),
       printlogo_(false),
       printiter_(false),
@@ -70,7 +70,7 @@ Solid::TimeInt::BaseDataIO::BaseDataIO()
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   // We have to call setup() after init()
   issetup_ = false;
@@ -85,7 +85,7 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     gmsh_out_ = ioparams.get<bool>("OUTPUT_GMSH");
     printiter_ = true;
     p_io_every_iteration_ =
-        Teuchos::make_rcp<Teuchos::ParameterList>(ioparams.sublist("EVERY ITERATION"));
+        std::make_shared<Teuchos::ParameterList>(ioparams.sublist("EVERY ITERATION"));
     outputeveryiter_ = p_io_every_iteration_->get<bool>("OUTPUT_EVERY_ITER");
     writerestartevery_ = sdynparams.get<int>("RESTARTEVRY");
     writetimestepoffset_ = sdynparams.get<int>("OUTPUT_STEP_OFFSET");
@@ -107,14 +107,14 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     writeoptquantity_ = ioparams.get<Inpar::Solid::OptQuantityType>("STRUCT_OPTIONAL_QUANTITY");
 
     // build params container for monitoring reaction forces
-    params_monitor_dbc_ = Teuchos::make_rcp<ParamsMonitorDBC>();
+    params_monitor_dbc_ = std::make_shared<ParamsMonitorDBC>();
     params_monitor_dbc_->init(ioparams.sublist("MONITOR STRUCTURE DBC"));
     params_monitor_dbc_->setup();
 
     // check whether VTK output at runtime is desired
     if (ioparams.sublist("RUNTIME VTK OUTPUT").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtk_output_ = Teuchos::make_rcp<ParamsRuntimeOutput>();
+      params_runtime_vtk_output_ = std::make_shared<ParamsRuntimeOutput>();
 
       params_runtime_vtk_output_->init(ioparams.sublist("RUNTIME VTK OUTPUT"));
       params_runtime_vtk_output_->setup();
@@ -123,7 +123,7 @@ void Solid::TimeInt::BaseDataIO::init(const Teuchos::ParameterList& ioparams,
     // check whether VTP output at runtime is desired
     if (ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE").get<int>("INTERVAL_STEPS") != -1)
     {
-      params_runtime_vtp_output_ = Teuchos::make_rcp<ParamsRuntimeVtpOutput>();
+      params_runtime_vtp_output_ = std::make_shared<ParamsRuntimeVtpOutput>();
 
       params_runtime_vtp_output_->init(ioparams.sublist("RUNTIME VTP OUTPUT STRUCTURE"));
       params_runtime_vtp_output_->setup();
@@ -141,7 +141,7 @@ void Solid::TimeInt::BaseDataIO::setup()
   // safety check
   FOUR_C_ASSERT(is_init(), "init() has not been called, yet!");
 
-  if (outputeveryiter_) writer_every_iter_ = Teuchos::make_rcp<Core::IO::EveryIterationWriter>();
+  if (outputeveryiter_) writer_every_iter_ = std::make_shared<Core::IO::EveryIterationWriter>();
 
   issetup_ = true;
 }
@@ -188,12 +188,12 @@ void Solid::TimeInt::BaseDataIO::init_setup_every_iteration_writer(
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::BaseDataIO::setup_energy_output_file()
 {
-  if (energyfile_.is_null())
+  if (!energyfile_)
   {
     std::string energy_file_name =
         Global::Problem::instance()->output_control_file()->file_name() + "_energy.csv";
 
-    energyfile_ = Teuchos::make_rcp<std::ofstream>(energy_file_name.c_str());
+    energyfile_ = std::make_shared<std::ofstream>(energy_file_name.c_str());
   }
 }
 
@@ -223,7 +223,7 @@ bool Solid::TimeInt::BaseDataIO::write_runtime_vtk_results_for_this_step(const i
 
 bool Solid::TimeInt::BaseDataIO::is_runtime_output_enabled() const
 {
-  return get_runtime_output_params() != Teuchos::null;
+  return get_runtime_output_params() != nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -231,7 +231,7 @@ bool Solid::TimeInt::BaseDataIO::is_runtime_output_enabled() const
 bool Solid::TimeInt::BaseDataIO::write_runtime_vtp_results_for_this_step(const int step) const
 {
   if (step < 0) FOUR_C_THROW("The variable step is not allowed to be negative.");
-  return (get_runtime_vtp_output_params() != Teuchos::null &&
+  return (get_runtime_vtp_output_params() != nullptr &&
           determine_write_output(step, get_runtime_output_params()->output_step_offset(),
               get_runtime_output_params()->output_interval_in_steps()));
 }

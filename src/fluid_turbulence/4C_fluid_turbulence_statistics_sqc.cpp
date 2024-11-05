@@ -27,8 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 
 */
 /*----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::ParameterList& params, const std::string& statistics_outfilename)
+FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params,
+    const std::string& statistics_outfilename)
     : discret_(actdis), params_(params), statistics_outfilename_(statistics_outfilename)
 {
   //----------------------------------------------------------------------
@@ -81,11 +82,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
   //----------------------------------------------------------------------
   // create sets of coordinates for required evaluation lines
   //----------------------------------------------------------------------
-  x1ccoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-  x2ccoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-  x2wcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-  clrcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-  ctbcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
+  x1ccoordinates_ = std::make_shared<std::vector<double>>();
+  x2ccoordinates_ = std::make_shared<std::vector<double>>();
+  x2wcoordinates_ = std::make_shared<std::vector<double>>();
+  clrcoordinates_ = std::make_shared<std::vector<double>>();
+  ctbcoordinates_ = std::make_shared<std::vector<double>>();
 
   // the criterion allows differences in coordinates by 1e-9
   std::set<double, LineSortCriterion> x1cavcoords;
@@ -100,8 +101,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
   {
     if (homdir_ == "z")
     {
-      x1coordinates_ = Teuchos::make_rcp<std::vector<double>>();
-      x2coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+      x1coordinates_ = std::make_shared<std::vector<double>>();
+      x2coordinates_ = std::make_shared<std::vector<double>>();
     }
   }
   std::set<double, LineSortCriterion> x1avcoords;
@@ -585,11 +586,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
   // push coordinates in vectors
   //----------------------------------------------------------------------
   {
-    x1ccoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-    x2ccoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-    x2wcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-    clrcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
-    ctbcoordinates_ = Teuchos::make_rcp<std::vector<double>>();
+    x1ccoordinates_ = std::make_shared<std::vector<double>>();
+    x2ccoordinates_ = std::make_shared<std::vector<double>>();
+    x2wcoordinates_ = std::make_shared<std::vector<double>>();
+    clrcoordinates_ = std::make_shared<std::vector<double>>();
+    ctbcoordinates_ = std::make_shared<std::vector<double>>();
 
     for (std::set<double, LineSortCriterion>::iterator coord1c = x1cavcoords.begin();
          coord1c != x1cavcoords.end(); ++coord1c)
@@ -627,8 +628,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
     {
       if (homdir_ == "z")
       {
-        x1coordinates_ = Teuchos::make_rcp<std::vector<double>>();
-        x2coordinates_ = Teuchos::make_rcp<std::vector<double>>();
+        x1coordinates_ = std::make_shared<std::vector<double>>();
+        x2coordinates_ = std::make_shared<std::vector<double>>();
 
         for (std::set<double, LineSortCriterion>::iterator coord1 = x1avcoords.begin();
              coord1 != x1avcoords.end(); ++coord1)
@@ -655,192 +656,192 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
   int sizetb = ctbcoordinates_->size();
 
   // first-order moments
-  x1csumu_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumu_ = std::make_shared<std::vector<double>>();
   x1csumu_->resize(size1c, 0.0);
-  x2csumu_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumu_ = std::make_shared<std::vector<double>>();
   x2csumu_->resize(size2c, 0.0);
-  x2w1sumu_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumu_ = std::make_shared<std::vector<double>>();
   x2w1sumu_->resize(size2w, 0.0);
-  x2w2sumu_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumu_ = std::make_shared<std::vector<double>>();
   x2w2sumu_->resize(size2w, 0.0);
-  cyllsumu_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumu_ = std::make_shared<std::vector<double>>();
   cyllsumu_->resize(sizelr, 0.0);
-  cyltsumu_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumu_ = std::make_shared<std::vector<double>>();
   cyltsumu_->resize(sizetb, 0.0);
-  cylrsumu_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumu_ = std::make_shared<std::vector<double>>();
   cylrsumu_->resize(sizelr, 0.0);
-  cylbsumu_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumu_ = std::make_shared<std::vector<double>>();
   cylbsumu_->resize(sizetb, 0.0);
 
-  x1csumv_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumv_ = std::make_shared<std::vector<double>>();
   x1csumv_->resize(size1c, 0.0);
-  x2csumv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumv_ = std::make_shared<std::vector<double>>();
   x2csumv_->resize(size2c, 0.0);
-  x2w1sumv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumv_ = std::make_shared<std::vector<double>>();
   x2w1sumv_->resize(size2w, 0.0);
-  x2w2sumv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumv_ = std::make_shared<std::vector<double>>();
   x2w2sumv_->resize(size2w, 0.0);
-  cyllsumv_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumv_ = std::make_shared<std::vector<double>>();
   cyllsumv_->resize(sizelr, 0.0);
-  cyltsumv_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumv_ = std::make_shared<std::vector<double>>();
   cyltsumv_->resize(sizetb, 0.0);
-  cylrsumv_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumv_ = std::make_shared<std::vector<double>>();
   cylrsumv_->resize(sizelr, 0.0);
-  cylbsumv_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumv_ = std::make_shared<std::vector<double>>();
   cylbsumv_->resize(sizetb, 0.0);
 
-  x1csumw_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumw_ = std::make_shared<std::vector<double>>();
   x1csumw_->resize(size1c, 0.0);
-  x2csumw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumw_ = std::make_shared<std::vector<double>>();
   x2csumw_->resize(size2c, 0.0);
-  x2w1sumw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumw_ = std::make_shared<std::vector<double>>();
   x2w1sumw_->resize(size2w, 0.0);
-  x2w2sumw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumw_ = std::make_shared<std::vector<double>>();
   x2w2sumw_->resize(size2w, 0.0);
-  cyllsumw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumw_ = std::make_shared<std::vector<double>>();
   cyllsumw_->resize(sizelr, 0.0);
-  cyltsumw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumw_ = std::make_shared<std::vector<double>>();
   cyltsumw_->resize(sizetb, 0.0);
-  cylrsumw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumw_ = std::make_shared<std::vector<double>>();
   cylrsumw_->resize(sizelr, 0.0);
-  cylbsumw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumw_ = std::make_shared<std::vector<double>>();
   cylbsumw_->resize(sizetb, 0.0);
 
-  x1csump_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csump_ = std::make_shared<std::vector<double>>();
   x1csump_->resize(size1c, 0.0);
-  x2csump_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csump_ = std::make_shared<std::vector<double>>();
   x2csump_->resize(size2c, 0.0);
-  x2w1sump_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sump_ = std::make_shared<std::vector<double>>();
   x2w1sump_->resize(size2w, 0.0);
-  x2w2sump_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sump_ = std::make_shared<std::vector<double>>();
   x2w2sump_->resize(size2w, 0.0);
-  cyllsump_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsump_ = std::make_shared<std::vector<double>>();
   cyllsump_->resize(sizelr, 0.0);
-  cyltsump_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsump_ = std::make_shared<std::vector<double>>();
   cyltsump_->resize(sizetb, 0.0);
-  cylrsump_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsump_ = std::make_shared<std::vector<double>>();
   cylrsump_->resize(sizelr, 0.0);
-  cylbsump_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsump_ = std::make_shared<std::vector<double>>();
   cylbsump_->resize(sizetb, 0.0);
 
   // second-order moments
-  x1csumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumsqu_ = std::make_shared<std::vector<double>>();
   x1csumsqu_->resize(size1c, 0.0);
-  x2csumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumsqu_ = std::make_shared<std::vector<double>>();
   x2csumsqu_->resize(size2c, 0.0);
-  x2w1sumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumsqu_ = std::make_shared<std::vector<double>>();
   x2w1sumsqu_->resize(size2w, 0.0);
-  x2w2sumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumsqu_ = std::make_shared<std::vector<double>>();
   x2w2sumsqu_->resize(size2w, 0.0);
-  cyllsumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumsqu_ = std::make_shared<std::vector<double>>();
   cyllsumsqu_->resize(sizelr, 0.0);
-  cyltsumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumsqu_ = std::make_shared<std::vector<double>>();
   cyltsumsqu_->resize(sizetb, 0.0);
-  cylrsumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumsqu_ = std::make_shared<std::vector<double>>();
   cylrsumsqu_->resize(sizelr, 0.0);
-  cylbsumsqu_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumsqu_ = std::make_shared<std::vector<double>>();
   cylbsumsqu_->resize(sizetb, 0.0);
 
-  x1csumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumsqv_ = std::make_shared<std::vector<double>>();
   x1csumsqv_->resize(size1c, 0.0);
-  x2csumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumsqv_ = std::make_shared<std::vector<double>>();
   x2csumsqv_->resize(size2c, 0.0);
-  x2w1sumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumsqv_ = std::make_shared<std::vector<double>>();
   x2w1sumsqv_->resize(size2w, 0.0);
-  x2w2sumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumsqv_ = std::make_shared<std::vector<double>>();
   x2w2sumsqv_->resize(size2w, 0.0);
-  cyllsumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumsqv_ = std::make_shared<std::vector<double>>();
   cyllsumsqv_->resize(sizelr, 0.0);
-  cyltsumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumsqv_ = std::make_shared<std::vector<double>>();
   cyltsumsqv_->resize(sizetb, 0.0);
-  cylrsumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumsqv_ = std::make_shared<std::vector<double>>();
   cylrsumsqv_->resize(sizelr, 0.0);
-  cylbsumsqv_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumsqv_ = std::make_shared<std::vector<double>>();
   cylbsumsqv_->resize(sizetb, 0.0);
 
-  x1csumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumsqw_ = std::make_shared<std::vector<double>>();
   x1csumsqw_->resize(size1c, 0.0);
-  x2csumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumsqw_ = std::make_shared<std::vector<double>>();
   x2csumsqw_->resize(size2c, 0.0);
-  x2w1sumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumsqw_ = std::make_shared<std::vector<double>>();
   x2w1sumsqw_->resize(size2w, 0.0);
-  x2w2sumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumsqw_ = std::make_shared<std::vector<double>>();
   x2w2sumsqw_->resize(size2w, 0.0);
-  cyllsumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumsqw_ = std::make_shared<std::vector<double>>();
   cyllsumsqw_->resize(sizelr, 0.0);
-  cyltsumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumsqw_ = std::make_shared<std::vector<double>>();
   cyltsumsqw_->resize(sizetb, 0.0);
-  cylrsumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumsqw_ = std::make_shared<std::vector<double>>();
   cylrsumsqw_->resize(sizelr, 0.0);
-  cylbsumsqw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumsqw_ = std::make_shared<std::vector<double>>();
   cylbsumsqw_->resize(sizetb, 0.0);
 
-  x1csumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumuv_ = std::make_shared<std::vector<double>>();
   x1csumuv_->resize(size1c, 0.0);
-  x2csumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumuv_ = std::make_shared<std::vector<double>>();
   x2csumuv_->resize(size2c, 0.0);
-  x2w1sumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumuv_ = std::make_shared<std::vector<double>>();
   x2w1sumuv_->resize(size2w, 0.0);
-  x2w2sumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumuv_ = std::make_shared<std::vector<double>>();
   x2w2sumuv_->resize(size2w, 0.0);
-  cyllsumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumuv_ = std::make_shared<std::vector<double>>();
   cyllsumuv_->resize(sizelr, 0.0);
-  cyltsumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumuv_ = std::make_shared<std::vector<double>>();
   cyltsumuv_->resize(sizetb, 0.0);
-  cylrsumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumuv_ = std::make_shared<std::vector<double>>();
   cylrsumuv_->resize(sizelr, 0.0);
-  cylbsumuv_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumuv_ = std::make_shared<std::vector<double>>();
   cylbsumuv_->resize(sizetb, 0.0);
 
-  x1csumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumuw_ = std::make_shared<std::vector<double>>();
   x1csumuw_->resize(size1c, 0.0);
-  x2csumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumuw_ = std::make_shared<std::vector<double>>();
   x2csumuw_->resize(size2c, 0.0);
-  x2w1sumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumuw_ = std::make_shared<std::vector<double>>();
   x2w1sumuw_->resize(size2w, 0.0);
-  x2w2sumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumuw_ = std::make_shared<std::vector<double>>();
   x2w2sumuw_->resize(size2w, 0.0);
-  cyllsumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumuw_ = std::make_shared<std::vector<double>>();
   cyllsumuw_->resize(sizelr, 0.0);
-  cyltsumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumuw_ = std::make_shared<std::vector<double>>();
   cyltsumuw_->resize(sizetb, 0.0);
-  cylrsumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumuw_ = std::make_shared<std::vector<double>>();
   cylrsumuw_->resize(sizelr, 0.0);
-  cylbsumuw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumuw_ = std::make_shared<std::vector<double>>();
   cylbsumuw_->resize(sizetb, 0.0);
 
-  x1csumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumvw_ = std::make_shared<std::vector<double>>();
   x1csumvw_->resize(size1c, 0.0);
-  x2csumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumvw_ = std::make_shared<std::vector<double>>();
   x2csumvw_->resize(size2c, 0.0);
-  x2w1sumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumvw_ = std::make_shared<std::vector<double>>();
   x2w1sumvw_->resize(size2w, 0.0);
-  x2w2sumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumvw_ = std::make_shared<std::vector<double>>();
   x2w2sumvw_->resize(size2w, 0.0);
-  cyllsumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumvw_ = std::make_shared<std::vector<double>>();
   cyllsumvw_->resize(sizelr, 0.0);
-  cyltsumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumvw_ = std::make_shared<std::vector<double>>();
   cyltsumvw_->resize(sizetb, 0.0);
-  cylrsumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumvw_ = std::make_shared<std::vector<double>>();
   cylrsumvw_->resize(sizelr, 0.0);
-  cylbsumvw_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumvw_ = std::make_shared<std::vector<double>>();
   cylbsumvw_->resize(sizetb, 0.0);
 
-  x1csumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  x1csumsqp_ = std::make_shared<std::vector<double>>();
   x1csumsqp_->resize(size1c, 0.0);
-  x2csumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  x2csumsqp_ = std::make_shared<std::vector<double>>();
   x2csumsqp_->resize(size2c, 0.0);
-  x2w1sumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w1sumsqp_ = std::make_shared<std::vector<double>>();
   x2w1sumsqp_->resize(size2w, 0.0);
-  x2w2sumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  x2w2sumsqp_ = std::make_shared<std::vector<double>>();
   x2w2sumsqp_->resize(size2w, 0.0);
-  cyllsumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  cyllsumsqp_ = std::make_shared<std::vector<double>>();
   cyllsumsqp_->resize(sizelr, 0.0);
-  cyltsumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  cyltsumsqp_ = std::make_shared<std::vector<double>>();
   cyltsumsqp_->resize(sizetb, 0.0);
-  cylrsumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  cylrsumsqp_ = std::make_shared<std::vector<double>>();
   cylrsumsqp_->resize(sizelr, 0.0);
-  cylbsumsqp_ = Teuchos::make_rcp<std::vector<double>>();
+  cylbsumsqp_ = std::make_shared<std::vector<double>>();
   cylbsumsqp_->resize(sizetb, 0.0);
 
   //----------------------------------------------------------------------
@@ -853,22 +854,22 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<Core::FE::Dis
     if (homdir_ == "z")
     {
       // store them in parameterlist for access on the element
-      modelparams->set<Teuchos::RCP<std::vector<double>>>("dir1coords_", x1coordinates_);
-      modelparams->set<Teuchos::RCP<std::vector<double>>>("dir2coords_", x2coordinates_);
+      modelparams->set<std::shared_ptr<std::vector<double>>>("dir1coords_", x1coordinates_);
+      modelparams->set<std::shared_ptr<std::vector<double>>>("dir2coords_", x2coordinates_);
     }
   }
 
   //----------------------------------------------------------------------
   // initialize output and initially open respective statistics output file
 
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
 
   if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow past a square-section cylinder "
               "(first- and second-order moments)\n\n";
 
@@ -1854,13 +1855,13 @@ void FLD::TurbulenceStatisticsSqc::dump_statistics(int step)
 {
   //----------------------------------------------------------------------
   // output to log-file
-  Teuchos::RCP<std::ofstream> log;
+  std::shared_ptr<std::ofstream> log;
   if (discret_->get_comm().MyPID() == 0)
   {
     std::string s(statistics_outfilename_);
     s.append(".flow_statistics");
 
-    log = Teuchos::make_rcp<std::ofstream>(s.c_str(), std::ios::out);
+    log = std::make_shared<std::ofstream>(s.c_str(), std::ios::out);
     (*log) << "# Statistics for turbulent incompressible flow past a square-section cylinder "
               "(first- and second-order moments)";
     (*log) << "\n\n\n";

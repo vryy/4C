@@ -20,7 +20,7 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit FPSIStructureWrapper(Teuchos::RCP<Structure> structure);
+    explicit FPSIStructureWrapper(std::shared_ptr<Structure> structure);
 
     /*!
     \brief extract interface displacements at \f$t_{n}\f$
@@ -30,7 +30,8 @@ namespace Adapter
     \note if param FPSI = false the base class version of this method is called
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispn(bool FPSI = false);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispn(
+        bool FPSI = false);
 
     /*!
     \brief  extract interface displacements at \f$t_{n+1}\f$
@@ -40,7 +41,8 @@ namespace Adapter
     \note if param FPSI = false the base class version of this method is called
 
     */
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_dispnp(bool FPSI = false);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_dispnp(
+        bool FPSI = false);
   };
 }  // namespace Adapter
 FOUR_C_NAMESPACE_CLOSE

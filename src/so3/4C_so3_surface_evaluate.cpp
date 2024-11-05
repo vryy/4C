@@ -145,9 +145,9 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
       loadlin = false;
 
       // evaluate last converged configuration
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       spatial_configuration(xc, mydisp);
@@ -170,9 +170,9 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
       }
       else  // standard case
       {
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacement new");
-        if (disp == Teuchos::null)
+        if (disp == nullptr)
           FOUR_C_THROW(
               "Cannot get state vector 'displacement new'\n"
               "Did you forget to set the 'LOADLIN yes' in '--STRUCTURAL DYNAMIC' input section???");
@@ -212,7 +212,7 @@ int Discret::Elements::StructuralSurface::evaluate_neumann(Teuchos::ParameterLis
   {
     // --------------------------------------------------
     // get knotvector
-    Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
+    std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
     bool zero_size = knots->get_boundary_ele_and_parent_knots(
         mypknots, myknots, normalfac, parent_element()->id(), surfaceid);
     // elements that have zero size in knotspan are skipped
@@ -694,9 +694,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacementtotal");
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacementtotal'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
         const int numnode = num_node();
@@ -714,7 +714,7 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
           *----------------------------------------------------------------------*/
         const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
 
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispincr =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispincr =
             discretization.get_state("displacementincr");
         std::vector<double> edispincr(lm.size());
         Core::FE::extract_my_values(*dispincr, edispincr, lm);
@@ -759,17 +759,17 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
         double tol = 1.0E-5;
 
         //  element geometry update for time t_n
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispn =
             discretization.get_state("displacementnp");
-        if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementnp");
+        if (dispn == nullptr) FOUR_C_THROW("Cannot get state vector 'displacementnp");
         std::vector<double> edispn(lm.size());
         Core::FE::extract_my_values(*dispn, edispn, lm);
         Core::LinAlg::SerialDenseMatrix xcn(numnode, numdf);
         spatial_configuration(xcn, edispn);
 
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispincr =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispincr =
             discretization.get_state("displacementincr");
-        if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementincr");
+        if (dispn == nullptr) FOUR_C_THROW("Cannot get state vector 'displacementincr");
         std::vector<double> edispincr(lm.size());
         Core::FE::extract_my_values(*dispincr, edispincr, lm);
 
@@ -854,17 +854,17 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       double tol = 1.0E-5;
 
       //  element geometry update for time t_n
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispn =
           discretization.get_state("displacementnp");
-      if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementnp");
+      if (dispn == nullptr) FOUR_C_THROW("Cannot get state vector 'displacementnp");
       std::vector<double> edispn(lm.size());
       Core::FE::extract_my_values(*dispn, edispn, lm);
       Core::LinAlg::SerialDenseMatrix xcn(numnode, numdf);
       spatial_configuration(xcn, edispn);
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispincr =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispincr =
           discretization.get_state("displacementincr");
-      if (dispn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacementincr");
+      if (dispn == nullptr) FOUR_C_THROW("Cannot get state vector 'displacementincr");
       std::vector<double> edispincr(lm.size());
       Core::FE::extract_my_values(*dispincr, edispincr, lm);
 
@@ -937,9 +937,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacement");
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
         const int numdim = 3;
@@ -954,9 +954,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_volconstrstiff:
     {
       // element geometry update
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numdim = 3;
@@ -966,12 +966,12 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // first partial derivatives
       Core::LinAlg::SerialDenseVector Vdiff1;
       // second partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>();
 
       // get projection method
-      Teuchos::RCP<Core::Conditions::Condition> condition =
-          params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+      std::shared_ptr<Core::Conditions::Condition> condition =
+          params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
       const auto* projtype = condition->parameters().get_if<std::string>("projection");
 
       if (projtype != nullptr)
@@ -1103,17 +1103,17 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacement");
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
         const int numdim = 3;
         Core::LinAlg::SerialDenseMatrix xscurr(num_node(), numdim);  // material coord. of element
         spatial_configuration(xscurr, mydisp);
 
-        Teuchos::RCP<Core::Conditions::Condition> condition =
-            params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+        std::shared_ptr<Core::Conditions::Condition> condition =
+            params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
         const auto* projtype = condition->parameters().get_if<std::string>("projection");
 
         // To compute monitored area consider required projection method
@@ -1169,9 +1169,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_constrarea:
     {
       // element geometry update
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numdim = 3;
@@ -1182,8 +1182,8 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // first partial derivatives
       Core::LinAlg::SerialDenseVector Adiff;
       // second partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Adiff2 =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Adiff2 =
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
       compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
@@ -1194,9 +1194,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     case calc_struct_areaconstrstiff:
     {
       // element geometry update
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numdim = 3;
@@ -1207,8 +1207,8 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       // first partial derivatives
       Core::LinAlg::SerialDenseVector Adiff;
       // second partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Adiff2 =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Adiff2 =
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>();
 
       // call submethod
       compute_area_deriv(xscurr, num_node(), numdim * num_node(), elearea, Adiff, Adiff2);
@@ -1254,9 +1254,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     break;
     case calc_cur_nodal_normals:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       build_normals_at_nodes(elevector1, mydisp, false);
@@ -1264,9 +1264,9 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     break;
     case calc_cur_normal_at_point:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
@@ -1342,16 +1342,16 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       const Core::FE::IntPointsAndWeights<2> intpoints(
           Discret::Elements::DisTypeToOptGaussRule<Core::FE::CellType::quad4>::rule);
 
-      const Teuchos::RCP<Core::FE::Discretization> backgrddis =
+      const std::shared_ptr<Core::FE::Discretization> backgrddis =
           globalproblem->get_dis(backgrddisname);
-      const Teuchos::RCP<Core::FE::Discretization> immerseddis =
+      const std::shared_ptr<Core::FE::Discretization> immerseddis =
           globalproblem->get_dis(immerseddisname);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (backgrddis == Teuchos::null)
+      if (backgrddis == nullptr)
         FOUR_C_THROW(
             "Pointer to background dis empty. Correct disname in parameter list 'params'?");
-      if (immerseddis == Teuchos::null)
+      if (immerseddis == nullptr)
         FOUR_C_THROW("Pointer to immersed dis empty. Correct disname in parameter list 'params'?");
 #endif
 
@@ -1371,10 +1371,10 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
       this->parent_element()->location_vector(*immerseddis, parent_la, false);
 
       // get structural state and element displacements (parent element)
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
           discretization.get_state("displacement");
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
 #endif
       std::vector<double> parenteledisp(lm.size());
       std::vector<double> bdryeledisp(lm.size());
@@ -1563,11 +1563,11 @@ int Discret::Elements::StructuralSurface::evaluate(Teuchos::ParameterList& param
     // Robin boundary condition (a spring and/or dashpot per unit reference area) - mhv 08/2016
     case calc_struct_robinforcestiff:
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
           discretization.get_state("displacement");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> velonp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> velonp =
           discretization.get_state("velocity");
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> offset_prestress =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> offset_prestress =
           discretization.get_state("offset_prestress");
 
       // time-integration factor for stiffness contribution of dashpot, d(v_{n+1})/d(d_{n+1})
@@ -2094,7 +2094,7 @@ double Discret::Elements::StructuralSurface::compute_constr_vols(
 void Discret::Elements::StructuralSurface::compute_vol_deriv(
     const Core::LinAlg::SerialDenseMatrix& xc, const int numnode, const int ndof, double& V,
     Core::LinAlg::SerialDenseVector& Vdiff1,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Vdiff2, const int minindex,
+    const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& Vdiff2, const int minindex,
     const int maxindex)
 {
   // necessary constants
@@ -2104,7 +2104,7 @@ void Discret::Elements::StructuralSurface::compute_vol_deriv(
   // initialize
   V = 0.0;
   Vdiff1.size(ndof);
-  if (Vdiff2 != Teuchos::null) Vdiff2->shape(ndof, ndof);
+  if (Vdiff2 != nullptr) Vdiff2->shape(ndof, ndof);
 
   // Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
@@ -2173,7 +2173,7 @@ void Discret::Elements::StructuralSurface::compute_vol_deriv(
       }
 
       //-------- compute second derivative
-      if (Vdiff2 != Teuchos::null)
+      if (Vdiff2 != nullptr)
       {
         for (int i = 0; i < numnode; i++)
         {
@@ -2216,13 +2216,13 @@ void Discret::Elements::StructuralSurface::compute_vol_deriv(
 void Discret::Elements::StructuralSurface::compute_area_deriv(
     const Core::LinAlg::SerialDenseMatrix& x, const int numnode, const int ndof, double& A,
     Core::LinAlg::SerialDenseVector& Adiff,
-    const Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& Adiff2)
+    const std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& Adiff2)
 {
   // initialization
   A = 0.;
   Adiff.size(ndof);
 
-  if (Adiff2 != Teuchos::null) Adiff2->shape(ndof, ndof);
+  if (Adiff2 != nullptr) Adiff2->shape(ndof, ndof);
 
   const Core::FE::IntegrationPoints2D intpoints(gaussrule_);
 
@@ -2285,7 +2285,7 @@ void Discret::Elements::StructuralSurface::compute_area_deriv(
       (Adiff)[i] += jacobi_deriv(i) * intpoints.qwgt[gpid];
     }
 
-    if (Adiff2 != Teuchos::null)
+    if (Adiff2 != nullptr)
     {
       /*--------- second derivates of minor determiants of the Jacobian
        *----------------------------- with respect to the displacements */
@@ -2413,8 +2413,9 @@ void Discret::Elements::StructuralSurface::calculate_surface_porosity(
   const int noddof = num_dof_per_node(*(nodes()[0]));
 
   // element geometry update
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement");
+  if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
   std::vector<double> mydisp(lmpar.size());
   Core::FE::extract_my_values(*disp, mydisp, lmpar);
 
@@ -2437,8 +2438,9 @@ void Discret::Elements::StructuralSurface::calculate_surface_porosity(
 
   const int numdofpernode = 4;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state(1, "fluidvel");
-  if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velnp =
+      discretization.get_state(1, "fluidvel");
+  if (velnp == nullptr) FOUR_C_THROW("Cannot get state vector 'fluidvel'");
   // extract local values of the global vectors
   std::vector<double> myvelpres(la[1].lm_.size());
   Core::FE::extract_my_values(*velnp, myvelpres, la[1].lm_);
@@ -2456,8 +2458,8 @@ void Discret::Elements::StructuralSurface::calculate_surface_porosity(
   Core::FE::surface_gp_to_parent_gp(
       pqxg, derivtrafo, intpoints, parentele->shape(), shape(), l_surf_number());
 
-  Teuchos::RCP<Mat::StructPoro> structmat =
-      Teuchos::rcp_dynamic_cast<Mat::StructPoro>(parentele->material(1));
+  std::shared_ptr<Mat::StructPoro> structmat =
+      std::dynamic_pointer_cast<Mat::StructPoro>(parentele->material(1));
 
   for (int gp = 0; gp < ngp; ++gp)
   {

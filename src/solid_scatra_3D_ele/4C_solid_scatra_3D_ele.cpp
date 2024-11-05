@@ -68,17 +68,17 @@ void Discret::Elements::SolidScatraType::setup_element_definition(
       get_default_line_definition_builder<Core::FE::CellType::nurbs27>().build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDSCATRA") return create(id, owner);
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::SolidScatra>(id, owner);
+  return std::make_shared<Discret::Elements::SolidScatra>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::Elements::SolidScatraType::create(
@@ -125,12 +125,12 @@ int Discret::Elements::SolidScatra::num_volume() const
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SolidScatra::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SolidScatra::lines()
 {
   return Core::Communication::get_element_lines<StructuralLine, SolidScatra>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::SolidScatra::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::SolidScatra::surfaces()
 {
   return Core::Communication::get_element_surfaces<StructuralSurface, SolidScatra>(*this);
 }
@@ -139,14 +139,14 @@ void Discret::Elements::SolidScatra::set_params_interface_ptr(const Teuchos::Par
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
     solid_interface_ptr_ =
-        Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(interface_ptr_);
+        std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(interface_ptr_);
   }
   else
   {
-    interface_ptr_ = Teuchos::null;
-    solid_interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
+    solid_interface_ptr_ = nullptr;
   }
 }
 
@@ -234,8 +234,7 @@ bool Discret::Elements::SolidScatra::vis_data(const std::string& name, std::vect
 
 Mat::So3Material& Discret::Elements::SolidScatra::solid_material(int nummat) const
 {
-  return *Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return *std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 FOUR_C_NAMESPACE_CLOSE

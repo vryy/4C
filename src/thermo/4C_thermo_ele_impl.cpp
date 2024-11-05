@@ -159,9 +159,9 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
   if (discretization.has_state(0, "temperature"))
   {
     std::vector<double> mytempnp((la[0].lm_).size());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
         discretization.get_state(0, "temperature");
-    if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+    if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
     Core::FE::extract_my_values(*tempnp, mytempnp, la[0].lm_);
     // build the element temperature
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etempn(mytempnp.data(), true);  // view only!
@@ -171,9 +171,9 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
   if (discretization.has_state(0, "last temperature"))
   {
     std::vector<double> mytempn((la[0].lm_).size());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempn =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tempn =
         discretization.get_state(0, "last temperature");
-    if (tempn == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempn'");
+    if (tempn == nullptr) FOUR_C_THROW("Cannot get state vector 'tempn'");
     Core::FE::extract_my_values(*tempn, mytempn, la[0].lm_);
     // build the element temperature
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(mytempn.data(), true);  // view only!
@@ -195,7 +195,7 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
   if (la.size() > 1)
   {
     // ------------------------------------------------ structural material
-    Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+    std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
@@ -385,9 +385,9 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
         // efcap = ecapa . R_{n+alpham}
         if (discretization.has_state(0, "mid-temprate"))
         {
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> ratem =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> ratem =
               discretization.get_state(0, "mid-temprate");
-          if (ratem == Teuchos::null) FOUR_C_THROW("Cannot get mid-temprate state vector for fcap");
+          if (ratem == nullptr) FOUR_C_THROW("Cannot get mid-temprate state vector for fcap");
           std::vector<double> myratem((la[0].lm_).size());
           // fill the vector myratem with the global values of ratem
           Core::FE::extract_my_values(*ratem, myratem, la[0].lm_);
@@ -395,7 +395,7 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
           Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> eratem(
               myratem.data(), true);  // view only!
           efcap.multiply(ecapa, eratem);
-        }  // ratem != Teuchos::null
+        }  // ratem != nullptr
         break;
 
       }  // genalpha
@@ -417,10 +417,10 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
     // efext, efcap not needed for this action, elemat1+2,elevec1-3 are not used anyway
 
     // get storage arrays of Gauss-point-wise vectors
-    Teuchos::RCP<std::vector<char>> heatfluxdata =
-        params.get<Teuchos::RCP<std::vector<char>>>("heatflux");
-    Teuchos::RCP<std::vector<char>> tempgraddata =
-        params.get<Teuchos::RCP<std::vector<char>>>("tempgrad");
+    std::shared_ptr<std::vector<char>> heatfluxdata =
+        params.get<std::shared_ptr<std::vector<char>>>("heatflux");
+    std::shared_ptr<std::vector<char>> tempgraddata =
+        params.get<std::shared_ptr<std::vector<char>>>("tempgrad");
     // working arrays
     Core::LinAlg::Matrix<nquad_, nsd_> eheatflux(false);
     Core::LinAlg::Matrix<nquad_, nsd_> etempgrad(false);
@@ -470,8 +470,9 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
         elevec1_epetra.values(), true);  // view only!
     // efext, efcap not needed for this action
 
-    const Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>> gpheatfluxmap =
-        params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>>(
+    const std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>
+        gpheatfluxmap = params.get<
+            std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>>(
             "gpheatfluxmap");
     std::string heatfluxtype = params.get<std::string>("heatfluxtype", "ndxyz");
     const int gid = ele->id();
@@ -502,8 +503,8 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
     {
       processed = true;
 
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> eleheatflux =
-          params.get<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>("eleheatflux");
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> eleheatflux =
+          params.get<std::shared_ptr<Core::LinAlg::MultiVector<double>>>("eleheatflux");
       const Epetra_BlockMap& elemap = eleheatflux->Map();
       int lid = elemap.LID(gid);
       if (lid != -1)
@@ -530,7 +531,7 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
   else if (action == Thermo::integrate_shape_functions)
   {
     // calculate integral of shape functions
-    const auto dofids = params.get<Teuchos::RCP<Core::LinAlg::IntSerialDenseVector>>("dofids");
+    const auto dofids = params.get<std::shared_ptr<Core::LinAlg::IntSerialDenseVector>>("dofids");
     integrate_shape_functions(ele, elevec1_epetra, *dofids);
   }
 
@@ -538,10 +539,10 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
   else if (action == Thermo::calc_thermo_update_istep)
   {
     // call material specific update
-    Teuchos::RCP<Core::Mat::Material> material = ele->material();
+    std::shared_ptr<Core::Mat::Material> material = ele->material();
     // we have to have a thermo-capable material here -> throw error if not
-    Teuchos::RCP<Mat::Trait::Thermo> thermoMat =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(material, true);
+    std::shared_ptr<Mat::Trait::Thermo> thermoMat =
+        std::dynamic_pointer_cast<Mat::Trait::Thermo>(material);
 
     Core::FE::IntPointsAndWeights<nsd_> intpoints(Thermo::DisTypeToOptGaussRule<distype>::rule);
     if (intpoints.ip().nquad != nquad_) FOUR_C_THROW("Trouble with number of Gauss points");
@@ -552,8 +553,8 @@ int Discret::Elements::TemperImpl<distype>::evaluate(
   else if (action == Thermo::calc_thermo_reset_istep)
   {
     // we have to have a thermo-capable material here -> throw error if not
-    Teuchos::RCP<Mat::Trait::Thermo> thermoMat =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(ele->material(), true);
+    std::shared_ptr<Mat::Trait::Thermo> thermoMat =
+        std::dynamic_pointer_cast<Mat::Trait::Thermo>(ele->material());
     thermoMat->reset_current_state();
   }
 
@@ -648,9 +649,9 @@ int Discret::Elements::TemperImpl<distype>::evaluate_neumann(const Core::Element
   if (discretization.has_state(0, "temperature"))
   {
     std::vector<double> mytempnp(lm.size());
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
         discretization.get_state("temperature");
-    if (tempnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'tempnp'");
+    if (tempnp == nullptr) FOUR_C_THROW("Cannot get state vector 'tempnp'");
     Core::FE::extract_my_values(*tempnp, mytempnp, lm);
     Core::LinAlg::Matrix<nen_ * numdofpernode_, 1> etemp(mytempnp.data(), true);  // view only!
     etempn_.update(etemp);                                                        // copy
@@ -968,12 +969,12 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
 #endif  // CALCSTABILOFREACTTERM
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
   if (structmat->material_type() == Core::Materials::m_thermostvenant)
   {
-    Teuchos::RCP<Mat::ThermoStVenantKirchhoff> thrstvk =
-        Teuchos::rcp_dynamic_cast<Mat::ThermoStVenantKirchhoff>(structmat, true);
+    std::shared_ptr<Mat::ThermoStVenantKirchhoff> thrstvk =
+        std::dynamic_pointer_cast<Mat::ThermoStVenantKirchhoff>(structmat);
 #ifdef CALCSTABILOFREACTTERM
     // kappa = k / (rho C_V)
     kappa = thrstvk->Conductivity();
@@ -1016,9 +1017,9 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
     NT(0, 0) = thrstvk->InitTemp;
 #endif  // COUPLEINITTEMPERATURE
 
-    Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolid =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(structmat, false);
-    if (thermoSolid != Teuchos::null)
+    std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolid =
+        std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(structmat);
+    if (thermoSolid != nullptr)
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
@@ -1034,8 +1035,8 @@ void Discret::Elements::TemperImpl<distype>::linear_disp_contribution(
     }
     else if (structmat->material_type() == Core::Materials::m_thermopllinelast)
     {
-      Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(structmat, true);
+      std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(structmat);
       // get the temperature-dependent material tangent
       thrpllinelast->setup_cthermo(ctemp);
 
@@ -1168,7 +1169,7 @@ void Discret::Elements::TemperImpl<distype>::linear_coupled_tang(
   // get constant initial temperature from the material
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
   // --------------------------------------------------- time integration
   // check the time integrator and add correct time factor
@@ -1246,9 +1247,9 @@ void Discret::Elements::TemperImpl<distype>::linear_coupled_tang(
     NT.multiply_tn(funct_, etempn_);  // (1x8)(8x1)= (1x1)
 
 
-    Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolid =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(structmat, false);
-    if (thermoSolid != Teuchos::null)
+    std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolid =
+        std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(structmat);
+    if (thermoSolid != nullptr)
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
@@ -1256,8 +1257,8 @@ void Discret::Elements::TemperImpl<distype>::linear_coupled_tang(
     }
     else if (structmat->material_type() == Core::Materials::m_thermopllinelast)
     {
-      Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(structmat, true);
+      std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(structmat);
 
       // get the temperature-dependent material tangent
       thrpllinelast->setup_cthermo(ctemp);
@@ -1335,7 +1336,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
   const double stepsize = params.get<double>("delta time");
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
   Core::LinAlg::Matrix<nen_, 1> Ndctemp_dTCrateNT(true);
 
@@ -1412,9 +1413,9 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
     std::cout << "nonlinear_thermo_disp_contribution Cinv = " << Cinv << std::endl;
 #endif  // THRASOUTPUT
 
-    Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolid =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(structmat, false);
-    if (thermoSolid != Teuchos::null)
+    std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolid =
+        std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(structmat);
+    if (thermoSolid != nullptr)
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
@@ -1442,8 +1443,8 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
     }
     if (structmat->material_type() == Core::Materials::m_thermoplhyperelast)
     {
-      Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(structmat, true);
+      std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(structmat);
 
       // insert matrices into parameter list which are only required for thrplasthyperelast
       params.set<Core::LinAlg::Matrix<nsd_, nsd_>>("defgrd", defgrd);
@@ -1501,8 +1502,8 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
       //                   + B^T . k_0 . F^{-1} . F^{-T} . B . T
       if (structmat->material_type() == Core::Materials::m_plelasthyper)
       {
-        Teuchos::RCP<Mat::PlasticElastHyper> plmat =
-            Teuchos::rcp_dynamic_cast<Mat::PlasticElastHyper>(structmat, true);
+        std::shared_ptr<Mat::PlasticElastHyper> plmat =
+            std::dynamic_pointer_cast<Mat::PlasticElastHyper>(structmat);
         double He = plmat->hep_diss(iquad);
         efint->update((-fac_ * He), funct_, 1.0);
       }
@@ -1542,11 +1543,11 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_thermo_disp_contribution(
       // linearization of thermo-mechanical effects
       if (structmat->material_type() == Core::Materials::m_plelasthyper)
       {
-        Teuchos::RCP<Mat::PlasticElastHyper> plmat =
-            Teuchos::rcp_dynamic_cast<Mat::PlasticElastHyper>(structmat, true);
+        std::shared_ptr<Mat::PlasticElastHyper> plmat =
+            std::dynamic_pointer_cast<Mat::PlasticElastHyper>(structmat);
         double dHeDT = plmat->d_hep_dt(iquad);
         econd->multiply_nt((-fac_ * dHeDT), funct_, funct_, 1.0);
-        if (plmat->d_hep_d_teas() != Teuchos::null)
+        if (plmat->d_hep_d_teas() != nullptr)
           Core::LinAlg::DenseFunctions::multiply_nt<double, nen_, 1, nen_>(
               1., econd->data(), -fac_, funct_.data(), plmat->d_hep_d_teas()->at(iquad).values());
       }
@@ -1705,7 +1706,7 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
   Core::LinAlg::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
   // build the deformation gradient w.r.t. material configuration
   Core::LinAlg::Matrix<nsd_, nsd_> defgrd(false);
@@ -1833,9 +1834,9 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
       }
     }  // end DCinv_dd
 
-    Teuchos::RCP<Mat::Trait::ThermoSolid> thermoSolid =
-        Teuchos::rcp_dynamic_cast<Mat::Trait::ThermoSolid>(structmat, false);
-    if (thermoSolid != Teuchos::null)
+    std::shared_ptr<Mat::Trait::ThermoSolid> thermoSolid =
+        std::dynamic_pointer_cast<Mat::Trait::ThermoSolid>(structmat);
+    if (thermoSolid != nullptr)
     {
       Core::LinAlg::Matrix<6, 1> dctemp_dT(false);
       thermoSolid->reinit(nullptr, nullptr, NT(0), iquad);
@@ -1845,8 +1846,8 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
     {
       // C_T = m_0 . (J + 1/J) . C^{-1}
       // thermoelastic heating term
-      Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(structmat, true);
+      std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(structmat);
 
       // insert matrices into parameter list which are only required for thrplasthyperelast
       params.set<Core::LinAlg::Matrix<nsd_, nsd_>>("defgrd", defgrd);
@@ -1870,8 +1871,8 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
       // deformation DOFs
       if (structmat->material_type() == Core::Materials::m_plelasthyper)
       {
-        Teuchos::RCP<Mat::PlasticElastHyper> plmat =
-            Teuchos::rcp_dynamic_cast<Mat::PlasticElastHyper>(structmat, true);
+        std::shared_ptr<Mat::PlasticElastHyper> plmat =
+            std::dynamic_pointer_cast<Mat::PlasticElastHyper>(structmat);
         Core::LinAlg::DenseFunctions::multiply_nt<double, nen_, 1, nsd_ * nen_>(
             1., etangcoupl->data(), -fac_, funct_.data(), plmat->d_hep_diss_dd(iquad).values());
       }
@@ -1939,8 +1940,8 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_coupled_tang(
       //         - timefac . N^T_T . N_T . T . 1/Dt . thrplheat_kTd . dE/dd ]
 
       // get material
-      Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-          Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(structmat, true);
+      std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+          std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(structmat);
 
       // dJ/dd (1x24)
       Core::LinAlg::Matrix<1, nsd_ * nen_ * numdofpernode_> dJ_dd(true);
@@ -2024,14 +2025,14 @@ void Discret::Elements::TemperImpl<distype>::linear_dissipation_fint(
   Core::LinAlg::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
   if (structmat->material_type() != Core::Materials::m_thermopllinelast)
   {
     FOUR_C_THROW("So far dissipation only for ThermoPlasticLinElast material!");
   }
-  Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
-      Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(structmat, true);
+  std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
+      std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(structmat);
   // true: error if cast fails
 
   // --------------------------------------------------- time integration
@@ -2121,13 +2122,13 @@ void Discret::Elements::TemperImpl<distype>::linear_dissipation_coupled_tang(
 #endif  // THRASOUTPUT
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
   if (structmat->material_type() != Core::Materials::m_thermopllinelast)
   {
     FOUR_C_THROW("So far dissipation only available for ThermoPlasticLinElast material!");
   }
-  Teuchos::RCP<Mat::ThermoPlasticLinElast> thrpllinelast =
-      Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticLinElast>(structmat, true);
+  std::shared_ptr<Mat::ThermoPlasticLinElast> thrpllinelast =
+      std::dynamic_pointer_cast<Mat::ThermoPlasticLinElast>(structmat);
   // true: error if cast fails
 
   // --------------------------------------------------- time integration
@@ -2295,14 +2296,14 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_dissipation_fint_tang(
   Core::LinAlg::Matrix<6, 1> ctemp(true);
 
   // ------------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
 
   if (structmat->material_type() != Core::Materials::m_thermoplhyperelast)
   {
     FOUR_C_THROW("So far dissipation only for ThermoPlasticHyperElast material!");
   }
-  Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-      Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(structmat, true);
+  std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+      std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(structmat);
   // true: error if cast fails
 
   // --------------------------------------------------------- time integration
@@ -2403,9 +2404,9 @@ void Discret::Elements::TemperImpl<distype>::nonlinear_dissipation_coupled_tang(
   Core::LinAlg::Matrix<nsd_, nsd_> invdefgrd(false);
 
   // ------------------------------------------------ structural material
-  Teuchos::RCP<Core::Mat::Material> structmat = get_str_material(ele);
-  Teuchos::RCP<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
-      Teuchos::rcp_dynamic_cast<Mat::ThermoPlasticHyperElast>(structmat, true);
+  std::shared_ptr<Core::Mat::Material> structmat = get_str_material(ele);
+  std::shared_ptr<Mat::ThermoPlasticHyperElast> thermoplhyperelast =
+      std::dynamic_pointer_cast<Mat::ThermoPlasticHyperElast>(structmat);
   // true: error if cast fails
 
   // --------------------------------------------------- time integration
@@ -2662,15 +2663,16 @@ void Discret::Elements::TemperImpl<distype>::extract_disp_vel(
   if ((discretization.has_state(1, "displacement")) and (discretization.has_state(1, "velocity")))
   {
     // get the displacements
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
         discretization.get_state(1, "displacement");
-    if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+    if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
     // extract the displacements
     Core::FE::extract_my_values(*disp, mydisp, la[1].lm_);
 
     // get the velocities
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state(1, "velocity");
-    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
+        discretization.get_state(1, "velocity");
+    if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
     // extract the displacements
     Core::FE::extract_my_values(*vel, myvel, la[1].lm_);
   }
@@ -2809,7 +2811,7 @@ void Discret::Elements::TemperImpl<distype>::materialize(
   Core::LinAlg::Matrix<1, 1> temp;
   temp.multiply_tn(1.0, funct_, etempn_, 0.0);
 
-  auto thermoMaterial = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(material);
+  auto thermoMaterial = std::dynamic_pointer_cast<Mat::Trait::Thermo>(material);
   thermoMaterial->reinit(temp(0), gp);
   thermoMaterial->evaluate(gradtemp_, cmat_, heatflux_);
   capacoeff_ = thermoMaterial->capacity();
@@ -3261,11 +3263,11 @@ void Discret::Elements::TemperImpl<distype>::calculate_cauchy_greens(
 }
 
 template <Core::FE::CellType distype>
-Teuchos::RCP<Core::Mat::Material> Discret::Elements::TemperImpl<distype>::get_str_material(
+std::shared_ptr<Core::Mat::Material> Discret::Elements::TemperImpl<distype>::get_str_material(
     const Core::Elements::Element* ele  // the element whose matrix is calculated
 ) const
 {
-  Teuchos::RCP<Core::Mat::Material> structmat = Teuchos::null;
+  std::shared_ptr<Core::Mat::Material> structmat = nullptr;
 
   // access second material in thermo element
   if (ele->num_material() > 1)

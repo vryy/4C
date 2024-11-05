@@ -14,7 +14,7 @@
 #include "4C_fem_condition.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 
 
@@ -42,7 +42,7 @@ namespace XFEM
 
   /// evaluate Neumann boundary conditions
   void evaluate_neumann(Teuchos::ParameterList& params,
-      Teuchos::RCP<Core::FE::Discretization> discret, Core::LinAlg::Vector<double>& systemvector,
+      std::shared_ptr<Core::FE::Discretization> discret, Core::LinAlg::Vector<double>& systemvector,
       Core::LinAlg::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions

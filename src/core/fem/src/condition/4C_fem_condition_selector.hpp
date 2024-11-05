@@ -13,8 +13,8 @@
 #include "4C_fem_condition.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -153,7 +153,7 @@ namespace Core::Conditions
       \note The order of the selector additions determines the slots within
       Core::LinAlg::MultiMapExtractor.
      */
-    void add_selector(Teuchos::RCP<ConditionSelector> s) { selectors_.push_back(s); }
+    void add_selector(std::shared_ptr<ConditionSelector> s) { selectors_.push_back(s); }
 
     /// Do the setup
     void setup_extractor(const Core::FE::Discretization& dis, const Epetra_Map& fullmap,
@@ -167,7 +167,7 @@ namespace Core::Conditions
     void setup_cond_dof_sets(const Core::FE::Discretization& dis);
 
     /// condition selectors
-    std::vector<Teuchos::RCP<ConditionSelector>> selectors_;
+    std::vector<std::shared_ptr<ConditionSelector>> selectors_;
 
     /// sets of selected dof numbers
     std::vector<std::set<int>> conddofset_;

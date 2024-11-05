@@ -45,10 +45,10 @@ namespace BEAMINTERACTION
        * class.
        */
       PartitionedBeamInteractionAssemblyManagerIndirect(
-          std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
-          Teuchos::RCP<const Core::FE::Discretization>& discretization1,
-          Teuchos::RCP<const Core::FE::Discretization>& discretization2,
-          Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
+          std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& assembly_contact_elepairs,
+          std::shared_ptr<const Core::FE::Discretization>& discretization1,
+          std::shared_ptr<const Core::FE::Discretization>& discretization2,
+          std::shared_ptr<FBI::BeamToFluidMeshtyingParams> beam_contact_params_ptr);
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.
@@ -58,18 +58,18 @@ namespace BEAMINTERACTION
        * @param disp (in) Current displacement vector.
        */
       void evaluate_force_stiff(const Core::FE::Discretization& discretization1,
-          const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-          Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel) override;
+          const Core::FE::Discretization& discretization2, std::shared_ptr<Epetra_FEVector>& ff,
+          std::shared_ptr<Epetra_FEVector>& fb, std::shared_ptr<Core::LinAlg::SparseOperator> cff,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cbb,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cfb,
+          std::shared_ptr<Core::LinAlg::SparseMatrix>& cbf,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+          std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel) override;
 
       /**
        * \brief Return a const pointer to the mortar manager.
        */
-      inline Teuchos::RCP<const BEAMINTERACTION::BeamToFluidMortarManager> get_mortar_manager()
+      inline std::shared_ptr<const BEAMINTERACTION::BeamToFluidMortarManager> get_mortar_manager()
           const
       {
         return mortar_manager_;
@@ -77,7 +77,7 @@ namespace BEAMINTERACTION
 
      private:
       //! Pointer to the mortar manager. This object stores the relevant mortar matrices.
-      Teuchos::RCP<BEAMINTERACTION::BeamToFluidMortarManager> mortar_manager_;
+      std::shared_ptr<BEAMINTERACTION::BeamToFluidMortarManager> mortar_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR

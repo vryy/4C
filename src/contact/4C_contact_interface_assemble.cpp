@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|
  *----------------------------------------------------------------*/
-void CONTACT::Interface::assemble_slave_coord(Teuchos::RCP<Core::LinAlg::Vector<double>>& xsmod)
+void CONTACT::Interface::assemble_slave_coord(std::shared_ptr<Core::LinAlg::Vector<double>>& xsmod)
 {
   // loop over all slave nodes
   for (int j = 0; j < snoderowmap_->NumMyElements(); ++j)
@@ -964,11 +964,11 @@ void CONTACT::Interface::assemble_lin_z(Core::LinAlg::SparseMatrix& linzglobal)
 /*----------------------------------------------------------------------*
  |  Assemble matrix with nodal tangents or/and normals         popp 01/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_tn(Teuchos::RCP<Core::LinAlg::SparseMatrix> tglobal,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> nglobal)
+void CONTACT::Interface::assemble_tn(std::shared_ptr<Core::LinAlg::SparseMatrix> tglobal,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> nglobal)
 {
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
   if (Interface::n_dim() != 2 && n_dim() != 3) FOUR_C_THROW("Dim() must be either 2 or 3!");
 
@@ -984,7 +984,7 @@ void CONTACT::Interface::assemble_tn(Teuchos::RCP<Core::LinAlg::SparseMatrix> tg
     if (cnode->owner() != get_comm().MyPID())
       FOUR_C_THROW("AssembleTN: Node ownership inconsistency!");
 
-    if (tglobal != Teuchos::null)
+    if (tglobal != nullptr)
     {
       if (constr_direction_ == Inpar::CONTACT::constr_xyz)
       {
@@ -1089,7 +1089,7 @@ void CONTACT::Interface::assemble_tn(Teuchos::RCP<Core::LinAlg::SparseMatrix> tg
       }
     }
 
-    if (nglobal != Teuchos::null)
+    if (nglobal != nullptr)
     {
       // nodal normal
       double* nodalnormal = cnode->mo_data().n();
@@ -1112,7 +1112,7 @@ void CONTACT::Interface::assemble_tn(Teuchos::RCP<Core::LinAlg::SparseMatrix> tg
 void CONTACT::Interface::assemble_s(Core::LinAlg::SparseMatrix& sglobal)
 {
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -1151,11 +1151,11 @@ void CONTACT::Interface::assemble_s(Core::LinAlg::SparseMatrix& sglobal)
 /*----------------------------------------------------------------------*
  |  Assemble tangent deriv or/and normal deriv matrix         popp 05/08|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::assemble_t_nderiv(Teuchos::RCP<Core::LinAlg::SparseMatrix> tderivglobal,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> nderivglobal, bool usePoroLM)
+void CONTACT::Interface::assemble_t_nderiv(std::shared_ptr<Core::LinAlg::SparseMatrix> tderivglobal,
+    std::shared_ptr<Core::LinAlg::SparseMatrix> nderivglobal, bool usePoroLM)
 {
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
   if (Interface::n_dim() != 2 && n_dim() != 3) FOUR_C_THROW("Dim() must be either 2 or 3!");
 
@@ -1170,7 +1170,7 @@ void CONTACT::Interface::assemble_t_nderiv(Teuchos::RCP<Core::LinAlg::SparseMatr
     if (cnode->owner() != get_comm().MyPID())  // move this check into debug?
       FOUR_C_THROW("AssembleTNderiv: Node ownership inconsistency!");
 
-    if (tderivglobal != Teuchos::null)  // assemble tangential derivs?
+    if (tderivglobal != nullptr)  // assemble tangential derivs?
     {
       std::vector<Core::Gen::Pairedvector<int, double>>& dtmap = cnode->data().get_deriv_txi();
       Core::Gen::Pairedvector<int, double>::iterator colcurr;
@@ -1241,7 +1241,7 @@ void CONTACT::Interface::assemble_t_nderiv(Teuchos::RCP<Core::LinAlg::SparseMatr
       }
     }
 
-    if (nderivglobal != Teuchos::null)  // assemble normal derivs?
+    if (nderivglobal != nullptr)  // assemble normal derivs?
     {
       std::vector<Core::Gen::Pairedvector<int, double>>& dnmap = cnode->data().get_deriv_n();
       Core::Gen::Pairedvector<int, double>::iterator colcurr;
@@ -1583,8 +1583,8 @@ void CONTACT::Interface::assemble_inactiverhs(Core::LinAlg::Vector<double>& inac
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::split_map(*sdofrowmap_, *activedofs_);
+  std::shared_ptr<Epetra_Map> inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
+  std::shared_ptr<Epetra_Map> inactivedofs = Core::LinAlg::split_map(*sdofrowmap_, *activedofs_);
 
   static std::vector<int> lm_gid(Interface::n_dim());
   static std::vector<int> lm_owner(Interface::n_dim());
@@ -1732,8 +1732,8 @@ void CONTACT::Interface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstick
   // code is commented after the algorithm.
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
+  std::shared_ptr<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  std::shared_ptr<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -5168,10 +5168,10 @@ void CONTACT::Interface::assemble_normal_coupling_linearisation(Core::LinAlg::Sp
     Coupling::Adapter::Coupling& coupfs, bool AssembleVelocityLin)
 {
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
-  Teuchos::RCP<const Epetra_Map> MasterDofMap_full;
-  Teuchos::RCP<const Epetra_Map> PermSlaveDofMap_full;
+  std::shared_ptr<const Epetra_Map> MasterDofMap_full;
+  std::shared_ptr<const Epetra_Map> PermSlaveDofMap_full;
 
   if (AssembleVelocityLin)
   {
@@ -5237,7 +5237,7 @@ void CONTACT::Interface::assemble_normal_coupling_linearisation(Core::LinAlg::Sp
  | Derivative of D-matrix multiplied with a slave dof vector              |
  *------------------------------------------------------------------------*/
 void CONTACT::Interface::assemble_coup_lin_d(
-    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x)
+    Core::LinAlg::SparseMatrix& CoupLin, const std::shared_ptr<Core::LinAlg::Vector<double>> x)
 {
   // we have: D_jk,c with j = Slave dof
   //                 with k = Displacement slave dof
@@ -5315,7 +5315,7 @@ void CONTACT::Interface::assemble_coup_lin_d(
  | Derivative of transposed M-matrix multiplied with a slave dof vector  seitz 01/18 |
  *-----------------------------------------------------------------------------------*/
 void CONTACT::Interface::assemble_coup_lin_m(
-    Core::LinAlg::SparseMatrix& CoupLin, const Teuchos::RCP<Core::LinAlg::Vector<double>> x)
+    Core::LinAlg::SparseMatrix& CoupLin, const std::shared_ptr<Core::LinAlg::Vector<double>> x)
 {
   // we have: M_jl,c with j = Slave dof
   //                 with l = Displacement master dof

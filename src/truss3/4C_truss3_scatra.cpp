@@ -39,13 +39,13 @@ Core::Communication::ParObject* Discret::Elements::Truss3ScatraType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRUSS3SCATRA")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Truss3Scatra>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Truss3Scatra>(id, owner);
     return ele;
   }
   // return base class
@@ -55,11 +55,11 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3ScatraType::creat
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Truss3ScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Truss3Scatra>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Truss3Scatra>(id, owner);
   return ele;
 }
 
@@ -254,7 +254,7 @@ void Discret::Elements::Truss3Scatra::calc_gp_stresses(
     }
     case Core::Materials::m_linelast1D_growth:
     {
-      Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+      std::shared_ptr<std::vector<char>> stressdata = nullptr;
       Inpar::Solid::StressType iostress;
       if (is_params_interface())
       {
@@ -263,7 +263,7 @@ void Discret::Elements::Truss3Scatra::calc_gp_stresses(
       }
       else
       {
-        stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+        stressdata = params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
         iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
       }
 
@@ -348,7 +348,7 @@ void Discret::Elements::Truss3Scatra::extract_elemental_variables(Core::Elements
     phi_ele.resize(la[2].lm_.size());
     phi_ele.clear();
     auto phi = discretization.get_state(2, "MicroCon");
-    if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'MicroCon'");
+    if (phi == nullptr) FOUR_C_THROW("Cannot get state vector 'MicroCon'");
     Core::FE::extract_my_values(*phi, phi_ele, la[2].lm_);
   }
   // get nodal phi from micro state
@@ -357,7 +357,7 @@ void Discret::Elements::Truss3Scatra::extract_elemental_variables(Core::Elements
     phi_ele.resize(la[1].lm_.size());
     phi_ele.clear();
     auto phi = discretization.get_state(1, "scalarfield");
-    if (phi == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'scalar'");
+    if (phi == nullptr) FOUR_C_THROW("Cannot get state vectors 'scalar'");
     Core::FE::extract_my_values(*phi, phi_ele, la[1].lm_);
   }
   else

@@ -21,14 +21,15 @@ FOUR_C_NAMESPACE_OPEN
 /* constructor */
 Solid::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::LinAlg::Solver> contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      fint_(Teuchos::null),
-      fintn_(Teuchos::null),
-      fext_(Teuchos::null),
-      fextn_(Teuchos::null)
+      fint_(nullptr),
+      fintn_(nullptr),
+      fext_(nullptr),
+      fextn_(nullptr)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -43,7 +44,7 @@ Solid::TimIntStatics::TimIntStatics(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void Solid::TimIntStatics::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
   Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
@@ -133,7 +134,7 @@ void Solid::TimIntStatics::predict_const_vel_consist_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_inc =
+    std::shared_ptr<Core::LinAlg::Vector<double>> disp_inc =
         Core::LinAlg::create_vector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     Core::LinAlg::apply_dirichlet_to_system(*disp_inc, *zeros_, *(dbcmaps_->cond_map()));
@@ -165,7 +166,7 @@ void Solid::TimIntStatics::predict_const_acc()
   else
   {
     // Displacement increment over last time step
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disp_inc =
+    std::shared_ptr<Core::LinAlg::Vector<double>> disp_inc =
         Core::LinAlg::create_vector(*dof_row_map_view(), true);
     disp_inc->Update((*dt_)[0], *(*vel_)(0), 0.);
     disp_inc->Update(.5 * (*dt_)[0] * (*dt_)[0], *(*acc_)(0), 1.);
@@ -235,7 +236,7 @@ void Solid::TimIntStatics::evaluate_force_stiff_residual(Teuchos::ParameterList&
   fres_->Update(1.0, *fintn_, 1.0);
 
   // build pure structural residual (only LS with EAS)
-  if (fresn_str_ != Teuchos::null)
+  if (fresn_str_ != nullptr)
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
@@ -305,7 +306,7 @@ void Solid::TimIntStatics::evaluate_force_residual()
   fres_->Update(1.0, *fintn_, 1.0);
 
   // build pure structural residual (only LS with EAS)
-  if (fresn_str_ != Teuchos::null)
+  if (fresn_str_ != nullptr)
   {
     fresn_str_->Update(1., *fintn_str_, 0.);
     fresn_str_->Update(-1., *fextn_, 1.);
@@ -430,7 +431,7 @@ void Solid::TimIntStatics::update_step_element()
   discret_->clear_state();
   discret_->set_state("displacement", (*dis_)(0));
 
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
   discret_->clear_state();
 }
 
@@ -440,7 +441,8 @@ void Solid::TimIntStatics::read_restart_force() { return; }
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void Solid::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntStatics::write_restart_force(
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);
@@ -453,15 +455,16 @@ void Solid::TimIntStatics::write_restart_force(Teuchos::RCP<Core::IO::Discretiza
 /*---------------------------------------------------------------*/
 /* Apply Dirichlet boundary conditions on provided state vectors */
 void Solid::TimIntStatics::apply_dirichlet_bc(const double time,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acc, bool recreatemap)
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::Vector<double>> vel,
+    std::shared_ptr<Core::LinAlg::Vector<double>> acc, bool recreatemap)
 {
   // call base apply_dirichlet_bc
   Solid::TimInt::apply_dirichlet_bc(time, dis, vel, acc, recreatemap);
 
   // statics: set velocities and accelerations to zero
-  if (vel != Teuchos::null) vel->PutScalar(0.0);
-  if (acc != Teuchos::null) acc->PutScalar(0.0);
+  if (vel != nullptr) vel->PutScalar(0.0);
+  if (acc != nullptr) acc->PutScalar(0.0);
 
   return;
 }

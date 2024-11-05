@@ -58,17 +58,17 @@ Core::Communication::ParObject* Discret::Elements::Shell7pScatraType::create(
   return object;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL7PSCATRA") return create(id, owner);
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Shell7pScatra>(id, owner);
+  return std::make_shared<Discret::Elements::Shell7pScatra>(id, owner);
 }
 
 void Discret::Elements::Shell7pScatraType::setup_element_definition(
@@ -293,22 +293,21 @@ void Discret::Elements::Shell7pScatra::unpack(Core::Communication::UnpackBuffer&
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
 }
 
-Teuchos::RCP<Mat::So3Material> Discret::Elements::Shell7pScatra::solid_material(int nummat) const
+std::shared_ptr<Mat::So3Material> Discret::Elements::Shell7pScatra::solid_material(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 void Discret::Elements::Shell7pScatra::set_params_interface_ptr(const Teuchos::ParameterList& p)
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(
+        p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"));
   }
   else
   {
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
   }
 }
 
@@ -340,15 +339,15 @@ void Discret::Elements::Shell7pScatra::print(std::ostream& os) const
   Element::print(os);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Shell7pScatra::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Shell7pScatra::lines()
 {
   return Core::Communication::element_boundary_factory<Shell7pLine, Shell7pScatra>(
       Core::Communication::buildLines, *this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Shell7pScatra::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Shell7pScatra::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 int Discret::Elements::Shell7pScatra::num_line() const

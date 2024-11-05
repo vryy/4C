@@ -13,7 +13,7 @@
 #include "4C_constraint_springdashpot.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -109,13 +109,13 @@ namespace Solid
       void reset_step_state() override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! [derived]
@@ -123,19 +123,19 @@ namespace Solid
 
      private:
       //! all spring dashpot instances
-      std::vector<Teuchos::RCP<CONSTRAINTS::SpringDashpot>> springs_;
+      std::vector<std::shared_ptr<CONSTRAINTS::SpringDashpot>> springs_;
 
       //! structural displacement at \f$t_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr_;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disnp_ptr_;
 
       //! structural velocity at \f$t_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp_ptr_;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> velnp_ptr_;
 
       //! structural stiffness matrix
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_spring_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_spring_ptr_;
 
       //! spring forces at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fspring_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fspring_np_ptr_;
     };
 
   }  // namespace ModelEvaluator

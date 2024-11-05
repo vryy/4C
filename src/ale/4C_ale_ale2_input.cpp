@@ -26,8 +26,8 @@ bool Discret::Elements::Ale2::read_element(const std::string& eletype, const std
   const int numgp = intpoints.nquad;
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
-  Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat, true);
+  std::shared_ptr<Core::Mat::Material> mat = material();
+  std::shared_ptr<Mat::So3Material> so3mat = std::dynamic_pointer_cast<Mat::So3Material>(mat);
 
   // call material setup
   so3mat->setup(numgp, container);

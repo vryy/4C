@@ -15,10 +15,9 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_utils_clnwrapper.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <fstream>
 #include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -487,18 +486,18 @@ namespace Cut
     PointFactory(){};
 
     // non-member function to create a concrete point of desired dimension
-    Teuchos::RCP<Cut::Point> create_point(unsigned pid, const double* x, Edge* cut_edge,
+    std::shared_ptr<Cut::Point> create_point(unsigned pid, const double* x, Edge* cut_edge,
         Side* cut_side, double tolerance, int probdim) const
     {
-      Teuchos::RCP<Cut::Point> point = Teuchos::null;
+      std::shared_ptr<Cut::Point> point = nullptr;
 
       switch (probdim)
       {
         case 2:
-          point = Teuchos::make_rcp<ConcretePoint<2>>(pid, x, cut_edge, cut_side, tolerance);
+          point = std::make_shared<ConcretePoint<2>>(pid, x, cut_edge, cut_side, tolerance);
           break;
         case 3:
-          point = Teuchos::make_rcp<ConcretePoint<3>>(pid, x, cut_edge, cut_side, tolerance);
+          point = std::make_shared<ConcretePoint<3>>(pid, x, cut_edge, cut_side, tolerance);
           break;
         default:
           FOUR_C_THROW("Unsupported problem dimension! (probdim=%d)", probdim);
@@ -509,7 +508,7 @@ namespace Cut
   };  // class PointFactory
 
   // non-member function to create a concrete point of desired dimension
-  Teuchos::RCP<Cut::Point> create_point(
+  std::shared_ptr<Cut::Point> create_point(
       unsigned pid, const double* x, Edge* cut_edge, Side* cut_side, double tolerance);
 
   inline int entity_id(const Point& p) { return p.pid(); }
@@ -523,7 +522,7 @@ namespace Cut
 
     bool operator()(const T* p1, const T* p2) const { return entity_id(*p1) < entity_id(*p2); }
 
-    bool operator()(const Teuchos::RCP<T> p1, const Teuchos::RCP<T> p2) const
+    bool operator()(const std::shared_ptr<T> p1, const std::shared_ptr<T> p2) const
     {
       (void)p1;
       (void)p2;
@@ -561,13 +560,13 @@ namespace Cut
   typedef SortedVector<Point*, true, PointPidLess> PointSet;
   typedef SortedVector<Point*, true, PointPositionLess> PointPositionSet;
 
-  typedef SortedVector<Teuchos::RCP<Point>, true, PointPidLess> RCPPointSet;
+  typedef SortedVector<std::shared_ptr<Point>, true, PointPidLess> RCPPointSet;
 
 #else
   typedef std::set<Point*, PointPidLess> PointSet;
   typedef std::set<Point*, PointPositionLess> PointPositionSet;
 
-  typedef std::set<Teuchos::RCP<Point>, PointPidLess> RCPPointSet;
+  typedef std::set<std::shared_ptr<Point>, PointPidLess> RCPPointSet;
 
 #endif
 

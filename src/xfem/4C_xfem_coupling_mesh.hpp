@@ -34,10 +34,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCoupling(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -61,16 +61,16 @@ namespace XFEM
       return cutter_dis_->g_element(sid);
     }
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_cutter_disp_col();
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_cutter_disp_col();
 
     /// fill lm vector for coupling element
     virtual void get_coupling_ele_location_vector(const int sid, std::vector<int>& patchlm);
 
     /// set material pointer for coupling slave side
     void get_interface_slave_material(
-        Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat) override
+        Core::Elements::Element* actele, std::shared_ptr<Core::Mat::Material>& mat) override
     {
-      mat = Teuchos::null;
+      mat = nullptr;
     }
 
     // finalized interface state vectors
@@ -113,14 +113,14 @@ namespace XFEM
     //! do not cut, but only mark part of boundary loaded into cut
     virtual void set_marked_geometry(bool markgeometry) { mark_geometry_ = markgeometry; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_velnp() { return ivelnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_veln() { return iveln_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_velnm() { return ivelnm_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_velnp() { return ivelnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_veln() { return iveln_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_velnm() { return ivelnm_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_dispnp() { return idispnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_dispn() { return idispn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_dispnp() { return idispnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_dispn() { return idispn_; }
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_dispnpi() { return idispnpi_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_dispnpi() { return idispnpi_; }
 
     /// Get background fluid mesh h scaling
     virtual double get_h() { return h_scaling_; }
@@ -173,13 +173,13 @@ namespace XFEM
     //------------------------------- vectors -----------------------------
     // TODO: these vectors are not required for Neumann and WDBC conditions, derive class
     //! @name cutter-dis state vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivelnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iveln_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ivelnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivelnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> iveln_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ivelnm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispnp_;  ///< current displacements at t^n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> idispn_;   ///< last displacements at t^n
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispnp_;  ///< current displacements at t^n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> idispn_;   ///< last displacements at t^n
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         idispnpi_;  ///< displacements of last Newton increment at t^n+1 (for monolithic approaches)
 
     bool mark_geometry_;
@@ -189,7 +189,7 @@ namespace XFEM
     //@}
 
     //! @name output discretization writers
-    Teuchos::RCP<Core::IO::DiscretizationWriter> cutter_output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> cutter_output_;
     bool firstoutputofrun_;
 
     //@}
@@ -208,10 +208,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshVolCoupling(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -257,7 +257,7 @@ namespace XFEM
 
     //! get auxiliary coupling discretization (embedded elements with nodes in the cutting surface
     //! discretization)
-    Teuchos::RCP<Core::FE::Discretization> get_auxiliary_discretization()
+    std::shared_ptr<Core::FE::Discretization> get_auxiliary_discretization()
     {
       FOUR_C_ASSERT(init_volcoupling_,
           "MeshVolCoupling::get_auxiliary_discretization: Volume Coupling not initialized!");
@@ -289,12 +289,12 @@ namespace XFEM
     void create_auxiliary_discretization();
 
     //! map stores max eigenvalues of trace estimate of the elements
-    Teuchos::RCP<std::map<int, double>> ele_to_max_eigenvalue_;
+    std::shared_ptr<std::map<int, double>> ele_to_max_eigenvalue_;
 
    private:
     //! auxiliary discretization, based on the elements of cond_dis, that contribute to
     //! the elements of cutter_dis_ with at least one edge
-    Teuchos::RCP<Core::FE::Discretization> aux_coup_dis_;
+    std::shared_ptr<Core::FE::Discretization> aux_coup_dis_;
 
     //! bool to indicate if volume coupling is initialized
     bool init_volcoupling_;
@@ -314,10 +314,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingBC(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -346,7 +346,7 @@ namespace XFEM
 
     virtual void set_interface_velocity();
 
-    virtual void evaluate_condition(Teuchos::RCP<Core::LinAlg::Vector<double>> ivec,
+    virtual void evaluate_condition(std::shared_ptr<Core::LinAlg::Vector<double>> ivec,
         const std::string& condname, const double time, const double dt = 0.0);
 
     bool has_moving_interface() override;
@@ -360,10 +360,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingWeakDirichlet(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -416,10 +416,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingNeumann(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -488,10 +488,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingNavierSlip(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -580,10 +580,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingFSI(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -608,10 +608,10 @@ namespace XFEM
         const Core::Conditions::Condition* cond) override;
 
     // interface foces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_true_residual() { return itrueresidual_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_true_residual() { return itrueresidual_; }
 
     // for assembly of fluid interface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> i_forcecol() { return iforcecol_; }
 
     // evaluate structural cauchy stress and linearization in case we don't have xfluid sided
     // weighting
@@ -637,15 +637,15 @@ namespace XFEM
     void output(const int step, const double time, const bool write_restart_data) override;
 
     /// Assign communicator to contact to mesh coupling object
-    void assign_contact_comm(Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm)
+    void assign_contact_comm(std::shared_ptr<XFEM::XFluidContactComm> xf_c_comm)
     {
       xf_c_comm_ = xf_c_comm;
     }
 
     /// Get communicator to contact
-    Teuchos::RCP<XFEM::XFluidContactComm> get_contact_comm()
+    std::shared_ptr<XFEM::XFluidContactComm> get_contact_comm()
     {
-      if (xf_c_comm_ == Teuchos::null)
+      if (xf_c_comm_ == nullptr)
         FOUR_C_THROW("Get_Contact_Comm: Xfluid_Contact_Communicator not assigned!");
       return xf_c_comm_;
     }
@@ -660,10 +660,10 @@ namespace XFEM
     void register_side_proc(int sid);
 
     /// Initialize Fluid State
-    bool initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-        Teuchos::RCP<Teuchos::ParameterList> fluidparams);
+    bool initialize_fluid_state(std::shared_ptr<Cut::CutWizard> cutwizard,
+        std::shared_ptr<Core::FE::Discretization> fluiddis,
+        std::shared_ptr<XFEM::ConditionManager> condition_manager,
+        std::shared_ptr<Teuchos::ParameterList> fluidparams);
 
    protected:
     //! estimate the penalty scaling in Nitsche's method from the trace inequality for a specific
@@ -719,9 +719,9 @@ namespace XFEM
 
     //------------------------------- vectors -----------------------------
     //! @name cutter-dis state vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         itrueresidual_;  //! interface forces acting on the structural surface (= -iforcenp)
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         iforcecol_;  //! interface forces acting on the fluid surface (column vector assembly)
     //@}
 
@@ -737,7 +737,7 @@ namespace XFEM
     Inpar::XFEM::InterfaceLaw interfacelaw_;
 
     //! Xfluid Contact Communicator
-    Teuchos::RCP<XFEM::XFluidContactComm> xf_c_comm_;
+    std::shared_ptr<XFEM::XFluidContactComm> xf_c_comm_;
     //@}
   };
 
@@ -753,10 +753,10 @@ namespace XFEM
    public:
     //! constructor
     explicit MeshCouplingFluidFluid(
-        Teuchos::RCP<Core::FE::Discretization>& bg_dis,  ///< background discretization
+        std::shared_ptr<Core::FE::Discretization>& bg_dis,  ///< background discretization
         const std::string& cond_name,  ///< name of the condition, by which the derived cutter
                                        ///< discretization is identified
-        Teuchos::RCP<Core::FE::Discretization>&
+        std::shared_ptr<Core::FE::Discretization>&
             cond_dis,           ///< discretization from which cutter discretization can be derived
         const int coupling_id,  ///< id of composite of coupling conditions
         const double time,      ///< time
@@ -765,7 +765,7 @@ namespace XFEM
 
     /// set material pointer for coupling slave side
     void get_interface_slave_material(
-        Core::Elements::Element* actele, Teuchos::RCP<Core::Mat::Material>& mat) override;
+        Core::Elements::Element* actele, std::shared_ptr<Core::Mat::Material>& mat) override;
 
     /// set the fluid-fluid interface fix to avoid a cut
     void set_interface_fixed()

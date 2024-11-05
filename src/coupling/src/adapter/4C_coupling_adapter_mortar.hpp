@@ -17,7 +17,8 @@
 
 #include <Epetra_Map.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -92,18 +93,19 @@ namespace Coupling::Adapter
      *  \note
      *  - Master and slave discretizations are identical in case of sliding ALE or fluid/scatra
      * meshtying
-     *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
+     *  - ALE discretization is nullptr in case of sliding ALE or fluid/scatra meshtying
      */
-    void setup(const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<Core::FE::Discretization>& slavedis,          ///< slave discretization
-        const Teuchos::RCP<Core::FE::Discretization>& aledis,            ///< ALE discretization
+    void setup(
+        const std::shared_ptr<Core::FE::Discretization>& masterdis,  ///< master discretization
+        const std::shared_ptr<Core::FE::Discretization>& slavedis,   ///< slave discretization
+        const std::shared_ptr<Core::FE::Discretization>& aledis,     ///< ALE discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::string& couplingcond,     ///< string for coupling condition
         const Epetra_Comm& comm,             ///< communicator
         const Core::Utils::FunctionManager& function_manager,  ///< function manager
         const Teuchos::ParameterList& binning_params,          ///< parameters for binning strategy
-        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
-        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
+        std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type,
         const bool slavewithale = false,  ///< flag defining if slave is ALE
         const bool slidingale = false,    ///< flag indicating sliding ALE case
@@ -116,24 +118,24 @@ namespace Coupling::Adapter
      *  \note
      *  - Master and slave discretizations are identical in case of sliding ALE or fluid/scatra
      * meshtying
-     *  - ALE discretization is Teuchos::null in case of sliding ALE or fluid/scatra meshtying
+     *  - ALE discretization is nullptr in case of sliding ALE or fluid/scatra meshtying
      */
     void setup_interface(
-        const Teuchos::RCP<Core::FE::Discretization>& masterdis,  ///< master discretization
-        const Teuchos::RCP<Core::FE::Discretization>& slavedis,   ///< slave discretization
+        const std::shared_ptr<Core::FE::Discretization>& masterdis,  ///< master discretization
+        const std::shared_ptr<Core::FE::Discretization>& slavedis,   ///< slave discretization
         const std::vector<int>& coupleddof,  ///< vector defining coupled degrees of freedom
         const std::map<int, Core::Nodes::Node*>&
             mastergnodes,  ///< master nodes, including ghosted nodes
         const std::map<int, Core::Nodes::Node*>&
             slavegnodes,  ///< slave nodes, including ghosted nodes
-        const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
+        const std::map<int, std::shared_ptr<Core::Elements::Element>>&
             masterelements,  ///< master elements
-        const std::map<int, Teuchos::RCP<Core::Elements::Element>>&
+        const std::map<int, std::shared_ptr<Core::Elements::Element>>&
             slaveelements,                             ///< slave elements
         const Epetra_Comm& comm,                       ///< communicator
         const Teuchos::ParameterList& binning_params,  ///< parameters for binning strategy
-        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
-        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
+        std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType spatial_approximation_type,
         const bool slavewithale = false,  ///< flag defining if slave is ALE
         const bool slidingale = false,    ///< flag indicating sliding ALE case
@@ -142,7 +144,7 @@ namespace Coupling::Adapter
     );
 
     /// create integration cells
-    virtual void evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
+    virtual void evaluate_geometry(std::vector<std::shared_ptr<Mortar::IntCell>>&
             intcells  //!< vector of mortar integration cells
     );
 
@@ -150,51 +152,51 @@ namespace Coupling::Adapter
     virtual void evaluate();
 
     /// Compute mortar matrices
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp  ///< [in] ??
+    virtual void evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> idisp  ///< [in] ??
     );
 
     /// Compute mortar matrices (case of transferring same dofs on two different meshes)
-    virtual void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idispma,  ///< [in] ??
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idispsl                     ///< [in] ??
+    virtual void evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> idispma,  ///< [in] ??
+        std::shared_ptr<Core::LinAlg::Vector<double>> idispsl                     ///< [in] ??
     );
 
     //! Compute mortar matrices after performing a mesh correction step
     virtual void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Core::FE::Discretization> slavedis,    ///< slave discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis,      ///< ALE discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
-        const Epetra_Comm& comm,                            ///< communicator
-        bool slavewithale                                   ///< flag defining if slave is ALE
+        std::shared_ptr<Core::FE::Discretization> slavedis,    ///< slave discretization
+        std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
+        std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
+        const Epetra_Comm& comm,                               ///< communicator
+        bool slavewithale                                      ///< flag defining if slave is ALE
     );
 
     //! Get the mortar interface itself
-    Teuchos::RCP<Mortar::Interface> interface() const { return interface_; }
+    std::shared_ptr<Mortar::Interface> interface() const { return interface_; }
 
     //! Access to slave side mortar matrix \f$D\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_d() const
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_mortar_matrix_d() const
     {
-      if (D_ == Teuchos::null) FOUR_C_THROW("D Matrix is null pointer!");
+      if (D_ == nullptr) FOUR_C_THROW("D Matrix is null pointer!");
       return D_;
     };
 
     //! Access to inverse of slave side mortar matrix \f$D^{-1}\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_dinv() const
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_mortar_matrix_dinv() const
     {
-      if (Dinv_ == Teuchos::null) FOUR_C_THROW("DInv Matrix is null pointer!");
+      if (Dinv_ == nullptr) FOUR_C_THROW("DInv Matrix is null pointer!");
       return Dinv_;
     };
 
     //! Access to master side mortar matrix \f$M\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_m() const
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_mortar_matrix_m() const
     {
-      if (M_ == Teuchos::null) FOUR_C_THROW("M Matrix is null pointer!");
+      if (M_ == nullptr) FOUR_C_THROW("M Matrix is null pointer!");
       return M_;
     };
 
     //! Access to mortar projection operator \f$P\f$
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mortar_matrix_p() const
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> get_mortar_matrix_p() const
     {
-      if (P_ == Teuchos::null) FOUR_C_THROW("P Matrix is null pointer!");
+      if (P_ == nullptr) FOUR_C_THROW("P Matrix is null pointer!");
       return P_;
     };
 
@@ -206,7 +208,7 @@ namespace Coupling::Adapter
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> master_to_slave(
+    std::shared_ptr<Core::LinAlg::Vector<double>> master_to_slave(
         const Core::LinAlg::Vector<double>& mv  ///< [in] master vector (to be transferred)
     ) const override;
 
@@ -214,7 +216,7 @@ namespace Coupling::Adapter
      *
      *  \return Slave vector
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> master_to_slave(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> master_to_slave(
         const Core::LinAlg::MultiVector<double>& mv  ///< [in] master vector (to be transferred)
     ) const override;
 
@@ -223,7 +225,7 @@ namespace Coupling::Adapter
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> slave_to_master(
+    std::shared_ptr<Core::LinAlg::Vector<double>> slave_to_master(
         const Core::LinAlg::Vector<double>& sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
@@ -231,7 +233,7 @@ namespace Coupling::Adapter
      *
      *  \return Master vector
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> slave_to_master(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> slave_to_master(
         const Core::LinAlg::MultiVector<double>& sv  ///< [in] slave vector (to be transferred)
     ) const override;
 
@@ -253,10 +255,10 @@ namespace Coupling::Adapter
     //@{
 
     /// Get the interface dof row map of the master side
-    Teuchos::RCP<const Epetra_Map> master_dof_map() const override { return pmasterdofrowmap_; }
+    std::shared_ptr<const Epetra_Map> master_dof_map() const override { return pmasterdofrowmap_; }
 
     /// Get the interface dof row map of the slave side
-    Teuchos::RCP<const Epetra_Map> slave_dof_map() const override { return pslavedofrowmap_; }
+    std::shared_ptr<const Epetra_Map> slave_dof_map() const override { return pslavedofrowmap_; }
 
     //@}
 
@@ -265,10 +267,10 @@ namespace Coupling::Adapter
 
     /// do condensation of Lagrange multiplier and slave-sided dofs
     void mortar_condensation(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
-                                                      ///< out: tangent matrix w/  condensation
-        Core::LinAlg::Vector<double>& rhs             ///< in:  rhs vector     w/o condensation
-                                                      ///< out: rhs vector     w/  condensation
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& k,  ///< in:  tangent matrix w/o condensation
+                                                         ///< out: tangent matrix w/  condensation
+        Core::LinAlg::Vector<double>& rhs                ///< in:  rhs vector     w/o condensation
+                                                         ///< out: rhs vector     w/  condensation
     ) const;
 
     /// recover slave-sided dofs
@@ -292,7 +294,7 @@ namespace Coupling::Adapter
      *  [1] Puso, M and Laursen, TA: Mesh tying on curved interfaces in 3D,
      *      Engineering Computation, 20:305-319 (2003)
      */
-    void check_slave_dirichlet_overlap(const Teuchos::RCP<Core::FE::Discretization>& slavedis,
+    void check_slave_dirichlet_overlap(const std::shared_ptr<Core::FE::Discretization>& slavedis,
         const Epetra_Comm& comm, const Core::Utils::FunctionManager& function_manager);
 
     /// back transformation to initial parallel distribution
@@ -310,14 +312,14 @@ namespace Coupling::Adapter
    private:
     /// perform mesh relocation
     void mesh_relocation(Core::FE::Discretization& slavedis,  ///< [in] Slave discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis,        ///< [in] ALE discretization
-        Teuchos::RCP<const Epetra_Map>
+        std::shared_ptr<Core::FE::Discretization> aledis,     ///< [in] ALE discretization
+        std::shared_ptr<const Epetra_Map>
             masterdofrowmap,  ///< [in] DOF row map of master discretization
-        Teuchos::RCP<const Epetra_Map>
+        std::shared_ptr<const Epetra_Map>
             slavedofrowmap,  ///< [in] DOF row map of slave discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp,  ///< [in] ALE displacements
-        const Epetra_Comm& comm,                            ///< [in] Communicator
-        bool slavewithale                                   ///< [in] Flag defining if slave is ALE
+        std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< [in] ALE displacements
+        const Epetra_Comm& comm,                               ///< [in] Communicator
+        bool slavewithale  ///< [in] Flag defining if slave is ALE
     );
 
    protected:
@@ -336,31 +338,31 @@ namespace Coupling::Adapter
     bool issetup_;
 
     /// Interface
-    Teuchos::RCP<Mortar::Interface> interface_;
+    std::shared_ptr<Mortar::Interface> interface_;
 
     /// Map of master row dofs (after parallel redist.)
-    Teuchos::RCP<const Epetra_Map> masterdofrowmap_;
+    std::shared_ptr<const Epetra_Map> masterdofrowmap_;
 
     /// Map of slave row dofs  (after parallel redist.)
-    Teuchos::RCP<const Epetra_Map> slavedofrowmap_;
+    std::shared_ptr<const Epetra_Map> slavedofrowmap_;
 
     /// Map of master row dofs (before parallel redist.)
-    Teuchos::RCP<const Epetra_Map> pmasterdofrowmap_;
+    std::shared_ptr<const Epetra_Map> pmasterdofrowmap_;
 
     /// Map of slave row dofs  (before parallel redist.)
-    Teuchos::RCP<const Epetra_Map> pslavedofrowmap_;
+    std::shared_ptr<const Epetra_Map> pslavedofrowmap_;
 
     /// Slave side mortar matrix \f$D\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> D_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> D_;
 
     /// Inverse \f$D^{-1}\f$ of slave side mortar matrix \f$D\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Dinv_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Dinv_;
 
     /// Master side mortar matrix \f$M\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> M_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> M_;
 
     /// Mortar projection operator \f$P=D^{-1}M\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> P_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> P_;
   };
 }  // namespace Coupling::Adapter
 

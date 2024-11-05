@@ -13,7 +13,7 @@
 
 #include "4C_io_visualization_parameters.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -48,7 +48,7 @@ namespace BEAMINTERACTION
      */
     explicit BeamToSolidVolumeMeshtyingVisualizationOutputWriter(
         Core::IO::VisualizationParameters visualization_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+        std::shared_ptr<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr);
 
     /**
@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
      * @param output_params_ptr (in) RCP to parameter container for beam to solid output.
      */
     void setup(
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
+        std::shared_ptr<const BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputParams>
             output_params_ptr);
 
     /**
@@ -103,10 +103,11 @@ namespace BEAMINTERACTION
 
    private:
     //! Parameter container for output.
-    Teuchos::RCP<const BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
+    std::shared_ptr<const BeamToSolidVolumeMeshtyingVisualizationOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
+    std::shared_ptr<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>
+        output_writer_base_ptr_;
 
     //! visualization parameters
     const Core::IO::VisualizationParameters visualization_params_;

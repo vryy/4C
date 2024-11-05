@@ -43,19 +43,19 @@ namespace POROFLUIDMULTIPHASE
     void output() override;
 
     //! Initialize the linear solver
-    void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+    void initialize_linear_solver(std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     //! solve linear system of equations
-    void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
+    void linear_solve(std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment,
+        std::shared_ptr<Core::LinAlg::Vector<double>> residual,
         Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
     void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
         std::vector<double>& prenorm,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> increment) override;
 
     //! create the field test
     void create_field_test() override;
@@ -67,28 +67,28 @@ namespace POROFLUIDMULTIPHASE
     void evaluate() override;
 
     //! extract increments and update mesh tying
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_and_update_iter(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> extract_and_update_iter(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) override;
 
     // return arterial network time integrator
-    Teuchos::RCP<Adapter::ArtNet> art_net_tim_int() override { return artnettimint_; }
+    std::shared_ptr<Adapter::ArtNet> art_net_tim_int() override { return artnettimint_; }
 
     //! access dof row map
-    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
+    std::shared_ptr<const Epetra_Map> artery_dof_row_map() const override;
 
     //! right-hand side alias the dynamic force residual for coupled system
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const override;
 
     //! access to block system matrix of artery poro problem
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const override;
 
     //! get global (combined) increment of coupled problem
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_increment(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> combined_increment(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) const override;
 
     //! check if initial fields on coupled DOFs are equal
     void check_initial_fields(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont) const override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont) const override;
 
     //! set the element pairs that are close as found by search algorithm
     void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
@@ -100,29 +100,29 @@ namespace POROFLUIDMULTIPHASE
     void apply_mesh_movement() const override;
 
     //! return blood vessel volume fraction
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() override;
 
    protected:
     //! artery time integration
-    Teuchos::RCP<Adapter::ArtNet> artnettimint_;
+    std::shared_ptr<Adapter::ArtNet> artnettimint_;
 
     //! artery discretization
-    Teuchos::RCP<Core::FE::Discretization> arterydis_;
+    std::shared_ptr<Core::FE::Discretization> arterydis_;
 
     //! the mesh tying object
-    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;
+    std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase> arttoporofluidcoupling_;
 
     //! block systemmatrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> comb_systemmatrix_;
 
     //! global rhs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_;
 
     //! global increment
-    Teuchos::RCP<Core::LinAlg::Vector<double>> comb_increment_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> comb_increment_;
 
     //! global solution at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> comb_phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> comb_phinp_;
   };
 
 }  // namespace POROFLUIDMULTIPHASE

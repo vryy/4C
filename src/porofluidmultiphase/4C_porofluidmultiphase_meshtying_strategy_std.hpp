@@ -37,19 +37,19 @@ namespace POROFLUIDMULTIPHASE
     void output() override;
 
     //! Initialize the linear solver
-    void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) override;
+    void initialize_linear_solver(std::shared_ptr<Core::LinAlg::Solver> solver) override;
 
     //! solve linear system of equations
-    void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
+    void linear_solve(std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment,
+        std::shared_ptr<Core::LinAlg::Vector<double>> residual,
         Core::LinAlg::SolverParams& solver_params) override;
 
     //! calculate norms for convergence checks
     void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
         std::vector<double>& prenorm,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> increment) override;
 
     //! create the field test
     void create_field_test() override;
@@ -61,16 +61,16 @@ namespace POROFLUIDMULTIPHASE
     void evaluate() override;
 
     //! extract increments and update mesh tying
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_and_update_iter(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> extract_and_update_iter(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) override;
 
     //! access to global (combined) increment of coupled problem
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_increment(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> combined_increment(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) const override;
 
     //! check if initial fields on coupled DOFs are equal
     void check_initial_fields(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont) const override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont) const override;
 
     //! set the element pairs that are close as found by search algorithm
     void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) override;

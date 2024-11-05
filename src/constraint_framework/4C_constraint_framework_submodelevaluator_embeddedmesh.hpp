@@ -28,7 +28,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     /*!
     \brief Standard Constructor
     */
-    EmbeddedMeshConstraintManager(Teuchos::RCP<Core::FE::Discretization> discret_ptr,
+    EmbeddedMeshConstraintManager(std::shared_ptr<Core::FE::Discretization> discret_ptr,
         const Core::LinAlg::Vector<double>& dispnp);
 
     //! @name Public evaluation methods
@@ -44,9 +44,9 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
     /*! Evaluate the current right-hand-side vector and tangential stiffness matrix at \f$t_{n+1}\f$
      */
     bool evaluate_force_stiff(const Core::LinAlg::Vector<double>& displacement_vector,
-        Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> me_stiff_ptr,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> me_force_ptr) override;
+        std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> me_stiff_ptr,
+        std::shared_ptr<Core::LinAlg::Vector<double>> me_force_ptr) override;
 
     //! Evaluate the matrices of the saddle-point system
     void evaluate_coupling_terms(Solid::TimeInt::BaseDataGlobalState& gstate) override
@@ -61,7 +61,7 @@ namespace CONSTRAINTS::SUBMODELEVALUATOR
 
    private:
     //! Pointer to the mortar manager. This object stores the relevant mortar matrices.
-    Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager> mortar_manager_;
+    std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager> mortar_manager_;
   };
 }  // namespace CONSTRAINTS::SUBMODELEVALUATOR
 

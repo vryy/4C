@@ -25,9 +25,9 @@
 #include <Epetra_MpiComm.h>
 #include <hdf5.h>
 #include <hdf5_hl.h>
-#include <Teuchos_RCP.hpp>
 
 #include <algorithm>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -72,7 +72,8 @@ namespace Core::IO
      * \note  this function should only be called while the HDFReader reads
      *        mesh files
      */
-    Teuchos::RCP<std::vector<char>> read_element_data(int step, int new_proc_num, int my_id) const;
+    std::shared_ptr<std::vector<char>> read_element_data(
+        int step, int new_proc_num, int my_id) const;
 
     //!
     /*!
@@ -80,7 +81,7 @@ namespace Core::IO
      * \note: this function should only be called while the HDFReader reads
      *         mesh files
      */
-    Teuchos::RCP<std::vector<char>> read_node_data(int step, int new_proc_num, int my_id) const;
+    std::shared_ptr<std::vector<char>> read_node_data(int step, int new_proc_num, int my_id) const;
 
     /*!
      * \brief reads the packed periodic boundary condition data from the mesh files
@@ -89,7 +90,7 @@ namespace Core::IO
      * \note this function should only be called when the HDFReader opened
      *       the mesh files
      */
-    Teuchos::RCP<std::vector<char>> read_condition(
+    std::shared_ptr<std::vector<char>> read_condition(
         const int step, const int new_proc_num, const int my_id, const std::string condname) const;
 
     /*!
@@ -99,7 +100,7 @@ namespace Core::IO
     //
     //      \return  The whole knotvector data in a char vector
     //      */
-    Teuchos::RCP<std::vector<char>> read_knotvector(const int step) const;
+    std::shared_ptr<std::vector<char>> read_knotvector(const int step) const;
 
 
     //! read an Core::LinAlg::MultiVector<double> from the result files
@@ -114,7 +115,7 @@ namespace Core::IO
       \param columns      (in): number of vector columns
       \param Comm         (in): the communicator
      */
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_result_data(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> read_result_data(
         std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const;
 
     //! read a std::vector<char> from the result files
@@ -128,24 +129,24 @@ namespace Core::IO
       \param Comm         (in): the communicator
       \param elemap      (out): element map
      */
-    Teuchos::RCP<std::vector<char>> read_result_data_vec_char(std::string id_path,
+    std::shared_ptr<std::vector<char>> read_result_data_vec_char(std::string id_path,
         std::string value_path, int columns, const Epetra_Comm& Comm,
-        Teuchos::RCP<Epetra_Map>& elemap) const;
+        std::shared_ptr<Epetra_Map>& elemap) const;
 
-    Teuchos::RCP<std::vector<char>> read_char_vector(
+    std::shared_ptr<std::vector<char>> read_char_vector(
         std::string value_path, const Epetra_Comm& Comm) const;
 
-    Teuchos::RCP<std::vector<double>> read_double_vector(std::string path) const
+    std::shared_ptr<std::vector<double>> read_double_vector(std::string path) const
     {
       std::vector<int> length;
-      Teuchos::RCP<std::vector<double>> values = read_double_data(path, 0, 1, length);
+      std::shared_ptr<std::vector<double>> values = read_double_data(path, 0, 1, length);
       return values;
     };
 
-    Teuchos::RCP<std::vector<int>> read_int_vector(std::string path) const
+    std::shared_ptr<std::vector<int>> read_int_vector(std::string path) const
     {
       std::vector<int> length;
-      Teuchos::RCP<std::vector<int>> values = read_int_data(path, 0, 1);
+      std::shared_ptr<std::vector<int>> values = read_int_data(path, 0, 1);
       return values;
     };
 
@@ -155,21 +156,21 @@ namespace Core::IO
       Here we finally loop all the files the local processor has to read.
       returns all the data in one vector. The data is assumed to by of type char.
      */
-    Teuchos::RCP<std::vector<char>> read_char_data(std::string path, int start, int end) const;
+    std::shared_ptr<std::vector<char>> read_char_data(std::string path, int start, int end) const;
 
     /// reads the dataset 'path' in all the files in the range [start,end)
     /*!
       Here we finally loop all the files the local processor has to read.
       returns all the data in one vector<int>
     */
-    Teuchos::RCP<std::vector<int>> read_int_data(std::string path, int start, int end) const;
+    std::shared_ptr<std::vector<int>> read_int_data(std::string path, int start, int end) const;
 
     /// reads the dataset 'path' in all the files in the range [start,end)
     /*!
       Here we finally loop all the files the local processor has to
       read.
     */
-    Teuchos::RCP<std::vector<double>> read_double_data(
+    std::shared_ptr<std::vector<double>> read_double_data(
         std::string path, int start, int end, std::vector<int>& lengths) const;
 
     //! Figure out which subset of files this process needs to read

@@ -21,8 +21,8 @@
 
 #include <Epetra_Map.h>
 #include <Teuchos_CommandLineProcessor.hpp>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -116,7 +116,7 @@ class PostProblem
   //! returns the step parameter the user specified
   int step() const { return step_; }
 
-  Teuchos::RCP<Epetra_Comm> get_comm();
+  std::shared_ptr<Epetra_Comm> get_comm();
 
   //! returns the directory name in which the control files and data files are
   std::string input_dir() { return input_dir_; }
@@ -256,7 +256,7 @@ class PostProblem
   std::vector<MAP*> result_group_;
 
   std::string input_dir_;
-  Teuchos::RCP<Epetra_Comm> comm_;
+  std::shared_ptr<Epetra_Comm> comm_;
 };
 
 
@@ -282,11 +282,11 @@ class PostField
   // @{ \name Constructors and destructors
 
   //! Constructor
-  PostField(Teuchos::RCP<Core::FE::Discretization> dis,  ///< [in] discretization
-      PostProblem* problem,                              ///< [in] Instance of PostProblem
-      std::string field_name,                            ///< [in] Name of the field
-      const int numnd,                                   ///< [in] Number of nodes
-      const int numele                                   ///< [in] Number of elements
+  PostField(std::shared_ptr<Core::FE::Discretization> dis,  ///< [in] discretization
+      PostProblem* problem,                                 ///< [in] Instance of PostProblem
+      std::string field_name,                               ///< [in] Name of the field
+      const int numnd,                                      ///< [in] Number of nodes
+      const int numele                                      ///< [in] Number of elements
   );
 
   //@}
@@ -294,8 +294,8 @@ class PostField
   // @{ \name Access methods
 
   //! returns the discretization of this field
-  Teuchos::RCP<Core::FE::Discretization> discretization() { return dis_; }
-  Teuchos::RCP<const Core::FE::Discretization> discretization() const { return dis_; }
+  std::shared_ptr<Core::FE::Discretization> discretization() { return dis_; }
+  std::shared_ptr<const Core::FE::Discretization> discretization() const { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }
@@ -330,7 +330,7 @@ class PostField
 
  private:
   //! discretization of underlying field
-  Teuchos::RCP<Core::FE::Discretization> dis_;
+  std::shared_ptr<Core::FE::Discretization> dis_;
 
   //! PostProblem of underlying field
   PostProblem* problem_;
@@ -420,7 +420,7 @@ class PostResult
    *
    *  \returns vector with results read
    */
-  Teuchos::RCP<Core::LinAlg::Vector<double>> read_result(const std::string name);
+  std::shared_ptr<Core::LinAlg::Vector<double>> read_result(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
    *
@@ -429,7 +429,7 @@ class PostResult
    *
    * \returns vector with results read
    */
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>>
+  std::shared_ptr<std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>>
   read_result_serialdensematrix(const std::string name);
 
   /*! \brief Reads the data of the result vector 'name' from the current result block
@@ -438,7 +438,7 @@ class PostResult
    *
    *  \returns vector with results read
    */
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> read_multi_result(const std::string name);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> read_multi_result(const std::string name);
 
   //@}
 

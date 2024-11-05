@@ -80,7 +80,7 @@ void elch_dyn(int restart)
           scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+      auto dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
           Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
@@ -157,7 +157,7 @@ void elch_dyn(int restart)
       // support for turbulent flow statistics
       const auto& fdyn = (problem->fluid_dynamic_params());
 
-      Teuchos::RCP<Core::FE::Discretization> aledis = problem->get_dis("ale");
+      std::shared_ptr<Core::FE::Discretization> aledis = problem->get_dis("ale");
       if (!aledis->filled()) aledis->fill_complete(false, false, false);
       // is ALE needed or not?
       const auto withale =

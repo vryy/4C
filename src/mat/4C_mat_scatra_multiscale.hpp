@@ -31,7 +31,7 @@ namespace Mat
 
 
       //! create material
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! return porosity
       double porosity() const { return porosity_; };
@@ -123,9 +123,9 @@ namespace Mat
     };
 
     //! clone material
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ScatraMultiScale>(*this);
+      return std::make_shared<ScatraMultiScale>(*this);
     };
 
     //! return porosity

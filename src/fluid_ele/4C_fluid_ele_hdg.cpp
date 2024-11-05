@@ -39,24 +39,24 @@ Core::Communication::ParObject* Discret::Elements::FluidHDGType::create(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidHDGType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidHDGType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUIDHDG")
   {
-    return Teuchos::make_rcp<Discret::Elements::FluidHDG>(id, owner);
+    return std::make_shared<Discret::Elements::FluidHDG>(id, owner);
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidHDGType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidHDGType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::FluidHDG>(id, owner);
+  return std::make_shared<Discret::Elements::FluidHDG>(id, owner);
 }
 
 
@@ -249,7 +249,7 @@ int Discret::Elements::FluidHDG::evaluate(Teuchos::ParameterList& params,
   const auto act = Teuchos::getIntegralValue<FLD::Action>(params, "action");
 
   // get material
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   // switch between different physical types as used below
   std::string impltype = "hdg";

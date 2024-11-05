@@ -12,7 +12,7 @@
 
 #include "4C_io_linedefinition.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -78,7 +78,7 @@ namespace Core::Utils
 
    private:
     /// parsed function
-    Teuchos::RCP<Core::Utils::SymbolicExpression<double>> timefunction_;
+    std::shared_ptr<Core::Utils::SymbolicExpression<double>> timefunction_;
   };
 
 
@@ -141,7 +141,7 @@ namespace Core::Utils
     const std::vector<double> times_;
 
     /// vector of parsed functions
-    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> timefunction_;
+    std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double>>> timefunction_;
 
 
     /// flag for periodic repetition
@@ -204,7 +204,8 @@ namespace Core::Utils
   {
    public:
     //! Create a PiecewiseVariable from the given @p pieces.
-    PiecewiseVariable(const std::string& name, std::vector<Teuchos::RCP<FunctionVariable>> pieces);
+    PiecewiseVariable(
+        const std::string& name, std::vector<std::shared_ptr<FunctionVariable>> pieces);
 
     double value(double t) override;
 
@@ -219,7 +220,7 @@ namespace Core::Utils
     FunctionVariable& find_piece_for_time(double t);
 
     //! Store the pieces that make up the variable in different time intervals.
-    std::vector<Teuchos::RCP<FunctionVariable>> pieces_;
+    std::vector<std::shared_ptr<FunctionVariable>> pieces_;
   };
 
   namespace Internal

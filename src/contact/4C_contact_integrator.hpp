@@ -93,9 +93,9 @@ namespace CONTACT
 
      */
     virtual void integrate_deriv_ele_2d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+        bool* boundary_ele, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_ele_2d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
-        bool* boundary_ele, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+        bool* boundary_ele, const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
      \brief integrate D matrix without lin...
@@ -111,10 +111,10 @@ namespace CONTACT
      */
     virtual void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+        const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+        const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
      \brief Build all integrals and linearizations without segmentation -- 3D
@@ -123,10 +123,10 @@ namespace CONTACT
      */
     virtual void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+        const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_ele_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+        const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
      \brief Build all integrals and linearizations on a 2D slave /
@@ -135,11 +135,11 @@ namespace CONTACT
 
      */
     virtual void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
-        const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr);
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr);
     virtual void integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
-        const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+        const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr);
 
     /*!
      \brief Build all integrals and linearizations on a 2D slave /
@@ -149,14 +149,14 @@ namespace CONTACT
      */
     void integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element& sele, Mortar::Element& mele,
         Mortar::IntElement& sintele, Mortar::IntElement& mintele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn);
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn);
 
     /*!
      \brief ....
 
      */
     void integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element& sele, Mortar::Element& lsele,
-        Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
+        Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
         const Epetra_Comm& comm);
 
     /*!
@@ -164,7 +164,7 @@ namespace CONTACT
 
      */
     void integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element& mele, Mortar::Element& lele,
-        Mortar::Element& sele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
+        Mortar::Element& sele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
         const Epetra_Comm& comm);
 
     /*!

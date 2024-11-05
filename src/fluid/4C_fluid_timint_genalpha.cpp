@@ -20,10 +20,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntGenAlpha::TimIntGenAlpha(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       alphaM_(params_->get<double>("alpha_M")),
       alphaF_(params_->get<double>("alpha_F")),
@@ -193,11 +193,11 @@ void FLD::TimIntGenAlpha::gen_alpha_update_acceleration()
   }
   else
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccn =
+    std::shared_ptr<Core::LinAlg::Vector<double>> onlyaccn =
         velpressplitter_->extract_other_vector(*accn_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyveln =
+    std::shared_ptr<Core::LinAlg::Vector<double>> onlyveln =
         velpressplitter_->extract_other_vector(*veln_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyvelnp =
+    std::shared_ptr<Core::LinAlg::Vector<double>> onlyvelnp =
         velpressplitter_->extract_other_vector(*velnp_);
 
     Core::LinAlg::Vector<double> onlyaccnp(onlyaccn->Map());
@@ -237,9 +237,9 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
   }
   else
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccn =
+    std::shared_ptr<Core::LinAlg::Vector<double>> onlyaccn =
         velpressplitter_->extract_other_vector(*accn_);
-    Teuchos::RCP<Core::LinAlg::Vector<double>> onlyaccnp =
+    std::shared_ptr<Core::LinAlg::Vector<double>> onlyaccnp =
         velpressplitter_->extract_other_vector(*accnp_);
 
     Core::LinAlg::Vector<double> onlyaccam(onlyaccnp->Map());
@@ -274,8 +274,8 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values()
  | for given vectors at n and n+1                           ghamm 04/14 |
  *----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vecnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& vecn)
+    std::shared_ptr<Core::LinAlg::Vector<double>>& vecnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>>& vecn)
 {
   // compute intermediate values for given vectors
   //
@@ -289,10 +289,10 @@ void FLD::TimIntGenAlpha::gen_alpha_intermediate_values(
   Epetra_Map vecmap(vecnp->Map().NumGlobalElements(), vecnp->Map().NumMyElements(),
       vecnp->Map().MyGlobalElements(), 0, vecnp->Map().Comm());
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vecam = Core::LinAlg::create_vector(vecmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> vecam = Core::LinAlg::create_vector(vecmap, true);
   vecam->Update((alphaM_), *vecnp, (1.0 - alphaM_), *vecn, 0.0);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vecaf = Core::LinAlg::create_vector(vecmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> vecaf = Core::LinAlg::create_vector(vecmap, true);
   vecaf->Update((alphaF_), *vecnp, (1.0 - alphaF_), *vecn, 0.0);
 
   // store computed intermediate values in given vectors
@@ -337,11 +337,11 @@ double FLD::TimIntGenAlpha::set_time_fac() { return alphaF_; }
 | calculate acceleration                                       bk 12/13 |
 *-----------------------------------------------------------------------*/
 void FLD::TimIntGenAlpha::calculate_acceleration(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,
+    const std::shared_ptr<Core::LinAlg::Vector<double>> accnp)
 {
   // do nothing: new acceleration is calculated at beginning of next time step
 
@@ -382,12 +382,13 @@ void FLD::TimIntGenAlpha::update_velaf_gen_alpha()
 /*----------------------------------------------------------------------*
  | paraview output of filtered velocity                  rasthofer 02/11|
  *----------------------------------------------------------------------*/
-void FLD::TimIntGenAlpha::outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec)
+void FLD::TimIntGenAlpha::outputof_filtered_vel(
+    std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+    std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> row_finescaleveltmp;
-  row_finescaleveltmp = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> row_finescaleveltmp;
+  row_finescaleveltmp = std::make_shared<Core::LinAlg::Vector<double>>(*dofrowmap, true);
 
   // get fine scale velocity
   if (scale_sep_ == Inpar::FLUID::algebraic_multigrid_operator)
@@ -435,19 +436,18 @@ void FLD::TimIntGenAlpha::set_element_time_parameter()
   eleparams.set("gamma", gamma_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   return;
 }
 
 /*----------------------------------------------------------------------*
 | extrapolate end point                                        bk 12/13 |
 *-----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FLD::TimIntGenAlpha::extrapolate_end_point(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vecn,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vecm)
+std::shared_ptr<Core::LinAlg::Vector<double>> FLD::TimIntGenAlpha::extrapolate_end_point(
+    std::shared_ptr<Core::LinAlg::Vector<double>> vecn,
+    std::shared_ptr<Core::LinAlg::Vector<double>> vecm)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vecnp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> vecnp =
       FluidImplicitTimeInt::extrapolate_end_point(vecn, vecm);
 
   // For gen-alpha extrapolate mid-point quantities to end-point.

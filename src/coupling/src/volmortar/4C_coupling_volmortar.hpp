@@ -18,7 +18,8 @@
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -118,14 +119,14 @@ namespace Coupling::VolMortar
      \brief Constructor
 
      */
-    VolMortarCoupl(int dim, Teuchos::RCP<Core::FE::Discretization> dis1,
-        Teuchos::RCP<Core::FE::Discretization> dis2,
+    VolMortarCoupl(int dim, std::shared_ptr<Core::FE::Discretization> dis1,
+        std::shared_ptr<Core::FE::Discretization> dis2,
         const Teuchos::ParameterList& volmortar_parameters,
         const Teuchos::ParameterList& cut_parameters, std::vector<int>* coupleddof12 = nullptr,
         std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
         std::pair<int, int>* dofset21 = nullptr,
-        Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
-            Teuchos::null);
+        std::shared_ptr<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
+            nullptr);
 
     /*!
      \brief Destructor
@@ -148,13 +149,13 @@ namespace Coupling::VolMortar
      \brief get projection matrix 2 --> 1
 
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_p_matrix12() { return p12_; };
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_p_matrix12() { return p12_; };
 
     /*!
      \brief get projection matrix 1 --> 2
 
      */
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_p_matrix21() { return p21_; };
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_p_matrix21() { return p21_; };
 
     /*!
      \brief assign materials
@@ -187,8 +188,8 @@ namespace Coupling::VolMortar
      \brief Build maps based n coupling dofs
 
      */
-    virtual void build_maps(Teuchos::RCP<Core::FE::Discretization>& dis,
-        Teuchos::RCP<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof,
+    virtual void build_maps(std::shared_ptr<Core::FE::Discretization>& dis,
+        std::shared_ptr<const Epetra_Map>& dofmap, const std::vector<int>* coupleddof,
         const int* nodes, int numnode, int dofset);
 
     /*!
@@ -196,7 +197,7 @@ namespace Coupling::VolMortar
 
      */
     virtual std::map<int, Core::LinAlg::Matrix<9, 2>> calc_background_dops(
-        Teuchos::RCP<Core::FE::Discretization> searchdis);
+        std::shared_ptr<Core::FE::Discretization> searchdis);
 
     /*!
      \brief calc dops for one element
@@ -208,7 +209,7 @@ namespace Coupling::VolMortar
      \brief center triangulation (if delaunay fails)
 
      */
-    virtual bool center_triangulation(std::vector<Teuchos::RCP<Mortar::IntCell>>& cells,
+    virtual bool center_triangulation(std::vector<std::shared_ptr<Mortar::IntCell>>& cells,
         std::vector<Mortar::Vertex>& clip, double tol);
 
     /*!
@@ -247,7 +248,7 @@ namespace Coupling::VolMortar
 
      */
     virtual void create_trafo_operator(Core::Elements::Element& ele,
-        Teuchos::RCP<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore);
+        std::shared_ptr<Core::FE::Discretization> searchdis, bool dis, std::set<int>& donebefore);
 
     /*!
      \brief define vertices for 2D polygon clipping (master)
@@ -267,20 +268,20 @@ namespace Coupling::VolMortar
      \brief create integration cells for 2D volmortar
 
      */
-    virtual bool delaunay_triangulation(std::vector<Teuchos::RCP<Mortar::IntCell>>& cells,
+    virtual bool delaunay_triangulation(std::vector<std::shared_ptr<Mortar::IntCell>>& cells,
         std::vector<Mortar::Vertex>& clip, double tol);
 
     /*!
      \brief Get discretization of Omega_1
 
      */
-    virtual Teuchos::RCP<const Core::FE::Discretization> discret1() const { return dis1_; }
+    virtual std::shared_ptr<const Core::FE::Discretization> discret1() const { return dis1_; }
 
     /*!
      \brief Get discretization of Omega_2
 
      */
-    virtual Teuchos::RCP<Core::FE::Discretization> discret2() const { return dis2_; }
+    virtual std::shared_ptr<Core::FE::Discretization> discret2() const { return dis2_; }
 
     /*!
      \brief Evaluate element-based
@@ -328,15 +329,15 @@ namespace Coupling::VolMortar
      \brief Initialize search tree
 
      */
-    virtual Teuchos::RCP<Core::Geo::SearchTree> init_search(
-        Teuchos::RCP<Core::FE::Discretization> searchdis);
+    virtual std::shared_ptr<Core::Geo::SearchTree> init_search(
+        std::shared_ptr<Core::FE::Discretization> searchdis);
 
     /*!
      \brief perform 2D integration
 
      */
     virtual void integrate_2d(Core::Elements::Element& sele, Core::Elements::Element& mele,
-        std::vector<Teuchos::RCP<Mortar::IntCell>>& cells);
+        std::vector<std::shared_ptr<Mortar::IntCell>>& cells);
 
     /*!
      \brief perform 3D element-wise integration
@@ -377,7 +378,7 @@ namespace Coupling::VolMortar
 
      */
     virtual void integrate_3d_cell(Core::Elements::Element& sele, Core::Elements::Element& mele,
-        std::vector<Teuchos::RCP<Cell>>& cells);
+        std::vector<std::shared_ptr<Cell>>& cells);
 
     /*!
      \brief perform 3D integration of created cells
@@ -429,7 +430,7 @@ namespace Coupling::VolMortar
 
      */
     virtual std::vector<int> search(Core::Elements::Element& ele,
-        Teuchos::RCP<Core::Geo::SearchTree> SearchTree,
+        std::shared_ptr<Core::Geo::SearchTree> SearchTree,
         std::map<int, Core::LinAlg::Matrix<9, 2>>& currentKDOPs);
 
     // don't want = operator and cctor
@@ -445,46 +446,46 @@ namespace Coupling::VolMortar
     std::pair<int, int>
         dofset21_;  /// dofset number dofs of Omega_1 and Omega_2 in P Omega_1 -> Omega_2
 
-    Teuchos::RCP<Epetra_Comm> comm_;  /// communicator
-    int myrank_;                      /// my proc id
+    std::shared_ptr<Epetra_Comm> comm_;  /// communicator
+    int myrank_;                         /// my proc id
 
     //@}
 
     //! @name discretizations
-    Teuchos::RCP<Core::FE::Discretization> dis1_;  /// the discretization Omega_1
-    Teuchos::RCP<Core::FE::Discretization> dis2_;  /// the discretization Omega_2
+    std::shared_ptr<Core::FE::Discretization> dis1_;  /// the discretization Omega_1
+    std::shared_ptr<Core::FE::Discretization> dis2_;  /// the discretization Omega_2
     //@}
 
     //! @name mortar matrices and projector
     // s1 = D1^-1 * M12 * s2  = P12 * s2
     // s2 = D2^-1 * M21 * s1  = P21 * s1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> d1_;   /// global Mortar matrix D1  for Omega_1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> d2_;   /// global Mortar matrix D2  for Omega_2
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> m12_;  /// global Mortar matrix M12 for Omega_1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> m21_;  /// global Mortar matrix M21 for Omega_2
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix> d1_;   /// global Mortar matrix D1  for Omega_1
+    std::shared_ptr<Core::LinAlg::SparseMatrix> d2_;   /// global Mortar matrix D2  for Omega_2
+    std::shared_ptr<Core::LinAlg::SparseMatrix> m12_;  /// global Mortar matrix M12 for Omega_1
+    std::shared_ptr<Core::LinAlg::SparseMatrix> m21_;  /// global Mortar matrix M21 for Omega_2
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         p12_;  /// global Mortar projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         p21_;  /// global Mortar projection matrix P Omega_1 -> Omega_2
     //@}
 
     //! @name trafo matrices for quadr. elements
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> t1_;  /// global trafo matrix for Omega_1
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> t2_;  /// global trafo matrix for Omega_2
+    std::shared_ptr<Core::LinAlg::SparseMatrix> t1_;  /// global trafo matrix for Omega_1
+    std::shared_ptr<Core::LinAlg::SparseMatrix> t2_;  /// global trafo matrix for Omega_2
     //@}
 
     //! @name maps
-    Teuchos::RCP<const Epetra_Map>
+    std::shared_ptr<const Epetra_Map>
         p12_dofrowmap_;  /// row map of projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<const Epetra_Map>
+    std::shared_ptr<const Epetra_Map>
         p12_dofdomainmap_;  /// domain map of projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<const Epetra_Map>
+    std::shared_ptr<const Epetra_Map>
         p21_dofrowmap_;  /// row map of projection matrix P Omega_1 -> Omega_2
-    Teuchos::RCP<const Epetra_Map>
+    std::shared_ptr<const Epetra_Map>
         p21_dofdomainmap_;  /// domain map of projection matrix P Omega_1 -> Omega_2
-    Teuchos::RCP<const Epetra_Map>
+    std::shared_ptr<const Epetra_Map>
         p12_dofcolmap_;  /// column map of projection matrix P Omega_2 -> Omega_1
-    Teuchos::RCP<const Epetra_Map>
+    std::shared_ptr<const Epetra_Map>
         p21_dofcolmap_;  /// column map of projection matrix P Omega_1 -> Omega_2
     //@}
 
@@ -508,20 +509,20 @@ namespace Coupling::VolMortar
     DualQuad dualquad_;  /// type of quadratic weighting interpolation
 
     /// strategy for element information transfer (mainly material, but can be more)
-    Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy_;
+    std::shared_ptr<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy_;
 
     //! @name mesh initialization
 
     // maps for mesh init
-    Teuchos::RCP<Epetra_Map> xa_;
-    Teuchos::RCP<Epetra_Map> xb_;
-    Teuchos::RCP<Epetra_Map> mergedmap_;
+    std::shared_ptr<Epetra_Map> xa_;
+    std::shared_ptr<Epetra_Map> xb_;
+    std::shared_ptr<Epetra_Map> mergedmap_;
 
     // mortar matrices for mesh init
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix_xa_;  /// global Mortar matrix D for field A
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrix_xb_;  /// global Mortar matrix D for field B
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_xa_;  /// global Mortar matrix M for field A
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mmatrix_xb_;  /// global Mortar matrix M for field B
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix_xa_;  /// global Mortar matrix D for field A
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrix_xb_;  /// global Mortar matrix D for field B
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix_xa_;  /// global Mortar matrix M for field A
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mmatrix_xb_;  /// global Mortar matrix M for field B
 
     //@}
   };

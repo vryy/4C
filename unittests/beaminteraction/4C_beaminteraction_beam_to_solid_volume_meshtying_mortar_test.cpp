@@ -38,7 +38,7 @@ namespace
       Teuchos::ParameterList line_to_volume_params_list;
       Inpar::GEOMETRYPAIR::set_valid_parameters_line_to3_d(line_to_volume_params_list);
       evaluation_data_ =
-          Teuchos::make_rcp<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
+          std::make_shared<GEOMETRYPAIR::LineTo3DEvaluationData>(line_to_volume_params_list);
     }
 
     /**
@@ -57,11 +57,11 @@ namespace
     {
       // Create the elements.
       const int dummy_node_ids[2] = {0, 1};
-      Teuchos::RCP<Core::Elements::Element> beam_element =
-          Teuchos::make_rcp<Discret::Elements::Beam3r>(0, 0);
+      std::shared_ptr<Core::Elements::Element> beam_element =
+          std::make_shared<Discret::Elements::Beam3r>(0, 0);
       beam_element->set_node_ids(2, dummy_node_ids);
-      Teuchos::RCP<Core::Elements::Element> solid_element =
-          Teuchos::make_rcp<Discret::Elements::SoHex8>(1, 0);
+      std::shared_ptr<Core::Elements::Element> solid_element =
+          std::make_shared<Discret::Elements::SoHex8>(1, 0);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);
@@ -73,8 +73,8 @@ namespace
       for (unsigned int i = 0; i < 9; i++) rotrefe[i] = q_beam_rot(i);
 
       // Cast beam element and set the hermitian interpolation.
-      Teuchos::RCP<Discret::Elements::Beam3r> beam_element_cast =
-          Teuchos::rcp_dynamic_cast<Discret::Elements::Beam3r>(beam_element, true);
+      std::shared_ptr<Discret::Elements::Beam3r> beam_element_cast =
+          std::dynamic_pointer_cast<Discret::Elements::Beam3r>(beam_element);
       beam_element_cast->set_centerline_hermite(true);
       beam_element_cast->set_up_reference_geometry<3, 2, 2>(xrefe, rotrefe);
 
@@ -83,7 +83,7 @@ namespace
       pair_elements.push_back(&(*beam_element));
       pair_elements.push_back(&(*solid_element));
       contact_pair.create_geometry_pair(pair_elements[0], pair_elements[1], evaluation_data_);
-      contact_pair.init(Teuchos::null, pair_elements);
+      contact_pair.init(nullptr, pair_elements);
 
       // Evaluate the local matrices.
       Core::LinAlg::Matrix<LambdaType::n_dof_, BeamType::n_dof_, double> local_D(false);
@@ -119,7 +119,7 @@ namespace
 
 
     //! Evaluation data container for geometry pairs.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData> evaluation_data_;
   };
 
   /**

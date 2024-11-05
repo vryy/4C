@@ -102,7 +102,7 @@ namespace Discret
 
       \param nummat (in): number of requested material
       */
-      virtual Teuchos::RCP<Mat::So3Material> solid_material(int nummat = 0) const;
+      virtual std::shared_ptr<Mat::So3Material> solid_material(int nummat = 0) const;
 
       /*!
        * @brief Evaluate Cauchy stress contracted with the normal vector and another direction
@@ -266,13 +266,13 @@ namespace Discret
        *
        *  \author hiermeier
        *  \date 04/16 */
-      inline bool is_params_interface() const override { return (not interface_ptr_.is_null()); }
+      inline bool is_params_interface() const override { return (interface_ptr_ != nullptr); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      Teuchos::RCP<Core::Elements::ParamsInterface> params_interface_ptr() override;
+      std::shared_ptr<Core::Elements::ParamsInterface> params_interface_ptr() override;
 
      protected:
       /** \brief get access to the interface
@@ -323,7 +323,7 @@ namespace Discret
       /** \brief interface ptr
        *
        *  data exchange between the element and the time integrator. */
-      Teuchos::RCP<Core::Elements::ParamsInterface> interface_ptr_;
+      std::shared_ptr<Core::Elements::ParamsInterface> interface_ptr_;
 
       //! Flag of the status of the material post setup routine
       bool material_post_setup_;

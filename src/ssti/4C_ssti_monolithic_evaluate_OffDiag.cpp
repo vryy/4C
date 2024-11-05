@@ -29,14 +29,14 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapstructure,
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
-    Teuchos::RCP<const Epetra_Map> full_map_structure,
-    Teuchos::RCP<const Epetra_Map> full_map_thermo,
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying,
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure,
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo)
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapstructure,
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapthermo,
+    std::shared_ptr<const Epetra_Map> full_map_structure,
+    std::shared_ptr<const Epetra_Map> full_map_thermo,
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssti_structure_meshtying,
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo,
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure,
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> thermo)
     : blockmapstructure_(std::move(blockmapstructure)),
       blockmapthermo_(std::move(blockmapthermo)),
       full_map_structure_(std::move(full_map_structure)),
@@ -51,7 +51,7 @@ SSTI::ThermoStructureOffDiagCoupling::ThermoStructureOffDiagCoupling(
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_structure_domain(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> thermostructuredomain)
+    std::shared_ptr<Core::LinAlg::SparseOperator> thermostructuredomain)
 {
   // initialize thermo-structure matrix block
   thermostructuredomain->zero();
@@ -74,7 +74,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
       1,  // column assembly based on number of dofset associated with structural dofs on thermo
           // discretization
       thermostructuredomain,  // thermo-structure matrix block
-      Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr, nullptr, nullptr, nullptr);
 
   thermo_->scatra_field()->discretization()->evaluate(eleparams, strategyscatrastructure);
 
@@ -88,17 +88,17 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
   thermostructureinterface.zero();
 
   // slave and master matrix for evaluation of conditions
-  Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix(Teuchos::null);
-  Teuchos::RCP<Core::LinAlg::SparseOperator> mastermatrix(Teuchos::null);
+  std::shared_ptr<Core::LinAlg::SparseOperator> slavematrix(nullptr);
+  std::shared_ptr<Core::LinAlg::SparseOperator> mastermatrix(nullptr);
   switch (thermo_->scatra_field()->matrix_type())
   {
     case Core::LinAlg::MatrixType::block_condition:
     {
-      slavematrix = Teuchos::make_rcp<
+      slavematrix = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true);
-      mastermatrix = Teuchos::make_rcp<
+      mastermatrix = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           *blockmapstructure_, meshtying_strategy_thermo_->block_maps_master(), 81, false, true);
@@ -106,9 +106,9 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
     }
     case Core::LinAlg::MatrixType::sparse:
     {
-      slavematrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      slavematrix = std::make_shared<Core::LinAlg::SparseMatrix>(
           *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true);
-      mastermatrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+      mastermatrix = std::make_shared<Core::LinAlg::SparseMatrix>(
           *meshtying_strategy_thermo_->coupling_adapter()->master_dof_map(), 27, false, true);
       break;
     }
@@ -154,7 +154,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_thermo_struct
 /*-----------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_thermo_domain(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structurethermodomain)
+    std::shared_ptr<Core::LinAlg::SparseOperator> structurethermodomain)
 {
   structurethermodomain->zero();
 
@@ -177,7 +177,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
       2,  // column assembly based on number of dofset associated with thermo dofs on structural
           // discretization
       structurethermodomain,  // structure-thermo matrix block
-      Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      nullptr, nullptr, nullptr, nullptr);
 
   structure_->discretization()->evaluate(eleparams, strategystructurescatra);
 
@@ -190,8 +190,8 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_off_diag_block_structure_the
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure_interface(
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> slavematrix,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>& mastermatrix)
+    std::shared_ptr<const Core::LinAlg::SparseOperator> slavematrix,
+    std::shared_ptr<Core::LinAlg::SparseOperator>& mastermatrix)
 {
   mastermatrix->zero();
 
@@ -202,9 +202,9 @@ void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure
       const int numberthermoblocks = thermo_->scatra_field()->block_maps()->num_maps();
 
       auto blockslavematrix =
-          Teuchos::rcp_dynamic_cast<const Core::LinAlg::BlockSparseMatrixBase>(slavematrix);
+          std::dynamic_pointer_cast<const Core::LinAlg::BlockSparseMatrixBase>(slavematrix);
       auto blockmastermatrix =
-          Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(mastermatrix);
+          std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(mastermatrix);
 
       // initialize auxiliary system matrix for linearizations of master-side scatra fluxes w.r.t.
       // master-side structural dofs
@@ -247,8 +247,8 @@ void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure
     case Core::LinAlg::MatrixType::sparse:
     {
       auto sparseslavematrix =
-          Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(slavematrix);
-      auto sparsemastermatrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mastermatrix);
+          std::dynamic_pointer_cast<const Core::LinAlg::SparseMatrix>(slavematrix);
+      auto sparsemastermatrix = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(mastermatrix);
 
       // derive linearizations of master-side scatra fluxes w.r.t. master-side structural dofs and
       // assemble into auxiliary system matrix
@@ -280,7 +280,7 @@ void SSTI::ThermoStructureOffDiagCoupling::copy_slave_to_master_thermo_structure
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_slave_side(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> slavematrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> slavematrix)
 {
   Teuchos::ParameterList condparams;
 
@@ -294,17 +294,17 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
 
   thermo_->scatra_field()->add_time_integration_specific_vectors();
 
-  Teuchos::RCP<Core::LinAlg::SparseOperator> evaluate_matrix;
+  std::shared_ptr<Core::LinAlg::SparseOperator> evaluate_matrix;
   if (thermo_->scatra_field()->matrix_type() == Core::LinAlg::MatrixType::sparse)
   {
-    evaluate_matrix = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+    evaluate_matrix = std::make_shared<Core::LinAlg::SparseMatrix>(
         *meshtying_strategy_thermo_->coupling_adapter()->slave_dof_map(), 27, false, true);
   }
   else
   {
-    evaluate_matrix = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true);
+    evaluate_matrix =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            *blockmapstructure_, meshtying_strategy_thermo_->block_maps_slave(), 81, false, true);
   }
 
   // create strategy for assembly of auxiliary system matrix
@@ -313,7 +313,7 @@ void SSTI::ThermoStructureOffDiagCoupling::evaluate_thermo_structure_interface_s
           // thermo discretization
       1,  // column assembly based on number of dofset associated with structural dofs on
           // thermo discretization
-      evaluate_matrix, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      evaluate_matrix, nullptr, nullptr, nullptr, nullptr);
 
   // evaluate interface coupling
   for (auto kinetics_slave_cond :

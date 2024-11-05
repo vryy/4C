@@ -54,7 +54,7 @@ namespace Mat
       //@{
 
       /// provide access to material/summand by its ID
-      Teuchos::RCP<const Mat::Elastic::Summand> material_by_id(
+      std::shared_ptr<const Mat::Elastic::Summand> material_by_id(
           const int id  ///< ID to look for in collection of summands
       ) const;
 
@@ -102,7 +102,7 @@ namespace Mat
 
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
       //@}
 
     };  // class PlasticElastHyper
@@ -186,9 +186,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<PlasticElastHyper>(*this);
+      return std::make_shared<PlasticElastHyper>(*this);
     }
 
     /// material mass density
@@ -447,7 +447,7 @@ namespace Mat
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    virtual Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> d_hep_d_teas()
+    virtual std::shared_ptr<std::vector<Core::LinAlg::SerialDenseVector>> d_hep_d_teas()
     {
       return dHepDissdTeas_;
     }
@@ -590,20 +590,20 @@ namespace Mat
     /// use the material to transfer linearization from the structural to the thermo element
 
     /// Elasto-plastic heating and mechanical dissipation at each gp
-    Teuchos::RCP<std::vector<double>> HepDiss_;
+    std::shared_ptr<std::vector<double>> HepDiss_;
 
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. nodal
     /// displacements compute the complete derivative w.r.t. nodal displacements (not only RCG) to
     /// make sure, that the same element technology is used.
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> dHepDissdd_;
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseVector>> dHepDissdd_;
 
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. gp
     /// temperature
-    Teuchos::RCP<std::vector<double>> dHepDissdT_;
+    std::shared_ptr<std::vector<double>> dHepDissdT_;
 
     /// derivative of Elasto-plastic heating and mechanical dissipation at each gp w.r.t. to element
     /// temperature this is an additional term to dHepDissdT_ that only appears in EAS elements
-    Teuchos::RCP<std::vector<Core::LinAlg::SerialDenseVector>> dHepDissdTeas_;
+    std::shared_ptr<std::vector<Core::LinAlg::SerialDenseVector>> dHepDissdTeas_;
 
     //  private:
 

@@ -43,7 +43,7 @@ namespace Solid
 
       //! get pointer to force vector at time level n+1 (full structural map)
       //! interface part is inserted in Adapter::PASIStructureWrapper
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& get_interface_force_np_ptr()
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& get_interface_force_np_ptr()
       {
         return interface_force_np_ptr_;
       };
@@ -141,20 +141,20 @@ namespace Solid
       void post_output() override { return; };
 
       //! [derived]
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! [derived]
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
       //! @}
 
      private:
       //! pasi interface force at \f$t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> interface_force_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> interface_force_np_ptr_;
     };
 
   }  // namespace ModelEvaluator

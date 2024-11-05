@@ -25,7 +25,7 @@ namespace ScaTra
   {
    public:
     //! constructor
-    HDGResultTest(Teuchos::RCP<ScaTraTimIntImpl> timint);
+    HDGResultTest(std::shared_ptr<ScaTraTimIntImpl> timint);
 
    private:
     //! get nodal result to be tested
@@ -34,9 +34,9 @@ namespace ScaTra
     ) const override;
 
     //! time integrator
-    Teuchos::RCP<const TimIntHDG> scatratiminthdg_;
+    std::shared_ptr<const TimIntHDG> scatratiminthdg_;
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors_;
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> errors_;
 
   };  // class HDGResultTest : public ScaTraResultTest
 }  // namespace ScaTra

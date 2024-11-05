@@ -30,17 +30,17 @@ void Thermo::TimIntOneStepTheta::verify_coeff()
  *----------------------------------------------------------------------*/
 Thermo::TimIntOneStepTheta::TimIntOneStepTheta(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(ioparams, tdynparams, xparams, actdis, solver, output),
       theta_(tdynparams.sublist("ONESTEPTHETA").get<double>("THETA")),
-      tempt_(Teuchos::null),
-      fint_(Teuchos::null),
-      fintn_(Teuchos::null),
-      fcap_(Teuchos::null),
-      fcapn_(Teuchos::null),
-      fext_(Teuchos::null),
-      fextn_(Teuchos::null)
+      tempt_(nullptr),
+      fint_(nullptr),
+      fintn_(nullptr),
+      fcap_(nullptr),
+      fcapn_(nullptr),
+      fext_(nullptr),
+      fextn_(nullptr)
 {
   // info to user
   if (myrank_ == 0)
@@ -254,7 +254,7 @@ void Thermo::TimIntOneStepTheta::update_iter_incrementally()
   // the Dirichlet DOFs as well. Thus we need to protect those
   // DOFs of overwriting; they already hold the
   // correctly 'predicted', final values.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> aux =
+  std::shared_ptr<Core::LinAlg::Vector<double>> aux =
       Core::LinAlg::create_vector(*discret_->dof_row_map(), false);
 
   // new end-point temperatures
@@ -340,7 +340,7 @@ void Thermo::TimIntOneStepTheta::update_step_element()
   p.set<Thermo::Action>("action", Thermo::calc_thermo_update_istep);
   // go to elements
   discret_->set_state(0, "temperature", tempn_);
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
 
 }  // update_step_element()
 
@@ -365,7 +365,7 @@ void Thermo::TimIntOneStepTheta::read_restart_force()
  | write internal and external forces for restart            dano 07/13 |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::write_restart_force(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);
@@ -381,11 +381,11 @@ void Thermo::TimIntOneStepTheta::write_restart_force(
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::apply_force_tang_internal(const double time,  //!< evaluation time
     const double dt,                                                           //!< step size
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fcap,         //!< capacity force
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint,         //!< internal force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< residual temperatures
+    std::shared_ptr<Core::LinAlg::Vector<double>> fcap,         //!< capacity force
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint,         //!< internal force
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
 )
 {
   // create the parameters for the discretization
@@ -407,9 +407,9 @@ void Thermo::TimIntOneStepTheta::apply_force_tang_internal(const double time,  /
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::apply_force_internal(const double time,  //!< evaluation time
     const double dt,                                                      //!< step size
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,                //!< temperature state
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fint          //!< internal force
+    const std::shared_ptr<Core::LinAlg::Vector<double>> temp,             //!< temperature state
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tempi,  //!< incremental temperatures
+    std::shared_ptr<Core::LinAlg::Vector<double>> fint          //!< internal force
 )
 {
   // create the parameters for the discretization
@@ -428,10 +428,10 @@ void Thermo::TimIntOneStepTheta::apply_force_internal(const double time,  //!< e
  | evaluate the convective boundary condition                dano 12/10 |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntOneStepTheta::apply_force_external_conv(const double time,  //!< evaluation time
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tempn,  //!< old temperature state T_n
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fext,         //!< external force
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tempn,  //!< old temperature state T_n
+    const std::shared_ptr<Core::LinAlg::Vector<double>> temp,   //!< temperature state T_n+1
+    std::shared_ptr<Core::LinAlg::Vector<double>> fext,         //!< external force
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tang            //!< tangent matrix
 )
 {
   // create the parameters for the discretization

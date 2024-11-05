@@ -20,9 +20,7 @@ FOUR_C_NAMESPACE_OPEN
  | constructor                                               fang 12/14 |
  *----------------------------------------------------------------------*/
 ScaTra::MeshtyingStrategyFluid::MeshtyingStrategyFluid(ScaTra::ScaTraTimIntImpl* scatratimint)
-    : MeshtyingStrategyBase(scatratimint),
-      meshtying_(Teuchos::null),
-      type_(Inpar::FLUID::no_meshtying)
+    : MeshtyingStrategyBase(scatratimint), meshtying_(nullptr), type_(Inpar::FLUID::no_meshtying)
 {
   return;
 }  // ScaTra::MeshtyingStrategyFluid::MeshtyingStrategyFluid
@@ -100,7 +98,7 @@ void ScaTra::MeshtyingStrategyFluid::init_meshtying()
         "do it!");
 
   // setup meshtying
-  meshtying_ = Teuchos::make_rcp<FLD::Meshtying>(scatratimint_->discretization(),
+  meshtying_ = std::make_shared<FLD::Meshtying>(scatratimint_->discretization(),
       *(scatratimint_->solver()), type_, Global::Problem::instance()->n_dim());
 
   return;
@@ -110,7 +108,7 @@ void ScaTra::MeshtyingStrategyFluid::init_meshtying()
 /*----------------------------------------------------------------------*
  | initialize system matrix for fluid-fluid meshtying        fang 12/14 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyFluid::init_system_matrix()
+std::shared_ptr<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyFluid::init_system_matrix()
     const
 {
   return meshtying_->init_system_matrix();
@@ -121,11 +119,11 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::MeshtyingStrategyFluid::init_
  | solve linear system of equations for fluid-fluid meshtying   fang 12/14 |
  *-------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluid::solve(
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,         //!< state vector at time n+1
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,                //!< solver
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
     const int iteration,  //!< number of current Newton-Raphson iteration
     Core::LinAlg::SolverParams& solver_params) const
 {
@@ -141,7 +139,7 @@ void ScaTra::MeshtyingStrategyFluid::solve(
  *-------------------------------------------------------------------------*/
 const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyFluid::solver() const
 {
-  if (scatratimint_->solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
+  if (scatratimint_->solver() == nullptr) FOUR_C_THROW("Invalid linear solver!");
   return *scatratimint_->solver();
 }
 
@@ -151,7 +149,7 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyFluid::solver() const
  *------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluid::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStd>(
+  convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStd>(
       scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 
   return;

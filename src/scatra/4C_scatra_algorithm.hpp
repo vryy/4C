@@ -103,10 +103,10 @@ namespace ScaTra
     const double natconvittol_;
 
     /// outer loop velocity increment for natural convection
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velincnp_;
 
     /// outer loop phi increment for natural convection
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phiincnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phiincnp_;
 
     /// start step for sampling of statistical data
     const int samstart_;

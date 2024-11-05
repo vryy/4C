@@ -39,15 +39,15 @@ void Solid::TimeInt::Implicit::setup()
   // ---------------------------------------------------------------------------
   // cast the base class integrator
   // ---------------------------------------------------------------------------
-  implint_ptr_ = Teuchos::rcp_dynamic_cast<Solid::IMPLICIT::Generic>(integrator_ptr());
+  implint_ptr_ = std::dynamic_pointer_cast<Solid::IMPLICIT::Generic>(integrator_ptr());
 
   // ---------------------------------------------------------------------------
   // build NOX interface
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<Solid::TimeInt::NoxInterface> noxinterface_ptr =
-      Teuchos::make_rcp<Solid::TimeInt::NoxInterface>();
+  std::shared_ptr<Solid::TimeInt::NoxInterface> noxinterface_ptr =
+      std::make_shared<Solid::TimeInt::NoxInterface>();
   noxinterface_ptr->init(
-      data_global_state_ptr(), implint_ptr_, dbc_ptr(), Teuchos::rcpFromRef(*this));
+      data_global_state_ptr(), implint_ptr_, dbc_ptr(), Core::Utils::shared_ptr_from_ref(*this));
   noxinterface_ptr->setup();
 
   // ---------------------------------------------------------------------------
@@ -70,7 +70,7 @@ void Solid::TimeInt::Implicit::setup()
               << std::endl;
   nlnsolver_ptr_ = Solid::Nln::SOLVER::build_nln_solver(nlnSolverType);
   nlnsolver_ptr_->init(data_global_state_ptr(), data_s_dyn_ptr(), noxinterface_ptr, implint_ptr_,
-      Teuchos::rcpFromRef(*this));
+      Core::Utils::shared_ptr_from_ref(*this));
   nlnsolver_ptr_->setup();
 
   // set setup flag
@@ -79,10 +79,11 @@ void Solid::TimeInt::Implicit::setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x)
+void Solid::TimeInt::Implicit::set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x)
 {
   integrator_ptr()->set_state(*x);
-  ::NOX::Epetra::Vector x_nox(x->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+  ::NOX::Epetra::Vector x_nox(
+      Teuchos::rcpFromRef(*x->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
   nln_solver().solution_group().setX(x_nox);
   set_state_in_sync_with_nox_group(true);
 }
@@ -151,9 +152,9 @@ Inpar::Solid::ConvergenceStatus Solid::TimeInt::Implicit::solve()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::TimeInt::Implicit::update_state_incrementally(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc)
 {
-  if (disiterinc == Teuchos::null) return;
+  if (disiterinc == nullptr) return;
 
   check_init_setup();
   throw_if_state_not_in_sync_with_nox_group();
@@ -163,12 +164,14 @@ void Solid::TimeInt::Implicit::update_state_incrementally(
   FOUR_C_ASSERT(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // cast away const-qualifier for building the Nox Vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> mutable_disiterinc =
-      Teuchos::rcpFromRef(*const_cast<Core::LinAlg::Vector<double>*>(disiterinc.get()));
+  std::shared_ptr<Core::LinAlg::Vector<double>> mutable_disiterinc =
+      Core::Utils::shared_ptr_from_ref(
+          *const_cast<Core::LinAlg::Vector<double>*>(disiterinc.get()));
 
   // wrap the displacement vector in a nox_epetra_Vector
   const ::NOX::Epetra::Vector nox_disiterinc_ptr(
-      mutable_disiterinc->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*mutable_disiterinc->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateView);
 
   // updated the state vector in the nox group
   grp_ptr->computeX(*grp_ptr, nox_disiterinc_ptr, 1.0);
@@ -185,7 +188,8 @@ void Solid::TimeInt::Implicit::determine_stress_strain() { impl_int().determine_
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::Implicit::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc)
+void Solid::TimeInt::Implicit::evaluate(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc)
 {
   update_state_incrementally(disiterinc);
 
@@ -223,10 +227,10 @@ const ::NOX::Abstract::Group& Solid::TimeInt::Implicit::get_solution_group() con
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<::NOX::Abstract::Group> Solid::TimeInt::Implicit::solution_group_ptr()
+std::shared_ptr<::NOX::Abstract::Group> Solid::TimeInt::Implicit::solution_group_ptr()
 {
   check_init_setup();
-  return Teuchos::rcpFromRef(nln_solver().solution_group());
+  return Core::Utils::shared_ptr_from_ref(nln_solver().solution_group());
 }
 
 /*----------------------------------------------------------------------------*

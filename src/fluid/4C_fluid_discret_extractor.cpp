@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | Constructor (public)                                  rasthofer 05/11|
  *----------------------------------------------------------------------*/
-FLD::FluidDiscretExtractor::FluidDiscretExtractor(
-    Teuchos::RCP<Core::FE::Discretization> actdis, const std::string& condition, bool yescondition)
+FLD::FluidDiscretExtractor::FluidDiscretExtractor(std::shared_ptr<Core::FE::Discretization> actdis,
+    const std::string& condition, bool yescondition)
     : parentdiscret_(actdis)
 {
   // get condition, i.e., do we have nodes that belong to a separate section of the domain
@@ -51,15 +51,15 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       XFEM::DiscretizationXWall* xwall = dynamic_cast<XFEM::DiscretizationXWall*>(&*actdis);
       if (nullptr != xwall)
-        childdiscret_ = Teuchos::make_rcp<XFEM::DiscretizationXWall>((std::string) "inflow",
-            Teuchos::RCP(parentdiscret_->get_comm().Clone()), actdis->n_dim());
+        childdiscret_ = std::make_shared<XFEM::DiscretizationXWall>((std::string) "inflow",
+            std::shared_ptr<Epetra_Comm>(parentdiscret_->get_comm().Clone()), actdis->n_dim());
       else
-        childdiscret_ = Teuchos::make_rcp<Core::FE::Discretization>((std::string) "inflow",
-            Teuchos::RCP(parentdiscret_->get_comm().Clone()), actdis->n_dim());
+        childdiscret_ = std::make_shared<Core::FE::Discretization>((std::string) "inflow",
+            std::shared_ptr<Epetra_Comm>(parentdiscret_->get_comm().Clone()), actdis->n_dim());
     }
     else  // dummy discretization
-      childdiscret_ = Teuchos::make_rcp<Core::FE::Discretization>(
-          (std::string) "none", Teuchos::RCP(parentdiscret_->get_comm().Clone()), actdis->n_dim());
+      childdiscret_ = std::make_shared<Core::FE::Discretization>((std::string) "none",
+          std::shared_ptr<Epetra_Comm>(parentdiscret_->get_comm().Clone()), actdis->n_dim());
 
     // get set of ids of all child nodes
     std::set<int> sepcondnodeset;
@@ -172,7 +172,8 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       Core::Nodes::Node* actnode = parentdiscret_->g_node(*id);
 
-      Teuchos::RCP<Core::Nodes::Node> sepcondnode = Teuchos::RCP(actnode->clone());
+      std::shared_ptr<Core::Nodes::Node> sepcondnode =
+          std::shared_ptr<Core::Nodes::Node>(actnode->clone());
 
       childdiscret_->add_node(sepcondnode);
     }
@@ -211,15 +212,16 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       // yes, we have a turbulent separation condition (for this element)
       if (found == true)
       {
-        Teuchos::RCP<Core::Elements::Element> sepcondele = Teuchos::RCP(actele->clone());
+        std::shared_ptr<Core::Elements::Element> sepcondele =
+            std::shared_ptr<Core::Elements::Element>(actele->clone());
 
         childdiscret_->add_element(sepcondele);
       }
     }
 
     // child discretization needs a full NodeRowMap and a NodeColMap
-    Teuchos::RCP<Epetra_Map> newrownodemap;
-    Teuchos::RCP<Epetra_Map> newcolnodemap;
+    std::shared_ptr<Epetra_Map> newrownodemap;
+    std::shared_ptr<Epetra_Map> newcolnodemap;
 
     {
       std::vector<int> rownodes;
@@ -232,7 +234,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // build noderowmap for new distribution of nodes
-      newrownodemap = Teuchos::make_rcp<Epetra_Map>(
+      newrownodemap = std::make_shared<Epetra_Map>(
           -1, rownodes.size(), rownodes.data(), 0, childdiscret_->get_comm());
 
       std::vector<int> colnodes;
@@ -243,7 +245,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         colnodes.push_back(*id);
       }
       // build nodecolmap for new distribution of nodes
-      newcolnodemap = Teuchos::make_rcp<Epetra_Map>(
+      newcolnodemap = std::make_shared<Epetra_Map>(
           -1, colnodes.size(), colnodes.data(), 0, childdiscret_->get_comm());
     }
 
@@ -343,7 +345,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // idea: use a transparent dofset and hand through the dof numbering
     // get dof form parent discretization for child discretization
-    childdiscret_->replace_dof_set(Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(
+    childdiscret_->replace_dof_set(std::make_shared<Core::DOFSets::TransparentDofSet>(
         parentdiscret_, true));  // true: parallel
     // and assign the dofs to nodes
     // remark: nothing is redistributed here
@@ -364,11 +366,11 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // this is the actual redistribution
     Epetra_Map sepcondelenodesmap(*childdiscret_->element_row_map());
     Teuchos::Time time("", true);
-    Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(parentdiscret_->get_comm().Clone());
+    std::shared_ptr<Epetra_Comm> comm(parentdiscret_->get_comm().Clone());
 
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
-    Teuchos::RCP<const Epetra_CrsGraph> sepcondnodemap =
+    std::shared_ptr<const Epetra_CrsGraph> sepcondnodemap =
         Core::Rebalance::build_graph(*childdiscret_, sepcondelenodesmap);
 
     Teuchos::ParameterList rebalanceParams;
@@ -402,9 +404,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       pbc.update_dofs_for_periodic_boundary_conditions();
 
       // get node to node coupling
-      col_pbcmapmastertoslave_ = Teuchos::make_rcp<std::map<int, std::vector<int>>>();
+      col_pbcmapmastertoslave_ = std::make_shared<std::map<int, std::vector<int>>>();
       col_pbcmapmastertoslave_ = pbc.return_all_coupled_col_nodes();
-      row_pbcmapmastertoslave_ = Teuchos::make_rcp<std::map<int, std::vector<int>>>();
+      row_pbcmapmastertoslave_ = std::make_shared<std::map<int, std::vector<int>>>();
       row_pbcmapmastertoslave_ = pbc.return_all_coupled_row_nodes();
     }
 
@@ -417,10 +419,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
 
     // idea: use a transparent dofset and hand through the dof numbering
     childdiscret_->replace_dof_set(
-        Teuchos::make_rcp<Core::DOFSets::TransparentDofSet>(parentdiscret_, true));
+        std::make_shared<Core::DOFSets::TransparentDofSet>(parentdiscret_, true));
 
     // set discretization writer
-    childdiscret_->set_writer(Teuchos::make_rcp<Core::IO::DiscretizationWriter>(childdiscret_,
+    childdiscret_->set_writer(std::make_shared<Core::IO::DiscretizationWriter>(childdiscret_,
         Global::Problem::instance()->output_control_file(),
         Global::Problem::instance()->spatial_approximation_type()));
 

@@ -38,7 +38,7 @@ void lubrication_dyn(int restart)
       Global::Problem::instance()->lubrication_dynamic_params();
 
   // access the lubrication discretization
-  Teuchos::RCP<Core::FE::Discretization> lubricationdis =
+  std::shared_ptr<Core::FE::Discretization> lubricationdis =
       Global::Problem::instance()->get_dis("lubrication");
 
   lubricationdis->fill_complete();
@@ -48,8 +48,8 @@ void lubrication_dyn(int restart)
     FOUR_C_THROW("No elements in the ---LUBRICATION ELEMENTS section");
 
   // add proxy of velocity related degrees of freedom to lubrication discretization
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
           Global::Problem::instance()->n_dim(), 0, 0, true);
   if (lubricationdis->add_dof_set(dofsetaux) != 1)
     FOUR_C_THROW("lub discretization has illegal number of dofsets!");
@@ -65,8 +65,8 @@ void lubrication_dyn(int restart)
         "DYNAMIC to a valid number!");
 
   // create instance of Lubrication basis algorithm
-  Teuchos::RCP<Lubrication::LubricationBaseAlgorithm> lubricationonly =
-      Teuchos::make_rcp<Lubrication::LubricationBaseAlgorithm>();
+  std::shared_ptr<Lubrication::LubricationBaseAlgorithm> lubricationonly =
+      std::make_shared<Lubrication::LubricationBaseAlgorithm>();
 
   // setup Lubrication basis algorithm
   lubricationonly->setup(

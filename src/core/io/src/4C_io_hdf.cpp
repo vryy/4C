@@ -75,7 +75,7 @@ void Core::IO::HDFReader::open(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_element_data(
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_element_data(
     int step, int new_proc_num, int my_id) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -100,7 +100,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_element_data(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/07
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_condition(
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_condition(
     const int step, const int new_proc_num, const int my_id, const std::string condname) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -112,7 +112,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_condition(
   const int start = 0;
   const int end = 1;
 
-  Teuchos::RCP<std::vector<char>> block;
+  std::shared_ptr<std::vector<char>> block;
   block = read_char_data(path.str(), start, end);
 
   return block;
@@ -124,7 +124,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_condition(
  * Note: this function should only be called when the HDFReader opened
  * the mesh files                                          gammi 05/08
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_knotvector(const int step) const
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_knotvector(const int step) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
 
@@ -136,7 +136,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_knotvector(const int s
   const int start = 0;
   const int end = 1;
 
-  Teuchos::RCP<std::vector<char>> block;
+  std::shared_ptr<std::vector<char>> block;
   block = read_char_data(path.str(), start, end);
 
   return block;
@@ -148,7 +148,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_knotvector(const int s
  * Note: this function should only be called when the HDFReader opened
  * the mesh files
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_node_data(
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_node_data(
     int step, int new_proc_num, int my_id) const
 {
   if (files_.size() == 0) FOUR_C_THROW("Tried to read data without opening any file");
@@ -164,7 +164,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_node_data(
   {
     calculate_range(new_proc_num, my_id, start, end);
   }
-  Teuchos::RCP<std::vector<char>> d = read_char_data(path.str(), start, end);
+  std::shared_ptr<std::vector<char>> d = read_char_data(path.str(), start, end);
   return d;
 }
 
@@ -173,12 +173,12 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_node_data(
  * and returns all the data in one vector. The data is assumed to by
  * of type char (private)
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_data(
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_char_data(
     std::string path, int start, int end) const
 {
   if (end == -1) end = num_output_proc_;
   hsize_t offset = 0;
-  Teuchos::RCP<std::vector<char>> data = Teuchos::make_rcp<std::vector<char>>();
+  std::shared_ptr<std::vector<char>> data = std::make_shared<std::vector<char>>();
   for (int i = start; i < end; ++i)
   {
     const char* cpath = path.c_str();
@@ -232,12 +232,12 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_data(
  * reads the dataset 'path' in all the files in the range [start,end)
  * and returns all the data in one std::vector<int> (private)
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> Core::IO::HDFReader::read_int_data(
+std::shared_ptr<std::vector<int>> Core::IO::HDFReader::read_int_data(
     std::string path, int start, int end) const
 {
   if (end == -1) end = num_output_proc_;
   int offset = 0;
-  Teuchos::RCP<std::vector<int>> data = Teuchos::make_rcp<std::vector<int>>();
+  std::shared_ptr<std::vector<int>> data = std::make_shared<std::vector<int>>();
   for (int i = start; i < end; ++i)
   {
     hid_t dataset = H5Dopen(files_[i], path.c_str());
@@ -288,12 +288,12 @@ Teuchos::RCP<std::vector<int>> Core::IO::HDFReader::read_int_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> Core::IO::HDFReader::read_double_data(
+std::shared_ptr<std::vector<double>> Core::IO::HDFReader::read_double_data(
     std::string path, int start, int end, std::vector<int>& lengths) const
 {
   if (end == -1) end = num_output_proc_;
   int offset = 0;
-  Teuchos::RCP<std::vector<double>> data = Teuchos::make_rcp<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> data = std::make_shared<std::vector<double>>();
   for (int i = start; i < end; ++i)
   {
     hid_t dataset = H5Dopen(files_[i], path.c_str());
@@ -344,7 +344,7 @@ Teuchos::RCP<std::vector<double>> Core::IO::HDFReader::read_double_data(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_result_data(
+std::shared_ptr<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_result_data(
     std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
@@ -354,14 +354,14 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_result
   int start, end;
   calculate_range(new_proc_num, my_id, start, end);
 
-  Teuchos::RCP<std::vector<int>> ids = read_int_data(id_path, start, end);
+  std::shared_ptr<std::vector<int>> ids = read_int_data(id_path, start, end);
   Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> res =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(map, columns, false);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> res =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(map, columns, false);
 
   std::vector<int> lengths;
-  Teuchos::RCP<std::vector<double>> values = read_double_data(value_path, start, end, lengths);
+  std::shared_ptr<std::vector<double>> values = read_double_data(value_path, start, end, lengths);
 
   if (static_cast<int>(values->size()) != res->MyLength() * res->NumVectors())
     FOUR_C_THROW("vector value size mismatch: %d != %d", values->size(),
@@ -387,9 +387,9 @@ Teuchos::RCP<Core::LinAlg::MultiVector<double>> Core::IO::HDFReader::read_result
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(std::string id_path,
-    std::string value_path, int columns, const Epetra_Comm& Comm,
-    Teuchos::RCP<Epetra_Map>& elemap) const
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(
+    std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm,
+    std::shared_ptr<Epetra_Map>& elemap) const
 {
   if (columns != 1) FOUR_C_THROW("got multivector, std::vector<char> expected");
 
@@ -400,18 +400,18 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_result_data_vec_char(s
   int start, end;
   calculate_range(new_proc_num, my_id, start, end);
 
-  Teuchos::RCP<std::vector<int>> ids = read_int_data(id_path, start, end);
+  std::shared_ptr<std::vector<int>> ids = read_int_data(id_path, start, end);
   // cout << "size of ids:" << (*ids).size() << endl;
   Epetra_Map map(-1, static_cast<int>(ids->size()), ids->data(), 0, Comm);
-  elemap = Teuchos::make_rcp<Epetra_Map>(map);
+  elemap = std::make_shared<Epetra_Map>(map);
 
-  Teuchos::RCP<std::vector<char>> res = read_char_data(value_path, start, end);
+  std::shared_ptr<std::vector<char>> res = read_char_data(value_path, start, end);
   return res;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_vector(
+std::shared_ptr<std::vector<char>> Core::IO::HDFReader::read_char_vector(
     std::string value_path, const Epetra_Comm& Comm) const
 {
   int new_proc_num = Comm.NumProc();
@@ -421,7 +421,7 @@ Teuchos::RCP<std::vector<char>> Core::IO::HDFReader::read_char_vector(
   int start, end;
   calculate_range(new_proc_num, my_id, start, end);
 
-  Teuchos::RCP<std::vector<char>> res = read_char_data(value_path, start, end);
+  std::shared_ptr<std::vector<char>> res = read_char_data(value_path, start, end);
   return res;
 }
 

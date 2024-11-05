@@ -35,7 +35,7 @@ Discret::Elements::ScaTraEleParameterStd::ScaTraEleParameterStd(
       is_conservative_(false),
       sphericalcoords_(false),
       calcflux_domain_(Inpar::ScaTra::flux_none),
-      writefluxids_(Teuchos::null),
+      writefluxids_(nullptr),
       fdcheck_(Inpar::ScaTra::fdcheck_none),
       fdcheckeps_(0.),
       fdchecktol_(0.),
@@ -106,7 +106,7 @@ void Discret::Elements::ScaTraEleParameterStd::set_parameters(Teuchos::Parameter
 
   //! vector containing ids of scalars for which flux vectors are calculated
   if (calcflux_domain_ != Inpar::ScaTra::flux_none)
-    writefluxids_ = parameters.get<Teuchos::RCP<std::vector<int>>>("writeflux_ids");
+    writefluxids_ = parameters.get<std::shared_ptr<std::vector<int>>>("writeflux_ids");
 
   // set parameters for stabilization
   Teuchos::ParameterList& stablist = parameters.sublist("stabilization");

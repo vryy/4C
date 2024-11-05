@@ -29,10 +29,10 @@ XFEM::XfluidSemiLagrange::XfluidSemiLagrange(
     const std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
         reconstr_method,                      /// reconstruction map for nodes and its dofsets
     Inpar::XFEM::XFluidTimeInt& timeIntType,  /// type of time integration
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> veln,  /// velocity at time t^n in col map
-    const double& dt,                                       /// time step size
-    const double& theta,                                    /// OST theta
-    bool initialize                                         /// is initialization?
+    const std::shared_ptr<Core::LinAlg::Vector<double>> veln,  /// velocity at time t^n in col map
+    const double& dt,                                          /// time step size
+    const double& theta,                                       /// OST theta
+    bool initialize                                            /// is initialization?
     )
     : XfluidStd(timeInt, reconstr_method, timeIntType, veln, dt, initialize),
       theta_default_(theta),
@@ -48,7 +48,7 @@ XFEM::XfluidSemiLagrange::XfluidSemiLagrange(
  * Semi-Lagrangean Back-Tracking main algorithm                                      schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::compute(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>& newRowVectorsn  // row
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>& newRowVectorsn  // row
 )
 {
   const int nsd = 3;  // 3 dimensions for a 3d fluid element
@@ -910,7 +910,7 @@ void XFEM::XfluidSemiLagrange::get_data_for_not_converged_nodes()
  * rewrite data for new computation                                                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::new_iteration_prepare(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectors)
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newRowVectors)
 {
   for (std::vector<TimeIntData>::iterator data = timeIntData_->begin(); data != timeIntData_->end();
        data++)
@@ -931,18 +931,18 @@ void XFEM::XfluidSemiLagrange::new_iteration_prepare(
  * compute Gradients at side-changing nodes                                          schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newRowVectors)
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newRowVectors)
 {
   const int nsd = 3;
 
-  std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> newColVectors;
+  std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> newColVectors;
 
   for (size_t index = 0; index < newRowVectors.size(); index++)
   {
     const Epetra_Map* newdofcolmap = discret_->dof_col_map();
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmpColVector =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*newdofcolmap, true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmpColVector =
+        std::make_shared<Core::LinAlg::Vector<double>>(*newdofcolmap, true);
     newColVectors.push_back(tmpColVector);
     Core::LinAlg::export_to(*newRowVectors[index], *newColVectors[index]);
   }
@@ -1067,7 +1067,7 @@ void XFEM::XfluidSemiLagrange::new_iteration_nodal_data(
     data->vel_ = nodevel;
 
     Core::LinAlg::Matrix<3, 1> nodedispnp(true);
-    if (dispnp_ != Teuchos::null)  // is alefluid
+    if (dispnp_ != nullptr)  // is alefluid
     {
       //------------------------------------------------------- add ale disp
       // get node location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
@@ -1562,7 +1562,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
 #endif
 
 
-  Teuchos::RCP<Cut::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
+  std::shared_ptr<Cut::CutWizard> wizard = step_np ? wizard_new_ : wizard_old_;
 
   Cut::ElementHandle* e = wizard->get_element(ele);
 
@@ -1692,7 +1692,7 @@ void XFEM::XfluidSemiLagrange::get_nodal_dof_set(
  * compute gradients at nodes for that SL-reconstruction is called                   schott 04/13 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XfluidSemiLagrange::compute_nodal_gradient(
-    const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+    const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
         colVectors,           ///< all vectors for that we reconstruct the their gradients
     Core::Nodes::Node* node,  ///< node at which we reconstruct the gradients
     std::vector<Core::Elements::Element*>&

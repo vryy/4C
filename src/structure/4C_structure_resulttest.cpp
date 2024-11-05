@@ -21,7 +21,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 StruResultTest::StruResultTest(Solid::TimInt& tintegrator)
-    : Core::Utils::ResultTest("STRUCTURE"), timeintegrator_(Teuchos::rcpFromRef(tintegrator))
+    : Core::Utils::ResultTest("STRUCTURE"),
+      timeintegrator_(Core::Utils::shared_ptr_from_ref(tintegrator))
 {
   dis_ = tintegrator.dis();
   vel_ = tintegrator.vel();
@@ -66,7 +67,7 @@ void StruResultTest::test_node(
       double result = 0.0;     // will hold the actual result of run
 
       // test displacements or pressure
-      if (dis_ != Teuchos::null)
+      if (dis_ != nullptr)
       {
         const Epetra_BlockMap& disnpmap = dis_->Map();
         int idx = -1;
@@ -91,7 +92,7 @@ void StruResultTest::test_node(
       }
 
       // test velocities
-      if (vel_ != Teuchos::null)
+      if (vel_ != nullptr)
       {
         const Epetra_BlockMap& velnpmap = vel_->Map();
         int idx = -1;
@@ -114,7 +115,7 @@ void StruResultTest::test_node(
       }
 
       // test accelerations
-      if (acc_ != Teuchos::null)
+      if (acc_ != nullptr)
       {
         const Epetra_BlockMap& accnpmap = acc_->Map();
         int idx = -1;

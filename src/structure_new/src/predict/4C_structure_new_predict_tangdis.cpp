@@ -27,8 +27,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Solid::Predict::TangDis::TangDis()
-    : dbc_incr_ptr_(Teuchos::null), apply_linear_reaction_forces_(false)
+Solid::Predict::TangDis::TangDis() : dbc_incr_ptr_(nullptr), apply_linear_reaction_forces_(false)
 {
   // empty constructor
 }
@@ -74,7 +73,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // We create at this point a new solution vector and initialize it
   // with the values of the last converged time step.
   // ---------------------------------------------------------------------------
-  Teuchos::RCP<::NOX::Epetra::Vector> x_ptr = global_state().create_global_vector(
+  std::shared_ptr<::NOX::Epetra::Vector> x_ptr = global_state().create_global_vector(
       TimeInt::BaseDataGlobalState::VecInitType::last_time_step, impl_int().model_eval_ptr());
   // Set the solution vector in the nox group. This will reset all isValid
   // flags.
@@ -117,8 +116,8 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
   // reset isValid flags
   grp_ptr->computeX(*grp_ptr, grp_ptr->getNewton(), 1.0);
   // add the DBC values to the current state vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbc_incr_exp_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(global_state().global_problem_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbc_incr_exp_ptr =
+      std::make_shared<Core::LinAlg::Vector<double>>(global_state().global_problem_map(), true);
   Core::LinAlg::export_to(*dbc_incr_ptr_, *dbc_incr_exp_ptr);
   grp_ptr->computeX(*grp_ptr, dbc_incr_exp_ptr->get_ref_of_Epetra_Vector(), 1.0);
   // Reset the state variables
@@ -139,7 +138,7 @@ void Solid::Predict::TangDis::compute(::NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 const Core::LinAlg::Vector<double>& Solid::Predict::TangDis::get_dbc_incr() const
 {
-  FOUR_C_ASSERT(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
+  FOUR_C_ASSERT(dbc_incr_ptr_, "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
 }
 
@@ -195,7 +194,7 @@ void NOX::Nln::GROUP::PrePostOp::TangDis::run_post_compute_f(
 
   /* Alternatively, it's also possible to get a const pointer on the jacobian
    * by calling grp.getLinearSystem()->getJacobianOperator()... */
-  Teuchos::RCP<const Core::LinAlg::SparseMatrix> stiff_ptr =
+  std::shared_ptr<const Core::LinAlg::SparseMatrix> stiff_ptr =
       tang_predict_ptr_->global_state().get_jacobian_displ_block();
 
   // check if the jacobian is filled

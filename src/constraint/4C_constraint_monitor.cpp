@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
-CONSTRAINTS::Monitor::Monitor(Teuchos::RCP<Core::FE::Discretization> discr,
+CONSTRAINTS::Monitor::Monitor(std::shared_ptr<Core::FE::Discretization> discr,
     const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
@@ -111,7 +111,8 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
     // Get ConditionID of current condition if defined and write value in parameterlist
     const int condID = cond->parameters().get<int>("ConditionID");
     const int offsetID = params.get("OffsetID", 0);
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
+    params.set<std::shared_ptr<Core::Conditions::Condition>>(
+        "condition", Core::Utils::shared_ptr_from_ref(*cond));
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -120,11 +121,11 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond->geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -155,7 +156,7 @@ void CONSTRAINTS::Monitor::evaluate_monitor(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void CONSTRAINTS::Monitor::set_state(const std::string& state,  ///< name of state to set
-    Teuchos::RCP<Core::LinAlg::Vector<double>> V                ///< values to set
+    std::shared_ptr<Core::LinAlg::Vector<double>> V             ///< values to set
 )
 {
   actdisc_->set_state(state, V);

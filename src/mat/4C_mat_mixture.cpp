@@ -46,9 +46,9 @@ Mat::PAR::Mixture::Mixture(const Core::Mat::PAR::Parameter::Data& matdata)
 }
 
 // Create a material instance from parameters
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Mixture::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Mixture::create_material()
 {
-  return Teuchos::make_rcp<Mat::Mixture>(this);
+  return std::make_shared<Mat::Mixture>(this);
 }
 
 Mat::MixtureType Mat::MixtureType::instance_;
@@ -152,7 +152,7 @@ void Mat::Mixture::unpack(Core::Communication::UnpackBuffer& buffer)
   // matid and recover params_
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

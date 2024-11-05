@@ -29,11 +29,11 @@ namespace CONSTRAINTS::EMBEDDEDMESH
     /**
      * \brief Standard Constructor
      */
-    SurfaceToBackgroundCouplingPairMortar(Teuchos::RCP<Core::Elements::Element> element1,
+    SurfaceToBackgroundCouplingPairMortar(std::shared_ptr<Core::Elements::Element> element1,
         Core::Elements::Element* element2,
         CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr,
-        Teuchos::RCP<Cut::CutWizard>& cutwizard_ptr,
-        std::vector<Teuchos::RCP<Cut::BoundaryCell>>& boundary_cells);
+        std::shared_ptr<Cut::CutWizard>& cutwizard_ptr,
+        std::vector<std::shared_ptr<Cut::BoundaryCell>>& boundary_cells);
 
     /**
      * \brief Destructor.
@@ -52,9 +52,9 @@ namespace CONSTRAINTS::EMBEDDEDMESH
 
     void get_pair_visualization(
         const Core::IO::VisualizationData& lagrange_multipliers_visualization_data,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> lambda,
+        std::shared_ptr<Core::LinAlg::Vector<double>> lambda,
         const CONSTRAINTS::EMBEDDEDMESH::SolidToSolidMortarManager* mortar_manager,
-        Teuchos::RCP<std::unordered_set<int>> interface_tracker) override;
+        std::shared_ptr<std::unordered_set<int>> interface_tracker) override;
 
     //! @name Evaluation methods
     /**

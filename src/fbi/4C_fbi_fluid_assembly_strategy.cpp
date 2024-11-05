@@ -25,9 +25,11 @@ void FBI::Utils::FBIAssemblyStrategy::assemble(const Core::FE::Discretization& d
     const Core::FE::Discretization& discretization2, std::vector<int> const& elegid,
     std::vector<Core::LinAlg::SerialDenseVector> const& elevec,
     std::vector<std::vector<Core::LinAlg::SerialDenseMatrix>> const& elemat,
-    Teuchos::RCP<Epetra_FEVector>& f1, Teuchos::RCP<Epetra_FEVector>& f2,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& c11, Teuchos::RCP<Core::LinAlg::SparseOperator> c22,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& c12, Teuchos::RCP<Core::LinAlg::SparseMatrix>& c21)
+    std::shared_ptr<Epetra_FEVector>& f1, std::shared_ptr<Epetra_FEVector>& f2,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& c11,
+    std::shared_ptr<Core::LinAlg::SparseOperator> c22,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& c12,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& c21)
 {
   // the entries of elevecX  belong to the Dofs of the element with GID elegidX
   // the rows    of elematXY belong to the Dofs of the element with GID elegidX
@@ -46,29 +48,29 @@ void FBI::Utils::FBIAssemblyStrategy::assemble(const Core::FE::Discretization& d
   ele2->location_vector(discretization2, lmrow2, lmrowowner2, lmstride);
 
   // assemble both element vectors into global system vector
-  if (f1 != Teuchos::null)
+  if (f1 != nullptr)
   {
     f1->SumIntoGlobalValues(elevec[0].length(), lmrow1.data(), elevec[0].values());
   }
-  if (f2 != Teuchos::null)
+  if (f2 != nullptr)
   {
     f2->SumIntoGlobalValues(elevec[1].length(), lmrow2.data(), elevec[1].values());
   }
 
   // and finally also assemble stiffness contributions
-  if (c11 != Teuchos::null)
+  if (c11 != nullptr)
   {
     c11->fe_assemble(elemat[0][0], lmrow1, lmrow1);
   }
-  if (c12 != Teuchos::null)
+  if (c12 != nullptr)
   {
     c12->fe_assemble(elemat[0][1], lmrow1, lmrow2);
   }
-  if (c21 != Teuchos::null)
+  if (c21 != nullptr)
   {
     c21->fe_assemble(elemat[1][0], lmrow2, lmrow1);
   }
-  if (c22 != Teuchos::null)
+  if (c22 != nullptr)
   {
     assemble_fluid_matrix(c22, elegid[1], lmstride, elemat[1][1], lmrow2, lmrowowner2, lmrow2);
   }
@@ -78,12 +80,11 @@ void FBI::Utils::FBIAssemblyStrategy::assemble(const Core::FE::Discretization& d
  *----------------------------------------------------------------------------*/
 
 void FBI::Utils::FBIAssemblyStrategy::assemble_fluid_matrix(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
+    std::shared_ptr<Core::LinAlg::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
     const Core::LinAlg::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
-  Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(cff, true)->fe_assemble(
-      elemat, lmrow, lmcol);
+  std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(cff)->fe_assemble(elemat, lmrow, lmcol);
 }
 
 FOUR_C_NAMESPACE_CLOSE

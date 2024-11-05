@@ -25,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                              kronbichler 05/14 |
  *----------------------------------------------------------------------*/
-FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
       TimIntGenAlpha(actdis, solver, params, output, alefluid),
       timealgoset_(Inpar::FLUID::timeint_afgenalpha),
@@ -51,8 +51,8 @@ void FLD::TimIntHDG::init()
                         : 0;
 
   // set degrees of freedom in the discretization
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, elementndof, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, elementndof, 0, false);
   discret_->add_dof_set(dofsetaux);
   discret_->fill_complete();
 
@@ -76,13 +76,13 @@ void FLD::TimIntHDG::init()
   conddofmapvec.reserve(conddofset.size());
   conddofmapvec.assign(conddofset.begin(), conddofset.end());
   conddofset.clear();
-  Teuchos::RCP<Epetra_Map> conddofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> conddofmap = std::make_shared<Epetra_Map>(
       -1, conddofmapvec.size(), conddofmapvec.data(), 0, hdgdis->get_comm());
   std::vector<int> otherdofmapvec;
   otherdofmapvec.reserve(otherdofset.size());
   otherdofmapvec.assign(otherdofset.begin(), otherdofset.end());
   otherdofset.clear();
-  Teuchos::RCP<Epetra_Map> otherdofmap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> otherdofmap = std::make_shared<Epetra_Map>(
       -1, otherdofmapvec.size(), otherdofmapvec.data(), 0, hdgdis->get_comm());
   velpressplitter_->setup(*hdgdis->dof_row_map(), conddofmap, otherdofmap);
 
@@ -408,7 +408,7 @@ void FLD::TimIntHDG::set_initial_flow_field(
 /*----------------------------------------------------------------------*
  | evaluate error for test cases with analytical solutions  kronbi 05/14|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_analytical_sol()
+std::shared_ptr<std::vector<double>> FLD::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 {
   // HDG needs one more state vector for the interior solution (i.e., the actual solution)
   const auto calcerr =
@@ -459,21 +459,21 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization& dis,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& interiorValues,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& velocity,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& pressure,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>>& tracevel,
-      Teuchos::RCP<Core::LinAlg::Vector<double>>& cellPres)
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& interiorValues,
+      const std::shared_ptr<Core::LinAlg::Vector<double>>& traceValues, const int ndim,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& velocity,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& pressure,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>>& tracevel,
+      std::shared_ptr<Core::LinAlg::Vector<double>>& cellPres)
   {
     // create dofsets for velocity and pressure at nodes
     if (pressure.get() == nullptr || pressure->GlobalLength() != dis.num_global_nodes())
     {
-      velocity = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
-      pressure = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.node_row_map());
+      velocity = std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+      pressure = std::make_shared<Core::LinAlg::Vector<double>>(*dis.node_row_map());
     }
-    tracevel = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(velocity->Map(), ndim);
-    cellPres = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dis.element_row_map());
+    tracevel = std::make_shared<Core::LinAlg::MultiVector<double>>(velocity->Map(), ndim);
+    cellPres = std::make_shared<Core::LinAlg::Vector<double>>(*dis.element_row_map());
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -534,8 +534,8 @@ void FLD::TimIntHDG::output()
     // step number and time
     output_->new_step(step_, time_);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cellPres;
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> traceVel;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cellPres;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> traceVel;
     get_node_vectors_hdg(*discret_, intvelnp_, velnp_,
         params_->get<int>("number of velocity degrees of freedom"), interpolatedVelocity_,
         interpolatedPressure_, traceVel, cellPres);
@@ -568,7 +568,7 @@ void FLD::TimIntHDG::calc_intermediate_solution()
       Teuchos::getIntegralValue<Inpar::FLUID::ForcingType>(params_->sublist("TURBULENCE MODEL"),
           "FORCING_TYPE") == Inpar::FLUID::linear_compensation_from_intermediate_spectrum)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> inttmp =
+    std::shared_ptr<Core::LinAlg::Vector<double>> inttmp =
         Core::LinAlg::create_vector(*discret_->dof_row_map(1), true);
     inttmp->Update(1.0, *intvelnp_, 0.0);
 
@@ -621,7 +621,7 @@ void FLD::TimIntHDG::init_forcing()
         special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence" or
         special_flow_ == "decaying_homogeneous_isotropic_turbulence")
     {
-      forcing_interface_ = Teuchos::make_rcp<FLD::HomIsoTurbForcingHDG>(*this);
+      forcing_interface_ = std::make_shared<FLD::HomIsoTurbForcingHDG>(*this);
     }
     else
       FOUR_C_THROW("forcing interface doesn't know this flow");

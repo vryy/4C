@@ -100,7 +100,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames
@@ -135,7 +135,7 @@ namespace Mat
       }
 
      private:
-      std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> matparams_;
+      std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> matparams_;
     };  // class ConstraintMixture
 
   }  // namespace PAR
@@ -223,9 +223,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ConstraintMixture>(*this);
+      return std::make_shared<ConstraintMixture>(*this);
     }
 
     /// Setup
@@ -283,9 +283,9 @@ namespace Mat
       return visprestretch;
     }
     /// Return circumferential fiber direction
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> geta1() const { return a1_; }
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> geta1() const { return a1_; }
     /// Return axial fiber direction
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> geta2() const { return a2_; }
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> geta2() const { return a2_; }
 
     /// evaluate fiber directions from locsys, pull back
     void evaluate_fiber_vecs(const int gp, const Core::LinAlg::Matrix<3, 3>& locsys,
@@ -303,31 +303,31 @@ namespace Mat
     Mat::PAR::ConstraintMixture* params_;
 
     /// temporary for visualization
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> vismassstress_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> vismassstress_;
     /// actual mass density in reference configuration
-    Teuchos::RCP<std::vector<double>> refmassdens_;
+    std::shared_ptr<std::vector<double>> refmassdens_;
     /// actual mass density in reference configuration for collagen fibers
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> visrefmassdens_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> visrefmassdens_;
     /// basal rate of mass production
     double massprodbasal_;
 
     /// first fiber vector per gp (reference), circumferential
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a1_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> a1_;
     /// second fiber vector per gp (reference), axial
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a2_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> a2_;
     /// third fiber vector per gp (reference), diagonal
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a3_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> a3_;
     /// fourth fiber vector per gp (reference), diagonal
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> a4_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> a4_;
     /// homeostatic prestretch of collagen fibers
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<4, 1>>> localprestretch_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<4, 1>>> localprestretch_;
     /// homeostatic stress for growth
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<4, 1>>> localhomstress_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<4, 1>>> localhomstress_;
     /// homeostatic radius
     double homradius_;
     /// list of fibers which have been overstretched and are deleted at the end of the time step
     /// (gp, idpast, idfiber)
-    Teuchos::RCP<std::vector<Core::LinAlg::Matrix<3, 1>>> deletemass_;
+    std::shared_ptr<std::vector<Core::LinAlg::Matrix<3, 1>>> deletemass_;
     /// index of oldest fiber still alive, needed if the complete history is stored to avoid
     /// summation of zeros
     int minindex_;
@@ -335,7 +335,7 @@ namespace Mat
     bool isinit_;
 
     /// history
-    Teuchos::RCP<std::vector<ConstraintMixtureHistory>> history_;
+    std::shared_ptr<std::vector<ConstraintMixtureHistory>> history_;
 
     /// compute stress and cmat
     void evaluate_stress(

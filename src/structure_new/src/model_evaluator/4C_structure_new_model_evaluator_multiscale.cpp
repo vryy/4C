@@ -34,7 +34,7 @@ void Solid::ModelEvaluator::Multiscale::write_restart(
 {
   for (const auto& actele : discret().my_row_element_range())
   {
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
@@ -52,7 +52,7 @@ void Solid::ModelEvaluator::Multiscale::read_restart(Core::IO::DiscretizationRea
   const int my_pid = Global::Problem::instance()->get_dis("structure")->get_comm().MyPID();
   for (const auto& actele : discret().my_col_element_range())
   {
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       auto* micro = dynamic_cast<Mat::MicroMaterial*>(mat.get());
@@ -73,7 +73,7 @@ void Solid::ModelEvaluator::Multiscale::post_setup()
 {
   for (const auto& actele : discret().my_col_element_range())
   {
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
@@ -88,7 +88,7 @@ void Solid::ModelEvaluator::Multiscale::determine_optional_quantity()
   // TODO: Move to RuntimePreOutputStepState
   for (const auto& actele : discret().my_row_element_range())
   {
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());
@@ -105,7 +105,7 @@ void Solid::ModelEvaluator::Multiscale::output_step_state(
   // TODO: Move to RuntimeOutputStepState
   for (const auto& actele : discret().my_row_element_range())
   {
-    Teuchos::RCP<Core::Mat::Material> mat = actele->material();
+    std::shared_ptr<Core::Mat::Material> mat = actele->material();
     if (mat->material_type() == Core::Materials::m_struct_multiscale)
     {
       Mat::MicroMaterial* micro = static_cast<Mat::MicroMaterial*>(mat.get());

@@ -22,6 +22,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_so3_nullspace.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,25 +46,25 @@ Core::Communication::ParObject* Discret::Elements::Beam3rType::create(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Beam3rType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Beam3rType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "BEAM3R")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Beam3r>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Beam3r>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Beam3rType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Beam3rType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Beam3r>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Beam3r>(id, owner);
   return ele;
 }
 
@@ -556,9 +557,9 @@ void Discret::Elements::Beam3r::unpack(Core::Communication::UnpackBuffer& buffer
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Beam3r::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Beam3r::lines()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 /*----------------------------------------------------------------------*
@@ -789,9 +790,9 @@ void Discret::Elements::Beam3r::set_up_reference_geometry(
      *****************************************************************************************************/
 
     // create object of triad interpolation scheme
-    Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
-        triad_interpolation_scheme_ptr = Teuchos::RCP(
-            new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
+    std::shared_ptr<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
+        triad_interpolation_scheme_ptr = std::make_shared<
+            LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>();
 
     // Get DiscretizationType
     Core::FE::CellType distype = shape();
@@ -1938,9 +1939,9 @@ void Discret::Elements::Beam3r::
         std::vector<Core::LinAlg::Matrix<3, 3, T>>& Itilde) const
 {
   // create object of triad interpolation scheme
-  Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
-      triad_interpolation_scheme_ptr = Teuchos::make_rcp<
-          LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
+  std::shared_ptr<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
+      triad_interpolation_scheme_ptr =
+          std::make_shared<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
 
   // reset triad interpolation scheme with nodal quaternions
   triad_interpolation_scheme_ptr->reset(Qnode);

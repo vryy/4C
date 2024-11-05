@@ -98,8 +98,8 @@ namespace CONTACT
 
     */
     void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> zero) final;
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::Vector<double>> zero) final;
 
     /*!
     \brief Write interface quantities for postprocessing
@@ -111,7 +111,7 @@ namespace CONTACT
 
     //! [derived]
     void postprocess_quantities_per_interface(
-        Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+        std::shared_ptr<Teuchos::ParameterList> outputParams) final;
 
     /*!
     \brief Reconnect Contact Element -- Parent Element Pointers
@@ -131,7 +131,7 @@ namespace CONTACT
 
     */
     void set_poro_parent_element(int& slavetype, int& mastertype, CONTACT::Element& cele,
-        Teuchos::RCP<Core::Elements::Element>& ele);
+        std::shared_ptr<Core::Elements::Element>& ele);
 
     /*!
     \brief Find Physical Type (Poro or Structure) of Poro Interface

@@ -84,54 +84,54 @@ namespace Discret
       void set_internal_variables_for_mat_and_rhs() override;
 
       //! evaluate material
-      void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      void materials(const std::shared_ptr<const Core::Mat::Material>
+                         material,  //!< pointer to current material
+          const int k,              //!< id of current scalar
+          double& densn,            //!< density at t_(n)
+          double& densnp,           //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,           //!< density at t_(n+alpha_M)
+          double& visc,             //!< fluid viscosity
+          const int iquad = -1      //!< id of current gauss point (default = -1)
           ) override;
 
       //! material mat_multi_poro_fluid
-      virtual void mat_multi_poro_fluid(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      virtual void mat_multi_poro_fluid(const std::shared_ptr<const Core::Mat::Material>
+                                            material,  //!< pointer to current material
+          const int k,                                 //!< id of current scalar
+          double& densn,                               //!< density at t_(n)
+          double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                              //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
       );
 
       //! material mat_multi_poro_vol_frac
-      virtual void mat_multi_poro_vol_frac(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
+      virtual void mat_multi_poro_vol_frac(const std::shared_ptr<const Core::Mat::Material>
+                                               material,  //!< pointer to current material
+          const int k,                                    //!< id of current scalar
+          double& densn,                                  //!< density at t_(n)
+          double& densnp,                                 //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                                 //!< density at t_(n+alpha_M)
+          double& visc,                                   //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
       );
 
       //! material mat_multi_poro_solid
-      virtual void mat_multi_poro_solid(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      virtual void mat_multi_poro_solid(const std::shared_ptr<const Core::Mat::Material>
+                                            material,  //!< pointer to current material
+          const int k,                                 //!< id of current scalar
+          double& densn,                               //!< density at t_(n)
+          double& densnp,                              //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                              //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
       );
 
       //! material mat_multi_poro_temperature
-      virtual void mat_multi_poro_temperature(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
+      virtual void mat_multi_poro_temperature(const std::shared_ptr<const Core::Mat::Material>
+                                                  material,  //!< pointer to current material
+          const int k,                                       //!< id of current scalar
+          double& densn,                                     //!< density at t_(n)
           double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
@@ -139,8 +139,8 @@ namespace Discret
       );
 
       //! Set advanced reaction terms and derivatives
-      void set_advanced_reaction_terms(const int k,               //!< index of current scalar
-          const Teuchos::RCP<Mat::MatListReactions> matreaclist,  //!< index of current scalar
+      void set_advanced_reaction_terms(const int k,                  //!< index of current scalar
+          const std::shared_ptr<Mat::MatListReactions> matreaclist,  //!< index of current scalar
           const double* gpcoord  //!< current Gauss-point coordinates
           ) override;
 
@@ -148,9 +148,9 @@ namespace Discret
       double compute_pore_pressure() override;
 
       //! get internal variable manager for multiporo formulation
-      Teuchos::RCP<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerMultiPoro<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 
@@ -662,10 +662,9 @@ namespace Discret
         if (ele->num_material() < 3) FOUR_C_THROW("no third material available");
 
         // here we rely that the PoroMultiPhase material has been added as third material
-        multiphasemat_ = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(
+        multiphasemat_ = std::dynamic_pointer_cast<Mat::FluidPoroMultiPhase>(
             ele->material(ndsscatra_porofluid_));
-        if (multiphasemat_ == Teuchos::null)
-          FOUR_C_THROW("cast to Mat::FluidPoroMultiPhase failed!");
+        if (multiphasemat_ == nullptr) FOUR_C_THROW("cast to Mat::FluidPoroMultiPhase failed!");
 
         materialset_ = true;
       }
@@ -1463,7 +1462,7 @@ namespace Discret
       double abs_pressure_gradient(const int curphase) const { return abspressuregrad_[curphase]; };
 
       //! return fluid material
-      Teuchos::RCP<Mat::FluidPoroMultiPhase> multiphase_mat()
+      std::shared_ptr<Mat::FluidPoroMultiPhase> multiphase_mat()
       {
         if (!materialset_)
           FOUR_C_THROW("Fluid-Multiphase Material has not yet been set in Variablemanager");
@@ -1514,13 +1513,14 @@ namespace Discret
       }
 
       // get the phasemanager of the fluid
-      Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface> fluid_phase_manager()
+      std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+      fluid_phase_manager()
       {
         return phasemanager_;
       }
 
       // get the variablemanager of the fluid
-      Teuchos::RCP<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
+      std::shared_ptr<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
       fluid_var_manager()
       {
         return variablemanager_;
@@ -1547,7 +1547,7 @@ namespace Discret
       std::vector<double> volfracpressure_;
 
       //! fluid-poro multiphase material
-      Teuchos::RCP<Mat::FluidPoroMultiPhase> multiphasemat_;
+      std::shared_ptr<Mat::FluidPoroMultiPhase> multiphasemat_;
 
       //! delta for effective diffusivity
       std::vector<double> delta_;
@@ -1576,10 +1576,10 @@ namespace Discret
       ScaTra::Action myaction_;
 
       //! phase manager of the fluid
-      Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface> phasemanager_;
+      std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface> phasemanager_;
 
       //! variable manager of the fluid
-      Teuchos::RCP<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
+      std::shared_ptr<Discret::Elements::PoroFluidManager::VariableManagerInterface<nsd, nen>>
           variablemanager_;
 
       //! dofset of fluid field on scatra dis

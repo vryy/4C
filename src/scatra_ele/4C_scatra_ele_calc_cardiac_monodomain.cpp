@@ -59,9 +59,9 @@ Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::instance(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materials(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
@@ -74,8 +74,8 @@ void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materi
     FOUR_C_THROW("Material type is not supported");
 
   // safety check
-  Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(
-      Teuchos::rcp_const_cast<Core::Mat::Material>(material));
+  std::shared_ptr<Mat::Myocard> actmat = std::dynamic_pointer_cast<Mat::Myocard>(
+      std::const_pointer_cast<Core::Mat::Material>(material));
   if (actmat->get_number_of_gp() != 1 and not my::scatrapara_->mat_gp())
   {
     actmat->set_gp(1);
@@ -92,25 +92,25 @@ void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::materi
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype, probdim>::mat_myocard(
-    const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-    const int k,                                             //!< id of current scalar
-    double& densn,                                           //!< density at t_(n)
+    const std::shared_ptr<const Core::Mat::Material> material,  //!< pointer to current material
+    const int k,                                                //!< id of current scalar
+    double& densn,                                              //!< density at t_(n)
     double& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
     double& densam,  //!< density at t_(n+alpha_M)
     double& visc,    //!< fluid viscosity
     const int iquad  //!< id of current gauss point (default = -1)
 )
 {
-  const Teuchos::RCP<const Mat::Myocard>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::Myocard>(material);
+  const std::shared_ptr<const Mat::Myocard>& actmat =
+      std::dynamic_pointer_cast<const Mat::Myocard>(material);
 
   // dynamic cast to Advanced_Reaction-specific reaction manager
-  Teuchos::RCP<ScaTraEleReaManagerAdvReac> advreamanager =
-      Teuchos::rcp_dynamic_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
+  std::shared_ptr<ScaTraEleReaManagerAdvReac> advreamanager =
+      std::dynamic_pointer_cast<ScaTraEleReaManagerAdvReac>(my::reamanager_);
 
   // dynamic cast to anisotropic diffusion manager
-  Teuchos::RCP<ScaTraEleDiffManagerAniso<nsd_>> diffmanageraniso =
-      Teuchos::rcp_dynamic_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
+  std::shared_ptr<ScaTraEleDiffManagerAniso<nsd_>> diffmanageraniso =
+      std::dynamic_pointer_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
 
   // get constant diffusivity
   Core::LinAlg::Matrix<nsd_, nsd_> difftensor(true);
@@ -314,8 +314,8 @@ void Discret::Elements::ScaTraEleCalcCardiacMonodomain<distype,
   my::extract_element_and_node_values(ele, params, discretization, la);
 
   // extract additional local values from global vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
-  if (phin == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'phin'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> phin = discretization.get_state("phin");
+  if (phin == nullptr) FOUR_C_THROW("Cannot get state vector 'phin'");
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*phin, my::ephin_, la[0].lm_);
 }
 

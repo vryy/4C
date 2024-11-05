@@ -20,11 +20,11 @@ Discret::Elements::StructuralLineType& Discret::Elements::StructuralLineType::in
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::StructuralLineType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::StructuralLineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new StructuralLine( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 

@@ -15,8 +15,7 @@
 #include "4C_linalg_fixedsizematrix.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -81,11 +80,11 @@ namespace XFEM
     explicit XFluidContactComm(CONTACT::NitscheStrategy& contact_strategy)
         : fluid_init_(false),
           ele_ptrs_already_setup_(false),
-          cutwizard_(Teuchos::null),
-          fluiddis_(Teuchos::null),
-          condition_manager_(Teuchos::null),
-          mc_(std::vector<Teuchos::RCP<XFEM::MeshCoupling>>()),
-          mcfpi_ps_pf_(Teuchos::null),
+          cutwizard_(nullptr),
+          fluiddis_(nullptr),
+          condition_manager_(nullptr),
+          mc_(std::vector<std::shared_ptr<XFEM::MeshCoupling>>()),
+          mcfpi_ps_pf_(nullptr),
           mcidx_(0),
           isporo_(false),
           visc_stab_trace_estimate_(Inpar::XFEM::ViscStab_TraceEstimate_CT_div_by_hk),
@@ -105,7 +104,7 @@ namespace XFEM
           mortar_id_to_sosid_(std::vector<int>()),
           extrapolate_to_zero_(false),
           my_sele_ids_(std::set<int>()),
-          contact_ele_rowmap_fluidownerbased_(Teuchos::null),
+          contact_ele_rowmap_fluidownerbased_(nullptr),
           contact_strategy_(contact_strategy),
           contact_strategy_fsi_(nullptr),
           contact_strategy_fpi_(nullptr)
@@ -115,17 +114,17 @@ namespace XFEM
     //! destructor
     virtual ~XFluidContactComm() = default;
     /// Initialize overall Fluid State (includes the Cut intersection information)
-    void initialize_fluid_state(Teuchos::RCP<Cut::CutWizard> cutwizard,
-        Teuchos::RCP<Core::FE::Discretization> fluiddis,
-        Teuchos::RCP<XFEM::ConditionManager> condition_manager,
-        Teuchos::RCP<Teuchos::ParameterList> fluidparams);
+    void initialize_fluid_state(std::shared_ptr<Cut::CutWizard> cutwizard,
+        std::shared_ptr<Core::FE::Discretization> fluiddis,
+        std::shared_ptr<XFEM::ConditionManager> condition_manager,
+        std::shared_ptr<Teuchos::ParameterList> fluidparams);
 
     /// Reset overall Fluid State
     void reset_fluid_state()
     {
       fluid_init_ = false;
-      cutwizard_ = Teuchos::null;
-      fluiddis_ = Teuchos::null;
+      cutwizard_ = nullptr;
+      fluiddis_ = nullptr;
     }
 
     /// Get the FSI traction called from contact gausspoint
@@ -201,7 +200,7 @@ namespace XFEM
     void fill_complete_sele_map();
 
     /// Rowmap of contact elements based on the fluid element owner
-    Teuchos::RCP<Epetra_Map>& get_contact_ele_row_map_f_ownerbased()
+    std::shared_ptr<Epetra_Map>& get_contact_ele_row_map_f_ownerbased()
     {
       return contact_ele_rowmap_fluidownerbased_;
     }
@@ -299,15 +298,15 @@ namespace XFEM
     /// Surface element pointers setup
     bool ele_ptrs_already_setup_;
     /// The XFluid CutWizard
-    Teuchos::RCP<Cut::CutWizard> cutwizard_;
+    std::shared_ptr<Cut::CutWizard> cutwizard_;
     /// The Background Fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> fluiddis_;
+    std::shared_ptr<Core::FE::Discretization> fluiddis_;
     /// The XFEM Condition Manager
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+    std::shared_ptr<XFEM::ConditionManager> condition_manager_;
     /// A list of all mesh coupling objects
-    std::vector<Teuchos::RCP<XFEM::MeshCoupling>> mc_;
+    std::vector<std::shared_ptr<XFEM::MeshCoupling>> mc_;
     /// In case of poro, the fluid mesh coupling object
-    Teuchos::RCP<XFEM::MeshCouplingFPI> mcfpi_ps_pf_;
+    std::shared_ptr<XFEM::MeshCouplingFPI> mcfpi_ps_pf_;
     /// Mesh coupling index
     int mcidx_;
     /// Is a poro problem
@@ -352,7 +351,7 @@ namespace XFEM
     // all sele which have a row fluid-element on this proc
     std::set<int> my_sele_ids_;
     /// contact ele romap - based on the background fluid element owners
-    Teuchos::RCP<Epetra_Map> contact_ele_rowmap_fluidownerbased_;
+    std::shared_ptr<Epetra_Map> contact_ele_rowmap_fluidownerbased_;
 
     /// The Contact Strategy
     CONTACT::NitscheStrategy& contact_strategy_;

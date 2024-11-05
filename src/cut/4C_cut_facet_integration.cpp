@@ -543,7 +543,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::FacetIntegration::divergence_integration_rule");
 
-  std::list<Teuchos::RCP<BoundaryCell>> divCells;
+  std::list<std::shared_ptr<BoundaryCell>> divCells;
 
   // the last two parameters has no influence when called from the first parameter is set to true
   generate_divergence_cells(true, mesh, divCells);
@@ -564,7 +564,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
        << "FacetBCellInfo"
        << "\" {\n";
 #endif
-  for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
+  for (std::list<std::shared_ptr<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
        ++i)
   {
     BoundaryCell *bcell = &**i;
@@ -642,7 +642,7 @@ void Cut::FacetIntegration::divergence_integration_rule(
 *------------------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::generate_divergence_cells(
     bool divergenceRule,  // if called to generate direct divergence rule
-    Mesh &mesh, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
+    Mesh &mesh, std::list<std::shared_ptr<BoundaryCell>> &divCells)
 {
 #ifdef LOCAL
   std::vector<std::vector<double>> cornersLocal;
@@ -724,12 +724,11 @@ void Cut::FacetIntegration::generate_divergence_cells(
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::temporary_tri3(
-    const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
+    const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells)
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, 3);
   for (int i = 0; i < 3; ++i) corners[i]->coordinates(&xyz(0, i));
-  Tri3BoundaryCell *bc = new Tri3BoundaryCell(xyz, face1_, corners);
-  divCells.push_back(Teuchos::RCP(bc));
+  divCells.push_back(std::make_shared<Tri3BoundaryCell>(xyz, face1_, corners));
 }
 
 /*-------------------------------------------------------------------------------------------*
@@ -737,12 +736,11 @@ void Cut::FacetIntegration::temporary_tri3(
                     this is temporary because this is not stored for the volumecell
 *--------------------------------------------------------------------------------------------*/
 void Cut::FacetIntegration::temporary_quad4(
-    const std::vector<Point *> &corners, std::list<Teuchos::RCP<BoundaryCell>> &divCells)
+    const std::vector<Point *> &corners, std::list<std::shared_ptr<BoundaryCell>> &divCells)
 {
   Core::LinAlg::SerialDenseMatrix xyz(3, 4);
   for (int i = 0; i < 4; ++i) corners[i]->coordinates(&xyz(0, i));
-  Quad4BoundaryCell *bc = new Quad4BoundaryCell(xyz, face1_, corners);
-  divCells.push_back(Teuchos::RCP(bc));
+  divCells.push_back(std::make_shared<Quad4BoundaryCell>(xyz, face1_, corners));
 }
 
 /*-------------------------------------------------------------------------------------------------*
@@ -754,7 +752,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut::FacetIntegration::divergence_integration_rule");
 
-  std::list<Teuchos::RCP<BoundaryCell>> divCells;
+  std::list<std::shared_ptr<BoundaryCell>> divCells;
 
   // the last two parameters has no influence when called from the first parameter is set to true
   std::vector<std::vector<double>> eqn_plane_divCell;
@@ -827,7 +825,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
   double normalX;
 
   int zz = 0;
-  for (std::list<Teuchos::RCP<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
+  for (std::list<std::shared_ptr<BoundaryCell>>::iterator i = divCells.begin(); i != divCells.end();
        ++i)
   {
     BoundaryCell *bcell = &**i;
@@ -926,7 +924,7 @@ void Cut::FacetIntegration::divergence_integration_rule_new(
 }
 
 void Cut::FacetIntegration::generate_divergence_cells_new(bool divergenceRule, Mesh &mesh,
-    std::list<Teuchos::RCP<BoundaryCell>> &divCells, const std::vector<Point *> &cornersGlobal)
+    std::list<std::shared_ptr<BoundaryCell>> &divCells, const std::vector<Point *> &cornersGlobal)
 {
 // First convert format...
 #ifdef LOCAL

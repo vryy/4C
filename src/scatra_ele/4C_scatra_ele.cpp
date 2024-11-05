@@ -42,24 +42,24 @@ Core::Communication::ParObject* Discret::Elements::TransportType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::TransportType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::TransportType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "TRANSP" or eletype == "CONDIF2" or eletype == "CONDIF3")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Transport>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Transport>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::TransportType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::TransportType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Transport>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Transport>(id, owner);
   return ele;
 }
 
@@ -264,11 +264,11 @@ Discret::Elements::TransportBoundaryType& Discret::Elements::TransportBoundaryTy
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::TransportBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::TransportBoundaryType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new TransportBoundary( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -313,7 +313,7 @@ Core::Elements::Element* Discret::Elements::Transport::clone() const
  |  create material class (public)                            gjb 07/08 |
  *----------------------------------------------------------------------*/
 void Discret::Elements::Transport::set_material(
-    const int index, Teuchos::RCP<Core::Mat::Material> mat)
+    const int index, std::shared_ptr<Core::Mat::Material> mat)
 {
   // the standard part:
   Core::Elements::Element::set_material(index, mat);
@@ -395,8 +395,8 @@ void Discret::Elements::Transport::set_material(
             "MAT_scatra_reaction_poro as valid reaction Material");
 
       // some safty check for the MAT_scatra_reaction materials
-      const Teuchos::RCP<const Mat::ScatraReactionMat>& reacmat =
-          Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(
+      const std::shared_ptr<const Mat::ScatraReactionMat>& reacmat =
+          std::static_pointer_cast<const Mat::ScatraReactionMat>(
               actmat->material_by_id(actmat->reac_id(jj)));
       const int stoichlength = reacmat->num_scal();
       if (stoichlength != numdofpernode_)
@@ -434,8 +434,8 @@ void Discret::Elements::Transport::set_material(
             "reaction Material");
 
       // some safty check for the MAT_scatra_chemotaxis materials
-      const Teuchos::RCP<const Mat::ScatraChemotaxisMat>& reacmat =
-          Teuchos::rcp_static_cast<const Mat::ScatraChemotaxisMat>(
+      const std::shared_ptr<const Mat::ScatraChemotaxisMat>& reacmat =
+          std::static_pointer_cast<const Mat::ScatraChemotaxisMat>(
               actmat->material_by_id(actmat->pair_id(jj)));
       const int pairlength = reacmat->pair()->size();
       if (pairlength != numdofpernode_)
@@ -474,8 +474,8 @@ void Discret::Elements::Transport::set_material(
             "Material");
 
       // some safty check for the MAT_scatra_reaction materials
-      const Teuchos::RCP<const Mat::ScatraReactionMat>& reacmat =
-          Teuchos::rcp_static_cast<const Mat::ScatraReactionMat>(
+      const std::shared_ptr<const Mat::ScatraReactionMat>& reacmat =
+          std::static_pointer_cast<const Mat::ScatraReactionMat>(
               actmat->material_by_id(actmat->reac_id(jj)));
       const int stoichlength = reacmat->num_scal();
       if (stoichlength != numdofpernode_)
@@ -497,8 +497,8 @@ void Discret::Elements::Transport::set_material(
             "reaction Material");
 
       // some safty check for the MAT_scatra_chemotaxis materials
-      const Teuchos::RCP<const Mat::ScatraChemotaxisMat>& reacmat =
-          Teuchos::rcp_static_cast<const Mat::ScatraChemotaxisMat>(
+      const std::shared_ptr<const Mat::ScatraChemotaxisMat>& reacmat =
+          std::static_pointer_cast<const Mat::ScatraChemotaxisMat>(
               actmat->material_by_id(actmat->pair_id(jj)));
       const int pairlength = reacmat->pair()->size();
       if (pairlength != numdofpernode_)
@@ -527,15 +527,15 @@ void Discret::Elements::Transport::set_material(int matnum, Core::Elements::Elem
 {
   set_material(0, Mat::factory(matnum));
 
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   if (mat->material_type() == Core::Materials::m_myocard)
   {
-    Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
+    std::shared_ptr<Mat::Myocard> actmat = std::dynamic_pointer_cast<Mat::Myocard>(mat);
 
-    Teuchos::RCP<Mat::ElastHyper> somat =
-        Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(oldele->material());
-    if (somat == Teuchos::null) FOUR_C_THROW("cast to ElastHyper failed");
+    std::shared_ptr<Mat::ElastHyper> somat =
+        std::dynamic_pointer_cast<Mat::ElastHyper>(oldele->material());
+    if (somat == nullptr) FOUR_C_THROW("cast to ElastHyper failed");
 
     // copy fiber information from solid material to scatra material (for now, only one fiber
     // vector)
@@ -647,7 +647,7 @@ void Discret::Elements::Transport::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Transport::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Transport::lines()
 {
   return Core::Communication::get_element_lines<TransportBoundary, Transport>(*this);
 }
@@ -656,7 +656,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Transport:
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Transport::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Transport::surfaces()
 {
   return Core::Communication::get_element_surfaces<TransportBoundary, Transport>(*this);
 }
@@ -675,7 +675,7 @@ void Discret::Elements::Transport ::set_impl_type(const Inpar::ScaTra::ImplType 
  *----------------------------------------------------------------------*/
 int Discret::Elements::Transport::initialize()
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
   // for now, we only need to do something in case of reactions (for the initialization of functions
   // in case of reactions by function)
   if (mat->material_type() == Core::Materials::m_matlist_reactions or
@@ -683,19 +683,19 @@ int Discret::Elements::Transport::initialize()
   {
     // Note: We need to do a dynamic_cast here since Chemotaxis, Reaction, and Chemo-reaction are in
     // a diamond inheritance structure
-    Teuchos::RCP<Mat::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(mat);
+    std::shared_ptr<Mat::MatListReactions> actmat =
+        std::dynamic_pointer_cast<Mat::MatListReactions>(mat);
     actmat->initialize();
   }
   else if (mat->material_type() == Core::Materials::m_myocard)
   {
-    Teuchos::RCP<Mat::Myocard> actmat = Teuchos::rcp_dynamic_cast<Mat::Myocard>(mat);
+    std::shared_ptr<Mat::Myocard> actmat = std::dynamic_pointer_cast<Mat::Myocard>(mat);
     int deg = 0;
     if (this->degree() == 1)
       deg = 4 * this->degree();
     else
       deg = 3 * this->degree();
-    Teuchos::RCP<Core::FE::GaussPoints> quadrature(
+    std::shared_ptr<Core::FE::GaussPoints> quadrature(
         Core::FE::GaussPointCache::instance().create(this->shape(), deg));
     int gp = quadrature->num_points();
     if (actmat->parameter() != nullptr and
@@ -811,7 +811,7 @@ int Discret::Elements::TransportBoundary::num_surface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::TransportBoundary::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::TransportBoundary::lines()
 {
   FOUR_C_THROW("Lines of TransportBoundary not implemented");
 }
@@ -819,7 +819,8 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::TransportB
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::TransportBoundary::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::TransportBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of TransportBoundary not implemented");
 }

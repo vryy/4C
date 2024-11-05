@@ -22,11 +22,12 @@ namespace ScaTra
   {
    public:
     /// standard Constructor
-    LevelSetTimIntOneStepTheta(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    LevelSetTimIntOneStepTheta(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     /// initialize time-integration scheme
@@ -37,16 +38,16 @@ namespace ScaTra
 
     /// read restart data
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) override;
 
     /// redistribute the scatra discretization and vectors according to nodegraph
     void redistribute(Epetra_CrsGraph& nodegraph);
 
     /// interpolate phi to intermediate time n+theta with 0<theta<1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinptheta(const double theta_inter);
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinptheta(const double theta_inter);
 
     /// interpolate phidt to intermediate time n+theta with 0<theta<1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnptheta(const double theta_inter);
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtnptheta(const double theta_inter);
 
    protected:
     /// Print information about current time step to screen (reimplementation for OST)

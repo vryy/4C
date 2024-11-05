@@ -14,7 +14,8 @@
 #include <NOX_LineSearch_Generic.H>  // base class
 #include <NOX_LineSearch_UserDefinedFactory.H>
 #include <NOX_Utils.H>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

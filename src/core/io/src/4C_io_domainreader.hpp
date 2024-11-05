@@ -11,7 +11,6 @@
 #include "4C_config.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <memory>
 #include <set>
@@ -52,11 +51,11 @@ namespace Core::IO
       \param input (i) the input file
       \param sectionname (i) the section that contains the element lines
      */
-    DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
+    DomainReader(std::shared_ptr<Core::FE::Discretization> dis, Core::IO::InputFile& input,
         std::string sectionname);
 
     /// give the discretization this reader fills
-    Teuchos::RCP<Core::FE::Discretization> my_dis() const { return dis_; }
+    std::shared_ptr<Core::FE::Discretization> my_dis() const { return dis_; }
 
    private:
     /*! \brief generate elements, partition node graph, create nodes
@@ -96,7 +95,7 @@ namespace Core::IO
     std::string sectionname_;
 
     /// my discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
+    std::shared_ptr<Core::FE::Discretization> dis_;
   };
 
 }  // namespace Core::IO

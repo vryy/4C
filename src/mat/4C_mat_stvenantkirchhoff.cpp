@@ -27,9 +27,9 @@ Mat::PAR::StVenantKirchhoff::StVenantKirchhoff(const Core::Mat::PAR::Parameter::
     FOUR_C_THROW("Poisson's ratio must be in [-1;0.5)");
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::StVenantKirchhoff::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::StVenantKirchhoff::create_material()
 {
-  return Teuchos::make_rcp<Mat::StVenantKirchhoff>(this);
+  return std::make_shared<Mat::StVenantKirchhoff>(this);
 }
 
 Mat::StVenantKirchhoffType Mat::StVenantKirchhoffType::instance_;
@@ -85,7 +85,7 @@ void Mat::StVenantKirchhoff::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

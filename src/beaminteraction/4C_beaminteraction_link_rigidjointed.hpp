@@ -165,7 +165,7 @@ namespace BEAMINTERACTION
         std::vector<Core::LinAlg::Matrix<3, 3>>& bspottriad) override;
 
     //! return appropriate instance of the desired class (acts as a simple factory)
-    static Teuchos::RCP<BeamLinkRigidJointed> create();
+    static std::shared_ptr<BeamLinkRigidJointed> create();
     void print(std::ostream& out) const;
     //@}
 

@@ -17,11 +17,11 @@ FOUR_C_NAMESPACE_OPEN
 /*======================================================================*/
 /* constructor */
 Adapter::StructureTimIntAda::StructureTimIntAda(
-    Teuchos::RCP<Solid::TimAda> sta, Teuchos::RCP<Structure> sti)
+    std::shared_ptr<Solid::TimAda> sta, std::shared_ptr<Structure> sti)
     : StructureWrapper(sti), sta_(sta)
 {
   // make sure
-  if (sta_ == Teuchos::null) FOUR_C_THROW("Failed to create structural integrator");
+  if (sta_ == nullptr) FOUR_C_THROW("Failed to create structural integrator");
 }
 
 

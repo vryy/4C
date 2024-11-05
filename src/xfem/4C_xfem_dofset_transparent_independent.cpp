@@ -14,8 +14,8 @@ FOUR_C_NAMESPACE_OPEN
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
-    Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel,
-    Teuchos::RCP<Cut::CutWizard> wizard)
+    std::shared_ptr<Core::FE::Discretization> sourcedis, bool parallel,
+    std::shared_ptr<Cut::CutWizard> wizard)
     : Core::DOFSets::TransparentIndependentDofSet(sourcedis, parallel), wizard_(wizard)
 {
   return;
@@ -23,7 +23,7 @@ XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(
 
 int XFEM::XFEMTransparentIndependentDofSet::num_dof_per_node(const Core::Nodes::Node &node) const
 {
-  if (wizard_ != Teuchos::null)
+  if (wizard_ != nullptr)
   {
     Cut::Node *n = wizard_->get_node(node.id());
     if (n != nullptr)

@@ -10,7 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,31 +29,31 @@ namespace Mat
 
     /*!
      * \brief Returns the reference to the cylinder coordinate system (if present), otherwise
-     * #Teuchos::null
+     * #nullptr
      *
-     * \return const Teuchos::RCP<CylinderCoordinateSystemProvider>
+     * \return const std::shared_ptr<CylinderCoordinateSystemProvider>
      */
-    virtual Teuchos::RCP<const CylinderCoordinateSystemProvider> get_cylinder_coordinate_system()
+    virtual std::shared_ptr<const CylinderCoordinateSystemProvider> get_cylinder_coordinate_system()
         const = 0;
   };
 
   class CoordinateSystemHolder : public CoordinateSystemProvider
   {
    public:
-    Teuchos::RCP<const CylinderCoordinateSystemProvider> get_cylinder_coordinate_system()
+    std::shared_ptr<const CylinderCoordinateSystemProvider> get_cylinder_coordinate_system()
         const override
     {
       return cylinder_coordinate_system_;
     }
 
     void set_cylinder_coordinate_system_provider(
-        Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinderCoordinateSystem)
+        std::shared_ptr<const CylinderCoordinateSystemProvider> cylinderCoordinateSystem)
     {
       cylinder_coordinate_system_ = cylinderCoordinateSystem;
     }
 
    private:
-    Teuchos::RCP<const CylinderCoordinateSystemProvider> cylinder_coordinate_system_;
+    std::shared_ptr<const CylinderCoordinateSystemProvider> cylinder_coordinate_system_;
   };
 
 }  // namespace Mat

@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 void Core::Rebalance::rebalance_discretizations_by_binning(
     const Teuchos::ParameterList& binning_params,
-    Teuchos::RCP<Core::IO::OutputControl> output_control,
-    const std::vector<Teuchos::RCP<Core::FE::Discretization>>& vector_of_discretizations,
+    std::shared_ptr<Core::IO::OutputControl> output_control,
+    const std::vector<std::shared_ptr<Core::FE::Discretization>>& vector_of_discretizations,
     std::function<const Core::Nodes::Node&(const Core::Nodes::Node& node)> correct_node,
     std::function<std::vector<std::array<double, 3>>(const Core::FE::Discretization&,
-        const Core::Elements::Element&, Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp)>
+        const Core::Elements::Element&, std::shared_ptr<const Core::LinAlg::Vector<double>> disnp)>
         determine_relevant_points,
     bool revertextendedghosting)
 {
@@ -61,8 +61,8 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
           << "+---------------------------------------------------------------" << Core::IO::endl;
     }
 
-    std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
-    std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
+    std::vector<std::shared_ptr<Epetra_Map>> stdelecolmap;
+    std::vector<std::shared_ptr<Epetra_Map>> stdnodecolmap;
 
     // binning strategy is created and parallel redistribution is performed
     Binstrategy::BinningStrategy binningstrategy(binning_params, output_control,
@@ -89,7 +89,7 @@ void Core::Rebalance::rebalance_discretizations_by_binning(
 void Core::Rebalance::ghost_discretization_on_all_procs(Core::FE::Discretization& distobeghosted)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(distobeghosted.get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> com(distobeghosted.get_comm().Clone());
 
   if (com->MyPID() == 0)
   {
@@ -173,7 +173,7 @@ void Core::Rebalance::match_element_distribution_of_matching_discretizations(
     Core::FE::Discretization& dis_template, Core::FE::Discretization& dis_to_rebalance)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(dis_template.get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> com(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -259,7 +259,7 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     const std::string& condname_template, const std::string& condname_rebalance, const bool print)
 {
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(dis_template.get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> com(dis_template.get_comm().Clone());
   if (com->NumProc() > 1)
   {
     // print to screen
@@ -293,10 +293,10 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
     std::vector<int> rebalance_colnodegid_vec(0);
 
     // geometry iterator
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator geom_it;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator geom_it;
 
     // fill condition discretization by cloning scatra discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_from_template_condition;
+    std::shared_ptr<Core::FE::Discretization> dis_from_template_condition;
 
     Core::FE::DiscretizationCreatorBase discreator;
     std::vector<std::string> conditions_to_copy(0);
@@ -535,9 +535,9 @@ void Core::Rebalance::match_element_distribution_of_matching_conditioned_element
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Core::Rebalance::get_col_version_of_row_vector(
+std::shared_ptr<const Core::LinAlg::Vector<double>> Core::Rebalance::get_col_version_of_row_vector(
     const Core::FE::Discretization& dis,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const int nds)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> state, const int nds)
 {
   // note that this routine has the same functionality as set_state,
   // although here we do not store the new vector anywhere
@@ -556,7 +556,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Core::Rebalance::get_col_versio
   // if it's not in column map export and allocate
   else
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> tmp = Core::LinAlg::create_vector(*colmap, false);
     Core::LinAlg::export_to(*state, *tmp);
     return tmp;
   }
@@ -567,7 +567,7 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> Core::Rebalance::get_col_versio
  |recompute nodecolmap of standard discretization to include all        |
  |nodes as of subdicretization                                          |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> Core::Rebalance::compute_node_col_map(
+std::shared_ptr<Epetra_Map> Core::Rebalance::compute_node_col_map(
     const Core::FE::Discretization& sourcedis,  ///< standard discretization we want to rebalance
     const Core::FE::Discretization& subdis      ///< subdiscretization prescribing ghosting
 )
@@ -587,7 +587,7 @@ Teuchos::RCP<Epetra_Map> Core::Rebalance::compute_node_col_map(
   }
 
   // now reconstruct the extended colmap
-  Teuchos::RCP<Epetra_Map> newcolnodemap = Teuchos::make_rcp<Epetra_Map>(
+  std::shared_ptr<Epetra_Map> newcolnodemap = std::make_shared<Epetra_Map>(
       -1, mycolnodes.size(), mycolnodes.data(), 0, sourcedis.get_comm());
   return newcolnodemap;
 }  // Core::Rebalance::ComputeNodeColMap

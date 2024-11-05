@@ -15,7 +15,7 @@
 #include "4C_fem_condition.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,7 +25,7 @@ namespace Adapter
   {
    public:
     /// Constructor
-    StructureRedAirway(Teuchos::RCP<Structure> stru);
+    StructureRedAirway(std::shared_ptr<Structure> stru);
 
     /// set pressure calculated from reduced-d airway tree
     void set_pressure(Core::LinAlg::Vector<double>& couppres);
@@ -48,7 +48,7 @@ namespace Adapter
     std::map<int, Core::Conditions::Condition*> coupcond_;
 
     /// map of coupling IDs
-    Teuchos::RCP<Epetra_Map> coupmap_;
+    std::shared_ptr<Epetra_Map> coupmap_;
 
     std::map<int, double> vn_;
     std::map<int, double> vnp_;

@@ -18,8 +18,7 @@
 #include "4C_material_parameter_base.hpp"
 #include "4C_utils_function.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <unordered_map>
 #include <variant>
 
@@ -35,7 +34,7 @@ namespace Mat
       /// constructor
       MuscleCombo(const Core::Mat::PAR::Parameter::Data& matdata);
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// @name material parameters
       //@{
@@ -133,9 +132,9 @@ namespace Mat
     // Constructor for the material given the material parameters
     explicit MuscleCombo(Mat::PAR::MuscleCombo* params);
 
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<MuscleCombo>(*this);
+      return std::make_shared<MuscleCombo>(*this);
     }
 
     [[nodiscard]] Core::Mat::PAR::Parameter* parameter() const override { return params_; }

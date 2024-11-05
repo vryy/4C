@@ -11,6 +11,7 @@
 #include "4C_mat_maxwell_0d_acinus.hpp"
 #include "4C_red_airways_elementbase.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,24 +30,24 @@ Core::Communication::ParObject* Discret::Elements::RedAcinusType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedAcinusType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::RedAcinusType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINUS")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::RedAcinus>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::RedAcinus>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedAcinusType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::RedAcinusType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::RedAcinus>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::RedAcinus>(id, owner);
   return ele;
 }
 
@@ -241,11 +242,11 @@ std::vector<double> Discret::Elements::RedAcinus::element_center_refe_coords()
  *----------------------------------------------------------------------*/
 void Discret::Elements::RedAcinus::vis_names(std::map<std::string, int>& names)
 {
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   // cast to specific material, because general material does not have vis_names/vis_data
-  Teuchos::RCP<Mat::Maxwell0dAcinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
+  std::shared_ptr<Mat::Maxwell0dAcinus> mxwll_0d_acin =
+      std::dynamic_pointer_cast<Mat::Maxwell0dAcinus>(material());
   mxwll_0d_acin->vis_names(names);
 }
 
@@ -259,8 +260,8 @@ bool Discret::Elements::RedAcinus::vis_data(const std::string& name, std::vector
   if (Core::Elements::Element::vis_data(name, data)) return true;
 
   // cast to specific material, because general material does not have vis_names/vis_data
-  Teuchos::RCP<Mat::Maxwell0dAcinus> mxwll_0d_acin =
-      Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
+  std::shared_ptr<Mat::Maxwell0dAcinus> mxwll_0d_acin =
+      std::dynamic_pointer_cast<Mat::Maxwell0dAcinus>(material());
 
   return mxwll_0d_acin->vis_data(name, data, this->id());
 }
@@ -280,11 +281,11 @@ const Discret::ReducedLung::AcinusParams& Discret::Elements::RedAcinus::get_acin
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)              ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::RedAcinus::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::RedAcinus::lines()
 {
   FOUR_C_ASSERT(num_line() == 1, "RED_AIRWAY element must have one and only one line");
 
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -15,8 +15,8 @@
 #include "4C_xfem_discretization.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -24,14 +24,14 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Adapter::FluidFluidXFSI::FluidFluidXFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object
-    const std::string coupling_name_xfsi, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+Adapter::FluidFluidXFSI::FluidFluidXFSI(std::shared_ptr<Fluid> fluid,  // the XFluid object
+    const std::string coupling_name_xfsi, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : XFluidFSI(fluid, coupling_name_xfsi, solver, params, output)
 {
   // make sure
-  if (fluid_ == Teuchos::null) FOUR_C_THROW("Failed to create the underlying fluid adapter");
+  if (fluid_ == nullptr) FOUR_C_THROW("Failed to create the underlying fluid adapter");
   return;
 }
 
@@ -43,7 +43,7 @@ void Adapter::FluidFluidXFSI::init()
   XFluidFSI::init();
 
   // cast fluid to fluidimplicit
-  xfluidfluid_ = Teuchos::rcp_dynamic_cast<FLD::XFluidFluid>(xfluid_, true);
+  xfluidfluid_ = std::dynamic_pointer_cast<FLD::XFluidFluid>(xfluid_);
 
   // use block matrix for fluid-fluid, do nothing otherwise
   xfluidfluid_->use_block_matrix();

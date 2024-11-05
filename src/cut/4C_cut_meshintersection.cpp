@@ -20,8 +20,8 @@ FOUR_C_NAMESPACE_OPEN
 Cut::ElementHandle* Cut::MeshIntersection::add_element(int eid, const std::vector<int>& nids,
     const Core::LinAlg::SerialDenseMatrix& xyz, Core::FE::CellType distype, const double* lsv)
 {
-  for (std::vector<Teuchos::RCP<MeshHandle>>::iterator i = cut_mesh_.begin(); i != cut_mesh_.end();
-       ++i)
+  for (std::vector<std::shared_ptr<MeshHandle>>::iterator i = cut_mesh_.begin();
+       i != cut_mesh_.end(); ++i)
   {
     MeshHandle& cut_mesh_handle = **i;
     Mesh& cut_mesh = cut_mesh_handle.linear_mesh();
@@ -264,7 +264,7 @@ void Cut::MeshIntersection::cut_self_cut(bool include_inner, bool screenoutput)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Cut --- 2/6 --- Cut_SelfCut");
 
-  Teuchos::RCP<PointPool> point_pool = cut_mesh().points();
+  std::shared_ptr<PointPool> point_pool = cut_mesh().points();
   if (cut_mesh().get_options().do_self_cut())
   {
     if (myrank_ == 0 and screenoutput) Core::IO::cout << "\t * 2/6 Cut_SelfCut ...      ";

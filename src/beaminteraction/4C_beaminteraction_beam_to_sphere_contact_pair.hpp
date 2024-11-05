@@ -23,7 +23,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_fad.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

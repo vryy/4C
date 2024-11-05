@@ -13,6 +13,7 @@
 #include "4C_solver_nonlin_nox_aux.hpp"
 
 #include <NOX_Epetra_Vector.H>
+#include <Teuchos_RCPStdSharedPtrConversions.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -21,15 +22,15 @@ FOUR_C_NAMESPACE_OPEN
 CONTACT::NoxInterface::NoxInterface()
     : isinit_(false),
       issetup_(false),
-      strategy_ptr_(Teuchos::null),
-      cycling_maps_(std::vector<Teuchos::RCP<Epetra_Map>>(0))
+      strategy_ptr_(nullptr),
+      cycling_maps_(std::vector<std::shared_ptr<Epetra_Map>>(0))
 {
   // should stay empty
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CONTACT::NoxInterface::init(const Teuchos::RCP<CONTACT::AbstractStrategy>& strategy_ptr)
+void CONTACT::NoxInterface::init(const std::shared_ptr<CONTACT::AbstractStrategy>& strategy_ptr)
 {
   issetup_ = false;
 
@@ -59,24 +60,23 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vecto
       checkQuantity != NOX::Nln::StatusTest::quantity_contact_friction)
     return -1.0;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> constrRhs =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> constrRhs =
       strategy().get_rhs_block_ptr_for_norm_check(CONTACT::VecBlockType::constraint);
 
   // no contact contributions present
-  if (constrRhs.is_null()) return 0.0;
+  if (!constrRhs) return 0.0;
 
   // export the vector to the current redistributed map
-  Teuchos::RCP<Core::LinAlg::Vector<double>> constrRhs_red = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> constrRhs_red = nullptr;
   // Note: PointSameAs is faster than SameAs and should do the job right here,
   // since we replace the map afterwards anyway.               hiermeier 08/17
   if (not constrRhs->Map().PointSameAs(strategy().lm_dof_row_map(true)))
   {
-    constrRhs_red =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(strategy().lm_dof_row_map(true));
+    constrRhs_red = std::make_shared<Core::LinAlg::Vector<double>>(strategy().lm_dof_row_map(true));
     Core::LinAlg::export_to(*constrRhs, *constrRhs_red);
   }
   else
-    constrRhs_red = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*constrRhs);
+    constrRhs_red = std::make_shared<Core::LinAlg::Vector<double>>(*constrRhs);
 
   // replace the map
   constrRhs_red->ReplaceMap(strategy().slave_dof_row_map(true));
@@ -88,22 +88,22 @@ double CONTACT::NoxInterface::get_constraint_rhs_norms(const Core::LinAlg::Vecto
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
       // create vector with redistributed slave dof row map in normal direction
-      Teuchos::RCP<Core::LinAlg::Vector<double>> nConstrRhs =
+      std::shared_ptr<Core::LinAlg::Vector<double>> nConstrRhs =
           Core::LinAlg::extract_my_vector(*constrRhs_red, strategy().slave_n_dof_row_map(true));
 
 
       constrRhs_nox = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          nConstrRhs->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+          Teuchos::rcp(nConstrRhs->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
       // create vector with redistributed slave dof row map in tangential directions
-      Teuchos::RCP<Core::LinAlg::Vector<double>> tConstrRhs =
+      std::shared_ptr<Core::LinAlg::Vector<double>> tConstrRhs =
           Core::LinAlg::extract_my_vector(*constrRhs_red, strategy().slave_t_dof_row_map(true));
 
       constrRhs_nox = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          tConstrRhs->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+          Teuchos::rcp(tConstrRhs->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
       break;
     }
     default:
@@ -130,8 +130,8 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_rms(
     return -1.0;
 
   double rms = -1.0;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> z_ptr = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zincr_ptr = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> z_ptr = nullptr;
+  std::shared_ptr<Core::LinAlg::Vector<double>> zincr_ptr = nullptr;
   switch (checkQuantity)
   {
     case NOX::Nln::StatusTest::quantity_contact_normal:
@@ -178,10 +178,10 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_norms(
       checkQuantity != NOX::Nln::StatusTest::quantity_contact_friction)
     return -1.0;
 
-  if (strategy().lagrange_multiplier_np(true) == Teuchos::null) return 0.;
+  if (strategy().lagrange_multiplier_np(true) == nullptr) return 0.;
 
   double updatenorm = -1.0;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zincr_ptr = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> zincr_ptr = nullptr;
   switch (checkQuantity)
   {
     case NOX::Nln::StatusTest::quantity_contact_normal:
@@ -207,7 +207,8 @@ double CONTACT::NoxInterface::get_lagrange_multiplier_update_norms(
   }
 
   const ::NOX::Epetra::Vector zincr_nox_ptr(
-      zincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*zincr_ptr->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateView);
 
   updatenorm = zincr_nox_ptr.norm(type);
   // do scaling if desired
@@ -228,32 +229,32 @@ double CONTACT::NoxInterface::get_previous_lagrange_multiplier_norms(
 
   double zoldnorm = -1.0;
 
-  if (strategy().lagrange_multiplier_np(true) == Teuchos::null) return 0;
+  if (strategy().lagrange_multiplier_np(true) == nullptr) return 0;
 
   /* lagrange multiplier of the previous Newton step
    * (NOT equal to zOld_, which is stored in the Strategy object!!!) */
-  Teuchos::RCP<Core::LinAlg::Vector<double>> zold_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_np(true));
+  std::shared_ptr<Core::LinAlg::Vector<double>> zold_ptr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*strategy().lagrange_multiplier_np(true));
   zold_ptr->Update(-1.0, *strategy().lagrange_multiplier_increment(), 1.0);
-  Teuchos::RCP<::NOX::Epetra::Vector> zold_nox_ptr = Teuchos::null;
+  std::shared_ptr<::NOX::Epetra::Vector> zold_nox_ptr = nullptr;
   switch (checkQuantity)
   {
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> znold_ptr =
+      std::shared_ptr<Core::LinAlg::Vector<double>> znold_ptr =
           Core::LinAlg::extract_my_vector(*zold_ptr, strategy().slave_n_dof_row_map(true));
 
-      zold_nox_ptr = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          znold_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      zold_nox_ptr = std::make_shared<::NOX::Epetra::Vector>(
+          Teuchos::rcp(znold_ptr->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
-      Teuchos::RCP<Core::LinAlg::Vector<double>> ztold_ptr =
+      std::shared_ptr<Core::LinAlg::Vector<double>> ztold_ptr =
           Core::LinAlg::extract_my_vector(*zold_ptr, strategy().slave_t_dof_row_map(true));
 
-      zold_nox_ptr = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-          ztold_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      zold_nox_ptr = std::make_shared<::NOX::Epetra::Vector>(
+          Teuchos::rcp(ztold_ptr->get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
       break;
     }
     default:
@@ -320,12 +321,12 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::get_current_active_set_map
   {
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
-      return strategy().active_row_nodes();
+      return Teuchos::rcp(strategy().active_row_nodes());
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
-      return strategy().slip_row_nodes();
+      return Teuchos::rcp(strategy().slip_row_nodes());
       break;
     }
     default:
@@ -347,12 +348,12 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::get_old_active_set_map(
   {
     case NOX::Nln::StatusTest::quantity_contact_normal:
     {
-      return strategy().get_old_active_row_nodes();
+      return Teuchos::rcp(strategy().get_old_active_row_nodes());
       break;
     }
     case NOX::Nln::StatusTest::quantity_contact_friction:
     {
-      return strategy().get_old_slip_row_nodes();
+      return Teuchos::rcp(strategy().get_old_slip_row_nodes());
       break;
     }
     default:

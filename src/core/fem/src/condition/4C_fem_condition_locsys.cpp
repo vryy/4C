@@ -63,7 +63,7 @@ Core::Conditions::LocsysManager::LocsysManager(Core::FE::Discretization& discret
 /*-------------------------------------------------------------------*
  *-------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::update(const double time,
-    std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> nodenormals,
+    std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> nodenormals,
     const Core::Utils::FunctionManager& function_manager)
 {
   nodenormals_ = std::move(nodenormals);
@@ -169,11 +169,11 @@ void Core::Conditions::LocsysManager::update(const double time,
         {
           // Check, if the updated node positions shall be used for evaluation of the functions
           // 'funct'
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp;
+          std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp;
           if (((*useUpdatedNodePos) == 1) && (time >= 0.0))
           {
             dispnp = discret().get_state("dispnp");
-            if (dispnp == Teuchos::null)
+            if (dispnp == nullptr)
             {
               FOUR_C_THROW(
                   "Locsys: Cannot find state 'dispnp'! You need to set the state 'dispnp' before "
@@ -262,7 +262,7 @@ void Core::Conditions::LocsysManager::update(const double time,
 
   // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
-  Teuchos::RCP<Core::LinAlg::Vector<double>> already_processed =
+  std::shared_ptr<Core::LinAlg::Vector<double>> already_processed =
       Core::LinAlg::create_vector(*dofrowmap, true);
   already_processed->PutScalar(0.0);
 
@@ -272,7 +272,7 @@ void Core::Conditions::LocsysManager::update(const double time,
   // GIDs of all DoFs subjected to local co-ordinate systems
   std::set<int> locsysdofset;
 
-  trafo_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 3);
+  trafo_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 3);
 
   for (int i = 0; i < noderowmap->NumMyElements(); ++i)
   {
@@ -401,9 +401,9 @@ void Core::Conditions::LocsysManager::update(const double time,
     nummyentries = static_cast<int>(locsysdofs.size());
     myglobalentries = locsysdofs.data();
   }
-  locsysdofmap_ = Teuchos::make_rcp<Epetra_Map>(
+  locsysdofmap_ = std::make_shared<Epetra_Map>(
       -1, nummyentries, myglobalentries, discret_.dof_row_map()->IndexBase(), discret_.get_comm());
-  if (locsysdofmap_ == Teuchos::null) FOUR_C_THROW("Creation failed.");
+  if (locsysdofmap_ == nullptr) FOUR_C_THROW("Creation failed.");
 
   // The matrix subtrafo_ is used in order to apply the Dirichlet Conditions in a more efficient
   // manner
@@ -478,13 +478,13 @@ inline const Epetra_Comm& Core::Conditions::LocsysManager::get_comm() const
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_global_to_local(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const
 {
   // transform rhs vector
   rotate_global_to_local(rhs);
 
   // selective multiplication from left
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp =
       Core::LinAlg::matrix_multiply(*subtrafo_, false, *sysmat, false, true);
   // put transformed rows back into global matrix
   Core::LinAlg::matrix_put(*temp, 1.0, locsysdofmap_, *sysmat);
@@ -495,10 +495,10 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_global_to_local(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat) const
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat) const
 {
   // selective multiplication from left
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::matrix_multiply(
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp = Core::LinAlg::matrix_multiply(
       *subtrafo_, false, *sysmat, false, sysmat->explicit_dirichlet(), sysmat->save_graph(), true);
 
   // put transformed rows back into global matrix
@@ -520,7 +520,7 @@ void Core::Conditions::LocsysManager::rotate_global_to_local(
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
 void Core::Conditions::LocsysManager::rotate_local_to_global(Core::LinAlg::Vector<double>& result,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat, Core::LinAlg::Vector<double>& rhs) const
 {
   // transform result
   rotate_local_to_global(result);
@@ -529,8 +529,8 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(Core::LinAlg::Vecto
   rotate_local_to_global(rhs);
 
   // transform system matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp2;
 
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
@@ -559,7 +559,7 @@ void Core::Conditions::LocsysManager::rotate_local_to_global(
 void Core::Conditions::LocsysManager::rotate_local_to_global(
     Core::LinAlg::SparseMatrix& sysmat) const
 {
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> temp2 =
+  std::shared_ptr<Core::LinAlg::SparseMatrix> temp2 =
       Core::LinAlg::matrix_multiply(*trafo_, true, sysmat, false, false, sysmat.save_graph(), true);
   sysmat = *temp2;
 }
@@ -575,7 +575,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   // Take care for "negative times", where no information about dispnp_ is available
   if (time < 0.0)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeroVector =
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeroVector =
         Core::LinAlg::create_vector(*discret().dof_row_map(), true);
     discret_.set_state("dispnp", zeroVector);
   }
@@ -592,7 +592,7 @@ void Core::Conditions::LocsysManager::calc_rotation_vector_for_normal_system(
   }
 
   // Declare node normal variable
-  Teuchos::RCP<Core::LinAlg::Vector<double>> massConsistentNodeNormals =
+  std::shared_ptr<Core::LinAlg::Vector<double>> massConsistentNodeNormals =
       nodenormals_[numLocsysCond];
 
   // Loop through all nodes in the condition

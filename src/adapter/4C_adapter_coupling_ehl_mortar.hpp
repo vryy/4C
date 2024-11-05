@@ -19,7 +19,8 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -62,57 +63,58 @@ namespace Adapter
     \brief Read Mortar Condition
 
     */
-    void read_mortar_condition(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    void read_mortar_condition(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements) override;
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements) override;
 
     /*!
     \brief initialize routine
 
     */
-    void setup(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    void setup(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond) override;
 
     /// perform interface integration
-    virtual void integrate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, const double dt);
+    virtual void integrate(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp, const double dt);
 
     /// perform condensation of contact Lagrange multipliers
-    virtual void condense_contact(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& combined_RHS,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp, const double dt);
-    virtual void recover_coupled(Teuchos::RCP<Core::LinAlg::Vector<double>> sinc,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> tinc);
+    virtual void condense_contact(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& combined_RHS,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp, const double dt);
+    virtual void recover_coupled(std::shared_ptr<Core::LinAlg::Vector<double>> sinc,
+        std::shared_ptr<Core::LinAlg::Vector<double>> tinc);
 
     void evaluate_rel_mov();
     void store_dirichlet_status(const Core::LinAlg::MapExtractor& dbcmaps);
 
     /// check whether this displacement state has already been evaluated
-    virtual bool already_evaluated(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
+    virtual bool already_evaluated(std::shared_ptr<const Core::LinAlg::Vector<double>> disp);
 
     /// Assemble linearization D_{ij,k}*x_i
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_ehl_lin_d(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> assemble_ehl_lin_d(
+        const std::shared_ptr<Core::LinAlg::Vector<double>> x);
 
     /// Assemble linearization M_{il,k}*x_i
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_ehl_lin_m(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> x);
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> assemble_ehl_lin_m(
+        const std::shared_ptr<Core::LinAlg::Vector<double>> x);
 
     /// Assemble linearization G_{ij,k}*x_i
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> assemble_surf_grad_deriv(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> assemble_surf_grad_deriv(
         const Core::LinAlg::Vector<double>& x);
 
     virtual void write_restart(Core::IO::DiscretizationWriter& output);
     virtual void read_restart(Core::IO::DiscretizationReader& reader);
-    void create_active_slip_toggle(Teuchos::RCP<Core::LinAlg::Vector<double>>* active,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>* slip,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>* active_old = nullptr);
-    void create_force_vec(Teuchos::RCP<Core::LinAlg::Vector<double>>& n,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& t);
+    void create_active_slip_toggle(std::shared_ptr<Core::LinAlg::Vector<double>>* active,
+        std::shared_ptr<Core::LinAlg::Vector<double>>* slip,
+        std::shared_ptr<Core::LinAlg::Vector<double>>* active_old = nullptr);
+    void create_force_vec(std::shared_ptr<Core::LinAlg::Vector<double>>& n,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& t);
     bool has_contact() { return contact_regularization_; }
     double contact_res() { return contact_rhs_norm_; }
     double contact_incr() { return contact_LM_incr_norm_; }
@@ -124,63 +126,66 @@ namespace Adapter
     //@{
 
     /// relative tangential velocity
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> rel_tang_vel() { return relTangVel_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> rel_tang_vel() { return relTangVel_; }
     /// relative tangential velocity derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> rel_tang_vel_deriv()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> rel_tang_vel_deriv()
     {
       return relTangVel_deriv_;
     }
     /// average tangential velocity
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> av_tang_vel() { return avTangVel_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> av_tang_vel() { return avTangVel_; }
     /// average tangential velocity derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> av_tang_vel_deriv()
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> av_tang_vel_deriv()
     {
       return avTangVel_deriv_;
     }
     /// nodal gap (not weighted)
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> nodal_gap() { return nodal_gap_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> nodal_gap() { return nodal_gap_; }
     /// nodal gap (not weighted) derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> nodal_gap_deriv() { return deriv_nodal_gap_; }
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> nodal_gap_deriv()
+    {
+      return deriv_nodal_gap_;
+    }
     /// nodal normals
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> normals() { return normals_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> normals() { return normals_; }
     /// nodal normals derivative
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> nderiv_matrix() { return Nderiv_; }
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> nderiv_matrix() { return Nderiv_; }
     /// surfrace gradient operator
-    virtual Teuchos::RCP<Core::LinAlg::SparseMatrix> surf_grad_matrix() { return SurfGrad_; }
+    virtual std::shared_ptr<Core::LinAlg::SparseMatrix> surf_grad_matrix() { return SurfGrad_; }
     /// slave+master dof map
-    virtual Teuchos::RCP<const Epetra_Map> s_mdof_map() { return smdofrowmap_; }
+    virtual std::shared_ptr<const Epetra_Map> s_mdof_map() { return smdofrowmap_; }
     //@}
 
    private:
     //! @name Unwanted parent functions
     //@{
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gap() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> gap() override
     {
       FOUR_C_THROW("stop");
-      return Teuchos::null;
+      return nullptr;
     }
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> n_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> n_matrix() override
     {
       FOUR_C_THROW("stop");
-      return Teuchos::null;
+      return nullptr;
     }
     void evaluate() override { FOUR_C_THROW("stop"); }
-    void evaluate(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp) override
+    void evaluate(std::shared_ptr<Core::LinAlg::Vector<double>> idisp) override
     {
       FOUR_C_THROW("stop");
     }
     void evaluate_with_mesh_relocation(
-        Teuchos::RCP<Core::FE::Discretization> slavedis,    ///< slave discretization
-        Teuchos::RCP<Core::FE::Discretization> aledis,      ///< ALE discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
-        const Epetra_Comm& comm,                            ///< communicator
-        bool slavewithale                                   ///< flag defining if slave is ALE
+        std::shared_ptr<Core::FE::Discretization> slavedis,    ///< slave discretization
+        std::shared_ptr<Core::FE::Discretization> aledis,      ///< ALE discretization
+        std::shared_ptr<Core::LinAlg::Vector<double>>& idisp,  ///< ALE displacements
+        const Epetra_Comm& comm,                               ///< communicator
+        bool slavewithale                                      ///< flag defining if slave is ALE
         ) override
     {
       FOUR_C_THROW("stop");
     }
 
-    void evaluate_geometry(std::vector<Teuchos::RCP<Mortar::IntCell>>&
+    void evaluate_geometry(std::vector<std::shared_ptr<Mortar::IntCell>>&
             intcells  //!< vector of mortar integration cells
         ) override
     {
@@ -206,41 +211,42 @@ namespace Adapter
     void assemble_interface_velocities(const double dt);
     //@}
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         SurfGrad_;  ///< matrix to compute surface gradient at nodes: Grad(x) \approx TangGrad * x
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relTangVel_;  ///< relative tangential velocity
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::Vector<double>> relTangVel_;  ///< relative tangential velocity
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         relTangVel_deriv_;  ///< derivative of relative tangential velocity
-    Teuchos::RCP<Core::LinAlg::Vector<double>> avTangVel_;  ///< average tangential velocity
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::Vector<double>> avTangVel_;  ///< average tangential velocity
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         avTangVel_deriv_;  ///< derivative of average tangential velocity
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         nodal_gap_;  ///< NOT the weighted gap but the real distance
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         deriv_nodal_gap_;  ///< derivative of nodal_gap_ w.r.t. displacements
-    Teuchos::RCP<Core::LinAlg::Vector<double>> normals_;  ///< nodal normals (slave side)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Nderiv_;  ///< derivtative of nodal slave-sided normals
+    std::shared_ptr<Core::LinAlg::Vector<double>> normals_;  ///< nodal normals (slave side)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
+        Nderiv_;  ///< derivtative of nodal slave-sided normals
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         evaluated_state_;  ///< displacement state that has last been evaluated
 
     bool as_converged_;
     double contact_rhs_norm_;
     double contact_LM_incr_norm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         fscn_;  // structural contact forces of last time step (needed for time integration)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> z_;  //  contact lagrange mulitplier
+    std::shared_ptr<Core::LinAlg::Vector<double>> z_;  //  contact lagrange mulitplier
 
     // recovery of contact LM
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         dinvA_;  // dinv on active displacement dofs (for recovery)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         kss_a_;  // Part of structure-stiffness (kss) that corresponds to active slave rows
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         kst_a_;  // Part of coupling-stiffness  (kst) that corresponds to active slave rows
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         rs_a_;  // Part of structural residual that corresponds to active slave rows
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         sdirichtoggle_;  // global dirichlet toggle of all slave dofs
 
     bool contact_regularization_;

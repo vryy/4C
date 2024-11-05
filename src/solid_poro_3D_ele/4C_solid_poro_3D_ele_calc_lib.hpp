@@ -80,9 +80,9 @@ namespace Discret::Elements
       const std::string& state, const Core::Elements::Element& ele)
   {
     // get state of the global vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
         discretization.get_state(dofset, state);
-    if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+    if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
     // ask for the number of dofs of dofset
     const int numdofpernode = discretization.num_dof(dofset, ele.nodes()[0]);

@@ -359,7 +359,7 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
  *
  */
 void Inpar::BeamToSolid::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
@@ -370,17 +370,18 @@ void Inpar::BeamToSolid::set_valid_conditions(
         Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_volume_meshtying,
         condition_names);
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_to_solid_volume_meshtying_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-            "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING VOLUME", condition_names[1],
-            "Beam-to-volume mesh tying conditions - volume definition",
-            Core::Conditions::BeamToSolidVolumeMeshtyingVolume, true,
-            Core::Conditions::geometry_type_volume);
+    std::shared_ptr<Core::Conditions::ConditionDefinition>
+        beam_to_solid_volume_meshtying_condition =
+            std::make_shared<Core::Conditions::ConditionDefinition>(
+                "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING VOLUME", condition_names[1],
+                "Beam-to-volume mesh tying conditions - volume definition",
+                Core::Conditions::BeamToSolidVolumeMeshtyingVolume, true,
+                Core::Conditions::geometry_type_volume);
     add_named_int(beam_to_solid_volume_meshtying_condition, "COUPLING_ID");
     condlist.push_back(beam_to_solid_volume_meshtying_condition);
 
     beam_to_solid_volume_meshtying_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING LINE", condition_names[0],
             "Beam-to-volume mesh tying conditions - line definition",
             Core::Conditions::BeamToSolidVolumeMeshtyingLine, true,
@@ -396,17 +397,18 @@ void Inpar::BeamToSolid::set_valid_conditions(
         Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_meshtying,
         condition_names);
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_to_solid_surface_meshtying_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-            "BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING SURFACE", condition_names[1],
-            "Beam-to-surface mesh tying conditions - surface definition",
-            Core::Conditions::BeamToSolidSurfaceMeshtyingSurface, true,
-            Core::Conditions::geometry_type_surface);
+    std::shared_ptr<Core::Conditions::ConditionDefinition>
+        beam_to_solid_surface_meshtying_condition =
+            std::make_shared<Core::Conditions::ConditionDefinition>(
+                "BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING SURFACE", condition_names[1],
+                "Beam-to-surface mesh tying conditions - surface definition",
+                Core::Conditions::BeamToSolidSurfaceMeshtyingSurface, true,
+                Core::Conditions::geometry_type_surface);
     add_named_int(beam_to_solid_surface_meshtying_condition, "COUPLING_ID");
     condlist.push_back(beam_to_solid_surface_meshtying_condition);
 
     beam_to_solid_surface_meshtying_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING LINE", condition_names[0],
             "Beam-to-surface mesh tying conditions - line definition",
             Core::Conditions::BeamToSolidSurfaceMeshtyingLine, true,
@@ -422,8 +424,8 @@ void Inpar::BeamToSolid::set_valid_conditions(
         Inpar::BEAMINTERACTION::BeamInteractionConditions::beam_to_solid_surface_contact,
         condition_names);
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_to_solid_surface_contact_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+    std::shared_ptr<Core::Conditions::ConditionDefinition> beam_to_solid_surface_contact_condition =
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT SURFACE", condition_names[1],
             "Beam-to-surface contact conditions - surface definition",
             Core::Conditions::BeamToSolidSurfaceContactSurface, true,
@@ -432,7 +434,7 @@ void Inpar::BeamToSolid::set_valid_conditions(
     condlist.push_back(beam_to_solid_surface_contact_condition);
 
     beam_to_solid_surface_contact_condition =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+        std::make_shared<Core::Conditions::ConditionDefinition>(
             "BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT LINE", condition_names[0],
             "Beam-to-surface contact conditions - line definition",
             Core::Conditions::BeamToSolidSurfaceContactLine, true,

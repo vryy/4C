@@ -129,7 +129,7 @@ void PostVtiWriter::write_geo()
 
 
 void PostVtiWriter::write_dof_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from,
     const bool fillzeros)
@@ -138,7 +138,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing dof-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the DofColMap to have this access
@@ -148,7 +148,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
   // TODO: wic, once the vtu pressure writer is fixed, apply the same solution here.
   const int offset = (fillzeros) ? 0 : vecmap.MinAllGID() - dis->dof_row_map(0)->MinAllGID();
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> ghostedData;
+  std::shared_ptr<Core::LinAlg::Vector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
@@ -225,7 +225,7 @@ void PostVtiWriter::write_dof_result_step(std::ofstream& file,
 
 
 void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf)
 {
@@ -233,7 +233,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
   if (myrank_ == 0 && timestep_ == 0) std::cout << "writing node-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   // Here is the only thing we need to do for parallel computations: We need read access to all dofs
   // on the row elements, so need to get the NodeColMap to have this access
@@ -244,13 +244,13 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
       colmap->MaxAllGID() == vecmap.MaxAllGID() && colmap->MinAllGID() == vecmap.MinAllGID(),
       "Given data vector does not seem to match discretization node map");
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> ghostedData;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> ghostedData;
   if (colmap->SameAs(vecmap))
     ghostedData = data;
   else
   {
     ghostedData =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*colmap, data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *ghostedData);
   }
 
@@ -311,7 +311,7 @@ void PostVtiWriter::write_nodal_result_step(std::ofstream& file,
 
 
 void PostVtiWriter::write_element_result_step(std::ofstream& file,
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& data,
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>>& data,
     std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
     const std::string& groupname, const std::string& name, const int numdf, const int from)
 {
@@ -320,7 +320,7 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   if (myrank_ == 0 && timestep_ == 0)
     std::cout << "writing element-based field " << name << std::endl;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
 
   const int ncomponents = (numdf > 1 && numdf == field_->problem()->num_dim()) ? 3 : numdf;
 
@@ -333,12 +333,12 @@ void PostVtiWriter::write_element_result_step(std::ofstream& file,
   if (numdf + from > numcol)
     FOUR_C_THROW("violated column range of Core::LinAlg::MultiVector<double>: %d", numcol);
 
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> importedData;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> importedData;
   if (dis->element_col_map()->SameAs(data->Map()))
     importedData = data;
   else
   {
-    importedData = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+    importedData = std::make_shared<Core::LinAlg::MultiVector<double>>(
         *dis->element_col_map(), data->NumVectors(), false);
     Core::LinAlg::export_to(*data, *importedData);
   }
@@ -391,7 +391,7 @@ void PostVtiWriter::writer_prep_timestep()
 {
   using namespace FourC;
 
-  const Teuchos::RCP<Core::FE::Discretization> dis = field_->discretization();
+  const std::shared_ptr<Core::FE::Discretization> dis = field_->discretization();
   // collect all possible values of the x-, y- and z-coordinate
   typedef std::set<double, LessTol<double>> set_tol;
   set_tol collected_coords[3];

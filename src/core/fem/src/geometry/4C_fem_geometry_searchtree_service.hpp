@@ -14,8 +14,7 @@
 #include "4C_fem_geometry_searchtree_nearestobject.hpp"
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -78,7 +77,7 @@ namespace Core::Geo
    XAxisAlignedBoundingBox
    */
   Core::LinAlg::Matrix<3, 2> get_xaab_bof_eles(
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions);
 
   /*!
@@ -141,7 +140,7 @@ namespace Core::Geo
    \return surface id of nearest object (node or line: a random adjacent surface is chosen)
    */
   int nearest_3d_object_in_node(const Core::FE::Discretization& dis,
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
       Core::LinAlg::Matrix<3, 1>& minDistCoords);
@@ -152,7 +151,7 @@ namespace Core::Geo
       const Core::LinAlg::Matrix<3, 1>& point, Core::LinAlg::Matrix<3, 1>& minDistCoords);
 
   void nearest_2d_object_in_node(const Core::FE::Discretization& dis,
-      std::map<int, Teuchos::RCP<Core::Elements::Element>>& elements,
+      std::map<int, std::shared_ptr<Core::Elements::Element>>& elements,
       const std::map<int, Core::LinAlg::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList, const Core::LinAlg::Matrix<3, 1>& point,
       Core::LinAlg::Matrix<3, 1>& minDistCoords);

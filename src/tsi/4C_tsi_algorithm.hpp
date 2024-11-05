@@ -94,10 +94,10 @@ namespace TSI
         ) override = 0;
 
     //! access to structural field
-    const Teuchos::RCP<Adapter::Structure>& structure_field() { return structure_; }
+    const std::shared_ptr<Adapter::Structure>& structure_field() { return structure_; }
 
     //! access to thermal field
-    const Teuchos::RCP<Thermo::Adapter>& thermo_field() { return thermo_; }
+    const std::shared_ptr<Thermo::Adapter>& thermo_field() { return thermo_; }
 
    protected:
     //! @name Time loop building blocks
@@ -116,7 +116,7 @@ namespace TSI
 
     //! communicate displacement vector to thermal field to enable their
     //! visualisation on the deformed body
-    void output_deformation_in_thr(Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp,
+    void output_deformation_in_thr(std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp,
         Core::FE::Discretization& structdis);
 
     //@}
@@ -124,12 +124,14 @@ namespace TSI
     //! @name Transfer methods
 
     //! apply temperature state on structure discretization
-    virtual void apply_thermo_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> temp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> temp_res = Teuchos::null);
+    virtual void apply_thermo_coupling_state(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> temp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> temp_res = nullptr);
 
     //! apply structural displacements and velocities on thermo discretization
-    virtual void apply_struct_coupling_state(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel);
+    virtual void apply_struct_coupling_state(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel);
 
     //! Prepare a ptr to the contact strategy from the structural field,
     //! store it in tsi and hand it to the thermal field
@@ -142,15 +144,15 @@ namespace TSI
     //! @name Access methods
 
     //! velocity calculation given the displacements (like in FSI)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> calc_velocity(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> calc_velocity(
         const Core::LinAlg::Vector<double>& dispnp);
 
     //! displacements at time n+1 for thermal output
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> dispnp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> dispnp_;
 
     //! temperatures at time n+1 for structure output
     //! introduced for non-matching discretizations
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> tempnp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> tempnp_;
 
     //@}
 
@@ -158,14 +160,14 @@ namespace TSI
     //! @name Underlying fields
 
     //! underlying structure of the FSI problem
-    Teuchos::RCP<Adapter::Structure> structure_;
+    std::shared_ptr<Adapter::Structure> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP<Thermo::Adapter> thermo_;
+    std::shared_ptr<Thermo::Adapter> thermo_;
 
     //! contact strategies
-    Teuchos::RCP<CONTACT::LagrangeStrategyTsi> contact_strategy_lagrange_;
-    Teuchos::RCP<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
+    std::shared_ptr<CONTACT::LagrangeStrategyTsi> contact_strategy_lagrange_;
+    std::shared_ptr<CONTACT::NitscheStrategyTsi> contact_strategy_nitsche_;
 
     //@}
 
@@ -174,14 +176,14 @@ namespace TSI
     //! flag for matchinggrid
     const bool matchinggrid_;
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_;
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_;
 
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupST_;  // S: master, T: slave
+    std::shared_ptr<Coupling::Adapter::Coupling> coupST_;  // S: master, T: slave
     //@}
 
 
     //! @name Surface Mortar stuff
-    Teuchos::RCP<Mortar::MultiFieldCoupling> mortar_coupling_;
+    std::shared_ptr<Mortar::MultiFieldCoupling> mortar_coupling_;
 
     //@}
   };  // Algorithm

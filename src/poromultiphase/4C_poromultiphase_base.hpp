@@ -71,51 +71,51 @@ namespace POROMULTIPHASE
     void update_and_output() override;
 
     /// dof map of vector of unknowns of structure field
-    Teuchos::RCP<const Epetra_Map> struct_dof_row_map() const override;
+    std::shared_ptr<const Epetra_Map> struct_dof_row_map() const override;
 
     /// dof map of vector of unknowns of fluid field
-    Teuchos::RCP<const Epetra_Map> fluid_dof_row_map() const override;
+    std::shared_ptr<const Epetra_Map> fluid_dof_row_map() const override;
 
     /// dof map of vector of unknowns of artery field
-    Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const override;
+    std::shared_ptr<const Epetra_Map> artery_dof_row_map() const override;
 
     /// system matrix of coupled artery porofluid problem
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const;
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const;
 
     //! access to structural field
-    const Teuchos::RCP<Adapter::Structure>& structure_field() override { return structure_; }
+    const std::shared_ptr<Adapter::Structure>& structure_field() override { return structure_; }
 
     //! access to fluid field
-    const Teuchos::RCP<Adapter::PoroFluidMultiphaseWrapper>& fluid_field() override
+    const std::shared_ptr<Adapter::PoroFluidMultiphaseWrapper>& fluid_field() override
     {
       return fluid_;
     }
 
     /// set structure solution on scatra field
-    void set_struct_solution(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel) override;
+    void set_struct_solution(std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel) override;
 
     /// set scatra solution on fluid field
     void set_scatra_solution(
-        unsigned nds, Teuchos::RCP<const Core::LinAlg::Vector<double>> scalars) override;
+        unsigned nds, std::shared_ptr<const Core::LinAlg::Vector<double>> scalars) override;
 
     //! setup solver (for monolithic only)
     bool setup_solver() override { return false; };
 
     /// unknown displacements at \f$t_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> struct_dispnp() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> struct_dispnp() const override;
 
     /// unknown velocity at \f$t_{n+1}\f$
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> struct_velnp() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> struct_velnp() const override;
 
     /// return fluid flux
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> fluid_flux() const override;
+    std::shared_ptr<const Core::LinAlg::MultiVector<double>> fluid_flux() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_phinp() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_phinp() const override;
 
     /// return relaxed fluid solution variable (partitioned coupling will overwrite this method)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> relaxed_fluid_phinp() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> relaxed_fluid_phinp() const override
     {
       return fluid_phinp();
     };
@@ -129,23 +129,23 @@ namespace POROMULTIPHASE
     };
 
     /// return fluid solution variable
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_saturation() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_saturation() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_pressure() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_pressure() const override;
 
     /// return fluid solution variable
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solid_pressure() const override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solid_pressure() const override;
 
     //! unique map of all dofs that should be constrained with DBC
-    Teuchos::RCP<const Epetra_Map> combined_dbc_map() const override
+    std::shared_ptr<const Epetra_Map> combined_dbc_map() const override
     {
       FOUR_C_THROW("combined_dbc_map() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! build the block null spaces
-    void build_block_null_spaces(Teuchos::RCP<Core::LinAlg::Solver>& solver) override
+    void build_block_null_spaces(std::shared_ptr<Core::LinAlg::Solver>& solver) override
     {
       FOUR_C_THROW("build_block_null_spaces() only available for monolithic schemes!");
       return;
@@ -153,15 +153,15 @@ namespace POROMULTIPHASE
 
     //! build the block null spaces
     void build_artery_block_null_space(
-        Teuchos::RCP<Core::LinAlg::Solver>& solver, const int& arteryblocknum) override
+        std::shared_ptr<Core::LinAlg::Solver>& solver, const int& arteryblocknum) override
     {
       FOUR_C_THROW("build_artery_block_null_space() only available for monolithic schemes!");
       return;
     };
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fx, const bool firstcall) override
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fx, const bool firstcall) override
     {
       FOUR_C_THROW("evaluate() only available for monolithic schemes!");
       return;
@@ -169,8 +169,8 @@ namespace POROMULTIPHASE
 
     //! update all fields after convergence (add increment on displacements and fluid primary
     //! variables)
-    void update_fields_after_convergence(Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx) override
+    void update_fields_after_convergence(std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx) override
     {
       FOUR_C_THROW("update_fields_after_convergence() only available for monolithic schemes!");
       return;
@@ -178,49 +178,49 @@ namespace POROMULTIPHASE
 
     /// perform relaxaton (only for partitioned schemes)
     void perform_relaxation(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, const int itnum) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phi, const int itnum) override
     {
       FOUR_C_THROW("PerformRelaxation() only available for partitioned schemes!");
       return;
     };
 
     //! get monolithic rhs vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() const override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() const override
     {
       FOUR_C_THROW("RHS() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! get extractor
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const override
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extractor() const override
     {
       FOUR_C_THROW("Extractor() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     };
 
     //! get monolithic block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() const override
     {
       FOUR_C_THROW("block_system_matrix() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     };
 
    private:
     /// set structure mesh displacement on fluid field
-    void set_mesh_disp(Teuchos::RCP<const Core::LinAlg::Vector<double>> disp);
+    void set_mesh_disp(std::shared_ptr<const Core::LinAlg::Vector<double>> disp);
 
     /// set structure velocity field on fluid field
-    void set_velocity_fields(Teuchos::RCP<const Core::LinAlg::Vector<double>> vel);
+    void set_velocity_fields(std::shared_ptr<const Core::LinAlg::Vector<double>> vel);
 
     /// underlying structure of the PoroMultiPhase problem
-    Teuchos::RCP<Adapter::Structure> structure_;
+    std::shared_ptr<Adapter::Structure> structure_;
 
     /// underlying fluid problem of the PoroMultiPhase problem
-    Teuchos::RCP<Adapter::PoroFluidMultiphaseWrapper> fluid_;
+    std::shared_ptr<Adapter::PoroFluidMultiphaseWrapper> fluid_;
 
    protected:
     /// a zero vector of full length of structure dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_zeros_;
     //! here the computation of the structure can be skipped, this is helpful if only fluid-scatra
     //! coupling should be calculated
     bool solve_structure_;

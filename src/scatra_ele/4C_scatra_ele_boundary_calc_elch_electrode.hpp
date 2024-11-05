@@ -87,7 +87,7 @@ namespace Discret
        */
       template <Core::FE::CellType distype_master>
       static void evaluate_s2_i_coupling_at_integration_point(
-          const Teuchos::RCP<const Mat::Electrode>& matelectrode,
+          const std::shared_ptr<const Mat::Electrode>& matelectrode,
           const std::vector<Core::LinAlg::Matrix<nen_, 1>>& eslavephinp,
           const std::vector<Core::LinAlg::Matrix<Core::FE::num_nodes<distype_master>, 1>>&
               emasterphinp,
@@ -263,7 +263,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix& emastermatrix) override;
 
       double get_valence(
-          const Teuchos::RCP<const Core::Mat::Material>& material, int k) const override;
+          const std::shared_ptr<const Core::Mat::Material>& material, int k) const override;
 
       void calc_s2_i_coupling_flux(const Core::Elements::FaceElement* ele,
           const Teuchos::ParameterList& params, Core::FE::Discretization& discretization,

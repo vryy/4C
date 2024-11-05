@@ -40,7 +40,7 @@ namespace Cut
   {
    public:
     /// constructor
-    MeshHandle(Options& options, double norm = 1, Teuchos::RCP<PointPool> pp = Teuchos::null,
+    MeshHandle(Options& options, double norm = 1, std::shared_ptr<PointPool> pp = nullptr,
         bool cutmesh = false, int myrank = -1)
         : mesh_(options, norm, pp, cutmesh, myrank)
     {
@@ -108,14 +108,14 @@ namespace Cut
     Mesh mesh_;  ///< the linear mesh
     std::map<int, LinearElementHandle>
         linearelements_;  ///< map of element id and linear element handles
-    std::map<int, Teuchos::RCP<QuadraticElementHandle>>
+    std::map<int, std::shared_ptr<QuadraticElementHandle>>
         quadraticelements_;  ///< map of element id and quadratic element handles
     std::map<int, LinearSideHandle> linearsides_;  ///< map of cut side id and linear side handles
-    std::map<int, Teuchos::RCP<QuadraticSideHandle>>
+    std::map<int, std::shared_ptr<QuadraticSideHandle>>
         quadraticsides_;  ///< map of cut side id and quadratic side handles
     std::map<plain_int_set, LinearSideHandle>
         elementlinearsides_;  ///< map of element side node ids and linear side handles
-    std::map<plain_int_set, Teuchos::RCP<QuadraticSideHandle>>
+    std::map<plain_int_set, std::shared_ptr<QuadraticSideHandle>>
         elementquadraticsides_;  ///< map of element side node ids and quadratic side handles
   };
 

@@ -65,7 +65,7 @@ namespace Solid
     MonitorDbc() = default;
 
     /// initialize class members
-    void init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_ptr,
+    void init(const std::shared_ptr<Solid::TimeInt::BaseDataIO>& io_ptr,
         Core::FE::Discretization& discret, Solid::TimeInt::BaseDataGlobalState& gstate,
         Solid::Dbc& dbc);
 
@@ -86,26 +86,27 @@ namespace Solid
         const Core::FE::Discretization& discret) const;
 
     void create_reaction_maps(const Core::FE::Discretization& discret,
-        const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
+        const Core::Conditions::Condition& rcond, std::shared_ptr<Epetra_Map>* react_maps) const;
 
     void read_results_prior_restart_step_and_write_to_file(
         const std::vector<std::string>& full_restart_filepaths, int restart_step) const;
 
     void get_area(double area_ref[], const Core::Conditions::Condition* rcond) const;
 
-    double get_reaction_force(
-        Core::LinAlg::Matrix<3, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const;
+    double get_reaction_force(Core::LinAlg::Matrix<3, 1>& rforce_xyz,
+        const std::shared_ptr<Epetra_Map>* react_maps) const;
 
     double get_reaction_moment(Core::LinAlg::Matrix<3, 1>& rmoment_xyz,
-        const Teuchos::RCP<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const;
+        const std::shared_ptr<Epetra_Map>* react_maps,
+        const Core::Conditions::Condition* rcond) const;
 
     std::vector<std::string> create_file_paths(
-        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
+        const std::vector<std::shared_ptr<Core::Conditions::Condition>>& rconds,
         const std::string& full_dirpath, const std::string& filename_only_prefix,
         const std::string& file_type) const;
 
     void clear_files_and_write_header(
-        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
+        const std::vector<std::shared_ptr<Core::Conditions::Condition>>& rconds,
         std::vector<std::string>& full_filepaths, bool do_write_condition_header);
 
     void write_condition_header(std::ostream& os, const int col_width,
@@ -117,7 +118,7 @@ namespace Solid
         const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 
-    void write_results_to_screen(const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr,
+    void write_results_to_screen(const std::shared_ptr<Core::Conditions::Condition>& rcond_ptr,
         const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
         const double& area_ref, const double& area_curr) const;
 
@@ -140,7 +141,7 @@ namespace Solid
     std::vector<std::string> full_filepaths_ = std::vector<std::string>();
 
     /// extract the dofs of the reaction forces which shall be monitored
-    std::map<int, std::vector<Teuchos::RCP<Epetra_Map>>> react_maps_;
+    std::map<int, std::vector<std::shared_ptr<Epetra_Map>>> react_maps_;
     unsigned of_precision_ = -1;
     unsigned os_precision_ = -1;
 

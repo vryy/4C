@@ -48,8 +48,8 @@ Mixture::MixtureConstituentElastHyperBase::MixtureConstituentElastHyperBase(
   // Create summands
   for (const auto& matid : params_->matids_)
   {
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to read elastic summand.");
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to read elastic summand.");
     potsum_.push_back(sum);
   }
 
@@ -101,7 +101,7 @@ void Mixture::MixtureConstituentElastHyperBase::unpack_constituent(
   int matid;
   extract_from_pack(buffer, matid);
 
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -143,8 +143,8 @@ void Mixture::MixtureConstituentElastHyperBase::unpack_constituent(
     for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
     {
       const int summatid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(summatid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(summatid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 

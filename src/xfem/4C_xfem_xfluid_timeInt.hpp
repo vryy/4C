@@ -70,13 +70,13 @@ namespace XFEM
     explicit XFluidTimeInt(
         const bool is_newton_increment_transfer,  /// monolithic newton increment transfer or time
                                                   /// step transfer?
-        const Teuchos::RCP<Core::FE::Discretization>& dis,              /// discretization
-        const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,  /// condition manager
-        const Teuchos::RCP<Cut::CutWizard>& wizard_old,                 /// cut wizard at t^n
-        const Teuchos::RCP<Cut::CutWizard>& wizard_new,                 /// cut wizard at t^(n+1)
-        const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_old,               /// XFEM dofset at t^n
-        const Teuchos::RCP<XFEM::XFEMDofSet>& dofset_new,               /// XFEM dofset at t^(n+1)
-        const Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach,   /// xfluid_timintapproch
+        const std::shared_ptr<Core::FE::Discretization>& dis,              /// discretization
+        const std::shared_ptr<XFEM::ConditionManager>& condition_manager,  /// condition manager
+        const std::shared_ptr<Cut::CutWizard>& wizard_old,                 /// cut wizard at t^n
+        const std::shared_ptr<Cut::CutWizard>& wizard_new,                 /// cut wizard at t^(n+1)
+        const std::shared_ptr<XFEM::XFEMDofSet>& dofset_old,               /// XFEM dofset at t^n
+        const std::shared_ptr<XFEM::XFEMDofSet>& dofset_new,           /// XFEM dofset at t^(n+1)
+        const Inpar::XFEM::XFluidTimeIntScheme xfluid_timintapproach,  /// xfluid_timintapproch
         std::map<int, std::vector<Inpar::XFEM::XFluidTimeInt>>&
             node_to_reconstr_method,  /// reconstruction map for nodes and its dofsets
         std::map<Inpar::XFEM::XFluidTimeInt, std::map<int, std::set<int>>>&
@@ -93,22 +93,22 @@ namespace XFEM
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction
     void transfer_dofs_to_new_map(
-        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
-        const Teuchos::RCP<std::set<int>>
+        const std::shared_ptr<std::set<int>>
             dbcgids  /// set of dof gids that must not be changed by ghost penalty reconstruction
     );
 
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction for given vector of node gids
     void transfer_dofs_to_new_map(
-        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
-        const Teuchos::RCP<std::set<int>>
+        const std::shared_ptr<std::set<int>>
             dbcgids,  /// set of dof gids that must not be changed by ghost penalty reconstruction
         const std::vector<int>& node_gids  /// vector of node gids
     );
@@ -123,7 +123,7 @@ namespace XFEM
         Inpar::XFEM::XFluidTimeInt reconstr);
 
     /// get permutation map for ghost dofs
-    Teuchos::RCP<std::map<int, int>> get_permutation_map() { return permutation_map_; };
+    std::shared_ptr<std::map<int, int>> get_permutation_map() { return permutation_map_; };
 
     /// timint output for reconstruction methods
     void output();
@@ -132,11 +132,11 @@ namespace XFEM
     /// transfer standard and ghost dofs to new map as far as possible and mark dofs for
     /// reconstruction for a given node gid
     void transfer_nodal_dofs_to_new_map(
-        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>&
             oldRowStateVectors,  /// row map based vectors w.r.t old interface position
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
-        const Teuchos::RCP<std::set<int>>
+        const std::shared_ptr<std::set<int>>
             dbcgids,  /// set of dof gids that must not be changed by ghost penalty reconstruction
         int gid       /// nodal gid
     );
@@ -161,20 +161,20 @@ namespace XFEM
         const int nds_new,                         /// nodal dofset at t^(n+1)
         const int nds_old,                         /// nodal dofset at t^n
         const Inpar::XFEM::XFluidTimeInt method,   /// reconstruction method
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,  /// row map based state vectors at t^(n+1)
-        const std::vector<Teuchos::RCP<const Core::LinAlg::Vector<double>>>&
-            oldRowStateVectors,                    /// row map based state vectors at t^n
-        const Teuchos::RCP<std::set<int>> dbcgids  /// set of DBC global ids
+        const std::vector<std::shared_ptr<const Core::LinAlg::Vector<double>>>&
+            oldRowStateVectors,                       /// row map based state vectors at t^n
+        const std::shared_ptr<std::set<int>> dbcgids  /// set of DBC global ids
     );
 
     /// mark nodal dofs of vector w.r.t new interface position for reconstruction
     void mark_dofs(const Core::Nodes::Node* node,  /// drt node
         const int nds_new,                         /// nodal dofset at t^(n+1)
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,                   /// row map based state vectors at t^(n+1)
         const Inpar::XFEM::XFluidTimeInt method,  /// reconstruction method
-        const Teuchos::RCP<std::set<int>>
+        const std::shared_ptr<std::set<int>>
             dbcgids  /// set of dof gids that must not be changed by ghost penalty reconstruction
     );
 
@@ -194,7 +194,7 @@ namespace XFEM
     /// identify cellsets at time t^n with cellsets at time t^(n+1)
     int identify_old_sets(const Cut::Node* n_old,  /// node w.r.t to old wizard
         const Cut::Node* n_new,                    /// node w.r.t to new wizard
-        const std::vector<Teuchos::RCP<Cut::NodalDofSet>>&
+        const std::vector<std::shared_ptr<Cut::NodalDofSet>>&
             dof_cellsets_old,                 /// all dofcellsets at t^n
         const Cut::NodalDofSet* cell_set_new  /// dofcellset at t^(n+1) which has to be identified
     );
@@ -241,9 +241,9 @@ namespace XFEM
     /// export data about reconstruction method to neighbor proc and receive data from previous
     /// proc
     void export_methods(
-        const std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>>&
+        const std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>>&
             newRowStateVectors,  /// row map based vectors w.r.t new interface position
-        const Teuchos::RCP<std::set<int>>
+        const std::shared_ptr<std::set<int>>
             dbcgids  /// set of dof gids that must not be changed by ghost penalty reconstruction
     );
 
@@ -259,15 +259,15 @@ namespace XFEM
     const bool is_newton_increment_transfer_;  /// monolithic newton increment transfer or time
                                                /// step transfer?
 
-    Teuchos::RCP<Core::FE::Discretization> dis_;  /// background  discretization
+    std::shared_ptr<Core::FE::Discretization> dis_;  /// background  discretization
 
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;  /// condition manager
+    std::shared_ptr<XFEM::ConditionManager> condition_manager_;  /// condition manager
 
-    Teuchos::RCP<Cut::CutWizard> wizard_old_;  /// old cut wizard w.r.t old interface position
-    Teuchos::RCP<Cut::CutWizard> wizard_new_;  /// new cut wizard w.r.t new interface position
+    std::shared_ptr<Cut::CutWizard> wizard_old_;  /// old cut wizard w.r.t old interface position
+    std::shared_ptr<Cut::CutWizard> wizard_new_;  /// new cut wizard w.r.t new interface position
 
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_old_;  /// old XFEM dofset w.r.t old interface position
-    Teuchos::RCP<XFEM::XFEMDofSet> dofset_new_;  /// new XFEM dofset w.r.t new interface position
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_old_;  /// old XFEM dofset w.r.t old interface position
+    std::shared_ptr<XFEM::XFEMDofSet> dofset_new_;  /// new XFEM dofset w.r.t new interface position
 
     // current processor id and number of procs
     int myrank_;
@@ -302,7 +302,7 @@ namespace XFEM
     //! @name check sliding on surface in timeintegration
     bool xfluid_timint_check_sliding_on_surface_;
 
-    Teuchos::RCP<std::map<int, int>> permutation_map_;
+    std::shared_ptr<std::map<int, int>> permutation_map_;
   };
 
 }  // namespace XFEM

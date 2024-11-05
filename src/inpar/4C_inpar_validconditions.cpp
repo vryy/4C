@@ -40,7 +40,7 @@ FOUR_C_NAMESPACE_OPEN
 
 
 void Input::print_empty_condition_definitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
   {
@@ -53,7 +53,7 @@ void Input::print_empty_condition_definitions(std::ostream& stream,
 /*----------------------------------------------------------------------*/
 void print_condition_dat_header()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> condlist =
+  std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>> condlist =
       Input::valid_conditions();
   Input::print_empty_condition_definitions(std::cout, *condlist);
 }
@@ -63,13 +63,13 @@ namespace Input
 {
   // collect some problem-specific conditions that do not fit in the generic sections
   void set_miscellaneous_conditions(
-      std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+      std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
   {
     /*--------------------------------------------------------------------*/
     // microscale boundary
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> microscale =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("MICROSCALE CONDITIONS",
+    std::shared_ptr<Core::Conditions::ConditionDefinition> microscale =
+        std::make_shared<Core::Conditions::ConditionDefinition>("MICROSCALE CONDITIONS",
             "MicroBoundary", "Microscale Boundary", Core::Conditions::MicroBoundary, true,
             Core::Conditions::geometry_type_surface);
 
@@ -78,12 +78,12 @@ namespace Input
     /*--------------------------------------------------------------------*/
     // stc layer condition
 
-    Teuchos::RCP<Core::Conditions::ConditionDefinition> stclayer =
-        Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL STC LAYER",
-            "STC Layer", "Layer for Multilayered STC", Core::Conditions::VolSTCLayer, true,
+    std::shared_ptr<Core::Conditions::ConditionDefinition> stclayer =
+        std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL STC LAYER", "STC Layer",
+            "Layer for Multilayered STC", Core::Conditions::VolSTCLayer, true,
             Core::Conditions::geometry_type_volume);
 
-    stclayer->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+    stclayer->add_component(std::make_shared<IntComponent>("ConditionID"));
 
     condlist.push_back(stclayer);
   }
@@ -92,88 +92,88 @@ namespace Input
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>>
+std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>>
 Input::valid_conditions()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>> vc =
-      Teuchos::make_rcp<std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>>();
+  std::shared_ptr<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>> vc =
+      std::make_shared<std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>>();
 
-  std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist = *vc;
+  std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist = *vc;
 
   /*--------------------------------------------------------------------*/
   // Neumann conditions
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT NEUMANN CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT NEUMANN CONDITIONS",
           "PointNeumann", "Point Neumann", Core::Conditions::PointNeumann, false,
           Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointneumanneb =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT MOMENT EB CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointneumanneb =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT MOMENT EB CONDITIONS",
           "PointNeumannEB", "Point Neumann Moment for an Euler-Bernoulli beam",
           Core::Conditions::PointNeumannEB, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE NEUMANN CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE NEUMANN CONDITIONS",
           "LineNeumann", "Line Neumann", Core::Conditions::LineNeumann, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURF NEUMANN CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF NEUMANN CONDITIONS",
           "SurfaceNeumann", "Surface Neumann", Core::Conditions::SurfaceNeumann, true,
           Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL NEUMANN CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL NEUMANN CONDITIONS",
           "VolumeNeumann", "Volume Neumann", Core::Conditions::VolumeNeumann, true,
           Core::Conditions::geometry_type_volume);
 
   // Neumann conditions for transport problems
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointtransportneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointtransportneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT TRANSPORT NEUMANN CONDITIONS", "TransportPointNeumann", "Point Neumann",
           Core::Conditions::PointNeumann, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linetransportneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linetransportneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE TRANSPORT NEUMANN CONDITIONS", "TransportLineNeumann", "Line Neumann",
           Core::Conditions::LineNeumann, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surftransportneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surftransportneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF TRANSPORT NEUMANN CONDITIONS", "TransportSurfaceNeumann", "Surface Neumann",
           Core::Conditions::SurfaceNeumann, true, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> voltransportneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> voltransportneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN VOL TRANSPORT NEUMANN CONDITIONS", "TransportVolumeNeumann", "Volume Neumann",
           Core::Conditions::VolumeNeumann, true, Core::Conditions::geometry_type_volume);
 
   // Neumann conditions for thermo problems
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointthermoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT THERMO NEUMANN CONDITIONS", "ThermoPointNeumann", "Point Neumann",
           Core::Conditions::PointNeumann, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linethermoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE THERMO NEUMANN CONDITIONS", "ThermoLineNeumann", "Line Neumann",
           Core::Conditions::LineNeumann, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfthermoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF THERMO NEUMANN CONDITIONS", "ThermoSurfaceNeumann", "Surface Neumann",
           Core::Conditions::SurfaceNeumann, true, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volthermoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volthermoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN VOL THERMO NEUMANN CONDITIONS", "ThermoVolumeNeumann", "Volume Neumann",
           Core::Conditions::VolumeNeumann, true, Core::Conditions::geometry_type_volume);
 
   // Neumann conditions for poroelasticity problems
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointporoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointporoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT PORO NEUMANN CONDITIONS", "PoroPointNeumann", "Point Neumann",
           Core::Conditions::PointNeumann, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineporoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN LINE PORO NEUMANN CONDITIONS", "PoroLineNeumann", "Line Neumann",
-          Core::Conditions::LineNeumann, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfporoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN SURF PORO NEUMANN CONDITIONS", "PoroSurfaceNeumann", "Surface Neumann",
-          Core::Conditions::SurfaceNeumann, true, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volporoneumann =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL PORO NEUMANN CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineporoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE PORO NEUMANN CONDITIONS",
+          "PoroLineNeumann", "Line Neumann", Core::Conditions::LineNeumann, true,
+          Core::Conditions::geometry_type_line);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfporoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF PORO NEUMANN CONDITIONS",
+          "PoroSurfaceNeumann", "Surface Neumann", Core::Conditions::SurfaceNeumann, true,
+          Core::Conditions::geometry_type_surface);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volporoneumann =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL PORO NEUMANN CONDITIONS",
           "PoroVolumeNeumann", "Volume Neumann", Core::Conditions::VolumeNeumann, true,
           Core::Conditions::geometry_type_volume);
 
@@ -190,7 +190,7 @@ Input::valid_conditions()
     add_named_int_vector(cond, "FUNCT", "", "NUMDOF", 0, false, true);
 
     // optional
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("TYPE", "Live",
+    cond->add_component(std::make_shared<SelectionComponent>("TYPE", "Live",
         Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
             "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
             "Torque"),
@@ -198,7 +198,7 @@ Input::valid_conditions()
             "neum_consthydro_z", "neum_increhydro_z", "neum_pseudo_orthopressure",
             "neum_orthopressure", "neum_LAS", "neum_pgrad", "neum_torque"),
         true));
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("surface", "Mid",
+    cond->add_component(std::make_shared<SelectionComponent>("surface", "Mid",
         Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
         Teuchos::tuple<std::string>("mid", "top", "bot"), true));
 
@@ -207,108 +207,108 @@ Input::valid_conditions()
 
   /*--------------------------------------------------------------------*/
   // Dirichlet conditions
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT DIRICH CONDITIONS",
           "Dirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
           Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linedirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linedirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE DIRICH CONDITIONS",
           "Dirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURF DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF DIRICH CONDITIONS",
           "Dirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
           Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> voldirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> voldirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL DIRICH CONDITIONS",
           "Dirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
           Core::Conditions::geometry_type_volume);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointaledirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT ALE DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointaledirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT ALE DIRICH CONDITIONS",
           "ALEDirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
           Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealedirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linealedirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE DIRICH CONDITIONS",
           "ALEDirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfaledirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURF ALE DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfaledirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF ALE DIRICH CONDITIONS",
           "ALEDirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
           Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volaledirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL ALE DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volaledirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL ALE DIRICH CONDITIONS",
           "ALEDirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
           Core::Conditions::geometry_type_volume);
 
   // Dirichlet conditions for transport problems
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointtransportdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointtransportdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Point Dirichlet",
           Core::Conditions::PointDirichlet, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linetransportdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linetransportdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Line Dirichlet",
           Core::Conditions::LineDirichlet, false, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surftransportdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surftransportdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Surface Dirichlet",
           Core::Conditions::SurfaceDirichlet, false, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> voltransportdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> voltransportdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN VOL TRANSPORT DIRICH CONDITIONS", "TransportDirichlet", "Volume Dirichlet",
           Core::Conditions::VolumeDirichlet, false, Core::Conditions::geometry_type_volume);
 
   // Dirichlet conditions for thermo problems
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointthermodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT THERMO DIRICH CONDITIONS", "ThermoDirichlet", "Point Dirichlet",
           Core::Conditions::PointDirichlet, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linethermodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE THERMO DIRICH CONDITIONS", "ThermoDirichlet", "Line Dirichlet",
           Core::Conditions::LineDirichlet, false, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfthermodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF THERMO DIRICH CONDITIONS", "ThermoDirichlet", "Surface Dirichlet",
           Core::Conditions::SurfaceDirichlet, false, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volthermodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN VOL THERMO DIRICH CONDITIONS", "ThermoDirichlet", "Volume Dirichlet",
-          Core::Conditions::VolumeDirichlet, false, Core::Conditions::geometry_type_volume);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volthermodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL THERMO DIRICH CONDITIONS",
+          "ThermoDirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
+          Core::Conditions::geometry_type_volume);
 
   // Dirichlet conditions for poroelasticity problems
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointporodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN POINT PORO DIRICH CONDITIONS", "PoroDirichlet", "Point Dirichlet",
-          Core::Conditions::PointDirichlet, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineporodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE PORO DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointporodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT PORO DIRICH CONDITIONS",
+          "PoroDirichlet", "Point Dirichlet", Core::Conditions::PointDirichlet, false,
+          Core::Conditions::geometry_type_point);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineporodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE PORO DIRICH CONDITIONS",
           "PoroDirichlet", "Line Dirichlet", Core::Conditions::LineDirichlet, false,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfporodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURF PORO DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfporodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF PORO DIRICH CONDITIONS",
           "PoroDirichlet", "Surface Dirichlet", Core::Conditions::SurfaceDirichlet, false,
           Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volporodirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL PORO DIRICH CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volporodirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL PORO DIRICH CONDITIONS",
           "PoroDirichlet", "Volume Dirichlet", Core::Conditions::VolumeDirichlet, false,
           Core::Conditions::geometry_type_volume);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointnurbslsdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointnurbslsdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Point Dirichlet",
           Core::Conditions::PointDirichlet, true, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linenurbslsdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linenurbslsdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Line Dirichlet",
           Core::Conditions::LineDirichlet, true, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfnurbslsdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfnurbslsdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Surface Dirichlet",
           Core::Conditions::SurfaceDirichlet, true, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volnurbslsdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volnurbslsdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN VOL NURBS LS DIRICH CONDITIONS", "NurbsLSDirichlet", "Volume Dirichlet",
           Core::Conditions::VolumeDirichlet, true, Core::Conditions::geometry_type_volume);
 
@@ -338,13 +338,13 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // Point coupling (e.g. joints - couple X out of Y nodal DoFs)
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointcoupling =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT COUPLING CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointcoupling =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT COUPLING CONDITIONS",
           "PointCoupling", "Point Coupling", Core::Conditions::PointCoupling, false,
           Core::Conditions::geometry_type_point);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermocoupling =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointthermocoupling =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT THERMO COUPLING CONDITIONS", "PointThermoCoupling", "Point Coupling",
           Core::Conditions::PointCoupling, false, Core::Conditions::geometry_type_point);
 
@@ -360,26 +360,26 @@ Input::valid_conditions()
   // Initial fields
 
   // general initial field conditions
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT INITIAL FIELD CONDITIONS", "Initfield", "Point Initfield",
           Core::Conditions::PointInitfield, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE INITIAL FIELD CONDITIONS", "Initfield", "Line Initfield",
           Core::Conditions::LineInitfield, false, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF INITIAL FIELD CONDITIONS", "Initfield", "Surface Initfield",
           Core::Conditions::SurfaceInitfield, false, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN VOL INITIAL FIELD CONDITIONS", "Initfield", "Volume Initfield",
-          Core::Conditions::VolumeInitfield, false, Core::Conditions::geometry_type_volume);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL INITIAL FIELD CONDITIONS",
+          "Initfield", "Volume Initfield", Core::Conditions::VolumeInitfield, false,
+          Core::Conditions::geometry_type_volume);
 
   for (const auto& cond : {pointinitfields, lineinitfields, surfinitfields, volinitfields})
   {
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("Field", "Undefined",
+    cond->add_component(std::make_shared<SelectionComponent>("Field", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
             "Porosity", "PoroMultiFluid", "Artery"),
         Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
@@ -387,7 +387,7 @@ Input::valid_conditions()
 
     // give function id - always one single integer
     // (for initial vector fields, use the COMPONENT option of our functions)
-    cond->add_component(Teuchos::make_rcp<IntComponent>("funct"));
+    cond->add_component(std::make_shared<IntComponent>("funct"));
 
     condlist.push_back(cond);
   }
@@ -397,26 +397,26 @@ Input::valid_conditions()
   // discretization e.g. STI, SSTI
 
   // initial field conditions for temperature on ScaTra discretizations
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointthermoinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointthermoinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on points",
           Core::Conditions::PointInitfield, false, Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linethermoinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linethermoinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on lines",
           Core::Conditions::LineInitfield, false, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfthermoinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfthermoinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on surfaces",
           Core::Conditions::SurfaceInitfield, false, Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volthermoinitfields =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volthermoinitfields =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN VOL THERMO INITIAL FIELD CONDITIONS", "ThermoInitfield",
           "Set the initial temperature field if the thermo field is solved using a ScaTra "
           "discretization (e.g. STI, SSTI) on volumes",
@@ -425,12 +425,12 @@ Input::valid_conditions()
   for (const auto& cond :
       {pointthermoinitfields, linethermoinitfields, surfthermoinitfields, volthermoinitfields})
   {
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("Field", "Undefined",
+    cond->add_component(std::make_shared<SelectionComponent>("Field", "Undefined",
         Teuchos::tuple<std::string>("Undefined", "ScaTra"),
         Teuchos::tuple<std::string>("Undefined", "ScaTra")));
 
     // give function id - always one single integer
-    cond->add_component(Teuchos::make_rcp<IntComponent>("funct"));
+    cond->add_component(std::make_shared<IntComponent>("funct"));
 
     condlist.push_back(cond);
   }
@@ -440,14 +440,14 @@ Input::valid_conditions()
   // surface areas of 2D domain elements
 
   // definition of surface and volume conditions for domain integral computation
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralsurf =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> domainintegralsurf =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN DOMAIN INTEGRAL SURF CONDITIONS", "DomainIntegral",
           "compute cumulative surface areas of 2D domain elements",
           Core::Conditions::DomainIntegral, true, Core::Conditions::geometry_type_surface);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> domainintegralvol =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> domainintegralvol =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN DOMAIN INTEGRAL VOL CONDITIONS", "DomainIntegral",
           "compute cumulative volumes of 3D domain elements", Core::Conditions::DomainIntegral,
           true, Core::Conditions::geometry_type_volume);
@@ -455,8 +455,8 @@ Input::valid_conditions()
   for (const auto& cond : {domainintegralsurf, domainintegralvol})
   {
     // add input file line components to condition definitions
-    cond->add_component(Teuchos::make_rcp<SeparatorComponent>("ID"));
-    cond->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+    cond->add_component(std::make_shared<SeparatorComponent>("ID"));
+    cond->add_component(std::make_shared<IntComponent>("ConditionID"));
 
     // insert condition definitions into global list of valid condition definitions
     condlist.push_back(cond);
@@ -465,15 +465,15 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // compute boundary integrals, i.e., cumulative surface areas of 2D boundary elements
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> boundaryintegralsurf =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> boundaryintegralsurf =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN BOUNDARY INTEGRAL SURF CONDITIONS", "BoundaryIntegral",
           "compute cumulative surface areas of 2D boundary elements",
           Core::Conditions::BoundaryIntegral, true, Core::Conditions::geometry_type_surface);
 
   // add input file line components to condition definition
-  boundaryintegralsurf->add_component(Teuchos::make_rcp<SeparatorComponent>("ID"));
-  boundaryintegralsurf->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  boundaryintegralsurf->add_component(std::make_shared<SeparatorComponent>("ID"));
+  boundaryintegralsurf->add_component(std::make_shared<IntComponent>("ConditionID"));
 
   // insert condition definition into global list of valid condition definitions
   condlist.push_back(boundaryintegralsurf);
@@ -482,12 +482,12 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // wear in ALE description
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealewear =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE WEAR CONDITIONS 2D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linealewear =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE WEAR CONDITIONS 2D",
           "AleWear", "Line Ale Wear", Core::Conditions::AleWear, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfalewear =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURFACE WEAR CONDITIONS 3D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfalewear =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE WEAR CONDITIONS 3D",
           "AleWear", "Surface Ale Wear", Core::Conditions::AleWear, true,
           Core::Conditions::geometry_type_surface);
 
@@ -497,38 +497,38 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // local coordinate systems
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointlocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointlocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT LOCSYS CONDITIONS",
           "Locsys", "Point local coordinate system", Core::Conditions::PointLocsys, true,
           Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linelocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linelocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE LOCSYS CONDITIONS",
           "Locsys", "Line local coordinate system", Core::Conditions::LineLocsys, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surflocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURF LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surflocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF LOCSYS CONDITIONS",
           "Locsys", "Surface local coordinate system", Core::Conditions::SurfaceLocsys, true,
           Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> vollocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> vollocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL LOCSYS CONDITIONS",
           "Locsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
           Core::Conditions::geometry_type_volume);
 
   // Ale
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> pointalelocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN POINT ALE LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> pointalelocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN POINT ALE LOCSYS CONDITIONS",
           "AleLocsys", "Point local coordinate system", Core::Conditions::PointLocsys, true,
           Core::Conditions::geometry_type_point);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linealelocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linealelocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE ALE LOCSYS CONDITIONS",
           "AleLocsys", "Line local coordinate system", Core::Conditions::LineLocsys, true,
           Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfalelocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURF ALE LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfalelocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURF ALE LOCSYS CONDITIONS",
           "AleLocsys", "Surface local coordinate system", Core::Conditions::SurfaceLocsys, true,
           Core::Conditions::geometry_type_surface);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volalelocsys =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN VOL ALE LOCSYS CONDITIONS",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volalelocsys =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN VOL ALE LOCSYS CONDITIONS",
           "AleLocsys", "Volume local coordinate system", Core::Conditions::VolumeLocsys, true,
           Core::Conditions::geometry_type_volume);
 
@@ -557,23 +557,22 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // periodic boundary
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineperiodic =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineperiodic =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE PERIODIC BOUNDARY CONDITIONS", "LinePeriodic", "Line Periodic",
           Core::Conditions::LinePeriodic, false, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfperiodic =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfperiodic =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF PERIODIC BOUNDARY CONDITIONS", "SurfacePeriodic", "Surface Periodic",
           Core::Conditions::SurfacePeriodic, false, Core::Conditions::geometry_type_surface);
 
   for (const auto& cond : {lineperiodic, surfperiodic})
   {
-    cond->add_component(Teuchos::RCP(
+    cond->add_component(std::shared_ptr<LineComponent>(
         new IntComponent("Id of periodic boundary condition", {0, true, false, false})));
-    cond->add_component(
-        Teuchos::make_rcp<SelectionComponent>("Is slave periodic boundary condition", "Master",
-            Teuchos::tuple<std::string>("Master", "Slave"),
-            Teuchos::tuple<std::string>("Master", "Slave")));
+    cond->add_component(std::make_shared<SelectionComponent>("Is slave periodic boundary condition",
+        "Master", Teuchos::tuple<std::string>("Master", "Slave"),
+        Teuchos::tuple<std::string>("Master", "Slave")));
     add_named_selection_component(cond, "PLANE", "degrees of freedom for the pbc plane", "xy",
         Teuchos::tuple<std::string>("xy", "yx", "yz", "zy", "xz", "zx", "xyz"),
         Teuchos::tuple<std::string>("xy", "xy", "yz", "yz", "xz", "xz", "xyz"));
@@ -586,13 +585,13 @@ Input::valid_conditions()
 
   /*--------------------------------------------------------------------*/
   // weak Dirichlet conditions
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> lineweakdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> lineweakdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE WEAK DIRICHLET CONDITIONS", "LineWeakDirichlet", "LineWeakDirichlet",
           Core::Conditions::LineWeakDirichlet, true, Core::Conditions::geometry_type_line);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfweakdirichlet =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfweakdirichlet =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE WEAK DIRICHLET CONDITIONS", "SurfaceWeakDirichlet",
           "SurfaceWeakDirichlet", Core::Conditions::SurfaceWeakDirichlet, true,
           Core::Conditions::geometry_type_surface);
@@ -602,42 +601,42 @@ Input::valid_conditions()
   {
     // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
     cond->add_component(
-        Teuchos::make_rcp<SelectionComponent>("Choice of gamma parameter", "adjoint-consistent",
+        std::make_shared<SelectionComponent>("Choice of gamma parameter", "adjoint-consistent",
             Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal"),
             Teuchos::tuple<std::string>("adjoint-consistent", "diffusive-optimal")));
 
     // weak DBCs can be imposed in all directions or only in normal direction
     // (SCATRA: not checked, only in all_directions so far)
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("Directions to apply weak dbc",
+    cond->add_component(std::make_shared<SelectionComponent>("Directions to apply weak dbc",
         "all_directions", Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction"),
         Teuchos::tuple<std::string>("all_directions", "only_in_normal_direction")));
 
     // FLUID: penalty parameter either computed dynamically (using Spaldings law of
     // the wall) or by a fixed value; SCATRA: not checked, only constant value so far
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("Definition of penalty parameter",
+    cond->add_component(std::make_shared<SelectionComponent>("Definition of penalty parameter",
         "constant", Teuchos::tuple<std::string>("constant", "Spalding"),
         Teuchos::tuple<std::string>("constant", "Spalding")));
 
     // scaling factor for penalty parameter tauB or
     // stabilization parameter alpha for Nitsche term
     // (SCATRA: if stabilization parameter negative -> mixed-hybrid formulation)
-    cond->add_component(Teuchos::make_rcp<RealComponent>("TauBscaling"));
+    cond->add_component(std::make_shared<RealComponent>("TauBscaling"));
 
     // linearisation strategies --- the linearisation (i.e. the matrix
     // contribution) of the convective term on the inflow could be
     // suppressed, since the flux is a kink function and including this one
     // might result in even worse convergence behaviour
     // (SCATRA: not checked)
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("Linearisation", "lin_all",
+    cond->add_component(std::make_shared<SelectionComponent>("Linearisation", "lin_all",
         Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow"),
         Teuchos::tuple<std::string>("lin_all", "no_lin_conv_inflow")));
 
     // we provide a vector of 3 values for velocities
-    cond->add_component(Teuchos::make_rcp<RealVectorComponent>("VAL", 3));
+    cond->add_component(std::make_shared<RealVectorComponent>("VAL", 3));
 
     // and optional spatial functions
     cond->add_component(
-        Teuchos::make_rcp<IntVectorComponent>("FUNCT", 3, IntComponentData{0, false, false, true}));
+        std::make_shared<IntVectorComponent>("FUNCT", 3, IntComponentData{0, false, false, true}));
 
     // append the condition to the list of all conditions
     condlist.push_back(cond);
@@ -646,12 +645,12 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // boundary for superconvergent patch recovery (SPR)
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> linespr =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> linespr =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN PATCH RECOVERY BOUNDARY LINE CONDITIONS", "SPRboundary", "Boundary for SPR",
           Core::Conditions::SPRboundary, false, Core::Conditions::geometry_type_line);
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfspr =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfspr =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN PATCH RECOVERY BOUNDARY SURF CONDITIONS", "SPRboundary", "Boundary for SPR",
           Core::Conditions::SPRboundary, false, Core::Conditions::geometry_type_surface);
 
@@ -661,16 +660,16 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // volume constraint
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumeconstraint =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
-          "DESIGN SURFACE VOLUME CONSTRAINT 3D", "VolumeConstraint_3D", "Surface Volume Constraint",
-          Core::Conditions::VolumeConstraint_3D, true, Core::Conditions::geometry_type_surface);
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volumeconstraint =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE VOLUME CONSTRAINT 3D",
+          "VolumeConstraint_3D", "Surface Volume Constraint", Core::Conditions::VolumeConstraint_3D,
+          true, Core::Conditions::geometry_type_surface);
 
-  volumeconstraint->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  volumeconstraint->add_component(std::make_shared<IntComponent>("ConditionID"));
   volumeconstraint->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  volumeconstraint->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
-  volumeconstraint->add_component(Teuchos::make_rcp<SelectionComponent>("projection", "none",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  volumeconstraint->add_component(std::make_shared<RealComponent>("activTime"));
+  volumeconstraint->add_component(std::make_shared<SelectionComponent>("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
 
@@ -679,19 +678,19 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // volume constraint penalty
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumeconstraintpen =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volumeconstraintpen =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE VOLUME CONSTRAINT 3D PEN", "VolumeConstraint_3D_Pen",
           "Surface Volume Constraint Penalty", Core::Conditions::VolumeConstraint_3D_pen, true,
           Core::Conditions::geometry_type_surface);
 
-  volumeconstraintpen->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  volumeconstraintpen->add_component(std::make_shared<IntComponent>("ConditionID"));
   volumeconstraintpen->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  volumeconstraintpen->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
-  volumeconstraintpen->add_component(Teuchos::make_rcp<RealComponent>("penalty"));
-  volumeconstraintpen->add_component(Teuchos::make_rcp<RealComponent>("rho"));
-  volumeconstraintpen->add_component(Teuchos::make_rcp<SelectionComponent>("projection", "none",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  volumeconstraintpen->add_component(std::make_shared<RealComponent>("activTime"));
+  volumeconstraintpen->add_component(std::make_shared<RealComponent>("penalty"));
+  volumeconstraintpen->add_component(std::make_shared<RealComponent>("rho"));
+  volumeconstraintpen->add_component(std::make_shared<SelectionComponent>("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
 
@@ -700,34 +699,34 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // area constraint
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> areaconstraint =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURFACE AREA CONSTRAINT 3D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> areaconstraint =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE AREA CONSTRAINT 3D",
           "AreaConstraint_3D", "Surface Area Constraint", Core::Conditions::AreaConstraint_3D, true,
           Core::Conditions::geometry_type_surface);
 
-  areaconstraint->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  areaconstraint->add_component(std::make_shared<IntComponent>("ConditionID"));
   areaconstraint->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraint->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  areaconstraint->add_component(std::make_shared<RealComponent>("activTime"));
 
   condlist.push_back(areaconstraint);
 
   /*--------------------------------------------------------------------*/
   // area constraint penalty
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> areaconstraintpen =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> areaconstraintpen =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE AREA CONSTRAINT 3D PEN", "AreaConstraint_3D_Pen",
           "Surface Area Constraint Penalty", Core::Conditions::AreaConstraint_3D_pen, true,
           Core::Conditions::geometry_type_surface);
 
-  areaconstraintpen->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  areaconstraintpen->add_component(std::make_shared<IntComponent>("ConditionID"));
   areaconstraintpen->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraintpen->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
-  areaconstraintpen->add_component(Teuchos::make_rcp<RealComponent>("penalty"));
-  areaconstraintpen->add_component(Teuchos::make_rcp<RealComponent>("rho"));
-  areaconstraintpen->add_component(Teuchos::make_rcp<SelectionComponent>("projection", "none",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  areaconstraintpen->add_component(std::make_shared<RealComponent>("activTime"));
+  areaconstraintpen->add_component(std::make_shared<RealComponent>("penalty"));
+  areaconstraintpen->add_component(std::make_shared<RealComponent>("rho"));
+  areaconstraintpen->add_component(std::make_shared<SelectionComponent>("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
 
@@ -737,25 +736,25 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // volume monitor
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volumemonitor =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURFACE VOLUME MONITOR 3D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volumemonitor =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE VOLUME MONITOR 3D",
           "VolumeMonitor_3D", "Surface Volume Monitor", Core::Conditions::VolumeMonitor_3D, true,
           Core::Conditions::geometry_type_surface);
 
-  volumemonitor->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  volumemonitor->add_component(std::make_shared<IntComponent>("ConditionID"));
 
   condlist.push_back(volumemonitor);
 
   /*--------------------------------------------------------------------*/
   // area monitor 3D
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> areamonitor =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN SURFACE AREA MONITOR 3D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> areamonitor =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN SURFACE AREA MONITOR 3D",
           "AreaMonitor_3D", "Surface Area Monitor", Core::Conditions::AreaMonitor_3D, true,
           Core::Conditions::geometry_type_surface);
 
-  areamonitor->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
-  areamonitor->add_component(Teuchos::make_rcp<SelectionComponent>("projection", "none",
+  areamonitor->add_component(std::make_shared<IntComponent>("ConditionID"));
+  areamonitor->add_component(std::make_shared<SelectionComponent>("projection", "none",
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"),
       Teuchos::tuple<std::string>("none", "xy", "yz", "xz"), true));
 
@@ -764,108 +763,108 @@ Input::valid_conditions()
   /*--------------------------------------------------------------------*/
   // area constraint
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> areaconstraint2D =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE AREA CONSTRAINT 2D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> areaconstraint2D =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE AREA CONSTRAINT 2D",
           "AreaConstraint_2D", "Line Area Constraint", Core::Conditions::AreaConstraint_2D, true,
           Core::Conditions::geometry_type_line);
 
-  areaconstraint2D->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  areaconstraint2D->add_component(std::make_shared<IntComponent>("ConditionID"));
   areaconstraint2D->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  areaconstraint2D->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  areaconstraint2D->add_component(std::make_shared<RealComponent>("activTime"));
   condlist.push_back(areaconstraint2D);
 
   /*--------------------------------------------------------------------*/
   // area monitor 2D
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> areamonitor2D =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE AREA MONITOR 2D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> areamonitor2D =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE AREA MONITOR 2D",
           "AreaMonitor_2D", "Line Area Monitor", Core::Conditions::AreaMonitor_2D, true,
           Core::Conditions::geometry_type_line);
 
-  areamonitor2D->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
+  areamonitor2D->add_component(std::make_shared<IntComponent>("ConditionID"));
   condlist.push_back(areamonitor2D);
 
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D for a node over a plane
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodeonplaneconst3D =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> nodeonplaneconst3D =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE MULTIPNT CONSTRAINT 3D", "MPC_NodeOnPlane_3D", "Node on Plane Constraint",
           Core::Conditions::MPC_NodeOnPlane_3D, false, Core::Conditions::geometry_type_surface);
 
-  nodeonplaneconst3D->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
-  nodeonplaneconst3D->add_component(Teuchos::make_rcp<RealComponent>("amplitude"));
+  nodeonplaneconst3D->add_component(std::make_shared<IntComponent>("ConditionID"));
+  nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("amplitude"));
   nodeonplaneconst3D->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodeonplaneconst3D->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
-  nodeonplaneconst3D->add_component(Teuchos::make_rcp<IntVectorComponent>("planeNodes", 3));
-  nodeonplaneconst3D->add_component(Teuchos::make_rcp<SelectionComponent>("control", "rel",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  nodeonplaneconst3D->add_component(std::make_shared<RealComponent>("activTime"));
+  nodeonplaneconst3D->add_component(std::make_shared<IntVectorComponent>("planeNodes", 3));
+  nodeonplaneconst3D->add_component(std::make_shared<SelectionComponent>("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
   condlist.push_back(nodeonplaneconst3D);
 
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodemasterconst3D =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> nodemasterconst3D =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D", "MPC_NormalComponent_3D",
           "Node on Plane Constraint", Core::Conditions::MPC_NormalComponent_3D, false,
           Core::Conditions::geometry_type_surface);
 
-  nodemasterconst3D->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
-  nodemasterconst3D->add_component(Teuchos::make_rcp<RealComponent>("amplitude"));
+  nodemasterconst3D->add_component(std::make_shared<IntComponent>("ConditionID"));
+  nodemasterconst3D->add_component(std::make_shared<RealComponent>("amplitude"));
   nodemasterconst3D->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodemasterconst3D->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
-  nodemasterconst3D->add_component(Teuchos::make_rcp<IntComponent>("masterNode"));
-  nodemasterconst3D->add_component(Teuchos::make_rcp<RealVectorComponent>("direction", 3));
-  nodemasterconst3D->add_component(Teuchos::make_rcp<SelectionComponent>("value", "disp",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  nodemasterconst3D->add_component(std::make_shared<RealComponent>("activTime"));
+  nodemasterconst3D->add_component(std::make_shared<IntComponent>("masterNode"));
+  nodemasterconst3D->add_component(std::make_shared<RealVectorComponent>("direction", 3));
+  nodemasterconst3D->add_component(std::make_shared<SelectionComponent>("value", "disp",
       Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true));
-  nodemasterconst3D->add_component(Teuchos::make_rcp<SelectionComponent>("control", "rel",
+  nodemasterconst3D->add_component(std::make_shared<SelectionComponent>("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
   condlist.push_back(nodemasterconst3D);
 
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 3D, moving all constraint nodes synchronously, penalty based
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodemasterconst3Dpen =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> nodemasterconst3Dpen =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURFACE NORMALDIR MULTIPNT CONSTRAINT 3D PEN", "MPC_NormalComponent_3D_Pen",
           "Node on Plane Constraint Penalty", Core::Conditions::MPC_NormalComponent_3D_pen, false,
           Core::Conditions::geometry_type_surface);
 
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<RealComponent>("amplitude"));
+  nodemasterconst3Dpen->add_component(std::make_shared<IntComponent>("ConditionID"));
+  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("amplitude"));
   nodemasterconst3Dpen->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<RealComponent>("penalty"));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<IntComponent>("masterNode"));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<RealVectorComponent>("direction", 3));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<SelectionComponent>("value", "disp",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("activTime"));
+  nodemasterconst3Dpen->add_component(std::make_shared<RealComponent>("penalty"));
+  nodemasterconst3Dpen->add_component(std::make_shared<IntComponent>("masterNode"));
+  nodemasterconst3Dpen->add_component(std::make_shared<RealVectorComponent>("direction", 3));
+  nodemasterconst3Dpen->add_component(std::make_shared<SelectionComponent>("value", "disp",
       Teuchos::tuple<std::string>("disp", "x"), Teuchos::tuple<std::string>("disp", "x"), true));
-  nodemasterconst3Dpen->add_component(Teuchos::make_rcp<SelectionComponent>("control", "rel",
+  nodemasterconst3Dpen->add_component(std::make_shared<SelectionComponent>("control", "rel",
       Teuchos::tuple<std::string>("rel", "abs"), Teuchos::tuple<std::string>("rel", "abs"), true));
   condlist.push_back(nodemasterconst3Dpen);
   /*--------------------------------------------------------------------*/
   // Multi point constraint in 2D for a node on a line
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> nodeonlineconst2D =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>("DESIGN LINE MULTIPNT CONSTRAINT 2D",
+  std::shared_ptr<Core::Conditions::ConditionDefinition> nodeonlineconst2D =
+      std::make_shared<Core::Conditions::ConditionDefinition>("DESIGN LINE MULTIPNT CONSTRAINT 2D",
           "MPC_NodeOnLine_2D", "Node on Line Constraint", Core::Conditions::MPC_NodeOnLine_2D,
           false, Core::Conditions::geometry_type_line);
 
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<IntComponent>("ConditionID"));
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<RealComponent>("amplitude"));
+  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("ConditionID"));
+  nodeonlineconst2D->add_component(std::make_shared<RealComponent>("amplitude"));
   nodeonlineconst2D->add_component(
-      Teuchos::make_rcp<IntComponent>("curve", IntComponentData{0, true, true, false}));
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<IntComponent>("constrNode 1"));
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<IntComponent>("constrNode 2"));
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<IntComponent>("constrNode 3"));
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<SelectionComponent>("control value", "dist",
+      std::make_shared<IntComponent>("curve", IntComponentData{0, true, true, false}));
+  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("constrNode 1"));
+  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("constrNode 2"));
+  nodeonlineconst2D->add_component(std::make_shared<IntComponent>("constrNode 3"));
+  nodeonlineconst2D->add_component(std::make_shared<SelectionComponent>("control value", "dist",
       Teuchos::tuple<std::string>("dist", "angle"), Teuchos::tuple<std::string>("dist", "angle"),
       true));
-  nodeonlineconst2D->add_component(Teuchos::make_rcp<RealComponent>("activTime"));
+  nodeonlineconst2D->add_component(std::make_shared<RealComponent>("activTime"));
   condlist.push_back(nodeonlineconst2D);
 
   /*--------------------------------------------------------------------*/
@@ -889,26 +888,26 @@ Input::valid_conditions()
   // 3-D solid, 3 for 2-D solid), where ONOFF triggers first the
   // translational followed by the rotational modes, each in/around x to z
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> surfrigidbodymode =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> surfrigidbodymode =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION", "KrylovSpaceProjection",
           "Surface mode for Krylov space projection", Core::Conditions::SurfaceModeKrylovProjection,
           true, Core::Conditions::geometry_type_surface);
 
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> volrigidbodymode =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> volrigidbodymode =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION", "KrylovSpaceProjection",
           "Volume mode for Krylov space projection", Core::Conditions::VolumeModeKrylovProjection,
           true, Core::Conditions::geometry_type_volume);
 
   for (const auto& cond : {surfrigidbodymode, volrigidbodymode})
   {
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("discretization", "fluid",
+    cond->add_component(std::make_shared<SelectionComponent>("discretization", "fluid",
         Teuchos::tuple<std::string>("fluid", "scatra", "solid"),
         Teuchos::tuple<std::string>("fluid", "scatra", "solid")));
     add_named_int(cond, "NUMMODES");
     add_named_int_vector(cond, "ONOFF", "", "NUMMODES");
-    cond->add_component(Teuchos::make_rcp<SelectionComponent>("weight vector definition",
+    cond->add_component(std::make_shared<SelectionComponent>("weight vector definition",
         "integration", Teuchos::tuple<std::string>("integration", "pointvalues"),
         Teuchos::tuple<std::string>("integration", "pointvalues")));
 

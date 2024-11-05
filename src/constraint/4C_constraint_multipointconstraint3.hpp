@@ -29,7 +29,7 @@ namespace CONSTRAINTS
     \brief Standard Constructor
     */
     MPConstraint3(
-        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+        std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to create constraint from
         int& offsetID,                     ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -40,7 +40,7 @@ namespace CONSTRAINTS
     void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
         ) override;
@@ -54,19 +54,19 @@ namespace CONSTRAINTS
     void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
         ) override;
@@ -81,22 +81,22 @@ namespace CONSTRAINTS
 
     //! Evaluate constraint discretization and assemble the results
     void evaluate_constraint(
-        Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
+        std::shared_ptr<Core::FE::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
         override;  ///< distributed vector that may be filled by
                    ///< assembly of element contributions
 
@@ -109,8 +109,8 @@ namespace CONSTRAINTS
     );
 
     //! creating a new discretization based on conditions containing constraint elements
-    std::map<int, Teuchos::RCP<Core::FE::Discretization>> create_discretization_from_condition(
-        Teuchos::RCP<Core::FE::Discretization> actdisc,
+    std::map<int, std::shared_ptr<Core::FE::Discretization>> create_discretization_from_condition(
+        std::shared_ptr<Core::FE::Discretization> actdisc,
         std::vector<Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization

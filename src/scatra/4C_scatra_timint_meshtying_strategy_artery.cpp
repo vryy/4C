@@ -50,8 +50,8 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
     FOUR_C_THROW("set your velocity field to zero!");
 
   // construct artery scatra problem
-  Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> art_scatra =
-      Teuchos::make_rcp<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, myscatraparams,
+  std::shared_ptr<Adapter::ScaTraBaseAlgorithm> art_scatra =
+      std::make_shared<Adapter::ScaTraBaseAlgorithm>(globaltimeparams, myscatraparams,
           Global::Problem::instance()->solver_params(myscatraparams.get<int>("LINEAR_SOLVER")),
           "artery_scatra", false);
 
@@ -119,15 +119,15 @@ void ScaTra::MeshtyingStrategyArtery::init_meshtying()
 void ScaTra::MeshtyingStrategyArtery::setup_meshtying()
 {
   // Initialize rhs vector
-  rhs_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoscatracoupling_->full_map(), true);
+  rhs_ = std::make_shared<Core::LinAlg::Vector<double>>(*arttoscatracoupling_->full_map(), true);
 
   // Initialize increment vector
   comb_increment_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*arttoscatracoupling_->full_map(), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*arttoscatracoupling_->full_map(), true);
 
   // initialize scatra-artery_scatra-systemmatrix_
   comb_systemmatrix_ =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           *arttoscatracoupling_->global_extractor(), *arttoscatracoupling_->global_extractor(), 81,
           false, true);
 
@@ -190,7 +190,7 @@ const Epetra_Map& ScaTra::MeshtyingStrategyArtery::dof_row_map() const
 /*-----------------------------------------------------------------------*
  | return global map of degrees of freedom              kremheller 04/18 |
  *-----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ScaTra::MeshtyingStrategyArtery::art_scatra_dof_row_map() const
+std::shared_ptr<const Epetra_Map> ScaTra::MeshtyingStrategyArtery::art_scatra_dof_row_map() const
 {
   return arttoscatracoupling_->artery_dof_row_map();
 }
@@ -200,7 +200,7 @@ Teuchos::RCP<const Epetra_Map> ScaTra::MeshtyingStrategyArtery::art_scatra_dof_r
  *-------------------------------------------------------------------------------*/
 const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyArtery::solver() const
 {
-  if (scatratimint_->solver() == Teuchos::null) FOUR_C_THROW("Invalid linear solver!");
+  if (scatratimint_->solver() == nullptr) FOUR_C_THROW("Invalid linear solver!");
 
   return *scatratimint_->solver();
 }
@@ -210,7 +210,7 @@ const Core::LinAlg::Solver& ScaTra::MeshtyingStrategyArtery::solver() const
  *------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyArtery::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying>(
+  convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyPoroMultiphaseScatraArtMeshTying>(
       scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 
   return;
@@ -220,11 +220,11 @@ void ScaTra::MeshtyingStrategyArtery::init_conv_check_strategy()
  | solve linear system of equations for scatra-scatra interface coupling   kremheller 04/18 |
  *------------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyArtery::solve(
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,                //!< solver
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp,         //!< state vector at time n+1
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,                //!< solver
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,     //!< increment vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,      //!< residual vector
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp,  //!< state vector at time n+1
     const int iteration,  //!< number of current Newton-Raphson iteration
     Core::LinAlg::SolverParams& solver_params) const
 {
@@ -243,8 +243,8 @@ void ScaTra::MeshtyingStrategyArtery::solve(
   solver->solve(comb_systemmatrix_->epetra_operator(), comb_increment_, rhs_, solver_params);
 
   // extract increments of scatra and artery-scatra field
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> artscatrainc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> myinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> artscatrainc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> myinc;
   extract_single_field_vectors(comb_increment_, myinc, artscatrainc);
 
   // update the scatra increment, update iter is performed outside
@@ -259,12 +259,12 @@ void ScaTra::MeshtyingStrategyArtery::solve(
  | solve linear system of equations for scatra-scatra interface coupling   kremheller 04/18 |
  *------------------------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyArtery::setup_system(
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual       //!< residual vector
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,  //!< system matrix
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& residual       //!< residual vector
 ) const
 {
   arttoscatracoupling_->set_solution_vectors(
-      scatratimint_->phinp(), Teuchos::null, artscatratimint_->phinp());
+      scatratimint_->phinp(), nullptr, artscatratimint_->phinp());
 
   // evaluate the 1D-3D coupling
   arttoscatracoupling_->evaluate(comb_systemmatrix_, rhs_);
@@ -274,7 +274,7 @@ void ScaTra::MeshtyingStrategyArtery::setup_system(
 
   // setup the entire system
   arttoscatracoupling_->setup_system(comb_systemmatrix_, rhs_,
-      Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(systemmatrix),
+      std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(systemmatrix),
       artscatratimint_->system_matrix(), residual, artscatratimint_->residual(),
       scatratimint_->dirich_maps(), artscatratimint_->dirich_maps());
 }
@@ -283,10 +283,10 @@ void ScaTra::MeshtyingStrategyArtery::setup_system(
  | set time integrator for scalar transport in arteries   kremheller 04/18 |
  *------------------------------------------------------------------------ */
 void ScaTra::MeshtyingStrategyArtery::update_art_scatra_iter(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_inc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> combined_inc)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> artscatrainc;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> myinc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> artscatrainc;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> myinc;
   extract_single_field_vectors(combined_inc, myinc, artscatrainc);
 
   artscatratimint_->update_iter(*artscatrainc);
@@ -298,9 +298,9 @@ void ScaTra::MeshtyingStrategyArtery::update_art_scatra_iter(
  | extract single field vectors                           kremheller 10/20 |
  *------------------------------------------------------------------------ */
 void ScaTra::MeshtyingStrategyArtery::extract_single_field_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> globalvec,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec_art) const
+    std::shared_ptr<const Core::LinAlg::Vector<double>> globalvec,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>>& vec_art) const
 {
   arttoscatracoupling_->extract_single_field_vectors(globalvec, vec_cont, vec_art);
 
@@ -311,11 +311,10 @@ void ScaTra::MeshtyingStrategyArtery::extract_single_field_vectors(
  | set time integrator for scalar transport in arteries   kremheller 04/18 |
  *------------------------------------------------------------------------ */
 void ScaTra::MeshtyingStrategyArtery::set_artery_scatra_time_integrator(
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> artscatratimint)
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> artscatratimint)
 {
   artscatratimint_ = artscatratimint;
-  if (artscatratimint_ == Teuchos::null)
-    FOUR_C_THROW("could not set artery scatra time integrator");
+  if (artscatratimint_ == nullptr) FOUR_C_THROW("could not set artery scatra time integrator");
 
   return;
 }
@@ -324,10 +323,10 @@ void ScaTra::MeshtyingStrategyArtery::set_artery_scatra_time_integrator(
  | set time integrator for artery problems                kremheller 04/18 |
  *------------------------------------------------------------------------ */
 void ScaTra::MeshtyingStrategyArtery::set_artery_time_integrator(
-    Teuchos::RCP<Adapter::ArtNet> arttimint)
+    std::shared_ptr<Adapter::ArtNet> arttimint)
 {
   arttimint_ = arttimint;
-  if (arttimint_ == Teuchos::null) FOUR_C_THROW("could not set artery time integrator");
+  if (arttimint_ == nullptr) FOUR_C_THROW("could not set artery time integrator");
 
   return;
 }

@@ -27,13 +27,13 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     explicit MonolithicMeshtying(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! Setup the monolithic system
     void setup_system() override;
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                       iterinc,  //!< increment between iteration i and i+1
         bool firstiter = false) override;
 
@@ -42,14 +42,14 @@ namespace PoroElast
 
     //! Recover Lagrange Multiplier after Newton step
     void recover_lagrange_multiplier_after_newton_step(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iterinc) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iterinc) override;
 
     //! build meshtying specific norms where meshtying constraint residuals are evaluated separately
     void build_convergence_norms() override;
 
     //! extractor to split fluid RHS vector for convergence check
     //! should be named fluidvelocityactiverowdofmap_
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> fluid_vel_active_dof_extractor() const
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> fluid_vel_active_dof_extractor() const
     {
       return fvelactiverowdofmap_;
     }
@@ -71,10 +71,10 @@ namespace PoroElast
 
    private:
     //! nonlinear mortar adapter used to evaluate meshtying
-    Teuchos::RCP<Adapter::CouplingPoroMortar> mortar_adapter_;
+    std::shared_ptr<Adapter::CouplingPoroMortar> mortar_adapter_;
 
     //! fluid velocity dof row map splitted in active dofs and the rest (no pressures)
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor>
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor>
         fvelactiverowdofmap_;  //!< should be named fluidvelocityactiverowdofmap_, but kept shorter
 
     double normrhsfactiven_;  //!< norm of coupling part of residual forces (fluid )

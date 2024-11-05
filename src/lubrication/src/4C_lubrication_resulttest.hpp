@@ -14,7 +14,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,7 +45,7 @@ namespace Lubrication
     /*!
     \brief constructor
     */
-    ResultTest(Teuchos::RCP<TimIntImpl> lubrication);
+    ResultTest(std::shared_ptr<TimIntImpl> lubrication);
 
 
     /// our version of nodal value tests
@@ -70,10 +70,10 @@ namespace Lubrication
     ) const;
 
    private:
-    /// Teuchos::RCP to lubrication discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
-    /// Teuchos::RCP to solution vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mysol_;
+    /// std::shared_ptr to lubrication discretization
+    std::shared_ptr<Core::FE::Discretization> dis_;
+    /// std::shared_ptr to solution vector
+    std::shared_ptr<Core::LinAlg::Vector<double>> mysol_;
     /// number of iterations in last newton iteration
     int mynumiter_;
   };

@@ -42,10 +42,10 @@ Mixture::MixtureConstituentSolidMaterial::MixtureConstituentSolidMaterial(
   auto mat = Mat::factory(params_->matid_);
 
   // cast to an So3Material
-  material_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(mat);
+  material_ = std::dynamic_pointer_cast<Mat::So3Material>(mat);
 
   // ensure cast was successfull
-  if (Teuchos::is_null(mat))
+  if (!(mat))
     FOUR_C_THROW(
         "The solid material constituent with ID %d needs to be an So3Material.", params_->matid_);
 
@@ -84,14 +84,14 @@ void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
 
   // make sure we have a pristine material
   params_ = nullptr;
-  material_ = Teuchos::null;
+  material_ = nullptr;
 
   // extract the matid of the Mixture_SolidMaterial
   int matid;
   extract_from_pack(buffer, matid);
 
   // recover the params_ of the Mixture_SolidMaterial
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -115,8 +115,8 @@ void Mixture::MixtureConstituentSolidMaterial::unpack_constituent(
   if (params_ != nullptr)
   {
     auto so3mat = Mat::factory(params_->matid_);
-    material_ = Teuchos::rcp_dynamic_cast<Mat::So3Material>(so3mat);
-    if (Teuchos::is_null(so3mat)) FOUR_C_THROW("Failed to allocate");
+    material_ = std::dynamic_pointer_cast<Mat::So3Material>(so3mat);
+    if (!(so3mat)) FOUR_C_THROW("Failed to allocate");
 
     // solid material packed: 1. the data size, 2. the packed data of size sm
     // extract_from_pack extracts a sub_vec of size sm from data and updates the position vector

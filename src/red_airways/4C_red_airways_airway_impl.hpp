@@ -42,29 +42,29 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
 
       virtual void initial(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
-          Teuchos::RCP<const Core::Mat::Material> material) = 0;
+          std::shared_ptr<const Core::Mat::Material> material) = 0;
 
       virtual void evaluate_terminal_bc(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
 
       virtual void calc_flow_rates(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
 
       virtual void calc_elem_volume(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> mat) = 0;
+          std::shared_ptr<Core::Mat::Material> mat) = 0;
 
       virtual void get_coupled_values(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) = 0;
+          std::shared_ptr<Core::Mat::Material> material) = 0;
 
       /// Internal implementation class for airway element
       static RedAirwayImplInterface* impl(Discret::Elements::RedAirway* airway);
@@ -105,7 +105,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       /*!
         \brief Calculate virtual trajectory xnp and state of airway (open/closed)
@@ -129,7 +129,7 @@ namespace Discret
 
       void evaluate_terminal_bc(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> mat) override;
+          Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<Core::Mat::Material> mat) override;
 
       /*!
         \brief get the initial values of the degrees of freedome at the node
@@ -148,28 +148,28 @@ namespace Discret
       void initial(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
           Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
-          Teuchos::RCP<const Core::Mat::Material> material) override;
+          std::shared_ptr<const Core::Mat::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essentail matrices
       */
       void calc_flow_rates(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       /*!
        \Essential functions to compute the volume of elements
       */
       void calc_elem_volume(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       /*!
        \Essential functions to evaluate the coupled results
       */
       void get_coupled_values(RedAirway* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<Core::Mat::Material> material) override;
+          std::shared_ptr<Core::Mat::Material> material) override;
 
      private:
     };

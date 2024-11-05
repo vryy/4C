@@ -21,7 +21,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -117,10 +117,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -216,10 +216,10 @@ namespace Discret
       inline int num_volume() const override { return 1; }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -416,12 +416,12 @@ namespace Discret
                                            ///< configuration (false)
           ) = 0;
 
-      virtual void static_ke_laplace(Ale3* ele,        ///< pointer to element
-          Core::FE::Discretization& dis,               ///< discretization
-          Core::LinAlg::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
-          Core::LinAlg::SerialDenseVector& residual,   ///< element residual vector (to be filled)
-          std::vector<double>& my_dispnp,              ///< nodal displacements
-          Teuchos::RCP<Core::Mat::Material> material,  ///< material law
+      virtual void static_ke_laplace(Ale3* ele,       ///< pointer to element
+          Core::FE::Discretization& dis,              ///< discretization
+          Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffnes matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& my_dispnp,             ///< nodal displacements
+          std::shared_ptr<Core::Mat::Material> material,  ///< material law
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
           ) = 0;
@@ -438,12 +438,12 @@ namespace Discret
       static Ale3Impl<distype>* instance(
           Core::Utils::SingletonAction action = Core::Utils::SingletonAction::create);
 
-      void static_ke_laplace(Ale3* ele,                ///< pointer to element
-          Core::FE::Discretization& dis,               ///< discretization
-          Core::LinAlg::SerialDenseMatrix& sys_mat,    ///< element stiffnes matrix (to be filled)
-          Core::LinAlg::SerialDenseVector& residual,   ///< element residual vector (to be filled)
-          std::vector<double>& my_dispnp,              ///< nodal displacements
-          Teuchos::RCP<Core::Mat::Material> material,  ///< material law
+      void static_ke_laplace(Ale3* ele,               ///< pointer to element
+          Core::FE::Discretization& dis,              ///< discretization
+          Core::LinAlg::SerialDenseMatrix& sys_mat,   ///< element stiffnes matrix (to be filled)
+          Core::LinAlg::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& my_dispnp,             ///< nodal displacements
+          std::shared_ptr<Core::Mat::Material> material,  ///< material law
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
           ) override;
@@ -555,7 +555,7 @@ namespace Discret
 
       static Ale3SurfaceType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override

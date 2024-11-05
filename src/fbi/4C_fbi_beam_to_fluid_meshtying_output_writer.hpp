@@ -13,7 +13,7 @@
 
 #include "4C_io_visualization_parameters.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
      */
     BeamToFluidMeshtyingVtkOutputWriter(
         const Core::IO::VisualizationParameters& visualization_params,
-        Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
+        std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr);
 
     /**
      * \brief empty Destructor
@@ -74,7 +74,7 @@ namespace BEAMINTERACTION
      * @param i_iteration (in) current number of iteration.
      */
     void write_output_runtime_iteration(
-        const Teuchos::RCP<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_iteration,
+        const std::shared_ptr<Adapter::FBIConstraintenforcer>& couplingenforcer, int i_iteration,
         int i_step, double time) const;
 
    private:
@@ -91,10 +91,11 @@ namespace BEAMINTERACTION
 
    private:
     //! Parameter container for output.
-    Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
+    std::shared_ptr<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
+    std::shared_ptr<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>
+        output_writer_base_ptr_;
 
     //! visualization parameters
     Core::IO::VisualizationParameters visualization_params_;

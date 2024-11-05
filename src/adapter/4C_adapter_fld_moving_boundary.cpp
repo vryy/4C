@@ -33,7 +33,7 @@ Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
     case Core::ProblemType::fsi_redmodels:
     {
       // std::cout << "using FluidAle as FluidMovingBoundary" << std::endl;
-      fluid_ = Teuchos::make_rcp<FluidAle>(prbdyn, condname);
+      fluid_ = std::make_shared<FluidAle>(prbdyn, condname);
       break;
     }
     case Core::ProblemType::fluid_xfem:
@@ -44,22 +44,22 @@ Adapter::FluidMovingBoundaryBaseAlgorithm::FluidMovingBoundaryBaseAlgorithm(
       if (!alefluid)  // xfluid
       {
         // std::cout << "using FluidXFEM as FluidMovingBoundary" << endl;
-        fluid_ = Teuchos::make_rcp<FluidXFEM>(prbdyn, condname);
+        fluid_ = std::make_shared<FluidXFEM>(prbdyn, condname);
       }
       else  // xafluid
       {
-        fluid_ = Teuchos::make_rcp<FluidAleXFEM>(prbdyn, condname);
+        fluid_ = std::make_shared<FluidAleXFEM>(prbdyn, condname);
       }
       break;
     }
     case Core::ProblemType::immersed_fsi:
     {
-      fluid_ = Teuchos::make_rcp<FluidImmersed>(prbdyn, condname);
+      fluid_ = std::make_shared<FluidImmersed>(prbdyn, condname);
       break;
     }
     case Core::ProblemType::fbi:
     {
-      fluid_ = Teuchos::make_rcp<FBIFluidMB>(prbdyn, condname);
+      fluid_ = std::make_shared<FBIFluidMB>(prbdyn, condname);
       break;
     }
     default:

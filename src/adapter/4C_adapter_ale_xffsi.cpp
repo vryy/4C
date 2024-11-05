@@ -14,10 +14,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Adapter::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper(ale)
+Adapter::AleXFFsiWrapper::AleXFFsiWrapper(std::shared_ptr<Ale> ale) : AleFsiWrapper(ale)
 {
   // create the FSI interface
-  xff_interface_ = Teuchos::make_rcp<ALE::Utils::XFluidFluidMapExtractor>();
+  xff_interface_ = std::make_shared<ALE::Utils::XFluidFluidMapExtractor>();
   xff_interface_->setup(*discretization());
   setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_x_ff, interface(), xff_interface_);
   setup_dbc_map_ex(ALE::Utils::MapExtractor::dbc_set_x_fsi, interface());
@@ -25,14 +25,14 @@ Adapter::AleXFFsiWrapper::AleXFFsiWrapper(Teuchos::RCP<Ale> ale) : AleFsiWrapper
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> Adapter::AleXFFsiWrapper::get_dbc_map_extractor()
+std::shared_ptr<const Core::LinAlg::MapExtractor> Adapter::AleXFFsiWrapper::get_dbc_map_extractor()
 {
   return AleWrapper::get_dbc_map_extractor(ALE::Utils::MapExtractor::dbc_set_x_ff);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc)
+void Adapter::AleXFFsiWrapper::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc)
 {
   AleFsiWrapper::evaluate(stepinc, ALE::Utils::MapExtractor::dbc_set_x_ff);
 
@@ -45,7 +45,7 @@ void Adapter::AleXFFsiWrapper::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<
 /*----------------------------------------------------------------------------*/
 int Adapter::AleXFFsiWrapper::solve()
 {
-  AleFsiWrapper::evaluate(Teuchos::null, ALE::Utils::MapExtractor::dbc_set_x_fsi);
+  AleFsiWrapper::evaluate(nullptr, ALE::Utils::MapExtractor::dbc_set_x_fsi);
 
   int err = AleFsiWrapper::solve();
 

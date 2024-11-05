@@ -25,9 +25,9 @@ void Discret::Elements::ScaTraEleSTIThermo<distype>::extract_element_and_node_va
 )
 {
   // extract thermo state vector from discretization
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> tempnp = discretization.get_state(2, "thermo");
-  if (tempnp == Teuchos::null)
-    FOUR_C_THROW("Cannot extract thermo state vector from discretization!");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> tempnp =
+      discretization.get_state(2, "thermo");
+  if (tempnp == nullptr) FOUR_C_THROW("Cannot extract thermo state vector from discretization!");
 
   // extract local nodal temperature values from global state vector
   Core::FE::extract_my_values<Core::LinAlg::Matrix<nen_, 1>>(*tempnp, etempnp_, la[2].lm_);
@@ -152,12 +152,12 @@ void Discret::Elements::ScaTraEleSTIThermo<distype>::calc_rhs_soret(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::ScaTraEleSTIThermo<distype>::mat_soret(
-    const Teuchos::RCP<const Core::Mat::Material> material  //!< Soret material
+    const std::shared_ptr<const Core::Mat::Material> material  //!< Soret material
 )
 {
   // extract material parameters from Soret material
-  const Teuchos::RCP<const Mat::Soret> matsoret =
-      Teuchos::rcp_static_cast<const Mat::Soret>(material);
+  const std::shared_ptr<const Mat::Soret> matsoret =
+      std::static_pointer_cast<const Mat::Soret>(material);
   diffmanagerstithermo_->set_isotropic_diff(matsoret->conductivity(), 0);
   diffmanagerstithermo_->set_soret(matsoret->soret_coefficient());
 }
@@ -173,7 +173,7 @@ Discret::Elements::ScaTraEleSTIThermo<distype>::ScaTraEleSTIThermo(
     : etempnp_(true),
 
       // initialize thermo diffusion manager
-      diffmanagerstithermo_(Teuchos::make_rcp<ScaTraEleDiffManagerSTIThermo>(numscal))
+      diffmanagerstithermo_(std::make_shared<ScaTraEleDiffManagerSTIThermo>(numscal))
 {
   // safety check
   if (numscal != 1)

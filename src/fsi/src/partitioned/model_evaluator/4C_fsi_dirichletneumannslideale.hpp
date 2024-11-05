@@ -79,8 +79,8 @@ namespace FSI
      *
      * \returns interface force
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) final;
+    std::shared_ptr<Core::LinAlg::Vector<double>> fluid_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, const FillType fillFlag) final;
 
     /** \brief interface structural operator
      *
@@ -92,21 +92,21 @@ namespace FSI
      *
      * \returns interface displacement
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> struct_op(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) final;
+    std::shared_ptr<Core::LinAlg::Vector<double>> struct_op(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iforce, const FillType fillFlag) final;
 
     /// predictor
-    Teuchos::RCP<Core::LinAlg::Vector<double>> initial_guess() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> initial_guess() override;
 
    private:
     //! Sliding Ale helper class
-    Teuchos::RCP<FSI::Utils::SlideAleUtils> slideale_;
+    std::shared_ptr<FSI::Utils::SlideAleUtils> slideale_;
 
     //! Displacement of slave side of the interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> islave_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> islave_;
 
     //! Slave displacement on master side at every time step begin
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ft_stemp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ft_stemp_;
   };
 
 }  // namespace FSI

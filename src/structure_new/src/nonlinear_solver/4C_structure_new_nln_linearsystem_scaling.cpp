@@ -27,20 +27,18 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Solid::Nln::LinSystem::StcScaling::StcScaling(
     const Solid::TimeInt::BaseDataSDyn& DataSDyn, Solid::TimeInt::BaseDataGlobalState& GState)
-    : stcscale_(DataSDyn.get_stc_algo_type()),
-      stclayer_(DataSDyn.get_stc_layer()),
-      stcmat_(Teuchos::null)
+    : stcscale_(DataSDyn.get_stc_algo_type()), stclayer_(DataSDyn.get_stc_layer()), stcmat_(nullptr)
 {
   // prepare matrix for scaled thickness business of thin shell structures
   stcmat_ =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*GState.dof_row_map_view(), 81, true, true);
+      std::make_shared<Core::LinAlg::SparseMatrix>(*GState.dof_row_map_view(), 81, true, true);
   stcmat_->zero();
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
 
   // get discretization
-  Teuchos::RCP<Core::FE::Discretization> discret = GState.get_discret();
+  std::shared_ptr<Core::FE::Discretization> discret = GState.get_discret();
 
   // action for elements
   discret->set_state("displacement", GState.get_dis_np());
@@ -50,7 +48,7 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
   p.set<Inpar::Solid::StcScale>("stc_scaling", stcscale_);
   p.set("stc_layer", 1);
 
-  discret->evaluate(p, stcmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret->evaluate(p, stcmat_, nullptr, nullptr, nullptr, nullptr);
 
   stcmat_->complete();
 
@@ -62,11 +60,11 @@ Solid::Nln::LinSystem::StcScaling::StcScaling(
     pe.set<Inpar::Solid::StcScale>("stc_scaling", stcscale_);
     pe.set("stc_layer", lay);
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> tmpstcmat =
-        Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*GState.dof_row_map_view(), 81, true, true);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> tmpstcmat =
+        std::make_shared<Core::LinAlg::SparseMatrix>(*GState.dof_row_map_view(), 81, true, true);
     tmpstcmat->zero();
 
-    discret->evaluate(pe, tmpstcmat, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret->evaluate(pe, tmpstcmat, nullptr, nullptr, nullptr, nullptr);
     tmpstcmat->complete();
 
     stcmat_ = Core::LinAlg::matrix_multiply(*tmpstcmat, false, *stcmat_, false, true, false, true);
@@ -81,9 +79,9 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
 {
   // get stiffness matrix
   Epetra_CrsMatrix* stiffmat = dynamic_cast<Epetra_CrsMatrix*>(problem.GetMatrix());
-  Teuchos::RCP<Epetra_CrsMatrix> stiff_epetra = Teuchos::rcpFromRef(*stiffmat);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_linalg =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(stiff_epetra, Core::LinAlg::View);
+  std::shared_ptr<Epetra_CrsMatrix> stiff_epetra = Core::Utils::shared_ptr_from_ref(*stiffmat);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_linalg =
+      std::make_shared<Core::LinAlg::SparseMatrix>(stiff_epetra, Core::LinAlg::View);
 
   // get rhs
   Core::LinAlg::VectorView rhs_view(*dynamic_cast<Epetra_Vector*>(problem.GetRHS()));
@@ -99,7 +97,7 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
     stiff_scaled_ =
         Core::LinAlg::matrix_multiply(*stcmat_, true, *stiff_scaled_, false, true, false, true);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_scaled =
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs_scaled =
         Core::LinAlg::create_vector(problem.GetRHS()->Map(), true);
     stcmat_->multiply(true, rhs, *rhs_scaled);
     rhs.Update(1.0, *rhs_scaled, 0.0);
@@ -113,7 +111,7 @@ void Solid::Nln::LinSystem::StcScaling::scaleLinearSystem(Epetra_LinearProblem& 
  *----------------------------------------------------------------------*/
 void Solid::Nln::LinSystem::StcScaling::unscaleLinearSystem(Epetra_LinearProblem& problem)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disisdc =
+  std::shared_ptr<Core::LinAlg::Vector<double>> disisdc =
       Core::LinAlg::create_vector(problem.GetLHS()->Map(), true);
   Epetra_MultiVector* disi = problem.GetLHS();
 

@@ -16,7 +16,8 @@
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
 #include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // Do not lint the file for identifier names, since the naming of the Wrapper functions follow the
 // naming of the Epetra_Vector
@@ -63,7 +64,7 @@ namespace Core::LinAlg
 
     Epetra_Vector &get_ref_of_Epetra_Vector() { return *vector_; }
 
-    Teuchos::RCP<Epetra_Vector> get_ptr_of_Epetra_Vector() { return vector_; }
+    std::shared_ptr<Epetra_Vector> get_ptr_of_Epetra_Vector() { return vector_; }
 
     operator Epetra_MultiVector &() { return *vector_; }
 
@@ -74,10 +75,10 @@ namespace Core::LinAlg
     operator const Epetra_Vector &() const { return *vector_; }
 
     //! get pointer of epetra multi vector
-    Teuchos::RCP<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
+    std::shared_ptr<Epetra_MultiVector> get_ptr_of_Epetra_MultiVector() { return vector_; }
 
     //! Temporary helper to ease transition from Epetra and simplify interfacing with RCP-laden code
-    Teuchos::RCP<MultiVector<T>> get_ptr_of_MultiVector() const
+    std::shared_ptr<MultiVector<T>> get_ptr_of_MultiVector() const
     {
       sync_view();
       return multi_vector_view_;
@@ -319,17 +320,17 @@ namespace Core::LinAlg
      * Special constructor useful for converting a column of our MultiVector to our Vector.
      * @param view The internals that this Vector should view.
      */
-    [[nodiscard]] static Teuchos::RCP<Vector<T>> create_view(const Epetra_Vector &view)
+    [[nodiscard]] static std::shared_ptr<Vector<T>> create_view(const Epetra_Vector &view)
     {
-      Teuchos::RCP<Vector<T>> ret(new Vector<T>);
-      ret->vector_ = Teuchos::make_rcp<Epetra_Vector>(Epetra_DataAccess::View, view, 0);
+      std::shared_ptr<Vector<T>> ret(new Vector<T>);
+      ret->vector_ = std::make_shared<Epetra_Vector>(Epetra_DataAccess::View, view, 0);
       return ret;
     }
 
     //! The actual Epetra_Vector object.
-    Teuchos::RCP<Epetra_Vector> vector_;
+    std::shared_ptr<Epetra_Vector> vector_;
     //! MultiVector view of the Vector. This is used to allow implicit conversion to MultiVector.
-    mutable Teuchos::RCP<MultiVector<T>> multi_vector_view_;
+    mutable std::shared_ptr<MultiVector<T>> multi_vector_view_;
 
     friend class VectorView<Vector<T>>;
     friend class VectorView<const Vector<T>>;
@@ -404,7 +405,7 @@ namespace Core::LinAlg
     const Epetra_Comm &Comm() const { return vector_->Comm(); };
 
    private:
-    Teuchos::RCP<Epetra_IntVector> vector_;
+    std::shared_ptr<Epetra_IntVector> vector_;
   };
 
   /**
@@ -431,11 +432,11 @@ namespace Core::LinAlg
     operator VectorType &() { return *view_vector_; }
 
     //! Allow implicit conversion to RCP<Vector> for use in new interfaces.
-    Teuchos::RCP<VectorType> &get_non_owning_rcp_ref() { return view_vector_; }
+    std::shared_ptr<VectorType> &get_non_owning_rcp_ref() { return view_vector_; }
 
    private:
     //! Store inside an RCP because our interfaces frequently take references to RCPs.
-    Teuchos::RCP<VectorType> view_vector_;
+    std::shared_ptr<VectorType> view_vector_;
   };
 
 

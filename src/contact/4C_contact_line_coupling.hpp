@@ -46,7 +46,7 @@ namespace CONTACT
 
      */
     LineToSurfaceCoupling3d(Core::FE::Discretization& idiscret, int dim,
-        Teuchos::ParameterList& params, Element& pEle, Teuchos::RCP<Mortar::Element>& lEle,
+        Teuchos::ParameterList& params, Element& pEle, std::shared_ptr<Mortar::Element>& lEle,
         std::vector<Element*> surfEles, LineToSurfaceCoupling3d::IntType itype);
 
     /*!
@@ -174,7 +174,7 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<Mortar::Element>& line_element() const { return l_ele_; }
+    virtual std::shared_ptr<Mortar::Element>& line_element() const { return l_ele_; }
 
     /*!
      \brief Get coupling master elements
@@ -246,7 +246,7 @@ namespace CONTACT
      \brief Return vector of integration line
 
      */
-    virtual Teuchos::RCP<Mortar::IntCell>& int_line() { return int_cell_; }
+    virtual std::shared_ptr<Mortar::IntCell>& int_line() { return int_cell_; }
 
     /*!
      \brief perform integration for line to segment contact
@@ -362,10 +362,10 @@ namespace CONTACT
     Core::FE::Discretization& idiscret_;  //< discretization of the contact interface
     int dim_;                             //< problem dimension (here: 3D)
 
-    Element& p_ele_;                        //< parent element connected to line element
-    Teuchos::RCP<Mortar::Element>& l_ele_;  //< line element to perform coupling for
-    std::vector<Element*> surf_eles_;       //< surface elements to perform coupling for
-    int curr_ele_;                          //< number of current element
+    Element& p_ele_;                           //< parent element connected to line element
+    std::shared_ptr<Mortar::Element>& l_ele_;  //< line element to perform coupling for
+    std::vector<Element*> surf_eles_;          //< surface elements to perform coupling for
+    int curr_ele_;                             //< number of current element
 
     Teuchos::ParameterList& imortar_;        //< containing contact input parameters
     double auxc_[3];                         //< center of auxiliary plane
@@ -379,7 +379,7 @@ namespace CONTACT
     std::vector<Mortar::Vertex> temp_intersections_;  //< vertex objects for intline temporary
     std::set<std::pair<int, int>>
         donebefore_;  //< set of master node pairs to guarantee uniqueness of line-line clipping
-    Teuchos::RCP<Mortar::IntCell> int_cell_;  //< vector of integration lines
+    std::shared_ptr<Mortar::IntCell> int_cell_;  //< vector of integration lines
     std::vector<Core::Gen::Pairedvector<int, double>>
         derivauxn_;  //< derivatives of auxiliary plane normal
     std::vector<Core::Gen::Pairedvector<int, double>>
@@ -406,8 +406,8 @@ namespace CONTACT
 
      */
     LineToLineCouplingPoint3d(Core::FE::Discretization& idiscret, int dim,
-        Teuchos::ParameterList& params, Teuchos::RCP<Mortar::Element>& lsele,
-        Teuchos::RCP<Mortar::Element>& lmele);
+        Teuchos::ParameterList& params, std::shared_ptr<Mortar::Element>& lsele,
+        std::shared_ptr<Mortar::Element>& lmele);
 
     /*!
      \brief Destructor
@@ -483,24 +483,24 @@ namespace CONTACT
      \brief Get coupling slave element
 
      */
-    virtual Teuchos::RCP<Mortar::Element>& line_slave_element() const { return l_sele_; }
+    virtual std::shared_ptr<Mortar::Element>& line_slave_element() const { return l_sele_; }
 
     /*!
      \brief Get coupling master element
 
      */
-    virtual Teuchos::RCP<Mortar::Element>& line_master_element() const { return l_mele_; }
+    virtual std::shared_ptr<Mortar::Element>& line_master_element() const { return l_mele_; }
 
    private:
     // don't want = operator and cctor
     LineToLineCouplingPoint3d operator=(const LineToLineCouplingPoint3d& old) = delete;
     LineToLineCouplingPoint3d(const LineToLineCouplingPoint3d& old) = delete;
 
-    Core::FE::Discretization& idiscret_;     //< discretization of the contact interface
-    int dim_;                                //< problem dimension (here: 3D)
-    Teuchos::ParameterList& imortar_;        //< containing contact input parameters
-    Teuchos::RCP<Mortar::Element>& l_sele_;  //< line element to perform coupling for
-    Teuchos::RCP<Mortar::Element>& l_mele_;  //< line element to perform coupling for
+    Core::FE::Discretization& idiscret_;        //< discretization of the contact interface
+    int dim_;                                   //< problem dimension (here: 3D)
+    Teuchos::ParameterList& imortar_;           //< containing contact input parameters
+    std::shared_ptr<Mortar::Element>& l_sele_;  //< line element to perform coupling for
+    std::shared_ptr<Mortar::Element>& l_mele_;  //< line element to perform coupling for
   };
 
 }  // namespace CONTACT

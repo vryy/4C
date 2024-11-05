@@ -75,7 +75,7 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_mat_chemo(
     const double timetaufac, const double densnp, const double scatrares,
     const Core::LinAlg::Matrix<nen_, 1>& sgconv, const Core::LinAlg::Matrix<nen_, 1>& diff)
 {
-  Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
+  std::shared_ptr<varmanager> varmanager = my::scatravarmanager_;
 
   for (int condnum = 0; condnum < numcondchemo_; condnum++)
   {
@@ -142,7 +142,7 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_rhs_chemo(
     Core::LinAlg::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
     const double scatrares, const double densnp)
 {
-  Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
+  std::shared_ptr<varmanager> varmanager = my::scatravarmanager_;
 
   for (int condnum = 0; condnum < numcondchemo_; condnum++)
   {
@@ -216,7 +216,7 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_material_param
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // We may have some chemotactic and some non-chemotactic discretisation.
   // But since the calculation classes are singleton, we have to reset all chemotaxis stuff each
@@ -225,22 +225,22 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_material_param
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
   }
   else if (material->material_type() == Core::Materials::m_matlist_chemotaxis)
   {
-    const Teuchos::RCP<const Mat::MatListChemotaxis>& actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatListChemotaxis>(material);
+    const std::shared_ptr<const Mat::MatListChemotaxis>& actmat =
+        std::dynamic_pointer_cast<const Mat::MatListChemotaxis>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     get_chemotaxis_coefficients(
@@ -249,7 +249,7 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_material_param
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -279,13 +279,13 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::clear_chemotaxis_t
  *-----------------------------------------------------------------------------------------*/
 template <Core::FE::CellType distype, int probdim>
 void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coefficients(
-    const Teuchos::RCP<const Core::Mat::Material> material  //!< pointer to current material
+    const std::shared_ptr<const Core::Mat::Material> material  //!< pointer to current material
 )
 {
-  const Teuchos::RCP<const Mat::MatListChemotaxis>& actmat =
-      Teuchos::rcp_dynamic_cast<const Mat::MatListChemotaxis>(material);
+  const std::shared_ptr<const Mat::MatListChemotaxis>& actmat =
+      std::dynamic_pointer_cast<const Mat::MatListChemotaxis>(material);
 
-  if (actmat == Teuchos::null) FOUR_C_THROW("cast to MatListChemotaxis failed");
+  if (actmat == nullptr) FOUR_C_THROW("cast to MatListChemotaxis failed");
 
   // We always have to reinitialize these vectors since our elements are singleton
   numcondchemo_ = actmat->num_pair();
@@ -295,8 +295,8 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::get_chemotaxis_coe
   for (int i = 0; i < numcondchemo_; i++)
   {
     const int pairid = actmat->pair_id(i);
-    const Teuchos::RCP<const Mat::ScatraChemotaxisMat>& chemomat =
-        Teuchos::rcp_dynamic_cast<const Mat::ScatraChemotaxisMat>(actmat->material_by_id(pairid));
+    const std::shared_ptr<const Mat::ScatraChemotaxisMat>& chemomat =
+        std::dynamic_pointer_cast<const Mat::ScatraChemotaxisMat>(actmat->material_by_id(pairid));
 
     pair_[i] = *(chemomat->pair());            // get pairing
     chemocoeff_[i] = chemomat->chemo_coeff();  // get chemotaxis coefficient
@@ -323,7 +323,7 @@ void Discret::Elements::ScaTraEleCalcChemo<distype, probdim>::calc_strong_residu
   my::calc_strong_residual(k, scatrares, densam, densnp, rea_phi, rhsint, tau);
 
   // Second chemotaxis to strong residual
-  Teuchos::RCP<varmanager> varmanager = my::scatravarmanager_;
+  std::shared_ptr<varmanager> varmanager = my::scatravarmanager_;
 
   double chemo_phi = 0;
 

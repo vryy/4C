@@ -218,15 +218,15 @@ namespace Discret
       );
 
       //! get diffusion manager for reinitialization
-      Teuchos::RCP<ScaTraEleDiffManagerLsReinit<nsd_>> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerLsReinit<nsd_>> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerLsReinit<nsd_>>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerLsReinit<nsd_>>(my::diffmanager_);
       };
 
       //! get internal variable manager for reinitialization
-      Teuchos::RCP<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>> var_manager()
+      std::shared_ptr<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>> var_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
+        return std::static_pointer_cast<ScaTraEleInternalVariableManagerLsReinit<nsd_, nen_>>(
             my::scatravarmanager_);
       };
 

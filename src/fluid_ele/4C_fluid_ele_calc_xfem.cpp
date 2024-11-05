@@ -19,10 +19,10 @@
 #include "4C_mat_newtonianfluid.hpp"
 #include "4C_mat_par_bundle.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <fstream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -86,7 +86,7 @@ namespace Discret
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::evaluate_xfem(Discret::Elements::Fluid* ele,
         Core::FE::Discretization& discretization, const std::vector<int>& lm,
-        Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+        Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
         Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
         Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -135,7 +135,7 @@ namespace Discret
     /// error computation
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error(Discret::Elements::Fluid* ele,
-        Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+        Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
         Core::FE::Discretization& discretization, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& ele_dom_norms)
     {
@@ -148,7 +148,7 @@ namespace Discret
 
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error(Discret::Elements::Fluid* ele,
-        Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+        Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
         Core::FE::Discretization& discretization, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& ele_dom_norms,  // squared element domain norms
         const Core::FE::GaussIntegration& intpoints)
@@ -349,7 +349,7 @@ namespace Discret
         double& p,                                 ///< exact pressure
         Core::LinAlg::Matrix<nsd_, 1>& xyzint,     ///< xyz position of gaussian point
         const double& t,                           ///< time
-        Teuchos::RCP<Core::Mat::Material> mat)
+        std::shared_ptr<Core::Mat::Material> mat)
     {
       // Compute analytical solution
       switch (calcerr)
@@ -372,10 +372,10 @@ namespace Discret
             FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function = Teuchos::null;
+          std::shared_ptr<Core::Utils::FunctionOfSpaceTime> function = nullptr;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function_grad = Teuchos::null;
+          std::shared_ptr<Core::Utils::FunctionOfSpaceTime> function_grad = nullptr;
 
           // get material
           Core::Mat::PAR::Parameter* params = mat->parameter();
@@ -385,8 +385,8 @@ namespace Discret
 
           // evaluate velocity and pressure
           // evaluate the velocity gradient
-          function = Teuchos::make_rcp<FLD::BeltramiUP>(*fparams);
-          function_grad = Teuchos::make_rcp<FLD::BeltramiGradU>(*fparams);
+          function = std::make_shared<FLD::BeltramiUP>(*fparams);
+          function_grad = std::make_shared<FLD::BeltramiGradU>(*fparams);
 
           if (nsd_ == 3)
           {
@@ -499,10 +499,10 @@ namespace Discret
             FOUR_C_THROW("invalid nsd %d", nsd_);
 
           // evaluate velocity and pressure
-          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function = Teuchos::null;
+          std::shared_ptr<Core::Utils::FunctionOfSpaceTime> function = nullptr;
 
           // evaluate the velocity gradient
-          Teuchos::RCP<Core::Utils::FunctionOfSpaceTime> function_grad = Teuchos::null;
+          std::shared_ptr<Core::Utils::FunctionOfSpaceTime> function_grad = nullptr;
 
           bool is_stationary = false;
 
@@ -524,8 +524,8 @@ namespace Discret
           auto* fparams = dynamic_cast<Mat::PAR::NewtonianFluid*>(params);
           if (!fparams) FOUR_C_THROW("Material does not cast to Newtonian fluid");
 
-          function = Teuchos::make_rcp<FLD::KimMoinUP>(*fparams, is_stationary);
-          function_grad = Teuchos::make_rcp<FLD::KimMoinGradU>(*fparams, is_stationary);
+          function = std::make_shared<FLD::KimMoinUP>(*fparams, is_stationary);
+          function_grad = std::make_shared<FLD::KimMoinGradU>(*fparams, is_stationary);
 
           if (nsd_ == 3)
           {
@@ -771,11 +771,11 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     int FluidEleCalcXFEM<distype>::compute_error_interface(
-        Discret::Elements::Fluid* ele,                             ///< fluid element
-        Core::FE::Discretization& dis,                             ///< background discretization
-        const std::vector<int>& lm,                                ///< element local map
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        Teuchos::RCP<Core::Mat::Material>& mat,                    ///< material
+        Discret::Elements::Fluid* ele,                                ///< fluid element
+        Core::FE::Discretization& dis,                                ///< background discretization
+        const std::vector<int>& lm,                                   ///< element local map
+        const std::shared_ptr<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+        std::shared_ptr<Core::Mat::Material>& mat,                    ///< material
         Core::LinAlg::SerialDenseVector& ele_interf_norms,  /// squared element interface norms
         const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
         const std::map<int, std::vector<Core::FE::GaussIntegration>>&
@@ -785,7 +785,7 @@ namespace Discret
     )
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
+      if (cond_manager == nullptr) FOUR_C_THROW("set the condition manager!");
 #endif
 
       const auto calcerr =
@@ -903,7 +903,7 @@ namespace Discret
         Core::LinAlg::Matrix<3, 1> x_side(true);
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
+        std::shared_ptr<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
         Core::Elements::LocationArray cutla(1);
@@ -922,7 +922,7 @@ namespace Discret
 
         // coupling object between background element and each coupling element (side for
         // xfluid-sided coupling, element for other couplings)
-        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> ci;
+        std::shared_ptr<Discret::Elements::XFLUID::SlaveElementInterface<distype>> ci;
 
         // pointer to coupling element
         Core::Elements::Element* coupl_ele = nullptr;
@@ -956,7 +956,8 @@ namespace Discret
         bool is_ls_coupling_side = cond_manager->is_level_set_coupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->is_mesh_coupling(coup_sid);
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->get_cutter_dis(coup_sid);
+        std::shared_ptr<Core::FE::Discretization> cutter_dis =
+            cond_manager->get_cutter_dis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -1062,7 +1063,7 @@ namespace Discret
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<Cut::Position> pos =
+            std::shared_ptr<Cut::Position> pos =
                 Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->compute();
             pos->local_coordinates(rst);
@@ -1263,20 +1264,20 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::element_xfem_interface_hybrid_lm(
-        Discret::Elements::Fluid* ele,                             ///< fluid element
-        Core::FE::Discretization& dis,                             ///< background discretization
-        const std::vector<int>& lm,                                ///< element local map
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
-        const std::vector<Core::FE::GaussIntegration>& intpoints,  ///< element gauss points
+        Discret::Elements::Fluid* ele,                                ///< fluid element
+        Core::FE::Discretization& dis,                                ///< background discretization
+        const std::vector<int>& lm,                                   ///< element local map
+        const std::shared_ptr<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+        const std::vector<Core::FE::GaussIntegration>& intpoints,     ///< element gauss points
         const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,  ///< boundary cells
         const std::map<int, std::vector<Core::FE::GaussIntegration>>&
             bintpoints,  ///< boundary integration points
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>&
-            side_coupling,                       ///< side coupling matrices
-        Teuchos::ParameterList& params,          ///< parameter list
-        Teuchos::RCP<Core::Mat::Material>& mat,  ///< material
+            side_coupling,                          ///< side coupling matrices
+        Teuchos::ParameterList& params,             ///< parameter list
+        std::shared_ptr<Core::Mat::Material>& mat,  ///< material
         Core::LinAlg::SerialDenseMatrix&
             elemat1_epetra,  ///< local system matrix of intersected element
         Core::LinAlg::SerialDenseVector&
@@ -1286,7 +1287,7 @@ namespace Discret
     )
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
+      if (cond_manager == nullptr) FOUR_C_THROW("set the condition manager!");
 #endif
 
       //--------------------------------------------------------
@@ -1451,7 +1452,7 @@ namespace Discret
 
       // side coupling implementation between background element and each cutting side OR
       // embedded element
-      std::map<int, Teuchos::RCP<Discret::Elements::XFLUID::HybridLMInterface<distype>>> ci;
+      std::map<int, std::shared_ptr<Discret::Elements::XFLUID::HybridLMInterface<distype>>> ci;
 
       //-----------------------------------------------------------------------------------
       //                     application-specific flags & parameters
@@ -1512,7 +1513,7 @@ namespace Discret
 
 
       // map of Nitsche-interfaces for building convective stabilization terms
-      std::map<int, Teuchos::RCP<Discret::Elements::XFLUID::NitscheInterface<distype>>> si_nit;
+      std::map<int, std::shared_ptr<Discret::Elements::XFLUID::NitscheInterface<distype>>> si_nit;
 
       // map of boundary element gids and coupling contributions from convective stabilization terms
       std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>> side_coupling_extra;
@@ -1540,7 +1541,7 @@ namespace Discret
         Core::LinAlg::Matrix<3, 1> x_side(true);
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
+        std::shared_ptr<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
         Core::Elements::LocationArray cutla(1);
@@ -1573,7 +1574,7 @@ namespace Discret
         const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
         const int coup_idx = cond_manager->get_coupling_index(coup_sid, my::eid_);
-        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->get_coupling_by_idx(coup_idx);
+        std::shared_ptr<XFEM::CouplingBase> coupling = cond_manager->get_coupling_by_idx(coup_idx);
 
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
 
@@ -1590,7 +1591,8 @@ namespace Discret
         bool is_ls_coupling_side = cond_manager->is_level_set_coupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->is_mesh_coupling(coup_sid);
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->get_cutter_dis(coup_sid);
+        std::shared_ptr<Core::FE::Discretization> cutter_dis =
+            cond_manager->get_cutter_dis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -1603,7 +1605,7 @@ namespace Discret
 #endif
 
         //-----------------------------------------------------------------------------------
-        Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi = Teuchos::null;
+        std::shared_ptr<XFEM::MeshCouplingFSI> mc_fsi = nullptr;
         bool assemble_iforce = false;
 
         //---------------------------------------------------------------------------------
@@ -1612,8 +1614,8 @@ namespace Discret
         // prepare the coupling objects
         if (is_mesh_coupling_side)
         {
-          mc_fsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(coupling);
-          if (mc_fsi != Teuchos::null) assemble_iforce = true;
+          mc_fsi = std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(coupling);
+          if (mc_fsi != nullptr) assemble_iforce = true;
 
           // get the side element and its coordinates for projection of Gaussian points
           side = cond_manager->get_side(coup_sid);
@@ -1639,7 +1641,7 @@ namespace Discret
           }
         }
 
-        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ =
+        std::shared_ptr<Core::FE::Discretization> coupl_dis_ =
             cond_manager->get_coupling_dis(coup_sid);
 
         if (!(is_ls_coupling_side and
@@ -1841,7 +1843,7 @@ namespace Discret
             }
 
             // find element local position of gauss point
-            Teuchos::RCP<Cut::Position> pos =
+            std::shared_ptr<Cut::Position> pos =
                 Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin);
             pos->compute();
             pos->local_coordinates(rst);
@@ -2440,11 +2442,11 @@ namespace Discret
 
       // build interface coupling matrices - therefore iterate through the interface elements
       for (typename std::map<int,
-               Teuchos::RCP<Discret::Elements::XFLUID::HybridLMInterface<distype>>>::iterator sit =
-               ci.begin();
+               std::shared_ptr<Discret::Elements::XFLUID::HybridLMInterface<distype>>>::iterator
+               sit = ci.begin();
            sit != ci.end(); ++sit)
       {
-        Teuchos::RCP<Discret::Elements::XFLUID::HybridLMInterface<distype>> si = sit->second;
+        std::shared_ptr<Discret::Elements::XFLUID::HybridLMInterface<distype>> si = sit->second;
         const int coup_sid = sit->first;
 
         // creation of Cuiu,Cuui,rhCui,Guis and Gsui:
@@ -3177,21 +3179,21 @@ namespace Discret
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::element_xfem_interface_nit(Discret::Elements::Fluid* ele,
         Core::FE::Discretization& dis, const std::vector<int>& lm,
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
+        const std::shared_ptr<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const std::map<int, std::vector<Cut::BoundaryCell*>>& bcells,
         const std::map<int, std::vector<Core::FE::GaussIntegration>>& bintpoints,
         const std::map<int, std::vector<int>>&
             patchcouplm,  ///< lm vectors for coupling elements, key= global coupling side-Id
         Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::Mat::Material>& mat_master,  ///< material for the background
-        Teuchos::RCP<Core::Mat::Material>& mat_slave,   ///< material for the coupled side
+        std::shared_ptr<Core::Mat::Material>& mat_master,  ///< material for the background
+        std::shared_ptr<Core::Mat::Material>& mat_slave,   ///< material for the coupled side
         Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
         Core::LinAlg::SerialDenseVector& elevec1_epetra, const Cut::plain_volumecell_set& vcSet,
         std::map<int, std::vector<Core::LinAlg::SerialDenseMatrix>>& side_coupling,
         Core::LinAlg::SerialDenseMatrix& Cuiui, bool evaluated_cut)
     {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-      if (cond_manager == Teuchos::null) FOUR_C_THROW("set the condition manager!");
+      if (cond_manager == nullptr) FOUR_C_THROW("set the condition manager!");
 #endif
 
 
@@ -3307,7 +3309,7 @@ namespace Discret
       // If non-constant density or viscosity wants to be calculated on the different sides. A
       // review over how the scalar variables are set at the surface should be made.
       get_material_parameters_volume_cell(mat_master, densaf_master_, viscaf_master_, gamma_m_);
-      if (mat_slave != Teuchos::null)
+      if (mat_slave != nullptr)
       {
         get_material_parameters_volume_cell(mat_slave, densaf_slave_, viscaf_slave_, gamma_s_);
         // Security check:
@@ -3343,7 +3345,7 @@ namespace Discret
         x_side_.clear();
 
         // we need an interface to the boundary element (for projection)
-        Teuchos::RCP<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
+        std::shared_ptr<Discret::Elements::XFLUID::SlaveElementInterface<distype>> si;
 
         // location array of boundary element
         Core::Elements::LocationArray cutla(1);
@@ -3359,7 +3361,7 @@ namespace Discret
 
         // coupling object between background element and each coupling element (side for
         // xfluid-sided coupling, element for other couplings)
-        Teuchos::RCP<Discret::Elements::XFLUID::NitscheInterface<distype>> ci;
+        std::shared_ptr<Discret::Elements::XFLUID::NitscheInterface<distype>> ci;
 
         // pointer to coupling element
         Core::Elements::Element* coupl_ele = nullptr;
@@ -3377,7 +3379,7 @@ namespace Discret
         const Inpar::XFEM::EleCouplingCondType& cond_type = coupcond.first;
 
         const int coup_idx = cond_manager->get_coupling_index(coup_sid, my::eid_);
-        Teuchos::RCP<XFEM::CouplingBase> coupling = cond_manager->get_coupling_by_idx(coup_idx);
+        std::shared_ptr<XFEM::CouplingBase> coupling = cond_manager->get_coupling_by_idx(coup_idx);
 
 
         const std::vector<Core::FE::GaussIntegration>& cutintpoints = i->second;
@@ -3403,7 +3405,8 @@ namespace Discret
         bool is_ls_coupling_side = cond_manager->is_level_set_coupling(coup_sid);
         bool is_mesh_coupling_side = cond_manager->is_mesh_coupling(coup_sid);
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = cond_manager->get_cutter_dis(coup_sid);
+        std::shared_ptr<Core::FE::Discretization> cutter_dis =
+            cond_manager->get_cutter_dis(coup_sid);
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
         if (is_ls_coupling_side and is_mesh_coupling_side)
@@ -3416,21 +3419,21 @@ namespace Discret
 #endif
 
         //-----------------------------------------------------------------------------------
-        Teuchos::RCP<XFEM::MeshCouplingFSI> mc_fsi = Teuchos::null;
-        Teuchos::RCP<XFEM::MeshCouplingFPI> mc_fpi = Teuchos::null;
+        std::shared_ptr<XFEM::MeshCouplingFSI> mc_fsi = nullptr;
+        std::shared_ptr<XFEM::MeshCouplingFPI> mc_fpi = nullptr;
         bool assemble_iforce = false;
 
         //---------------------------------------------------------------------------------
         // prepare the coupling objects
         if (is_mesh_coupling_side)
         {
-          mc_fsi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(coupling);
-          mc_fpi = Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(coupling);
+          mc_fsi = std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(coupling);
+          mc_fpi = std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(coupling);
 
-          if (mc_fsi != Teuchos::null || mc_fpi != Teuchos::null)
+          if (mc_fsi != nullptr || mc_fpi != nullptr)
           {
             if (coupling->get_averaging_strategy() == Inpar::XFEM::Xfluid_Sided &&
-                mc_fsi != Teuchos::null)
+                mc_fsi != nullptr)
               assemble_iforce = true;
             else
             {
@@ -3469,7 +3472,7 @@ namespace Discret
           }
         }
 
-        Teuchos::RCP<Core::FE::Discretization> coupl_dis_ =
+        std::shared_ptr<Core::FE::Discretization> coupl_dis_ =
             cond_manager->get_coupling_dis(coup_sid);
 
         if (!(is_ls_coupling_side and
@@ -3649,7 +3652,7 @@ namespace Discret
                 }
 
                 // find element local position of gauss point
-                Teuchos::RCP<Cut::Position> pos =
+                std::shared_ptr<Cut::Position> pos =
                     Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_ref);
                 pos->compute();
                 pos->local_coordinates(rst_);
@@ -3657,7 +3660,7 @@ namespace Discret
               else  // compute the local coordiante based on the current position
               {
                 // find element local position of gauss point
-                Teuchos::RCP<Cut::Position> pos =
+                std::shared_ptr<Cut::Position> pos =
                     Cut::PositionFactory::build_position<nsd_, distype>(my::xyze_, x_gp_lin_);
                 pos->compute();
                 pos->local_coordinates(rst_);
@@ -3765,14 +3768,14 @@ namespace Discret
 
             {
               TEUCHOS_FUNC_TIME_MONITOR("FluidEleCalcXFEM::nit_evaluate_coupling");
-              if (mc_fsi != Teuchos::null)
+              if (mc_fsi != nullptr)
               {
                 if (mc_fsi->get_interface_law() == Inpar::XFEM::navierslip_contact)
                   fulltraction =
                       XFEM::Utils::evaluate_full_traction(press, my::vderxy_, viscaf_master_,
                           NIT_full_stab_fac, my::velint_, velint_s_, normal_, normal_, velint_s_);
               }
-              else if (mc_fpi != Teuchos::null)
+              else if (mc_fpi != nullptr)
               {
                 double J = 0;
                 double porosity = mc_fpi->calc_porosity(side, rst_slave, J);
@@ -3965,8 +3968,8 @@ namespace Discret
      *--------------------------------------------------------------------------------*/
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::get_interface_jump_vectors(
-        const XFEM::EleCoupCond& coupcond,          ///< coupling condition for given interface side
-        Teuchos::RCP<XFEM::CouplingBase> coupling,  ///< coupling object
+        const XFEM::EleCoupCond& coupcond,  ///< coupling condition for given interface side
+        std::shared_ptr<XFEM::CouplingBase> coupling,  ///< coupling object
         Core::LinAlg::Matrix<nsd_, 1>&
             ivelint_jump,  ///< prescribed interface jump vector for velocity
         Core::LinAlg::Matrix<nsd_, 1>&
@@ -4059,14 +4062,14 @@ namespace Discret
         }
         case Inpar::XFEM::CouplingCond_SURF_FSI_MONO:
         {
-          Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFSI>(coupling)
+          std::dynamic_pointer_cast<XFEM::MeshCouplingFSI>(coupling)
               ->evaluate_structural_cauchy_stress(
                   coupl_ele, rst_slave, eledisp, normal, solid_stress_);
           break;
         }
         case Inpar::XFEM::CouplingCond_SURF_FPI_MONO:
         {
-          Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingFPI>(coupling)
+          std::dynamic_pointer_cast<XFEM::MeshCouplingFPI>(coupling)
               ->evaluate_coupling_conditions<distype>(proj_tangential, normal);
           break;
         }
@@ -4076,7 +4079,7 @@ namespace Discret
               ((cond->parameters().get<std::string>("EVALTYPE")) == "funct_gausspoint");
 
           // The velocity is evaluated twice in this framework...
-          Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlip>(coupling)
+          std::dynamic_pointer_cast<XFEM::MeshCouplingNavierSlip>(coupling)
               ->evaluate_coupling_conditions(ivelint_jump, itraction_jump, proj_tangential, x,
                   normal, cond, eval_dirich_at_gp, kappa_m, visc_m, visc_s);
 
@@ -4092,7 +4095,7 @@ namespace Discret
           bool eval_dirich_at_gp =
               ((cond->parameters().get<std::string>("EVALTYPE")) == "funct_gausspoint");
 
-          Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(coupling)
+          std::dynamic_pointer_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(coupling)
               ->evaluate_coupling_conditions<distype>(ivelint_jump, itraction_jump, x, cond,
                   proj_tangential, my::eid_, my::funct_, my::derxy_, normal, eval_dirich_at_gp,
                   kappa_m, visc_m, visc_s);
@@ -4108,7 +4111,7 @@ namespace Discret
         }
         case Inpar::XFEM::CouplingCond_LEVELSET_NAVIER_SLIP:
         {
-          Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)
+          std::dynamic_pointer_cast<XFEM::LevelSetCouplingNavierSlip>(coupling)
               ->evaluate_coupling_conditions<distype>(ivelint_jump, itraction_jump, x, cond,
                   proj_tangential, my::eid_, my::funct_, my::derxy_, normal, kappa_m, visc_m,
                   visc_s);
@@ -4350,7 +4353,7 @@ namespace Discret
               "hybrid_lm_create_special_contribution_matrices for level-set coupling not supported "
               "yet");
 
-        Teuchos::RCP<Core::FE::Discretization> cutter_dis = Teuchos::null;
+        std::shared_ptr<Core::FE::Discretization> cutter_dis = nullptr;
         if (cond_manager.is_mesh_coupling(coup_sid))
           cutter_dis = cond_manager.get_cutter_dis(coup_sid);
 
@@ -4561,7 +4564,7 @@ namespace Discret
 
     template <Core::FE::CellType distype>
     void FluidEleCalcXFEM<distype>::get_material_parameters_volume_cell(
-        Teuchos::RCP<const Core::Mat::Material> material,
+        std::shared_ptr<const Core::Mat::Material> material,
         double& densaf,  // done
         double& viscaf,  // done
         double& gamma    // done

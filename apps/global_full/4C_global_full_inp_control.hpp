@@ -11,8 +11,8 @@
 #include "4C_config.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <string>
 
 //> general input routine for 4C
@@ -23,6 +23,6 @@ void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name
 
 //> setup of parallel output as early as possible
 void setup_parallel_output(
-    std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);
+    std::string& outputfile_kenner, std::shared_ptr<Epetra_Comm> lcomm, int group);
 
 #endif

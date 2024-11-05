@@ -22,7 +22,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ScaTra::ScaTraUtils::check_consistency_of_s2_i_conditions(
-    Teuchos::RCP<Core::FE::Discretization> discretization)
+    std::shared_ptr<Core::FE::Discretization> discretization)
 {
   // check if the number of s2i condition definition is correct
   std::vector<Core::Conditions::Condition*> s2ikinetics_conditions, s2isclcoupling_condition,
@@ -70,7 +70,7 @@ void ScaTra::ScaTraUtils::check_consistency_of_s2_i_conditions(
 /*----------------------------------------------------------------------*/
 void ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
     const std::string& condition_to_be_tested,
-    Teuchos::RCP<Core::FE::Discretization> discretization)
+    std::shared_ptr<Core::FE::Discretization> discretization)
 {
   std::vector<Core::Conditions::Condition*> allConditionsToBeTested;
   discretization->get_condition(condition_to_be_tested, allConditionsToBeTested);
@@ -144,7 +144,7 @@ void ScaTra::ScaTraUtils::check_consistency_with_s2_i_kinetics_condition(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <const int dim>
-Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
 ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& state, const int scatra_dofid)
 {
@@ -163,8 +163,8 @@ ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretiza
   // ---------------------------------------------------------------
 
   // before we can export to NodeColMap we need reconstruction with a NodeRowMap
-  const Teuchos::RCP<Core::LinAlg::MultiVector<double>> gradphirow =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret.dof_row_map(), nsd);
+  const std::shared_ptr<Core::LinAlg::MultiVector<double>> gradphirow =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret.dof_row_map(), nsd);
   gradphirow->PutScalar(0.0);
 
   // map of pointers to nodes which must be reconstructed by this processor <local id, node>
@@ -342,7 +342,7 @@ ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average(Core::FE::Discretiza
   return gradphirow;
 }
 
-template Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+template std::shared_ptr<Core::LinAlg::MultiVector<double>>
 ScaTra::ScaTraUtils::compute_gradient_at_nodes_mean_average<3>(Core::FE::Discretization& discret,
     const Core::LinAlg::Vector<double>& state, const int scatra_dofid);
 

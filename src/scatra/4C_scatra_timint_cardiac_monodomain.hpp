@@ -30,11 +30,12 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    TimIntCardiacMonodomain(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    TimIntCardiacMonodomain(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     //! setup algorithm
@@ -55,7 +56,7 @@ namespace ScaTra
     /*========================================================================*/
 
     //! activation_time at times n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> activation_time_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> activation_time_np_;
 
     //! activation threshold for postprocessing
     double activation_threshold_;
@@ -64,22 +65,22 @@ namespace ScaTra
     int nb_max_mat_int_state_vars_;
 
     //! material internal state at times n+1
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_internal_state_np_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> material_internal_state_np_;
 
     //! one component of the material internal state at times n+1 (for separated postprocessing)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> material_internal_state_np_component_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> material_internal_state_np_component_;
 
     //! maximum expected number of material ionic currents
     int nb_max_mat_ionic_currents_;
 
     //! material ionic currents at times n+1
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> material_ionic_currents_np_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> material_ionic_currents_np_;
 
     //! one component of the material ionic currents at times n+1 (for separated postprocessing)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> material_ionic_currents_np_component_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> material_ionic_currents_np_component_;
 
     //! parameter list
-    const Teuchos::RCP<Teuchos::ParameterList> ep_params_;
+    const std::shared_ptr<Teuchos::ParameterList> ep_params_;
   };
 
 };  // namespace ScaTra

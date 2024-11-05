@@ -73,8 +73,8 @@ void ScaTra::MeshtyingStrategyS2IElch::compute_time_step_size(double& dt)
     set_condition_specific_scatra_parameters(*conditions[0]);
     // evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
     // interface layer growth
-    scatratimint_->discretization()->evaluate_condition(condparams, Teuchos::null, Teuchos::null,
-        Teuchos::null, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
+    scatratimint_->discretization()->evaluate_condition(
+        condparams, nullptr, nullptr, nullptr, nullptr, nullptr, "S2IKineticsGrowth");
     scatratimint_->discretization()->clear_state();
 
     // communicate minimum interfacial overpotential associated with scatra-scatra interface layer
@@ -209,8 +209,8 @@ void ScaTra::MeshtyingStrategyS2IElch::evaluate_point_coupling()
       {
         // access material of electrode
         auto matelectrode =
-            Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slave_node->elements()[0]->material());
-        if (matelectrode == Teuchos::null)
+            std::dynamic_pointer_cast<const Mat::Electrode>(slave_node->elements()[0]->material());
+        if (matelectrode == nullptr)
           FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
         // access input parameters associated with current condition
@@ -354,16 +354,16 @@ void ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy()
   if (couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_petrov or
       couplingtype_ == Inpar::S2I::coupling_mortar_saddlepoint_bubnov)
   {
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyS2ILMElch>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyS2ILMElch>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
   else if (elch_tim_int()->macro_scale())
   {
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdMacroScaleElch>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStdMacroScaleElch>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
   }
   else
-    convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdElch>(
+    convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStdElch>(
         scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 }  // ScaTra::MeshtyingStrategyS2IElch::init_conv_check_strategy
 
@@ -594,9 +594,9 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition(
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(slaveelement.material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(slaveelement.material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
@@ -656,12 +656,13 @@ void ScaTra::MortarCellCalcElch<distype_s, distype_m>::evaluate_condition_nts(
     FOUR_C_THROW("Invalid closing equation for electric potential!");
 
   // access material of slave element
-  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          condition.geometry()[slaveelement.id()])
-          ->parent_element()
-          ->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(
+              condition.geometry()[slaveelement.id()])
+              ->parent_element()
+              ->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // evaluate shape functions at position of slave-side node
@@ -828,12 +829,13 @@ void ScaTra::MortarCellCalcElchSTIThermo<distype_s, distype_m>::evaluate_conditi
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access material of slave element
-  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          s2icondition->geometry()[slaveelement.id()])
-          ->parent_element()
-          ->material());
-  if (matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(
+              s2icondition->geometry()[slaveelement.id()])
+              ->parent_element()
+              ->material());
+  if (matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
@@ -1046,18 +1048,18 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition(
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of slave element
-  const Teuchos::RCP<const Mat::Soret> matsoret = Teuchos::rcp_dynamic_cast<const Mat::Soret>(
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
+  const std::shared_ptr<const Mat::Soret> matsoret = std::dynamic_pointer_cast<const Mat::Soret>(
+      std::dynamic_pointer_cast<Core::Elements::FaceElement>(
           s2icondition->geometry()[slaveelement.id()])
           ->parent_element()
           ->material());
-  const Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
-          Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
+  const std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(
               s2icondition->geometry()[slaveelement.id()])
               ->parent_element()
               ->material(1));
-  if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
+  if (matsoret == nullptr or matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
@@ -1125,17 +1127,18 @@ void ScaTra::MortarCellCalcSTIElch<distype_s, distype_m>::evaluate_condition_od(
     FOUR_C_THROW("Cannot access scatra-scatra interface coupling condition!");
 
   // access primary and secondary materials of parent element
-  Teuchos::RCP<const Mat::Soret> matsoret = Teuchos::rcp_dynamic_cast<const Mat::Soret>(
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
+  std::shared_ptr<const Mat::Soret> matsoret = std::dynamic_pointer_cast<const Mat::Soret>(
+      std::dynamic_pointer_cast<Core::Elements::FaceElement>(
           s2icondition->geometry()[slaveelement.id()])
           ->parent_element()
           ->material());
-  Teuchos::RCP<const Mat::Electrode> matelectrode = Teuchos::rcp_dynamic_cast<const Mat::Electrode>(
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(
-          s2icondition->geometry()[slaveelement.id()])
-          ->parent_element()
-          ->material(1));
-  if (matsoret == Teuchos::null or matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(
+          std::dynamic_pointer_cast<Core::Elements::FaceElement>(
+              s2icondition->geometry()[slaveelement.id()])
+              ->parent_element()
+              ->material(1));
+  if (matsoret == nullptr or matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode or soret material for scatra-scatra interface coupling!");
 
   // extract nodal state variables associated with slave and master elements
@@ -1242,18 +1245,18 @@ void ScaTra::MeshtyingStrategyS2IElchSCL::setup_meshtying()
   std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
   std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
-  icoup_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  icoup_ = std::make_shared<Coupling::Adapter::Coupling>();
   icoup_->setup_coupling(*(scatratimint_->discretization()), *(scatratimint_->discretization()),
       imasternodegidvec, islavenodegidvec, 2, true, 1.0e-8);
 }
 
 /*------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------*/
-void ScaTra::MeshtyingStrategyS2IElchSCL::solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp, const int iteration,
+void ScaTra::MeshtyingStrategyS2IElchSCL::solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp, const int iteration,
     Core::LinAlg::SolverParams& solver_params) const
 {
   solver_params.refactor = true;

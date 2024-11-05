@@ -50,7 +50,7 @@ namespace Mat
       explicit LubricationLawConstant(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// compute current viscosity and save it
       void compute_viscosity(const double& press,  ///< (i) lubrication pressure at gauss point
@@ -79,7 +79,7 @@ namespace Mat
       explicit LubricationLawBarus(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
 
       /// compute current viscosity and save it
@@ -112,7 +112,7 @@ namespace Mat
       explicit LubricationLawRoeland(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
 
       /// compute current viscosity and save it

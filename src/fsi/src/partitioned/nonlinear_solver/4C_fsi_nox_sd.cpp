@@ -108,7 +108,7 @@ bool NOX::FSI::SDRelaxation::compute(::NOX::Abstract::Group& newgrp, double& ste
     const ::NOX::Abstract::Vector& dir, ::NOX::Epetra::Interface::Required& interface)
 {
   // Allocate space for vecPtr and grpPtr if necessary
-  if (Teuchos::is_null(vec_ptr_)) vec_ptr_ = dir.clone(::NOX::ShapeCopy);
+  if (!(vec_ptr_)) vec_ptr_ = dir.clone(::NOX::ShapeCopy);
 
   const ::NOX::Epetra::Vector& edir = dynamic_cast<const ::NOX::Epetra::Vector&>(dir);
   ::NOX::Epetra::Vector& evec = dynamic_cast<::NOX::Epetra::Vector&>(*vec_ptr_);

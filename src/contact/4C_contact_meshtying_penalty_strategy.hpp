@@ -42,8 +42,8 @@ namespace CONTACT
     \param[in] maxdof Highest DOF number in global problem
     */
     MtPenaltyStrategy(const Epetra_Map* dof_row_map, const Epetra_Map* NodeRowMap,
-        Teuchos::ParameterList params, std::vector<Teuchos::RCP<Mortar::Interface>> interface,
-        const int spatialDim, const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf,
+        Teuchos::ParameterList params, std::vector<std::shared_ptr<Mortar::Interface>> interface,
+        const int spatialDim, const std::shared_ptr<const Epetra_Comm>& comm, const double alphaf,
         const int maxdof);
 
 
@@ -72,7 +72,7 @@ namespace CONTACT
     Only do this ONCE for meshtying upon initialization!
 
     */
-    void mortar_coupling(const Teuchos::RCP<const Core::LinAlg::Vector<double>>& dis) override;
+    void mortar_coupling(const std::shared_ptr<const Core::LinAlg::Vector<double>>& dis) override;
 
     /*!
     \brief Mesh initialization for rotational invariance
@@ -87,7 +87,7 @@ namespace CONTACT
 
     \return Vector with modified nodal positions
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mesh_initialization() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> mesh_initialization() override;
 
     /*!
     \brief Evaluate meshtying
@@ -104,9 +104,9 @@ namespace CONTACT
     \param dis (in): current displacement state
 
     */
-    void evaluate_meshtying(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis) override;
+    void evaluate_meshtying(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff,
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis) override;
 
     /*!
     \brief Initialize Uzawa step
@@ -116,8 +116,8 @@ namespace CONTACT
     create an out-of-balance force again.
 
     */
-    void initialize_uzawa(Teuchos::RCP<Core::LinAlg::SparseOperator>& kteff,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& feff) override;
+    void initialize_uzawa(std::shared_ptr<Core::LinAlg::SparseOperator>& kteff,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& feff) override;
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -168,20 +168,21 @@ namespace CONTACT
     // All these functions only have functionality in Lagrange meshtying simulations,
     // thus they are defined empty here in the case of Penalty meshtying.
 
-    void recover(Teuchos::RCP<Core::LinAlg::Vector<double>> disi) override { return; };
-    void build_saddle_point_system(Teuchos::RCP<Core::LinAlg::SparseOperator> kdd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fd,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps, Teuchos::RCP<Epetra_Operator>& blockMat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blocksol,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& blockrhs) override
+    void recover(std::shared_ptr<Core::LinAlg::Vector<double>> disi) override { return; };
+    void build_saddle_point_system(std::shared_ptr<Core::LinAlg::SparseOperator> kdd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fd,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps,
+        std::shared_ptr<Epetra_Operator>& blockMat,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blocksol,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& blockrhs) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     };
-    void update_displacements_and_l_mincrements(Teuchos::RCP<Core::LinAlg::Vector<double>> sold,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> blocksol) override
+    void update_displacements_and_l_mincrements(std::shared_ptr<Core::LinAlg::Vector<double>> sold,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> blocksol) override
     {
       FOUR_C_THROW(
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
@@ -200,7 +201,7 @@ namespace CONTACT
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool evaluate_force(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
+    bool evaluate_force(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     /*! \brief Evaluate stiffness term
      *
@@ -210,21 +211,22 @@ namespace CONTACT
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool evaluate_stiff(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
+    bool evaluate_stiff(const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     /*! \brief Evaluate residual and stiffness matrix
      *
      * @param[in] dis Current displacement field
      * @return Boolean flag indicating successfull evaluation
      */
-    bool evaluate_force_stiff(const Teuchos::RCP<const Core::LinAlg::Vector<double>> dis) override;
+    bool evaluate_force_stiff(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> dis) override;
 
     //! Return the desired right-hand-side block pointer (read-only) [derived]
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> get_rhs_block_ptr(
         const enum CONTACT::VecBlockType& bt) const override;
 
     //! Return the desired matrix block pointer (read-only) [derived]
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_matrix_block_ptr(
         const enum CONTACT::MatBlockType& bt) const override;
 
     //@}
@@ -241,26 +243,26 @@ namespace CONTACT
     double initialpenalty_;
 
     //! Mortar matrix product \f$M^T M\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mtm_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mtm_;
 
     //! Mortar matrix product \f$M^T D\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mtd_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mtd_;
 
     //! Mortar matrix product \f$D^T M\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dtm_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dtm_;
 
     //! Mortar matrix product \f$D^T D\f$
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> dtd_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> dtd_;
 
 
     //! Global stiffness matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_;
 
     /*! \brief Global residual vector
      *
      * \todo Is this the residual or the right-hand side vector?
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> force_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> force_;
 
 
   };  // class MtPenaltyStrategy

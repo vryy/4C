@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -64,15 +63,15 @@ namespace Mat
     /*!
      * \brief Returns the reference to the anisotropy
      *
-     * \return Teuchos::RCP<Anisotropy>& Reference to the anisotropy
+     * \return std::shared_ptr<Anisotropy>& Reference to the anisotropy
      */
-    Teuchos::RCP<Anisotropy>& get_anisotropy() { return anisotropy_; }
+    std::shared_ptr<Anisotropy>& get_anisotropy() { return anisotropy_; }
     /*!
      * \brief Returns the reference to the anisotropy
      *
-     * \return Teuchos::RCP<Anisotropy>& Reference to the anisotropy
+     * \return std::shared_ptr<Anisotropy>& Reference to the anisotropy
      */
-    const Teuchos::RCP<Anisotropy>& get_anisotropy() const { return anisotropy_; }
+    const std::shared_ptr<Anisotropy>& get_anisotropy() const { return anisotropy_; }
 
    private:
     /*!
@@ -99,7 +98,7 @@ namespace Mat
     void set_anisotropy(Anisotropy& anisotropy);
 
     /// Reference to Anisotropy
-    Teuchos::RCP<Anisotropy> anisotropy_;
+    std::shared_ptr<Anisotropy> anisotropy_;
   };
 }  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE

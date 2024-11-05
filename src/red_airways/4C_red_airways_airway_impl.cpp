@@ -149,7 +149,7 @@ namespace
   void sysmat(Discret::Elements::RedAirway* ele, Core::LinAlg::SerialDenseVector& epnp,
       Core::LinAlg::SerialDenseVector& epn, Core::LinAlg::SerialDenseVector& epnm,
       Core::LinAlg::SerialDenseMatrix& sysmat, Core::LinAlg::SerialDenseVector& rhs,
-      Teuchos::RCP<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
+      std::shared_ptr<const Core::Mat::Material> material, Discret::ReducedLung::ElemParams& params,
       double time, double dt, bool compute_awacinter)
   {
     const auto airway_params = ele->get_airway_params();
@@ -577,7 +577,7 @@ int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
-    Core::LinAlg::SerialDenseVector& elevec3_epetra, Teuchos::RCP<Core::Mat::Material> mat)
+    Core::LinAlg::SerialDenseVector& elevec3_epetra, std::shared_ptr<Core::Mat::Material> mat)
 {
   const int elemVecdim = elevec1_epetra.length();
 
@@ -603,11 +603,11 @@ int Discret::Elements::AirwayImpl<distype>::evaluate(RedAirway* ele, Teuchos::Pa
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
+  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -692,7 +692,7 @@ template <Core::FE::CellType distype>
 void Discret::Elements::AirwayImpl<distype>::initial(RedAirway* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& radii_in, Core::LinAlg::SerialDenseVector& radii_out,
-    Teuchos::RCP<const Core::Mat::Material> material)
+    std::shared_ptr<const Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
@@ -851,7 +851,7 @@ void Discret::Elements::AirwayImpl<distype>::compute_pext(RedAirway* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Core::LinAlg::SerialDenseVector& rhs, Teuchos::RCP<Core::Mat::Material> material)
+    Core::LinAlg::SerialDenseVector& rhs, std::shared_ptr<Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
@@ -867,9 +867,9 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
   // the number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
 
-  if (pn == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pn'");
+  if (pn == nullptr) FOUR_C_THROW("Cannot get state vectors 'pn'");
 
   // extract local values from the global vectors
   std::vector<double> mypn(lm.size());
@@ -1013,8 +1013,8 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           const Core::Conditions::Condition* condition =
               ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
 
-          Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
-              params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
+          std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
+              params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
@@ -1051,8 +1051,8 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
           // -----------------------------------------------------------------
 
           int ID = condition->parameters().get<int>("ConditionID");
-          Teuchos::RCP<std::map<std::string, double>> map3D;
-          map3D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
+          std::shared_ptr<std::map<std::string, double>> map3D;
+          map3D = CoupledTo3DParams->get<std::shared_ptr<std::map<std::string, double>>>(
               "3D map of values");
 
           // find the applied boundary variable
@@ -1271,7 +1271,7 @@ void Discret::Elements::AirwayImpl<distype>::evaluate_terminal_bc(RedAirway* ele
 template <Core::FE::CellType distype>
 void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   const int elemVecdim = lm.size();
 
@@ -1291,11 +1291,11 @@ void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
   // get all general state vectors: flow, pressure,
   // ---------------------------------------------------------------------
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pn = discretization.get_state("pn");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnm = discretization.get_state("pnm");
 
-  if (pnp == Teuchos::null || pn == Teuchos::null || pnm == Teuchos::null)
+  if (pnp == nullptr || pn == nullptr || pnm == nullptr)
     FOUR_C_THROW("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -1387,7 +1387,7 @@ void Discret::Elements::AirwayImpl<distype>::calc_flow_rates(RedAirway* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   // get all essential vector variables
 
@@ -1450,7 +1450,7 @@ void Discret::Elements::AirwayImpl<distype>::calc_elem_volume(RedAirway* ele,
 template <Core::FE::CellType distype>
 void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material> material)
+    std::shared_ptr<Core::Mat::Material> material)
 {
   const int myrank = discretization.get_comm().MyPID();
 
@@ -1463,9 +1463,9 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
   // the number of nodes
   const int numnode = lm.size();
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> pnp = discretization.get_state("pnp");
 
-  if (pnp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'pnp'");
+  if (pnp == nullptr) FOUR_C_THROW("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
   std::vector<double> mypnp(lm.size());
@@ -1492,8 +1492,8 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
       {
         const Core::Conditions::Condition* condition =
             ele->nodes()[i]->get_condition("Art_redD_3D_CouplingCond");
-        Teuchos::RCP<Teuchos::ParameterList> CoupledTo3DParams =
-            params.get<Teuchos::RCP<Teuchos::ParameterList>>("coupling with 3D fluid params");
+        std::shared_ptr<Teuchos::ParameterList> CoupledTo3DParams =
+            params.get<std::shared_ptr<Teuchos::ParameterList>>("coupling with 3D fluid params");
         // -----------------------------------------------------------------
         // If the parameter list is empty, then something is wrong!
         // -----------------------------------------------------------------
@@ -1528,8 +1528,8 @@ void Discret::Elements::AirwayImpl<distype>::get_coupled_values(RedAirway* ele,
         // -----------------------------------------------------------------
 
         int ID = condition->parameters().get<int>("ConditionID");
-        Teuchos::RCP<std::map<std::string, double>> map1D;
-        map1D = CoupledTo3DParams->get<Teuchos::RCP<std::map<std::string, double>>>(
+        std::shared_ptr<std::map<std::string, double>> map1D;
+        map1D = CoupledTo3DParams->get<std::shared_ptr<std::map<std::string, double>>>(
             "reducedD map of values");
 
         std::string returnedBC = (condition->parameters().get<std::string>("ReturnedVariable"));

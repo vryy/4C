@@ -38,9 +38,9 @@ Mat::PAR::PlasticElastHyperVCU::PlasticElastHyperVCU(const Core::Mat::PAR::Param
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::PlasticElastHyperVCU::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::PlasticElastHyperVCU::create_material()
 {
-  return Teuchos::make_rcp<Mat::PlasticElastHyperVCU>(this);
+  return std::make_shared<Mat::PlasticElastHyperVCU>(this);
 }
 
 
@@ -71,8 +71,8 @@ Mat::PlasticElastHyperVCU::PlasticElastHyperVCU(Mat::PAR::PlasticElastHyperVCU* 
   for (m = params_->matids_.begin(); m != params_->matids_.end(); ++m)
   {
     const int matid = *m;
-    Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-    if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+    if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
     potsum_.push_back(sum);
   }
 }
@@ -125,7 +125,7 @@ void Mat::PlasticElastHyperVCU::unpack(Core::Communication::UnpackBuffer& buffer
   // matid and recover MatParams()
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -150,8 +150,8 @@ void Mat::PlasticElastHyperVCU::unpack(Core::Communication::UnpackBuffer& buffer
     for (m = mat_params()->matids_.begin(); m != mat_params()->matids_.end(); ++m)
     {
       const int matid = *m;
-      Teuchos::RCP<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
-      if (sum == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      std::shared_ptr<Mat::Elastic::Summand> sum = Mat::Elastic::Summand::factory(matid);
+      if (sum == nullptr) FOUR_C_THROW("Failed to allocate");
       potsum_.push_back(sum);
     }
 

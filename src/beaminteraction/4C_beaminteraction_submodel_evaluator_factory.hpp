@@ -13,7 +13,7 @@
 
 #include "4C_beaminteraction_str_model_evaluator.hpp"  // typedef
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -35,14 +35,14 @@ namespace BEAMINTERACTION
       //! destructor
       virtual ~Factory() = default;
 
-      Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> build_model_evaluators(
+      std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> build_model_evaluators(
           const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes) const;
 
      private:
     };
 
     //! non-member function, which relates to the Solid::ModelEvaluator::Factory
-    Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> build_model_evaluators(
+    std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> build_model_evaluators(
         const std::set<enum Inpar::BEAMINTERACTION::SubModelType>& submodeltypes);
 
   }  // namespace SUBMODELEVALUATOR

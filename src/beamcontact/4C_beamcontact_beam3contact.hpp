@@ -501,7 +501,7 @@ namespace CONTACT
     */
     bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint,
         const double& pp,
-        std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+        std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) override;
 
     /*!
@@ -563,10 +563,10 @@ namespace CONTACT
     Core::LinAlg::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
 
     //! neighbor elements of element 1
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors1_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
     Core::LinAlg::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;
@@ -614,13 +614,13 @@ namespace CONTACT
     std::pair<bool, bool> boundarynode2_;
 
     //! Variables stored at the closest points of the large-angle-contact algorithm
-    std::vector<Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>>> cpvariables_;
+    std::vector<std::shared_ptr<Beam3contactvariables<numnodes, numnodalvalues>>> cpvariables_;
 
     //! Variables stored at the Gauss points of the small-angle-contact algorithm
-    std::vector<Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>>> gpvariables_;
+    std::vector<std::shared_ptr<Beam3contactvariables<numnodes, numnodalvalues>>> gpvariables_;
 
     //! Variables stored at the end points of the endpoint-contact algorithm
-    std::vector<Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>>> epvariables_;
+    std::vector<std::shared_ptr<Beam3contactvariables<numnodes, numnodalvalues>>> epvariables_;
 
     //@}
 
@@ -993,7 +993,8 @@ namespace CONTACT
     */
     void compute_normal(Core::LinAlg::Matrix<3, 1, TYPE>& r1, Core::LinAlg::Matrix<3, 1, TYPE>& r2,
         Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi, Core::LinAlg::Matrix<3, 1, TYPE>& r2_xi,
-        Teuchos::RCP<Beam3contactvariables<numnodes, numnodalvalues>> variables, int contacttype);
+        std::shared_ptr<Beam3contactvariables<numnodes, numnodalvalues>> variables,
+        int contacttype);
 
     /*!
     \brief Check, if we have contact or not (e.g. gap < gmax [e.g. gmax=0]?)
@@ -1065,7 +1066,7 @@ namespace CONTACT
     */
     void fd_check(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint,
         const double& pp,
-        std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+        std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck);
 
     //@}

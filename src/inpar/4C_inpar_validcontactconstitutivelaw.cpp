@@ -16,7 +16,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Input::print_empty_contact_constitutive_law_definitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
+    std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
+        contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
   Core::IO::DatFileUtils::print_section_header(stream, sectionname);
@@ -32,29 +33,29 @@ void Input::print_empty_contact_constitutive_law_definitions(std::ostream& strea
 /*----------------------------------------------------------------------*/
 void print_contact_constitutive_law_dat_header()
 {
-  Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> coconstlawlist =
-      Input::valid_contact_constitutive_laws();
+  std::shared_ptr<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
+      coconstlawlist = Input::valid_contact_constitutive_laws();
   Input::print_empty_contact_constitutive_law_definitions(std::cout, *coconstlawlist);
 }
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
+std::shared_ptr<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
 Input::valid_contact_constitutive_laws()
 {
   // a list containing all valid contact constitutivelaw definitions
-  Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
-      Teuchos::make_rcp<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>();
+  std::shared_ptr<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
+      std::make_shared<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>>();
 
   // convenience
-  std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
+  std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist = *vm;
 
   /*----------------------------------------------------------------------*/
   // broken rational function
   {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::LawDefinition>("CoConstLaw_brokenrational",
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
+        std::make_shared<CONTACT::CONSTITUTIVELAW::LawDefinition>("CoConstLaw_brokenrational",
             "Broken rational law", Inpar::CONTACT::ConstitutiveLawType::colaw_brokenrational);
 
     add_named_real(m, "A", "scaling factor");
@@ -66,8 +67,8 @@ Input::valid_contact_constitutive_laws()
   }
   // power law function
   {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::LawDefinition>(
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
+        std::make_shared<CONTACT::CONSTITUTIVELAW::LawDefinition>(
             "CoConstLaw_power", "Power law", Inpar::CONTACT::ConstitutiveLawType::colaw_power);
 
     add_named_real(m, "A", "scaling factor");
@@ -79,8 +80,8 @@ Input::valid_contact_constitutive_laws()
 
   // cubic function
   {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::LawDefinition>(
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
+        std::make_shared<CONTACT::CONSTITUTIVELAW::LawDefinition>(
             "CoConstLaw_cubic", "Cubic function", Inpar::CONTACT::ConstitutiveLawType::colaw_cubic);
 
     add_named_real(m, "A", "A");
@@ -94,8 +95,8 @@ Input::valid_contact_constitutive_laws()
 
   // linear function
   {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::LawDefinition>("CoConstLaw_linear",
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
+        std::make_shared<CONTACT::CONSTITUTIVELAW::LawDefinition>("CoConstLaw_linear",
             "Linear function", Inpar::CONTACT::ConstitutiveLawType::colaw_linear);
 
     add_named_real(m, "A", "slope");
@@ -107,8 +108,8 @@ Input::valid_contact_constitutive_laws()
 
   // mirco function
   {
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
-        Teuchos::make_rcp<CONTACT::CONSTITUTIVELAW::LawDefinition>(
+    std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition> m =
+        std::make_shared<CONTACT::CONSTITUTIVELAW::LawDefinition>(
             "CoConstLaw_mirco", "Mirco function", Inpar::CONTACT::ConstitutiveLawType::colaw_mirco);
 
     add_named_int(m, "FirstMatID", "First material ID");

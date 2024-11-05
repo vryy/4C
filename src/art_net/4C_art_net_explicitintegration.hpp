@@ -21,11 +21,11 @@
 #include "4C_utils_function.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
 
 #include <cstdlib>
 #include <ctime>
 #include <iostream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -44,7 +44,7 @@ namespace Arteries
     \brief Standard Constructor
 
     */
-    ArtNetExplicitTimeInt(Teuchos::RCP<Core::FE::Discretization> dis, const int linsolvernumber,
+    ArtNetExplicitTimeInt(std::shared_ptr<Core::FE::Discretization> dis, const int linsolvernumber,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
         Core::IO::DiscretizationWriter& output);
 
@@ -58,14 +58,14 @@ namespace Arteries
         const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
 
     /*!
     \brief solve linearised artery and bifurcation
 
     */
-    void solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
+    void solve(std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams) override;
 
     void solve_scatra() override;
 
@@ -103,7 +103,7 @@ namespace Arteries
     \brief update configuration and output to file/screen
 
     */
-    void output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
+    void output(bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief Test results
@@ -118,8 +118,8 @@ namespace Arteries
     void calc_postprocessing_values();
 
 
-    void calc_scatra_from_scatra_fw(Teuchos::RCP<Core::LinAlg::Vector<double>> scatra,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_fb);
+    void calc_scatra_from_scatra_fw(std::shared_ptr<Core::LinAlg::Vector<double>> scatra,
+        std::shared_ptr<Core::LinAlg::Vector<double>> scatra_fb);
 
     /*!
     \brief read restart data
@@ -129,37 +129,37 @@ namespace Arteries
 
     //! @name access methods for composite algorithms
 
-    //  Teuchos::RCP<Core::LinAlg::Vector<double>> Residual() { return residual_; } //This variable
-    //  might be needed in future!
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qnp() { return qnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> q_anp() { return qanp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> areanp() { return areanp_; }
-    // Teuchos::RCP<Core::LinAlg::Vector<double>> Presnp() { return presnp_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qn() { return qn_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> q_an() { return qan_; }
-    Teuchos::RCP<Core::LinAlg::Vector<double>> arean() { return arean_; }
-    // Teuchos::RCP<Core::LinAlg::Vector<double>> Presn()  { return presn_; }
+    //  std::shared_ptr<Core::LinAlg::Vector<double>> Residual() { return residual_; } //This
+    //  variable might be needed in future!
+    std::shared_ptr<Core::LinAlg::Vector<double>> qnp() { return qnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> q_anp() { return qanp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> areanp() { return areanp_; }
+    // std::shared_ptr<Core::LinAlg::Vector<double>> Presnp() { return presnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> qn() { return qn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> q_an() { return qan_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> arean() { return arean_; }
+    // std::shared_ptr<Core::LinAlg::Vector<double>> Presn()  { return presn_; }
 
     /// provide access to the Dirichlet map
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
 
     /// Extract the Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichlet();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichlet();
 
     /// Extract the Inverse Dirichlet toggle vector based on Dirichlet BC maps
     ///
     /// This method provides backward compatability only. Formerly, the Dirichlet conditions
     /// were handled with the Dirichlet toggle vector. Now, they are stored and applied
     /// with maps, ie #dbcmaps_. Eventually, this method will be removed.
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> inv_dirichlet();
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> inv_dirichlet();
 
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mass_matrix()
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mass_matrix()
     {
-      return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(massmat_);
+      return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(massmat_);
     }
 
     //@}
@@ -167,107 +167,107 @@ namespace Arteries
 
    protected:
     /// (standard) mass matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> massmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> massmat_;
 
     /// maps for scatra Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::Vector<double>> nodeIds_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_bcval_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_dbctog_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> nodeIds_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra_bcval_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra_dbctog_;
 
     //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qanp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qan_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qanm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qan_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qanm_;
     //@}
 
     //! @name Volumetric Flow rate and Cross-Sectional area at time n before solving Fluid 3D
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qan_3D_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qan_3D_;
     //@}
 
     //! @name Volumetric Flow rate at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qnm_;
     //@}
 
     //! @name Pressure at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> pn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> pn_;
     //@}
 
     //! @name Area at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> an_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> an_;
     //@}
 
     //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfo_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbo_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wfnm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> Wbnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wfo_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wbo_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wfnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wfn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wfnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wbnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wbn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> Wbnm_;
     //@}
 
     //! @name scalar transport vectors at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2nm_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraO2wbnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2nm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2wfn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2wfnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2wbn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraO2wbnp_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatraCO2wbnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraCO2n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraCO2np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraCO2wfn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraCO2wfnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraCO2wbn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatraCO2wbnp_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> export_scatra_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> export_scatra_;
     //@}
 
     //! @name saving state vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qanp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qan_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_qanm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qan_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_qanm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wfnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wfn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wfnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_Wfnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_Wfn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_Wfnm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wbnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wbn_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_Wbnm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_Wbnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_Wbn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_Wbnm_;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2np_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2n_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> saved_scatraO2nm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_scatraO2np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_scatraO2n_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> saved_scatraO2nm_;
     //@}
 
     //! @name cross-sectional area at time n+1, n and n-1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> arean_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> areanp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> areanm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> arean_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> areanp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> areanm_;
     //@}
 
     //! @name Dirichlet boundary condition vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> bcval_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> bcval_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dbctog_;
     //@}
 
     //! @name Junction boundary condition
-    Teuchos::RCP<Utils::ArtJunctionWrapper> artjun_;
+    std::shared_ptr<Utils::ArtJunctionWrapper> artjun_;
     //@}
 
     //! @name 1D artery values at the junctions
-    Teuchos::RCP<std::map<const int, Teuchos::RCP<Arteries::Utils::JunctionNodeParams>>>
+    std::shared_ptr<std::map<const int, std::shared_ptr<Arteries::Utils::JunctionNodeParams>>>
         junc_nodal_vals_;
     //@}
 
     //! @name A condition to export 1D arteries as a gnuplot format
-    Teuchos::RCP<Utils::ArtWriteGnuplotWrapper> artgnu_;
+    std::shared_ptr<Utils::ArtWriteGnuplotWrapper> artgnu_;
     //@}
 
     //@}

@@ -71,15 +71,12 @@ void PaSI::PasiPartTwoWayCoup::setup()
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate =
         particlewallinterface->get_wall_data_state();
 
-    if (walldatastate->get_disp_row() == Teuchos::null or
-        walldatastate->get_disp_col() == Teuchos::null)
+    if (walldatastate->get_disp_row() == nullptr or walldatastate->get_disp_col() == nullptr)
       FOUR_C_THROW("wall displacements not initialized!");
-    if (walldatastate->get_vel_col() == Teuchos::null)
-      FOUR_C_THROW("wall velocities not initialized!");
-    if (walldatastate->get_acc_col() == Teuchos::null)
+    if (walldatastate->get_vel_col() == nullptr) FOUR_C_THROW("wall velocities not initialized!");
+    if (walldatastate->get_acc_col() == nullptr)
       FOUR_C_THROW("wall accelerations not initialized!");
-    if (walldatastate->get_force_col() == Teuchos::null)
-      FOUR_C_THROW("wall forces not initialized!");
+    if (walldatastate->get_force_col() == nullptr) FOUR_C_THROW("wall forces not initialized!");
   }
 }
 
@@ -206,7 +203,7 @@ void PaSI::PasiPartTwoWayCoup::build_increment_states()
 }
 
 void PaSI::PasiPartTwoWayCoup::set_interface_forces(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> intfforcenp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> intfforcenp)
 {
   TEUCHOS_FUNC_TIME_MONITOR("PaSI::PASI_PartTwoWayCoup::set_interface_forces");
 
@@ -287,7 +284,7 @@ void PaSI::PasiPartTwoWayCoup::clear_interface_forces()
       particlewallinterface->get_wall_data_state();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (walldatastate->get_force_col() == Teuchos::null) FOUR_C_THROW("wall forces not initialized!");
+  if (walldatastate->get_force_col() == nullptr) FOUR_C_THROW("wall forces not initialized!");
 #endif
 
   // clear interface forces
@@ -307,7 +304,7 @@ void PaSI::PasiPartTwoWayCoup::get_interface_forces()
       particlewallinterface->get_wall_data_state();
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
-  if (walldatastate->get_force_col() == Teuchos::null) FOUR_C_THROW("wall forces not initialized!");
+  if (walldatastate->get_force_col() == nullptr) FOUR_C_THROW("wall forces not initialized!");
 #endif
 
   // clear interface forces
@@ -634,7 +631,7 @@ void PaSI::PasiPartTwoWayCoupDispRelaxAitken::output()
 
 void PaSI::PasiPartTwoWayCoupDispRelaxAitken::calc_omega(double& omega, const int itnum)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intfdispincnpdiff =
+  std::shared_ptr<Core::LinAlg::Vector<double>> intfdispincnpdiff =
       Core::LinAlg::create_vector(*interface_->pasi_cond_map(), true);
   intfdispincnpdiff->Update(1.0, *intfdispincnp_, (-1.0), *intfdispincnpold_, 0.0);
 

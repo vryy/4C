@@ -47,15 +47,15 @@ namespace Adapter
     //@{
 
     //! constructor
-    explicit AleFsiMshtWrapper(Teuchos::RCP<Ale> ale);
+    explicit AleFsiMshtWrapper(std::shared_ptr<Ale> ale);
 
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::Utils::FsiMapExtractor> fsi_interface() const;
+    std::shared_ptr<const ALE::Utils::FsiMapExtractor> fsi_interface() const;
 
    private:
-    Teuchos::RCP<ALE::Utils::FsiMapExtractor> fsiinterface_;
+    std::shared_ptr<ALE::Utils::FsiMapExtractor> fsiinterface_;
 
   };  // class AleFsiWrapper
 }  // namespace Adapter

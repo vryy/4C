@@ -17,8 +17,8 @@ FOUR_C_NAMESPACE_OPEN
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::ContactStrategyBase::ContactStrategyBase(
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps)
+    std::shared_ptr<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps)
     : contact_strategy_nitsche_(std::move(contact_nitsche_strategy)), ssi_maps_(std::move(ssi_maps))
 {
 }
@@ -26,8 +26,8 @@ SSI::ContactStrategyBase::ContactStrategyBase(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::ContactStrategySparse::ContactStrategySparse(
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps)
+    std::shared_ptr<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps)
     : ContactStrategyBase(contact_nitsche_strategy, ssi_maps)
 {
 }
@@ -35,8 +35,8 @@ SSI::ContactStrategySparse::ContactStrategySparse(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 SSI::ContactStrategyBlock::ContactStrategyBlock(
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps)
+    std::shared_ptr<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps)
     : ContactStrategyBase(contact_nitsche_strategy, ssi_maps)
 {
 }
@@ -44,7 +44,7 @@ SSI::ContactStrategyBlock::ContactStrategyBlock(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBase::apply_contact_to_scatra_residual(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scatra_residual)
+    std::shared_ptr<Core::LinAlg::Vector<double>> scatra_residual)
 {
   scatra_residual->Update(
       1.0, *nitsche_strategy_ssi()->get_rhs_block_ptr(CONTACT::VecBlockType::scatra), 1.0);
@@ -53,7 +53,7 @@ void SSI::ContactStrategyBase::apply_contact_to_scatra_residual(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategySparse::apply_contact_to_scatra_scatra(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_scatra_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_sparse =
       Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatra_scatra_matrix);
@@ -67,7 +67,7 @@ void SSI::ContactStrategySparse::apply_contact_to_scatra_scatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_scatra_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatra_scatra_matrix)
 {
   auto scatra_scatra_matrix_block =
       Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(scatra_scatra_matrix);
@@ -86,7 +86,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_scatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategySparse::apply_contact_to_scatra_structure(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_sparse =
       Core::LinAlg::cast_to_sparse_matrix_and_check_success(scatra_structure_matrix);
@@ -101,7 +101,7 @@ void SSI::ContactStrategySparse::apply_contact_to_scatra_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatra_structure_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatra_structure_matrix)
 {
   auto scatra_structure_matrix_block =
       Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(scatra_structure_matrix);
@@ -121,7 +121,7 @@ void SSI::ContactStrategyBlock::apply_contact_to_scatra_structure(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategySparse::apply_contact_to_structure_scatra(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_sparse =
       Core::LinAlg::cast_to_sparse_matrix_and_check_success(structure_scatra_matrix);
@@ -136,7 +136,7 @@ void SSI::ContactStrategySparse::apply_contact_to_structure_scatra(
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
 void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> structure_scatra_matrix)
+    std::shared_ptr<Core::LinAlg::SparseOperator> structure_scatra_matrix)
 {
   auto structure_scatra_matrix_block =
       Core::LinAlg::cast_to_block_sparse_matrix_base_and_check_success(structure_scatra_matrix);
@@ -154,11 +154,11 @@ void SSI::ContactStrategyBlock::apply_contact_to_structure_scatra(
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/
-Teuchos::RCP<SSI::ContactStrategyBase> SSI::build_contact_strategy(
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
-    Teuchos::RCP<const SSI::Utils::SSIMaps> ssi_maps, Core::LinAlg::MatrixType matrixtype_scatra)
+std::shared_ptr<SSI::ContactStrategyBase> SSI::build_contact_strategy(
+    std::shared_ptr<CONTACT::NitscheStrategySsi> contact_nitsche_strategy,
+    std::shared_ptr<const SSI::Utils::SSIMaps> ssi_maps, Core::LinAlg::MatrixType matrixtype_scatra)
 {
-  Teuchos::RCP<SSI::ContactStrategyBase> contact_strategy(Teuchos::null);
+  std::shared_ptr<SSI::ContactStrategyBase> contact_strategy(nullptr);
 
   switch (matrixtype_scatra)
   {
@@ -166,13 +166,13 @@ Teuchos::RCP<SSI::ContactStrategyBase> SSI::build_contact_strategy(
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       contact_strategy =
-          Teuchos::make_rcp<SSI::ContactStrategyBlock>(contact_nitsche_strategy, ssi_maps);
+          std::make_shared<SSI::ContactStrategyBlock>(contact_nitsche_strategy, ssi_maps);
       break;
     }
     case Core::LinAlg::MatrixType::sparse:
     {
       contact_strategy =
-          Teuchos::make_rcp<SSI::ContactStrategySparse>(contact_nitsche_strategy, ssi_maps);
+          std::make_shared<SSI::ContactStrategySparse>(contact_nitsche_strategy, ssi_maps);
       break;
     }
 

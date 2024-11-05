@@ -33,15 +33,16 @@ namespace Adapter
   {
    public:
     /// Constructor
-    FluidFPSI(Teuchos::RCP<Fluid> fluid, Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
+    FluidFPSI(std::shared_ptr<Fluid> fluid, std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
     void init() override;
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       return fpsiinterface_;
     }
@@ -50,11 +51,11 @@ namespace Adapter
 
     void use_block_matrix(bool splitmatrix) override;
     virtual void use_block_matrix(
-        bool splitmatrix, Teuchos::RCP<FPSI::Utils::MapExtractor> const& shapederivSplitter);
+        bool splitmatrix, std::shared_ptr<FPSI::Utils::MapExtractor> const& shapederivSplitter);
 
    protected:
     /// the interface map setup for fpsi interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> fpsiinterface_;
+    std::shared_ptr<FLD::Utils::MapExtractor> fpsiinterface_;
 
   };  // class FluidFPSI
 }  // namespace Adapter

@@ -66,7 +66,7 @@ void ScaTra::MeshtyingStrategyFluidElch::setup_meshtying()
  *------------------------------------------------------------------------*/
 void ScaTra::MeshtyingStrategyFluidElch::init_conv_check_strategy()
 {
-  convcheckstrategy_ = Teuchos::make_rcp<ScaTra::ConvCheckStrategyStdElch>(
+  convcheckstrategy_ = std::make_shared<ScaTra::ConvCheckStrategyStdElch>(
       scatratimint_->scatra_parameter_list()->sublist("NONLINEAR"));
 
   return;

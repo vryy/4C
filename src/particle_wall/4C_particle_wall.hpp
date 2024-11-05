@@ -157,8 +157,8 @@ namespace PARTICLEWALL
      * \param[in] binrowmap bin row map
      * \param[in] bincolmap bin column map
      */
-    virtual void update_bin_row_and_col_map(
-        const Teuchos::RCP<Epetra_Map> binrowmap, const Teuchos::RCP<Epetra_Map> bincolmap) final;
+    virtual void update_bin_row_and_col_map(const std::shared_ptr<Epetra_Map> binrowmap,
+        const std::shared_ptr<Epetra_Map> bincolmap) final;
 
     /*!
      * \brief check that wall nodes are located in bounding box
@@ -208,7 +208,7 @@ namespace PARTICLEWALL
      */
     virtual bool have_valid_wall_neighbors() const final { return validwallneighbors_; };
 
-    Teuchos::RCP<const Core::FE::Discretization> get_wall_discretization() const final
+    std::shared_ptr<const Core::FE::Discretization> get_wall_discretization() const final
     {
       return walldiscretization_;
     };
@@ -291,13 +291,13 @@ namespace PARTICLEWALL
     std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     //! distribution of row bins
-    Teuchos::RCP<Epetra_Map> binrowmap_;
+    std::shared_ptr<Epetra_Map> binrowmap_;
 
     //! distribution of col bins
-    Teuchos::RCP<Epetra_Map> bincolmap_;
+    std::shared_ptr<Epetra_Map> bincolmap_;
 
     //! wall discretization
-    Teuchos::RCP<Core::FE::Discretization> walldiscretization_;
+    std::shared_ptr<Core::FE::Discretization> walldiscretization_;
 
     //! wall data state container
     std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate_;

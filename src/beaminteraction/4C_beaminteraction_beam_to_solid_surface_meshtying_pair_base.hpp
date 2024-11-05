@@ -94,7 +94,7 @@ namespace BEAMINTERACTION
      * @param visualization_params (in) Parameter list (not used in this class).
      */
     void get_pair_visualization(
-        Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
+        std::shared_ptr<BeamToSolidVisualizationOutputWriterBase> visualization_writer,
         Teuchos::ParameterList& visualization_params) const override;
 
     /**
@@ -105,21 +105,21 @@ namespace BEAMINTERACTION
      */
     void create_geometry_pair(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
-        override;
+        const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>&
+            geometry_evaluation_data_ptr) override;
 
     /**
      * \brief Link the contact pair with the face element storing information on the averaged nodal
      * normals (derived).
      */
-    void set_face_element(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element) override;
+    void set_face_element(std::shared_ptr<GEOMETRYPAIR::FaceElement>& face_element) override;
 
    protected:
     /**
      * \brief Return a cast of the geometry pair to the type for this contact pair.
      * @return RPC with the type of geometry pair for this beam contact pair.
      */
-    Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<double, Beam, Surface>>
+    std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToSurface<double, Beam, Surface>>
     cast_geometry_pair() const;
 
     /**
@@ -150,7 +150,7 @@ namespace BEAMINTERACTION
 
     //! Pointer to the face element object which manages the positions on the surface, including the
     //! averaged nodal normals.
-    Teuchos::RCP<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>> face_element_;
+    std::shared_ptr<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>> face_element_;
   };
 }  // namespace BEAMINTERACTION
 

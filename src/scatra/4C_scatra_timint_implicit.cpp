@@ -51,18 +51,18 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output, const int probnum)
+ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output, const int probnum)
     : problem_(Global::Problem::instance(probnum)),
       probnum_(probnum),
       solver_(std::move(solver)),
       params_(params),
       extraparams_(extraparams),
       myrank_(actdis->get_comm().MyPID()),
-      splitter_(Teuchos::null),
-      strategy_(Teuchos::null),
+      splitter_(nullptr),
+      strategy_(nullptr),
       additional_model_evaluator_(nullptr),
       isale_(extraparams->get<bool>("isale")),
       solvtype_(Teuchos::getIntegralValue<Inpar::ScaTra::SolverType>(*params, "SOLVERTYPE")),
@@ -91,11 +91,11 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       calcflux_boundary_(
           Teuchos::getIntegralValue<Inpar::ScaTra::FluxType>(*params, "CALCFLUX_BOUNDARY")),
       calcflux_boundary_lumped_(params->get<bool>("CALCFLUX_BOUNDARY_LUMPED")),
-      writefluxids_(Teuchos::make_rcp<std::vector<int>>()),
-      flux_domain_(Teuchos::null),
-      flux_boundary_(Teuchos::null),
-      flux_boundary_maps_(Teuchos::null),
-      sumnormfluxintegral_(Teuchos::null),
+      writefluxids_(std::make_shared<std::vector<int>>()),
+      flux_domain_(nullptr),
+      flux_boundary_(nullptr),
+      flux_boundary_maps_(nullptr),
+      sumnormfluxintegral_(nullptr),
       lastfluxoutputstep_(-1),
       output_element_material_id_(
           Global::Problem::instance()->io_params().get<bool>("ELEMENT_MAT_ID")),
@@ -121,24 +121,24 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       timealgo_(
           Teuchos::getIntegralValue<Inpar::ScaTra::TimeIntegrationScheme>(*params, "TIMEINTEGR")),
       nsd_(problem_->n_dim()),
-      scalarhandler_(Teuchos::null),
-      outputscalarstrategy_(Teuchos::null),
-      outputdomainintegralstrategy_(Teuchos::null),
+      scalarhandler_(nullptr),
+      outputscalarstrategy_(nullptr),
+      outputdomainintegralstrategy_(nullptr),
       // Initialization of degrees of freedom variables
-      phin_(Teuchos::null),
-      phinp_(Teuchos::null),
-      phinp_inc_(Teuchos::null),
-      phinp_inc_old_(Teuchos::null),
+      phin_(nullptr),
+      phinp_(nullptr),
+      phinp_inc_(nullptr),
+      phinp_inc_old_(nullptr),
       omega_(0, 0.),
-      phidtn_(Teuchos::null),
-      phidtnp_(Teuchos::null),
-      hist_(Teuchos::null),
-      densafnp_(Teuchos::null),
+      phidtn_(nullptr),
+      phidtnp_(nullptr),
+      hist_(nullptr),
+      densafnp_(nullptr),
       velocity_field_type_(
           Teuchos::getIntegralValue<Inpar::ScaTra::VelocityField>(*params, "VELOCITYFIELD")),
-      mean_conc_(Teuchos::null),
-      membrane_conc_(Teuchos::null),
-      phinp_micro_(Teuchos::null),
+      mean_conc_(nullptr),
+      membrane_conc_(nullptr),
+      phinp_micro_(nullptr),
       nds_disp_(-1),
       nds_growth_(-1),
       nds_micro_(-1),
@@ -154,33 +154,33 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       discret_(actdis),
       output_(std::move(output)),
       convform_(Teuchos::getIntegralValue<Inpar::ScaTra::ConvForm>(*params, "CONVFORM")),
-      sysmat_(Teuchos::null),
-      zeros_(Teuchos::null),
-      dbcmaps_(Teuchos::null),
-      neumann_loads_(Teuchos::null),
-      normals_(Teuchos::null),
-      residual_(Teuchos::null),
-      trueresidual_(Teuchos::null),
-      increment_(Teuchos::null),
+      sysmat_(nullptr),
+      zeros_(nullptr),
+      dbcmaps_(nullptr),
+      neumann_loads_(nullptr),
+      normals_(nullptr),
+      residual_(nullptr),
+      trueresidual_(nullptr),
+      increment_(nullptr),
       msht_(Teuchos::getIntegralValue<Inpar::FLUID::MeshTying>(*params, "MESHTYING")),
       // Initialization of AVM3 variables
-      sysmat_sd_(Teuchos::null),
-      Sep_(Teuchos::null),
-      Mnsv_(Teuchos::null),
+      sysmat_sd_(nullptr),
+      Sep_(nullptr),
+      Mnsv_(nullptr),
       // Initialization of turbulent flow variables
-      DynSmag_(Teuchos::null),
-      Vrem_(Teuchos::null),
+      DynSmag_(nullptr),
+      Vrem_(nullptr),
       samstart_(0),
       samstop_(0),
       dumperiod_(0),
       turbinflow_(extraparams->sublist("TURBULENT INFLOW").get<bool>("TURBULENTINFLOW")),
       numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
       special_flow_("initialization"),
-      forcing_(Teuchos::null),
-      homisoturb_forcing_(Teuchos::null),
+      forcing_(nullptr),
+      homisoturb_forcing_(nullptr),
       // Initialization of Krylov
       updateprojection_(false),
-      projector_(Teuchos::null),
+      projector_(nullptr),
       // Initialization of
       upres_(params->get<int>("RESULTSEVRY")),
       uprestart_(params->get<int>("RESTARTEVRY")),
@@ -190,8 +190,8 @@ ScaTra::ScaTraTimIntImpl::ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization
       q_(0.0),
       dq_dphi_(0, 0.),
       // Initialization of Biofilm specific stuff
-      scfldgrdisp_(Teuchos::null),
-      scstrgrdisp_(Teuchos::null),
+      scfldgrdisp_(nullptr),
+      scstrgrdisp_(nullptr),
       outintegrreac_(params->get<bool>("OUTINTEGRREAC")),
       skipinitder_(params->get<bool>("SKIPINITDER")),
       timestepadapted_(false),
@@ -328,7 +328,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   const Epetra_Map* dofrowmap = discret_->dof_row_map();
 
   // initialize the scalar handler
-  if (scalarhandler_ == Teuchos::null)
+  if (scalarhandler_ == nullptr)
     FOUR_C_THROW("Make sure you construct the scalarhandler_ in initialization.");
   else
     scalarhandler_->setup(this);
@@ -346,7 +346,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   {
     // do not save the graph if fine-scale subgrid diffusivity is used in non-incremental case (very
     // special case)
-    sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
+    sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
   }
   else
     sysmat_ = init_system_matrix();
@@ -400,7 +400,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>();
   {
     Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
@@ -409,8 +409,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
         "function_manager", &Global::Problem::instance()->function_manager());
     const Core::ProblemType problem_type = Core::ProblemType::scatra;
     eleparams.set<const Core::ProblemType*>("problem_type", &problem_type);
-    discret_->evaluate_dirichlet(
-        eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
@@ -439,7 +438,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // initialize vector for statistics (assume a maximum of 10 conditions)
-  sumnormfluxintegral_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(10);
+  sumnormfluxintegral_ = std::make_shared<Core::LinAlg::SerialDenseVector>(10);
 
   if (calcflux_domain_ != Inpar::ScaTra::flux_none or
       calcflux_boundary_ != Inpar::ScaTra::flux_none)
@@ -499,11 +498,11 @@ void ScaTra::ScaTraTimIntImpl::setup()
       discret_->get_condition("ScaTraFluxCalc", conditions);
 
       // set up map extractor
-      flux_boundary_maps_ = Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>();
+      flux_boundary_maps_ = std::make_shared<Core::LinAlg::MultiMapExtractor>();
       Core::Conditions::MultiConditionSelector mcs;
       mcs.set_overlapping(true);
       for (auto& condition : conditions)
-        mcs.add_selector(Teuchos::make_rcp<Core::Conditions::ConditionSelector>(
+        mcs.add_selector(std::make_shared<Core::Conditions::ConditionSelector>(
             *discret_, std::vector<Core::Conditions::Condition*>(1, condition)));
       mcs.setup_extractor(*discret_, *discret_->dof_row_map(), *flux_boundary_maps_);
     }
@@ -560,13 +559,13 @@ void ScaTra::ScaTraTimIntImpl::setup()
     switch (outputscalars_)
     {
       case Inpar::ScaTra::outputscalars_entiredomain:
-        outputscalarstrategy_ = Teuchos::make_rcp<OutputScalarsStrategyDomain>();
+        outputscalarstrategy_ = std::make_shared<OutputScalarsStrategyDomain>();
         break;
       case Inpar::ScaTra::outputscalars_condition:
-        outputscalarstrategy_ = Teuchos::make_rcp<OutputScalarsStrategyCondition>();
+        outputscalarstrategy_ = std::make_shared<OutputScalarsStrategyCondition>();
         break;
       case Inpar::ScaTra::outputscalars_entiredomain_condition:
-        outputscalarstrategy_ = Teuchos::make_rcp<OutputScalarsStrategyDomainAndCondition>();
+        outputscalarstrategy_ = std::make_shared<OutputScalarsStrategyDomainAndCondition>();
         break;
       default:
         FOUR_C_THROW("Unknown option for output of total and mean scalars!");
@@ -601,7 +600,7 @@ void ScaTra::ScaTraTimIntImpl::setup()
   if (computeintegrals_ != Inpar::ScaTra::computeintegrals_none)
   {
     // initialize domain integral output strategy
-    outputdomainintegralstrategy_ = Teuchos::make_rcp<OutputDomainIntegralStrategy>();
+    outputdomainintegralstrategy_ = std::make_shared<OutputDomainIntegralStrategy>();
     outputdomainintegralstrategy_->init(this);
   }
   else
@@ -641,20 +640,20 @@ void ScaTra::ScaTraTimIntImpl::setup()
             "Calculation of relative error based on conditions desired, but no conditions "
             "specified!");
       }
-      relerrors_ = Teuchos::make_rcp<std::vector<double>>(
-          2 * num_dof_per_node() * relerrorconditions.size());
+      relerrors_ =
+          std::make_shared<std::vector<double>>(2 * num_dof_per_node() * relerrorconditions.size());
     }
     else if (calcerror_ == Inpar::ScaTra::calcerror_AnalyticSeries)
-      relerrors_ = Teuchos::make_rcp<std::vector<double>>(2);  // TODO: Update two n species
+      relerrors_ = std::make_shared<std::vector<double>>(2);  // TODO: Update two n species
     else
     {
       // It is important to make a distinction as HDG always have NumDofPerNode = 0
       // The vector is therefore sized to contain the errors of one scalar and its gradient
       if (Global::Problem::instance()->spatial_approximation_type() ==
           Core::FE::ShapeFunctionType::hdg)
-        relerrors_ = Teuchos::make_rcp<std::vector<double>>(2);  // TODO: update to n species
+        relerrors_ = std::make_shared<std::vector<double>>(2);  // TODO: update to n species
       else
-        relerrors_ = Teuchos::make_rcp<std::vector<double>>(2 * num_dof_per_node());
+        relerrors_ = std::make_shared<std::vector<double>>(2 * num_dof_per_node());
     }
   }
 
@@ -704,8 +703,8 @@ void ScaTra::ScaTraTimIntImpl::setup_nat_conv()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integrals of concentrations and domain
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> scalars =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> scalars =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(num_scal() + 1);
   discret_->evaluate_scalars(eleparams, scalars);
 
   // calculate mean concentrations
@@ -716,22 +715,22 @@ void ScaTra::ScaTraTimIntImpl::setup_nat_conv()
   // initialization of the densification coefficient vector
   densific_.resize(num_scal());
   Core::Elements::Element* element = discret_->l_row_element(0);
-  Teuchos::RCP<Core::Mat::Material> mat = element->material();
+  std::shared_ptr<Core::Mat::Material> mat = element->material();
 
   if (mat->material_type() == Core::Materials::m_matlist or
       mat->material_type() == Core::Materials::m_matlist_reactions)
   {
-    Teuchos::RCP<const Mat::MatList> actmat = Teuchos::rcp_static_cast<const Mat::MatList>(mat);
+    std::shared_ptr<const Mat::MatList> actmat = std::static_pointer_cast<const Mat::MatList>(mat);
 
     for (int k = 0; k < num_scal(); ++k)
     {
       const int matid = actmat->mat_id(k);
-      Teuchos::RCP<const Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<const Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       if (singlemat->material_type() == Core::Materials::m_scatra)
       {
-        Teuchos::RCP<const Mat::ScatraMat> actsinglemat =
-            Teuchos::rcp_static_cast<const Mat::ScatraMat>(singlemat);
+        std::shared_ptr<const Mat::ScatraMat> actsinglemat =
+            std::static_pointer_cast<const Mat::ScatraMat>(singlemat);
 
         densific_[k] = actsinglemat->densification();
 
@@ -745,7 +744,8 @@ void ScaTra::ScaTraTimIntImpl::setup_nat_conv()
   // for a single species calculation
   else if (mat->material_type() == Core::Materials::m_scatra)
   {
-    Teuchos::RCP<const Mat::ScatraMat> actmat = Teuchos::rcp_static_cast<const Mat::ScatraMat>(mat);
+    std::shared_ptr<const Mat::ScatraMat> actmat =
+        std::static_pointer_cast<const Mat::ScatraMat>(mat);
 
     densific_[0] = actmat->densification();
 
@@ -777,7 +777,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
   // -------------------------------------------------------------------
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no and turbparams->get<bool>("TURBMODEL_LS"))
   {
-    sysmat_sd_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
+    sysmat_sd_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
 
     // Output
     if (myrank_ == 0)
@@ -835,7 +835,7 @@ void ScaTra::ScaTraTimIntImpl::init_turbulence_model(
       turbmodel_ = Inpar::FLUID::multifractal_subgrid_scales;
 
       // initalize matrix used to build the scale separation operator
-      sysmat_sd_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
+      sysmat_sd_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 27);
 
       Teuchos::ParameterList* mfsparams = &(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       if (mfsparams->get<std::string>("SCALE_SEPARATION") != "algebraic_multigrid_operator")
@@ -933,7 +933,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_krylov_projection()
   }
   else if (numscatra == 0)
   {
-    projector_ = Teuchos::null;
+    projector_ = nullptr;
   }
   else
     FOUR_C_THROW("Received more than one KrylovSpaceCondition for scatra field");
@@ -959,8 +959,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_nodeset_parameters() const
   eleparams.set<int>("ndswss", nds_wall_shear_stress());
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*--------------------------------------------------------------------------------*
@@ -984,7 +983,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   eleparams.set<Inpar::ScaTra::FluxType>("calcflux_domain", calcflux_domain_);
 
   //! set vector containing ids of scalars for which flux vectors are calculated
-  eleparams.set<Teuchos::RCP<std::vector<int>>>("writeflux_ids", writefluxids_);
+  eleparams.set<std::shared_ptr<std::vector<int>>>("writeflux_ids", writefluxids_);
 
   // parameters for stabilization
   eleparams.sublist("stabilization") = params_->sublist("STABILIZATION");
@@ -1040,8 +1039,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_general_parameters(bool calcinitialti
   set_element_specific_scatra_parameters(eleparams);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 
@@ -1090,8 +1088,7 @@ void ScaTra::ScaTraTimIntImpl::set_element_turbulence_parameters(
   }
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*----------------------------------------------------------------------*
@@ -1149,7 +1146,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
   // -------------------------------------------------------------------
   // TODO: Dirichlet auch im Fall von genalpha phinp
   // Neumann(n + alpha_f)
-  apply_dirichlet_bc(time_, phinp_, Teuchos::null);
+  apply_dirichlet_bc(time_, phinp_, nullptr);
   apply_neumann_bc(neumann_loads_);
 
   // By definition: Applying DC on the slave side of an internal interface is not allowed
@@ -1201,8 +1198,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_time_step()
     add_time_integration_specific_vectors();
 
     // loop over macro-scale elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 }
 
@@ -1218,7 +1214,7 @@ void ScaTra::ScaTraTimIntImpl::prepare_first_time_step()
       // A clean solution would incorporate apply_dirichlet_bc(...) into
       // calc_initial_time_derivative(). However, this would make a number of test cases fail. We
       // should have a closer look at this problem and fix it eventually.
-      apply_dirichlet_bc(time_, phin_, Teuchos::null);
+      apply_dirichlet_bc(time_, phin_, nullptr);
       calc_initial_time_derivative();
     }
 
@@ -1252,9 +1248,9 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field()
     FOUR_C_THROW("Too few dofsets on scatra discretization!");
 
   // initialize velocity vectors
-  Teuchos::RCP<Core::LinAlg::Vector<double>> convel =
+  std::shared_ptr<Core::LinAlg::Vector<double>> convel =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds_vel()), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vel =
+  std::shared_ptr<Core::LinAlg::Vector<double>> vel =
       Core::LinAlg::create_vector(*discret_->dof_row_map(nds_vel()), true);
 
   switch (velocity_field_type_)
@@ -1379,9 +1375,9 @@ void ScaTra::ScaTraTimIntImpl::set_external_force()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::set_wall_shear_stresses(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> wss)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> wss)
 {
-  if (wss == Teuchos::null) FOUR_C_THROW("WSS state is Teuchos::null");
+  if (wss == nullptr) FOUR_C_THROW("WSS state is nullptr");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // We rely on the fact, that the nodal distribution of both fields is the same.
@@ -1408,9 +1404,9 @@ void ScaTra::ScaTraTimIntImpl::set_old_part_of_righthandside()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::set_pressure_field(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> pressure)
 {
-  if (pressure == Teuchos::null) FOUR_C_THROW("Pressure state is Teuchos::null");
+  if (pressure == nullptr) FOUR_C_THROW("Pressure state is nullptr");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // We rely on the fact, that the nodal distribution of both fields is the same.
@@ -1429,9 +1425,9 @@ void ScaTra::ScaTraTimIntImpl::set_pressure_field(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::set_membrane_concentration(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> MembraneConc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> MembraneConc)
 {
-  if (MembraneConc == Teuchos::null) FOUR_C_THROW("MeanConc state is Teuchos::null");
+  if (MembraneConc == nullptr) FOUR_C_THROW("MeanConc state is nullptr");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // We rely on the fact, that the nodal distribution of both fields is the same.
@@ -1453,9 +1449,9 @@ void ScaTra::ScaTraTimIntImpl::set_membrane_concentration(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::set_mean_concentration(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> MeanConc)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> MeanConc)
 {
-  if (MeanConc == Teuchos::null) FOUR_C_THROW("MeanConc state is Teuchos::null");
+  if (MeanConc == nullptr) FOUR_C_THROW("MeanConc state is nullptr");
 
 #ifdef FOUR_C_ENABLE_ASSERTIONS
   // We rely on the fact, that the nodal distribution of both fields is the same.
@@ -1477,10 +1473,10 @@ void ScaTra::ScaTraTimIntImpl::set_mean_concentration(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::set_velocity_field(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel, const bool setpressure)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convvel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> acc,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> fsvel, const bool setpressure)
 {
   // time measurement
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA: set convective velocity field");
@@ -1488,7 +1484,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field(
   //---------------------------------------------------------------------------
   // preliminaries
   //---------------------------------------------------------------------------
-  if (convvel == Teuchos::null) FOUR_C_THROW("Velocity state is Teuchos::null");
+  if (convvel == nullptr) FOUR_C_THROW("Velocity state is nullptr");
 
   if (velocity_field_type_ != Inpar::ScaTra::velocity_Navier_Stokes)
     FOUR_C_THROW(
@@ -1499,7 +1495,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field(
 
   // boolean indicating whether fine-scale velocity vector exists
   // -> if yes, multifractal subgrid-scale modeling is applied
-  bool fsvelswitch = (fsvel != Teuchos::null);
+  bool fsvelswitch = (fsvel != nullptr);
 
   // some thing went wrong if we want to use multifractal subgrid-scale modeling
   // and have not got the fine-scale velocity
@@ -1520,7 +1516,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field(
   discret_->set_state(nds_vel(), "convective velocity field", convvel);
 
   // provide scatra discretization with velocity
-  if (vel != Teuchos::null)
+  if (vel != nullptr)
     discret_->set_state(nds_vel(), "velocity field", vel);
   else
   {
@@ -1530,7 +1526,7 @@ void ScaTra::ScaTraTimIntImpl::set_velocity_field(
   }
 
   // provide scatra discretization with acceleration field if required
-  if (acc != Teuchos::null) discret_->set_state(nds_vel(), "acceleration field", acc);
+  if (acc != nullptr) discret_->set_state(nds_vel(), "acceleration field", acc);
 
   // provide scatra discretization with fine-scale convective velocity if required
   if (fsvelswitch) discret_->set_state(nds_vel(), "fine-scale velocity field", fsvel);
@@ -1658,7 +1654,7 @@ void ScaTra::ScaTraTimIntImpl::update()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::apply_mesh_movement(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp)
 {
   //---------------------------------------------------------------------------
   // only required in ALE case
@@ -1668,7 +1664,7 @@ void ScaTra::ScaTraTimIntImpl::apply_mesh_movement(
     TEUCHOS_FUNC_TIME_MONITOR("SCATRA: apply mesh movement");
 
     // check existence of displacement vector
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements!");
+    if (dispnp == nullptr) FOUR_C_THROW("Got null pointer for displacements!");
 
     // provide scatra discretization with displacement field
     discret_->set_state(nds_disp(), "dispnp", dispnp);
@@ -1690,16 +1686,16 @@ inline void ScaTra::ScaTraTimIntImpl::print_time_step_info()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> ScaTra::ScaTraTimIntImpl::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> ScaTra::ScaTraTimIntImpl::system_matrix()
 {
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
+  return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ScaTra::ScaTraTimIntImpl::block_system_matrix()
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> ScaTra::ScaTraTimIntImpl::block_system_matrix()
 {
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
+  return std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
 }
 
 /*----------------------------------------------------------------------*
@@ -1749,8 +1745,7 @@ void ScaTra::ScaTraTimIntImpl::write_result()
         "action", ScaTra::Action::micro_scale_output, eleparams);
 
     // loop over macro-scale elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 
   if ((step_ != 0) and (output_state_matlab_))
@@ -1775,7 +1770,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
       velocity_field_type_ == Inpar::ScaTra::velocity_Navier_Stokes)
   {
     auto convel = discret_->get_state(nds_vel(), "convective velocity field");
-    if (convel == Teuchos::null) FOUR_C_THROW("Cannot get state vector convective velocity");
+    if (convel == nullptr) FOUR_C_THROW("Cannot get state vector convective velocity");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     auto convel_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), nsd_, true);
@@ -1795,10 +1790,9 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
   // displacement field
   if (isale_)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
         discret_->get_state(nds_disp(), "dispnp");
-    if (dispnp == Teuchos::null)
-      FOUR_C_THROW("Cannot extract displacement field from discretization");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot extract displacement field from discretization");
 
     // convert dof-based Epetra vector into node-based Epetra multi-vector for postprocessing
     auto dispnp_multi = Core::LinAlg::MultiVector<double>(*discret_->node_row_map(), nsd_, true);
@@ -1834,9 +1828,8 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
   {
     // for flux output of initial field (before first solve) do:
     // flux_domain_ and flux_boundary_ vectors are initialized when CalcFlux() is called
-    if (step_ == 0 or
-        (calcflux_domain_ != Inpar::ScaTra::flux_none and flux_domain_ == Teuchos::null) or
-        (calcflux_boundary_ != Inpar::ScaTra::flux_none and flux_boundary_ == Teuchos::null))
+    if (step_ == 0 or (calcflux_domain_ != Inpar::ScaTra::flux_none and flux_domain_ == nullptr) or
+        (calcflux_boundary_ != Inpar::ScaTra::flux_none and flux_boundary_ == nullptr))
       calc_flux(true);
 
     if (calcflux_domain_ != Inpar::ScaTra::flux_none)
@@ -1846,7 +1839,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
   }
 
   // biofilm growth
-  if (scfldgrdisp_ != Teuchos::null)
+  if (scfldgrdisp_ != nullptr)
   {
     std::vector<std::optional<std::string>> context(
         scfldgrdisp_->NumVectors(), "scfld_growth_displ");
@@ -1855,7 +1848,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
   }
 
   // biofilm growth
-  if (scstrgrdisp_ != Teuchos::null)
+  if (scstrgrdisp_ != nullptr)
   {
     std::vector<std::optional<std::string>> context(
         scstrgrdisp_->NumVectors(), "scstr_growth_displ");
@@ -1876,8 +1869,7 @@ void ScaTra::ScaTraTimIntImpl::collect_runtime_output_data()
         "action", ScaTra::Action::collect_micro_scale_output, eleparams);
 
     // loop over macro-scale elements
-    discret_->evaluate(
-        eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 }
 
@@ -2010,7 +2002,7 @@ void ScaTra::ScaTraTimIntImpl::set_initial_field(
             "Tried to evaluate initial field by condition without a corresponding condition "
             "defined on the ScaTra discretization!");
       }
-      if (scalarhandler_ == Teuchos::null) FOUR_C_THROW("scalarhandler_ is null pointer!");
+      if (scalarhandler_ == nullptr) FOUR_C_THROW("scalarhandler_ is null pointer!");
 
       std::set<int> numdofpernode;
       for (auto& initfieldcondition : initfieldconditions)
@@ -2387,7 +2379,7 @@ void ScaTra::ScaTraTimIntImpl::setup_krylov_space_projection(Core::Conditions::C
   if (isale_ and (*weighttype == "integration")) updateprojection_ = true;
 
   // create the projector
-  projector_ = Teuchos::make_rcp<Core::LinAlg::KrylovProjector>(
+  projector_ = std::make_shared<Core::LinAlg::KrylovProjector>(
       activemodeids, weighttype, discret_->dof_row_map());
 
   // update the projector
@@ -2404,8 +2396,8 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
   // projected. for only a second projected scalar it seems worthwhile. feel
   // free! :)
 
-  // get Teuchos::RCP to kernel vector of projector
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
+  // get std::shared_ptr to kernel vector of projector
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> c = projector_->get_non_const_kernel();
   c->PutScalar(0.0);
 
   const std::string* weighttype = projector_->weight_type();
@@ -2416,8 +2408,8 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
   }
   else if (*weighttype == "integration")
   {
-    // get Teuchos::RCP to weight vector of projector
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> w = projector_->get_non_const_weights();
+    // get std::shared_ptr to weight vector of projector
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> w = projector_->get_non_const_weights();
     w->PutScalar(0.0);
 
     // get number of modes and their ids
@@ -2425,8 +2417,8 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
     std::vector<int> modeids = projector_->modes();
 
     // initialize dofid vector to -1
-    Teuchos::RCP<Core::LinAlg::IntSerialDenseVector> dofids =
-        Teuchos::make_rcp<Core::LinAlg::IntSerialDenseVector>(num_dof_per_node());
+    std::shared_ptr<Core::LinAlg::IntSerialDenseVector> dofids =
+        std::make_shared<Core::LinAlg::IntSerialDenseVector>(num_dof_per_node());
     for (int rr = 0; rr < num_dof_per_node(); ++rr)
     {
       (*dofids)[rr] = -1;
@@ -2458,11 +2450,12 @@ void ScaTra::ScaTraTimIntImpl::update_krylov_space_projection()
       //                   /              /                      /
       */
 
-      // get an Teuchos::RCP of the current column Core::LinAlg::Vector<double> of the MultiVector
-      auto wi = Teuchos::make_rcp<Core::LinAlg::Vector<double>>((*w)(imode));
+      // get an std::shared_ptr of the current column Core::LinAlg::Vector<double> of the
+      // MultiVector
+      auto wi = std::make_shared<Core::LinAlg::Vector<double>>((*w)(imode));
       // compute integral of shape functions
-      discret_->evaluate_condition(mode_params, Teuchos::null, Teuchos::null, wi, Teuchos::null,
-          Teuchos::null, "KrylovSpaceProjection");
+      discret_->evaluate_condition(
+          mode_params, nullptr, nullptr, wi, nullptr, nullptr, "KrylovSpaceProjection");
       (*w)(imode) = *wi;
 
       // deactivate dof of current mode
@@ -2515,23 +2508,23 @@ void ScaTra::ScaTraTimIntImpl::create_meshtying_strategy()
 {
   if (msht_ != Inpar::FLUID::no_meshtying)  // fluid meshtying
   {
-    strategy_ = Teuchos::make_rcp<MeshtyingStrategyFluid>(this);
+    strategy_ = std::make_shared<MeshtyingStrategyFluid>(this);
   }
   else if (s2_i_meshtying())  // scatra-scatra interface mesh tying
   {
-    strategy_ = Teuchos::make_rcp<MeshtyingStrategyS2I>(this, *params_);
+    strategy_ = std::make_shared<MeshtyingStrategyS2I>(this, *params_);
   }
   else if (heteroreaccoupling_)  // scatra-scatra interface coupling
   {
-    strategy_ = Teuchos::make_rcp<HeterogeneousReactionStrategy>(this);
+    strategy_ = std::make_shared<HeterogeneousReactionStrategy>(this);
   }
   else if (arterycoupling_)
   {
-    strategy_ = Teuchos::make_rcp<MeshtyingStrategyArtery>(this);
+    strategy_ = std::make_shared<MeshtyingStrategyArtery>(this);
   }
   else  // standard case without meshtying
   {
-    strategy_ = Teuchos::make_rcp<MeshtyingStrategyStd>(this);
+    strategy_ = std::make_shared<MeshtyingStrategyStd>(this);
   }
 }  // ScaTraTimIntImpl::create_meshtying_strategy
 
@@ -2539,7 +2532,7 @@ void ScaTra::ScaTraTimIntImpl::create_meshtying_strategy()
  *----------------------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::create_scalar_handler()
 {
-  scalarhandler_ = Teuchos::make_rcp<ScalarHandler>();
+  scalarhandler_ = std::make_shared<ScalarHandler>();
 }
 
 /*----------------------------------------------------------------------*
@@ -2583,8 +2576,8 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_to_system()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::apply_dirichlet_bc(const double time,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidt)
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidt)
 {
   // time measurement: apply Dirichlet conditions
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:      + apply dirich cond.");
@@ -2600,7 +2593,7 @@ void ScaTra::ScaTraTimIntImpl::apply_dirichlet_bc(const double time,
 
   // predicted Dirichlet values
   // \c  phinp then also holds prescribed new Dirichlet values
-  discret_->evaluate_dirichlet(p, phinp, phidt, Teuchos::null, Teuchos::null, dbcmaps_);
+  discret_->evaluate_dirichlet(p, phinp, phidt, nullptr, nullptr, dbcmaps_);
 }
 
 /*----------------------------------------------------------------------*
@@ -2625,7 +2618,7 @@ void ScaTra::ScaTraTimIntImpl::scaling_and_neumann()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::apply_neumann_bc(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads)
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& neumann_loads)
 {
   // prepare load vector
   neumann_loads->PutScalar(0.0);
@@ -2655,8 +2648,8 @@ void ScaTra::ScaTraTimIntImpl::apply_neumann_bc(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::evaluate_solution_depending_conditions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs)
 {
   // evaluate Robin type boundary condition
   evaluate_robin_boundary_conditions(systemmatrix, rhs);
@@ -2670,7 +2663,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_solution_depending_conditions(
   // account for partitioning algorithm. The dofs in contact discretization must be frozen
   // before calling this function
   //----------------------------------------------------------------------
-  if (contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != nullptr)
   {
     const auto fint_scatra =
         contact_strategy_nitsche_->get_rhs_block_ptr(CONTACT::VecBlockType::scatra);
@@ -2693,8 +2686,8 @@ int ScaTra::ScaTraTimIntImpl::get_max_dof_set_number() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::evaluate_additional_solution_depending_models(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs)
 {
   // evaluate solution depending additional models
   // this point is unequal nullptr only if a scatra
@@ -2706,8 +2699,8 @@ void ScaTra::ScaTraTimIntImpl::evaluate_additional_solution_depending_models(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::evaluate_robin_boundary_conditions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs)
+    std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs)
 {
   // create parameter list
   Teuchos::ParameterList condparams;
@@ -2721,7 +2714,7 @@ void ScaTra::ScaTraTimIntImpl::evaluate_robin_boundary_conditions(
 
   // evaluate ElchBoundaryKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->evaluate_condition(
-      condparams, matrix, Teuchos::null, rhs, Teuchos::null, Teuchos::null, "TransportRobin");
+      condparams, matrix, nullptr, rhs, nullptr, nullptr, "TransportRobin");
 }
 
 /*----------------------------------------------------------------------*
@@ -2781,16 +2774,16 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
   add_time_integration_specific_vectors();
 
   // set external volume force (required, e.g., for forced homogeneous isotropic turbulence)
-  if (homisoturb_forcing_ != Teuchos::null) homisoturb_forcing_->update_forcing(step_);
+  if (homisoturb_forcing_ != nullptr) homisoturb_forcing_->update_forcing(step_);
 
-  if (forcing_ != Teuchos::null) discret_->set_state("forcing", forcing_);
+  if (forcing_ != nullptr) discret_->set_state("forcing", forcing_);
 
   // add problem specific time-integration parameters
   add_problem_specific_parameters_and_vectors(eleparams);
 
   // call loop over elements (with or without subgrid-diffusivity(-scaling) vector)
   if (fssgd_ != Inpar::ScaTra::fssugrdiff_no)
-    discret_->evaluate(eleparams, sysmat_, Teuchos::null, residual_, subgrdiff_, Teuchos::null);
+    discret_->evaluate(eleparams, sysmat_, nullptr, residual_, subgrdiff_, nullptr);
   else
     discret_->evaluate(eleparams, sysmat_, residual_);
 
@@ -2807,11 +2800,11 @@ void ScaTra::ScaTraTimIntImpl::assemble_mat_and_rhs()
     add_time_integration_specific_vectors();
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
-    discret_->evaluate_condition(mhdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
-        Teuchos::null, "LineWeakDirichlet");
+    discret_->evaluate_condition(
+        mhdbcparams, sysmat_, nullptr, residual_, nullptr, nullptr, "LineWeakDirichlet");
 
-    discret_->evaluate_condition(mhdbcparams, sysmat_, Teuchos::null, residual_, Teuchos::null,
-        Teuchos::null, "SurfaceWeakDirichlet");
+    discret_->evaluate_condition(
+        mhdbcparams, sysmat_, nullptr, residual_, nullptr, nullptr, "SurfaceWeakDirichlet");
   }
 
   // AVM3 scaling for non-incremental solver: scaling of normalized AVM3-based
@@ -2963,7 +2956,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_solve()
     if (fdcheck_ == Inpar::ScaTra::fdcheck_global) fd_check();
 
     // project residual such that only part orthogonal to nullspace is considered
-    if (projector_ != Teuchos::null) projector_->apply_pt(*residual_);
+    if (projector_ != nullptr) projector_->apply_pt(*residual_);
 
     // Apply Dirichlet boundary conditions to system of equations
     // residual values are supposed to be zero at Dirichlet boundaries
@@ -3040,8 +3033,8 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_multi_scale_solve()
   iternum_outer_ = 0;
 
   // initialize relaxed macro-scale state vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_relaxed =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*phinp_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> phinp_relaxed =
+      std::make_shared<Core::LinAlg::Vector<double>>(*phinp_);
 
   // begin outer iteration loop
   while (true)
@@ -3058,7 +3051,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_multi_scale_solve()
         solvtype_ == Inpar::ScaTra::solvertype_nonlinear_multiscale_macrotomicro_aitken_dofsplit)
     {
       // backup macro-scale state vector
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> phinp = phinp_;
+      const std::shared_ptr<Core::LinAlg::Vector<double>> phinp = phinp_;
 
       // replace macro-scale state vector by relaxed macro-scale state vector as input for micro
       // scale
@@ -3128,8 +3121,7 @@ void ScaTra::ScaTraTimIntImpl::nonlinear_micro_scale_solve()
   add_time_integration_specific_vectors();
 
   // evaluate macro-scale elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*--------------------------------------------------------------------------*
@@ -3163,12 +3155,12 @@ std::string ScaTra::ScaTraTimIntImpl::map_tim_int_enum_to_string(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+std::shared_ptr<Core::LinAlg::MultiVector<double>>
 ScaTra::ScaTraTimIntImpl::convert_dof_vector_to_componentwise_node_vector(
     const Core::LinAlg::Vector<double>& dof_vector, const int nds) const
 {
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> componentwise_node_vector =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), nsd_, true);
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> componentwise_node_vector =
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), nsd_, true);
   for (int inode = 0; inode < discret_->num_my_row_nodes(); ++inode)
   {
     Core::Nodes::Node* node = discret_->l_row_node(inode);
@@ -3232,12 +3224,12 @@ void ScaTra::ScaTraTimIntImpl::compute_time_step_size(double& dt)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void ScaTra::ScaTraTimIntImpl::add_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoadd)
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
   condmaps.push_back(dbcmaps_->cond_map());
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
+  std::shared_ptr<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), condmerged);
 }
 
@@ -3251,32 +3243,33 @@ void ScaTra::ScaTraTimIntImpl::add_time_integration_specific_vectors(bool forced
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void ScaTra::ScaTraTimIntImpl::remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void ScaTra::ScaTraTimIntImpl::remove_dirich_cond(
+    const std::shared_ptr<const Epetra_Map> maptoremove)
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
   othermaps.push_back(dbcmaps_->other_map());
-  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
+  std::shared_ptr<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmaps_ = Core::LinAlg::MapExtractor(*(discret_->dof_row_map()), othermerged, false);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map() { return dof_row_map(0); }
+std::shared_ptr<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map() { return dof_row_map(0); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map(int nds)
+std::shared_ptr<const Epetra_Map> ScaTra::ScaTraTimIntImpl::dof_row_map(int nds)
 {
   const Epetra_Map* dofrowmap = discret_->dof_row_map(nds);
-  return Teuchos::rcpFromRef(*dofrowmap);
+  return Core::Utils::shared_ptr_from_ref(*dofrowmap);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 int ScaTra::ScaTraTimIntImpl::max_num_dof_per_node() const
 {
-  FOUR_C_THROW_UNLESS(scalarhandler_ != Teuchos::null, "scalar handler was not initialized!");
+  FOUR_C_THROW_UNLESS(scalarhandler_ != nullptr, "scalar handler was not initialized!");
   return scalarhandler_->max_num_dof_per_node();
 }
 
@@ -3284,7 +3277,7 @@ int ScaTra::ScaTraTimIntImpl::max_num_dof_per_node() const
  *----------------------------------------------------------------------*/
 int ScaTra::ScaTraTimIntImpl::num_scal() const
 {
-  if (scalarhandler_ == Teuchos::null) FOUR_C_THROW("scalar handler was not initialized!");
+  if (scalarhandler_ == nullptr) FOUR_C_THROW("scalar handler was not initialized!");
   return scalarhandler_->num_scal();
 }
 
@@ -3292,7 +3285,7 @@ int ScaTra::ScaTraTimIntImpl::num_scal() const
  *----------------------------------------------------------------------*/
 int ScaTra::ScaTraTimIntImpl::num_dof_per_node() const
 {
-  if (scalarhandler_ == Teuchos::null) FOUR_C_THROW("scalar handler was not initialized!");
+  if (scalarhandler_ == nullptr) FOUR_C_THROW("scalar handler was not initialized!");
   return scalarhandler_->num_dof_per_node();
 }
 
@@ -3301,7 +3294,7 @@ int ScaTra::ScaTraTimIntImpl::num_dof_per_node() const
 int ScaTra::ScaTraTimIntImpl::num_dof_per_node_in_condition(
     const Core::Conditions::Condition& condition) const
 {
-  if (scalarhandler_ == Teuchos::null) FOUR_C_THROW("scalar handler was not initialized!");
+  if (scalarhandler_ == nullptr) FOUR_C_THROW("scalar handler was not initialized!");
   return scalarhandler_->num_dof_per_node_in_condition(condition, *discret_);
 }
 
@@ -3309,7 +3302,7 @@ int ScaTra::ScaTraTimIntImpl::num_dof_per_node_in_condition(
  *-----------------------------------------------------------------------------*/
 const std::map<const int, std::vector<double>>& ScaTra::ScaTraTimIntImpl::total_scalars() const
 {
-  if (outputscalarstrategy_ == Teuchos::null) FOUR_C_THROW("output strategy was not initialized!");
+  if (outputscalarstrategy_ == nullptr) FOUR_C_THROW("output strategy was not initialized!");
 
   return outputscalarstrategy_->total_scalars();
 }
@@ -3318,7 +3311,7 @@ const std::map<const int, std::vector<double>>& ScaTra::ScaTraTimIntImpl::total_
  *-----------------------------------------------------------------------------*/
 const std::map<const int, std::vector<double>>& ScaTra::ScaTraTimIntImpl::mean_scalars() const
 {
-  if (outputscalarstrategy_ == Teuchos::null) FOUR_C_THROW("output strategy was not initialized!");
+  if (outputscalarstrategy_ == nullptr) FOUR_C_THROW("output strategy was not initialized!");
 
   return outputscalarstrategy_->mean_scalars();
 }
@@ -3327,7 +3320,7 @@ const std::map<const int, std::vector<double>>& ScaTra::ScaTraTimIntImpl::mean_s
  *-----------------------------------------------------------------------------*/
 const std::vector<double>& ScaTra::ScaTraTimIntImpl::domain_integrals() const
 {
-  if (outputdomainintegralstrategy_ == Teuchos::null)
+  if (outputdomainintegralstrategy_ == nullptr)
     FOUR_C_THROW("output strategy for domain integration was not initialized!");
 
   return outputdomainintegralstrategy_->domain_integrals();
@@ -3337,7 +3330,7 @@ const std::vector<double>& ScaTra::ScaTraTimIntImpl::domain_integrals() const
  *-----------------------------------------------------------------------------*/
 const std::vector<double>& ScaTra::ScaTraTimIntImpl::boundary_integrals() const
 {
-  if (outputdomainintegralstrategy_ == Teuchos::null)
+  if (outputdomainintegralstrategy_ == nullptr)
     FOUR_C_THROW("output strategy for domain integration was not initialized!");
 
   return outputdomainintegralstrategy_->boundary_integrals();
@@ -3348,7 +3341,7 @@ const std::vector<double>& ScaTra::ScaTraTimIntImpl::boundary_integrals() const
 void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
 {
   // extract multi-scale coupling conditions
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> conditions;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> conditions;
   discret_->get_condition("ScatraMultiScaleCoupling", conditions);
 
   // loop over conditions
@@ -3434,9 +3427,9 @@ void ScaTra::ScaTraTimIntImpl::evaluate_macro_micro_coupling()
             case Inpar::S2I::kinetics_butlervolmerreduced:
             {
               // access material of electrode
-              Teuchos::RCP<const Mat::Electrode> matelectrode =
-                  Teuchos::rcp_dynamic_cast<const Mat::Electrode>(node->elements()[0]->material());
-              if (matelectrode == Teuchos::null)
+              std::shared_ptr<const Mat::Electrode> matelectrode =
+                  std::dynamic_pointer_cast<const Mat::Electrode>(node->elements()[0]->material());
+              if (matelectrode == nullptr)
                 FOUR_C_THROW("Invalid electrode material for multi-scale coupling!");
 
               // access input parameters associated with current condition
@@ -3586,7 +3579,7 @@ void ScaTra::ScaTraTimIntImpl::setup_matrix_block_maps()
       matrixtype_ == Core::LinAlg::MatrixType::block_condition_dof)
   {
     // extract domain partitioning conditions from discretization
-    std::vector<Teuchos::RCP<Core::Conditions::Condition>> partitioningconditions;
+    std::vector<std::shared_ptr<Core::Conditions::Condition>> partitioningconditions;
     discret_->get_condition("ScatraPartitioning", partitioningconditions);
 
     // safety check
@@ -3598,12 +3591,12 @@ void ScaTra::ScaTraTimIntImpl::setup_matrix_block_maps()
     }
 
     // build maps associated with blocks of global system matrix
-    std::vector<Teuchos::RCP<const Epetra_Map>> blockmaps;
+    std::vector<std::shared_ptr<const Epetra_Map>> blockmaps;
     build_block_maps(partitioningconditions, blockmaps);
 
     // initialize full map extractor associated with blocks of global system matrix
     blockmaps_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiMapExtractor>(*(discret_->dof_row_map()), blockmaps);
+        std::make_shared<Core::LinAlg::MultiMapExtractor>(*(discret_->dof_row_map()), blockmaps);
     // safety check
     blockmaps_->check_for_valid_map_extractor();
   }
@@ -3612,8 +3605,8 @@ void ScaTra::ScaTraTimIntImpl::setup_matrix_block_maps()
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::build_block_maps(
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& partitioningconditions,
-    std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& partitioningconditions,
+    std::vector<std::shared_ptr<const Epetra_Map>>& blockmaps) const
 {
   if (matrixtype_ == Core::LinAlg::MatrixType::block_condition)
   {
@@ -3636,7 +3629,7 @@ void ScaTra::ScaTraTimIntImpl::build_block_maps(
       FOUR_C_ASSERT(dof_set.size() == dofs.size(), "The dofs are not unique");
 #endif
 
-      blockmaps.emplace_back(Teuchos::make_rcp<Epetra_Map>(
+      blockmaps.emplace_back(std::make_shared<Epetra_Map>(
           -1, static_cast<int>(dofs.size()), dofs.data(), 0, discret_->get_comm()));
     }
   }
@@ -3659,7 +3652,7 @@ void ScaTra::ScaTraTimIntImpl::post_setup_matrix_block_maps()
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 void ScaTra::ScaTraTimIntImpl::build_block_null_spaces(
-    Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const
+    std::shared_ptr<Core::LinAlg::Solver> solver, int init_block_number) const
 {
   // loop over blocks of global system matrix
   for (int iblock = init_block_number; iblock < block_maps()->num_maps() + init_block_number;
@@ -3731,9 +3724,9 @@ void ScaTra::ScaTraTimIntImpl::setup_matrix_block_maps_and_meshtying()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::ScaTraTimIntImpl::init_system_matrix() const
+std::shared_ptr<Core::LinAlg::SparseOperator> ScaTra::ScaTraTimIntImpl::init_system_matrix() const
 {
-  Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix(Teuchos::null);
+  std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix(nullptr);
 
   switch (matrixtype_)
   {
@@ -3741,7 +3734,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::ScaTraTimIntImpl::init_system
     {
       // initialize system matrix
       systemmatrix =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*discret_->dof_row_map(), 27, false, true);
+          std::make_shared<Core::LinAlg::SparseMatrix>(*discret_->dof_row_map(), 27, false, true);
       break;
     }
 
@@ -3749,7 +3742,7 @@ Teuchos::RCP<Core::LinAlg::SparseOperator> ScaTra::ScaTraTimIntImpl::init_system
     case Core::LinAlg::MatrixType::block_condition_dof:
     {
       // initialize system matrix and associated strategy
-      systemmatrix = Teuchos::make_rcp<
+      systemmatrix = std::make_shared<
           Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
 
           *block_maps(), *block_maps(), 81, false, true);
@@ -3784,8 +3777,8 @@ void ScaTra::ScaTraTimIntImpl::calc_mean_micro_concentration()
       "action", ScaTra::Action::calc_elch_elctrode_mean_concentration, eleparams);
 
   // evaluate nodal mean concentration of micro discretizations
-  Core::FE::AssembleStrategy strategy(nds_micro(), nds_micro(), Teuchos::null, Teuchos::null,
-      phinp_micro_, Teuchos::null, Teuchos::null);
+  Core::FE::AssembleStrategy strategy(
+      nds_micro(), nds_micro(), nullptr, nullptr, phinp_micro_, nullptr, nullptr);
   discret_->evaluate(eleparams, strategy);
 
   // copy states from first dof of MAT_Electrode
@@ -3938,15 +3931,14 @@ void ScaTra::ScaTraTimIntImpl::set_time_stepping_to_micro_scale()
   eleparams.set<int>("step", step_);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
+std::shared_ptr<Core::Utils::ResultTest> ScaTra::ScaTraTimIntImpl::create_scatra_field_test()
 {
-  return Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::rcpFromRef(*this));
+  return std::make_shared<ScaTra::ScaTraResultTest>(Core::Utils::shared_ptr_from_ref(*this));
 }
 
 /*----------------------------------------------------------------------*

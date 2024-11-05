@@ -14,9 +14,8 @@
 #include "4C_utils_function.hpp"
 #include "4C_utils_function_manager.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <filesystem>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -26,10 +25,10 @@ FOUR_C_NAMESPACE_OPEN
 namespace
 {
 
-  Teuchos::RCP<Core::Utils::FunctionOfScalar> create_library_function_scalar(
+  std::shared_ptr<Core::Utils::FunctionOfScalar> create_library_function_scalar(
       const std::vector<Input::LineDefinition>& function_line_defs)
   {
-    if (function_line_defs.size() != 1) return Teuchos::null;
+    if (function_line_defs.size() != 1) return nullptr;
 
     const auto& function_lin_def = function_line_defs.front();
 
@@ -38,7 +37,7 @@ namespace
       std::vector<double> coefficients =
           function_lin_def.container().get<std::vector<double>>("COEFF");
 
-      return Teuchos::make_rcp<Core::Utils::FastPolynomialFunction>(std::move(coefficients));
+      return std::make_shared<Core::Utils::FastPolynomialFunction>(std::move(coefficients));
     }
     else if (function_lin_def.container().get_or<bool>("CUBIC_SPLINE_FROM_CSV", false))
     {
@@ -48,10 +47,10 @@ namespace
       if (csv_file.empty())
         FOUR_C_THROW("You forgot to specify the *.csv file for cubic spline interpolation!");
 
-      return Teuchos::make_rcp<Core::Utils::CubicSplineFromCSV>(csv_file.string());
+      return std::make_shared<Core::Utils::CubicSplineFromCSV>(csv_file.string());
     }
     else
-      return {Teuchos::null};
+      return {nullptr};
   }
 }  // namespace
 

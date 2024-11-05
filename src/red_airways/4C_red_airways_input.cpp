@@ -114,9 +114,9 @@ bool Discret::Elements::RedAcinus::read_element(const std::string& eletype,
     acinus_params_.generation = -1;
 
     // Setup material, calls overloaded function setup(linedef) for each Maxwell_0d_acinus material
-    Teuchos::RCP<Core::Mat::Material> mat = material();
-    Teuchos::RCP<Mat::Maxwell0dAcinus> acinus_mat =
-        Teuchos::rcp_dynamic_cast<Mat::Maxwell0dAcinus>(material());
+    std::shared_ptr<Core::Mat::Material> mat = material();
+    std::shared_ptr<Mat::Maxwell0dAcinus> acinus_mat =
+        std::dynamic_pointer_cast<Mat::Maxwell0dAcinus>(material());
     acinus_mat->setup(container);
   }
   else

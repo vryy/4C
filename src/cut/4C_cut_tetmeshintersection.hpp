@@ -147,7 +147,7 @@ namespace Cut
 
     void copy_cut_side(Side* s, Facet* f);
 
-    Teuchos::RCP<PointPool> pp_;
+    std::shared_ptr<PointPool> pp_;
 
     Mesh mesh_;
     Mesh cut_mesh_;

@@ -12,9 +12,8 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -49,7 +48,7 @@ namespace PoroElast
 
      protected:
       //! set element-specific data (material etc.)
-      virtual void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+      virtual void set_element_data(std::shared_ptr<Core::Elements::Element> newele,
           Core::Elements::Element* oldele, const int matid, const bool isnurbs);
 
       //! check for correct material
@@ -57,11 +56,11 @@ namespace PoroElast
 
       //! set anisotropic permeability directions onto fluid element
       void set_anisotropic_permeability_directions_onto_fluid(
-          Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele);
+          std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele);
 
       //! set anisotropic permeability nodal coefficients onto fluid element
       void set_anisotropic_permeability_nodal_coeffs_onto_fluid(
-          Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele);
+          std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele);
     };
 
   }  // namespace Utils

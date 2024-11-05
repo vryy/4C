@@ -39,7 +39,7 @@ Cut::Side::Side(int sid, const std::vector<Node*>& nodes, const std::vector<Edge
 
   if (sid > -1)
   {
-    boundingvolume_ = Teuchos::RCP(BoundingBox::create(*this));
+    boundingvolume_ = std::shared_ptr<BoundingBox>(BoundingBox::create(*this));
   }
 }
 
@@ -983,7 +983,7 @@ void Cut::Side::make_owned_side_facets(Mesh& mesh, Element* element, plain_facet
   }
 
   // create the pointgraph for the element_side
-  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::RCP(Impl::PointGraph::create(
+  std::shared_ptr<Impl::PointGraph> pg(Impl::PointGraph::create(
       mesh, element, this, Impl::PointGraph::element_side, Impl::PointGraph::all_lines));
 
   for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)
@@ -1036,7 +1036,7 @@ void Cut::Side::make_owned_side_facets(Mesh& mesh, Element* element, plain_facet
 void Cut::Side::make_internal_facets(Mesh& mesh, Element* element, plain_facet_set& facets)
 {
   // create the pointgraph for the cut_side
-  Teuchos::RCP<Impl::PointGraph> pg = Teuchos::RCP(Impl::PointGraph::create(
+  std::shared_ptr<Impl::PointGraph> pg(Impl::PointGraph::create(
       mesh, element, this, Impl::PointGraph::cut_side, Impl::PointGraph::all_lines));
 
   for (Impl::PointGraph::facet_iterator i = pg->fbegin(); i != pg->fend(); ++i)
@@ -1153,7 +1153,7 @@ void Cut::Side::make_internal_facets(
         std::cout << "\nIs cut = " << (s->is_cut() ? "TRUE" : "FALSE");
 
         std::cout << "\n --- Mesh " << &mesh << " ---\n";
-        for (std::map<int, Teuchos::RCP<Node>>::const_iterator cit = mesh.nodes().begin();
+        for (std::map<int, std::shared_ptr<Node>>::const_iterator cit = mesh.nodes().begin();
              cit != mesh.nodes().end(); ++cit)
           std::cout << "Point" << cit->second->point() << "\n";
 
@@ -1751,7 +1751,7 @@ bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::within_side(
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<dim, 1>& rs, double& dist)
 {
   FOUR_C_THROW("Do we use this function?");
-  Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
+  std::shared_ptr<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
   bool success = pos->is_given_point_within_element();
   if (not success)
   {
@@ -1775,7 +1775,7 @@ bool Cut::ConcreteSide<probdim, sidetype, num_nodes_side, dim>::local_coordinate
     const Core::LinAlg::Matrix<probdim, 1>& xyz, Core::LinAlg::Matrix<probdim, 1>& rsd,
     bool allow_dist, double tol)
 {
-  Teuchos::RCP<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
+  std::shared_ptr<Position> pos = PositionFactory::build_position<probdim, sidetype>(*this, xyz);
   bool success = pos->compute(tol, allow_dist);
   Core::LinAlg::Matrix<dim, 1> rs(true);
   if (pos->status() == Position::position_valid) pos->local_coordinates(rs);

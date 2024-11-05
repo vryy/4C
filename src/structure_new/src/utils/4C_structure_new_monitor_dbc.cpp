@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::MonitorDbc::init(const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_ptr,
+void Solid::MonitorDbc::init(const std::shared_ptr<Solid::TimeInt::BaseDataIO>& io_ptr,
     Core::FE::Discretization& discret, Solid::TimeInt::BaseDataGlobalState& gstate, Solid::Dbc& dbc)
 {
   issetup_ = false;
@@ -74,7 +74,7 @@ void Solid::MonitorDbc::get_tagged_condition(
   tagged_conds.clear();
 
   std::vector<std::string> cond_names;
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> cond_vec;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> cond_vec;
   discret.get_condition(cond_name, cond_vec);
 
   for (auto& cond_ptr : cond_vec)
@@ -110,8 +110,8 @@ void Solid::MonitorDbc::create_reaction_force_condition(
 {
   const int new_id = get_unique_id(tagged_cond.id(), tagged_cond.g_type());
 
-  Teuchos::RCP<Core::Conditions::Condition> rcond_ptr =
-      Teuchos::make_rcp<Core::Conditions::Condition>(
+  std::shared_ptr<Core::Conditions::Condition> rcond_ptr =
+      std::make_shared<Core::Conditions::Condition>(
           new_id, Core::Conditions::ElementTag, true, tagged_cond.g_type());
 
   rcond_ptr->parameters().add("ONOFF", (tagged_cond.parameters().get<std::vector<int>>("ONOFF")));
@@ -137,13 +137,13 @@ void Solid::MonitorDbc::setup()
     return;
   }
 
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> rconds;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> rconds;
   discret_ptr_->get_condition("ReactionForce", rconds);
-  for (const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr : rconds)
+  for (const std::shared_ptr<Core::Conditions::Condition>& rcond_ptr : rconds)
   {
     Core::Conditions::Condition& rcond = *rcond_ptr;
     auto ipair = react_maps_.insert(
-        std::make_pair(rcond.id(), std::vector<Teuchos::RCP<Epetra_Map>>(3, Teuchos::null)));
+        std::make_pair(rcond.id(), std::vector<std::shared_ptr<Epetra_Map>>(3, nullptr)));
 
     if (not ipair.second)
       FOUR_C_THROW("The reaction condition id #%d seems to be non-unique!", rcond.id());
@@ -184,7 +184,7 @@ void Solid::MonitorDbc::setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& discret,
-    const Core::Conditions::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
+    const Core::Conditions::Condition& rcond, std::shared_ptr<Epetra_Map>* react_maps) const
 {
   const auto* onoff = &rcond.parameters().get<std::vector<int>>("ONOFF");
   const auto* nids = rcond.get_nodes();
@@ -207,8 +207,7 @@ void Solid::MonitorDbc::create_reaction_maps(const Core::FE::Discretization& dis
   }
 
   for (unsigned i = 0; i < DIM; ++i)
-    react_maps[i] =
-        Teuchos::make_rcp<Epetra_Map>(-1, my_dofs[i].size(), my_dofs[i].data(), 0, comm);
+    react_maps[i] = std::make_shared<Epetra_Map>(-1, my_dofs[i].size(), my_dofs[i].data(), 0, comm);
 }
 
 /*----------------------------------------------------------------------------*
@@ -274,7 +273,7 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
 
   if (isempty_) return;
 
-  std::vector<Teuchos::RCP<Core::Conditions::Condition>> rconds;
+  std::vector<std::shared_ptr<Core::Conditions::Condition>> rconds;
   discret_ptr_->get_condition("ReactionForce", rconds);
 
   std::array<double, 2> area = {0.0, 0.0};
@@ -284,7 +283,7 @@ void Solid::MonitorDbc::execute(Core::IO::DiscretizationWriter& writer)
   Core::LinAlg::Matrix<DIM, 1> rmoment_xyz(false);
 
   auto filepath = full_filepaths_.cbegin();
-  for (const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr : rconds)
+  for (const std::shared_ptr<Core::Conditions::Condition>& rcond_ptr : rconds)
   {
     std::fill(area.data(), area.data() + 2, 0.0);
     std::fill(rforce_xyz.data(), rforce_xyz.data() + DIM, 0.0);
@@ -320,7 +319,7 @@ void Solid::MonitorDbc::write_results_to_file(const std::string& full_filepath,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::MonitorDbc::write_results_to_screen(
-    const Teuchos::RCP<Core::Conditions::Condition>& rcond_ptr,
+    const std::shared_ptr<Core::Conditions::Condition>& rcond_ptr,
     const Core::LinAlg::Matrix<DIM, 1>& rforce, const Core::LinAlg::Matrix<DIM, 1>& rmoment,
     const double& area_ref, const double& area_curr) const
 {
@@ -336,7 +335,7 @@ void Solid::MonitorDbc::write_results_to_screen(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 std::vector<std::string> Solid::MonitorDbc::create_file_paths(
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& rconds,
     const std::string& full_dirpath, const std::string& filename_only_prefix,
     const std::string& file_type) const
 {
@@ -345,7 +344,7 @@ std::vector<std::string> Solid::MonitorDbc::create_file_paths(
   if (get_comm().MyPID() != 0) return full_filepaths;
 
   size_t i = 0;
-  for (const Teuchos::RCP<Core::Conditions::Condition>& rcond : rconds)
+  for (const std::shared_ptr<Core::Conditions::Condition>& rcond : rconds)
     full_filepaths[i++] = full_dirpath + "/" + filename_only_prefix + "_" +
                           std::to_string(rcond->id() + 1) + "_monitor_dbc." + file_type;
 
@@ -355,13 +354,13 @@ std::vector<std::string> Solid::MonitorDbc::create_file_paths(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::MonitorDbc::clear_files_and_write_header(
-    const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& rconds,
+    const std::vector<std::shared_ptr<Core::Conditions::Condition>>& rconds,
     std::vector<std::string>& full_filepaths, bool do_write_condition_header)
 {
   if (get_comm().MyPID() != 0) return;
 
   size_t i = 0;
-  for (const Teuchos::RCP<Core::Conditions::Condition>& rcond : rconds)
+  for (const std::shared_ptr<Core::Conditions::Condition>& rcond : rconds)
   {
     // clear old content
     std::ofstream of(full_filepaths[i], std::ios_base::out);
@@ -439,8 +438,8 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
   Core::LinAlg::SerialDenseMatrix xyze_ref;
   Core::LinAlg::SerialDenseMatrix xyze_curr;
 
-  const std::map<int, Teuchos::RCP<Core::Elements::Element>>& celes = rcond->geometry();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
+  const std::map<int, std::shared_ptr<Core::Elements::Element>>& celes = rcond->geometry();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
   Core::LinAlg::Vector<double> dispn_col(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*dispn, dispn_col);
 
@@ -505,7 +504,7 @@ void Solid::MonitorDbc::get_area(double area[], const Core::Conditions::Conditio
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double Solid::MonitorDbc::get_reaction_force(
-    Core::LinAlg::Matrix<DIM, 1>& rforce_xyz, const Teuchos::RCP<Epetra_Map>* react_maps) const
+    Core::LinAlg::Matrix<DIM, 1>& rforce_xyz, const std::shared_ptr<Epetra_Map>* react_maps) const
 {
   Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->rotate_global_to_local(complete_freact);
@@ -513,7 +512,7 @@ double Solid::MonitorDbc::get_reaction_force(
   Core::LinAlg::Matrix<DIM, 1> lrforce_xyz(true);
   for (unsigned d = 0; d < DIM; ++d)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> partial_freact_ptr =
+    std::shared_ptr<Core::LinAlg::Vector<double>> partial_freact_ptr =
         Core::LinAlg::extract_my_vector(complete_freact, *(react_maps[d]));
 
     double& lrforce_comp = lrforce_xyz(d, 0);
@@ -528,9 +527,9 @@ double Solid::MonitorDbc::get_reaction_force(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double Solid::MonitorDbc::get_reaction_moment(Core::LinAlg::Matrix<DIM, 1>& rmoment_xyz,
-    const Teuchos::RCP<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const
+    const std::shared_ptr<Epetra_Map>* react_maps, const Core::Conditions::Condition* rcond) const
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispn = gstate_ptr_->get_dis_np();
 
   Core::LinAlg::Vector<double> complete_freact(*gstate_ptr_->get_freact_np());
   dbc_ptr_->rotate_global_to_local(complete_freact);

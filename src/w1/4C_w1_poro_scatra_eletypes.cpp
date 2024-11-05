@@ -35,26 +35,26 @@ Core::Communication::ParObject* Discret::Elements::WallQuad4PoroScatraType::crea
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallQuad4PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad4PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ4POROSCATRA")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad4>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad4>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallQuad4PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad4PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad4>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad4>>(id, owner);
   return ele;
 }
 
@@ -98,26 +98,26 @@ Core::Communication::ParObject* Discret::Elements::WallQuad9PoroScatraType::crea
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallQuad9PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad9PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLQ9POROSCATRA")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad9>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad9>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallQuad9PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallQuad9PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad9>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::quad9>>(id, owner);
   return ele;
 }
 
@@ -161,27 +161,26 @@ Core::Communication::ParObject* Discret::Elements::WallNurbs4PoroScatraType::cre
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallNurbs4PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallNurbs4PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN4POROSCATRA")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs4>>(
-            id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs4>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallNurbs4PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallNurbs4PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs4>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs4>>(id, owner);
   return ele;
 }
 
@@ -225,27 +224,26 @@ Core::Communication::ParObject* Discret::Elements::WallNurbs9PoroScatraType::cre
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallNurbs9PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallNurbs9PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLN9POROSCATRA")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs9>>(
-            id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs9>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallNurbs9PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallNurbs9PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs9>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::nurbs9>>(id, owner);
   return ele;
 }
 
@@ -289,26 +287,26 @@ Core::Communication::ParObject* Discret::Elements::WallTri3PoroScatraType::creat
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallTri3PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallTri3PoroScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLT3POROSCATRA")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::tri3>>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::tri3>>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
  |                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::WallTri3PoroScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::WallTri3PoroScatraType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::tri3>>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Wall1PoroScatra<Core::FE::CellType::tri3>>(id, owner);
   return ele;
 }
 

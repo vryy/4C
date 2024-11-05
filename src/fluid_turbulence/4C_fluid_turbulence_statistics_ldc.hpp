@@ -16,7 +16,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -39,7 +40,7 @@ namespace FLD
     o Allocate distributed vector for squares
 
     */
-    TurbulenceStatisticsLdc(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsLdc(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -134,7 +135,7 @@ namespace FLD
     double x3max_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -143,90 +144,90 @@ namespace FLD
     const std::string statistics_outfilename_;
 
     //! toogle vectors: sums are computed by scalarproducts
-    Teuchos::RCP<Core::LinAlg::Vector<double>> toggleu_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglev_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> toggleu_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglev_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglep_;
 
     //! the coordinates of the centerlines in x1-, x2- and x3-direction
-    Teuchos::RCP<std::vector<double>> x1coordinates_;
-    Teuchos::RCP<std::vector<double>> x2coordinates_;
-    Teuchos::RCP<std::vector<double>> x3coordinates_;
+    std::shared_ptr<std::vector<double>> x1coordinates_;
+    std::shared_ptr<std::vector<double>> x2coordinates_;
+    std::shared_ptr<std::vector<double>> x3coordinates_;
 
     //! sum over u (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumu_;
-    Teuchos::RCP<std::vector<double>> x2sumu_;
-    Teuchos::RCP<std::vector<double>> x3sumu_;
+    std::shared_ptr<std::vector<double>> x1sumu_;
+    std::shared_ptr<std::vector<double>> x2sumu_;
+    std::shared_ptr<std::vector<double>> x3sumu_;
     //! sum over v (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumv_;
-    Teuchos::RCP<std::vector<double>> x2sumv_;
-    Teuchos::RCP<std::vector<double>> x3sumv_;
+    std::shared_ptr<std::vector<double>> x1sumv_;
+    std::shared_ptr<std::vector<double>> x2sumv_;
+    std::shared_ptr<std::vector<double>> x3sumv_;
     //! sum over w (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumw_;
-    Teuchos::RCP<std::vector<double>> x2sumw_;
-    Teuchos::RCP<std::vector<double>> x3sumw_;
+    std::shared_ptr<std::vector<double>> x1sumw_;
+    std::shared_ptr<std::vector<double>> x2sumw_;
+    std::shared_ptr<std::vector<double>> x3sumw_;
     //! sum over p (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sump_;
-    Teuchos::RCP<std::vector<double>> x2sump_;
-    Teuchos::RCP<std::vector<double>> x3sump_;
+    std::shared_ptr<std::vector<double>> x1sump_;
+    std::shared_ptr<std::vector<double>> x2sump_;
+    std::shared_ptr<std::vector<double>> x3sump_;
     //! sum over density (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumrho_;
-    Teuchos::RCP<std::vector<double>> x2sumrho_;
-    Teuchos::RCP<std::vector<double>> x3sumrho_;
+    std::shared_ptr<std::vector<double>> x1sumrho_;
+    std::shared_ptr<std::vector<double>> x2sumrho_;
+    std::shared_ptr<std::vector<double>> x3sumrho_;
     //! sum over T (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sum_t_;
-    Teuchos::RCP<std::vector<double>> x2sum_t_;
-    Teuchos::RCP<std::vector<double>> x3sum_t_;
+    std::shared_ptr<std::vector<double>> x1sum_t_;
+    std::shared_ptr<std::vector<double>> x2sum_t_;
+    std::shared_ptr<std::vector<double>> x3sum_t_;
 
     //! sum over u^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsqu_;
-    Teuchos::RCP<std::vector<double>> x2sumsqu_;
-    Teuchos::RCP<std::vector<double>> x3sumsqu_;
+    std::shared_ptr<std::vector<double>> x1sumsqu_;
+    std::shared_ptr<std::vector<double>> x2sumsqu_;
+    std::shared_ptr<std::vector<double>> x3sumsqu_;
     //! sum over v^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsqv_;
-    Teuchos::RCP<std::vector<double>> x2sumsqv_;
-    Teuchos::RCP<std::vector<double>> x3sumsqv_;
+    std::shared_ptr<std::vector<double>> x1sumsqv_;
+    std::shared_ptr<std::vector<double>> x2sumsqv_;
+    std::shared_ptr<std::vector<double>> x3sumsqv_;
     //! sum over w^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsqw_;
-    Teuchos::RCP<std::vector<double>> x2sumsqw_;
-    Teuchos::RCP<std::vector<double>> x3sumsqw_;
+    std::shared_ptr<std::vector<double>> x1sumsqw_;
+    std::shared_ptr<std::vector<double>> x2sumsqw_;
+    std::shared_ptr<std::vector<double>> x3sumsqw_;
     //! sum over p^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsqp_;
-    Teuchos::RCP<std::vector<double>> x2sumsqp_;
-    Teuchos::RCP<std::vector<double>> x3sumsqp_;
+    std::shared_ptr<std::vector<double>> x1sumsqp_;
+    std::shared_ptr<std::vector<double>> x2sumsqp_;
+    std::shared_ptr<std::vector<double>> x3sumsqp_;
     //! sum over density^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsqrho_;
-    Teuchos::RCP<std::vector<double>> x2sumsqrho_;
-    Teuchos::RCP<std::vector<double>> x3sumsqrho_;
+    std::shared_ptr<std::vector<double>> x1sumsqrho_;
+    std::shared_ptr<std::vector<double>> x2sumsqrho_;
+    std::shared_ptr<std::vector<double>> x3sumsqrho_;
     //! sum over T^2 (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumsq_t_;
-    Teuchos::RCP<std::vector<double>> x2sumsq_t_;
-    Teuchos::RCP<std::vector<double>> x3sumsq_t_;
+    std::shared_ptr<std::vector<double>> x1sumsq_t_;
+    std::shared_ptr<std::vector<double>> x2sumsq_t_;
+    std::shared_ptr<std::vector<double>> x3sumsq_t_;
 
     //! sum over uv (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumuv_;
-    Teuchos::RCP<std::vector<double>> x2sumuv_;
-    Teuchos::RCP<std::vector<double>> x3sumuv_;
+    std::shared_ptr<std::vector<double>> x1sumuv_;
+    std::shared_ptr<std::vector<double>> x2sumuv_;
+    std::shared_ptr<std::vector<double>> x3sumuv_;
     //! sum over uw (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumuw_;
-    Teuchos::RCP<std::vector<double>> x2sumuw_;
-    Teuchos::RCP<std::vector<double>> x3sumuw_;
+    std::shared_ptr<std::vector<double>> x1sumuw_;
+    std::shared_ptr<std::vector<double>> x2sumuw_;
+    std::shared_ptr<std::vector<double>> x3sumuw_;
     //! sum over vw (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumvw_;
-    Teuchos::RCP<std::vector<double>> x2sumvw_;
-    Teuchos::RCP<std::vector<double>> x3sumvw_;
+    std::shared_ptr<std::vector<double>> x1sumvw_;
+    std::shared_ptr<std::vector<double>> x2sumvw_;
+    std::shared_ptr<std::vector<double>> x3sumvw_;
     //! sum over uT (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumu_t_;
-    Teuchos::RCP<std::vector<double>> x2sumu_t_;
-    Teuchos::RCP<std::vector<double>> x3sumu_t_;
+    std::shared_ptr<std::vector<double>> x1sumu_t_;
+    std::shared_ptr<std::vector<double>> x2sumu_t_;
+    std::shared_ptr<std::vector<double>> x3sumu_t_;
     //! sum over vT (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumv_t_;
-    Teuchos::RCP<std::vector<double>> x2sumv_t_;
-    Teuchos::RCP<std::vector<double>> x3sumv_t_;
+    std::shared_ptr<std::vector<double>> x1sumv_t_;
+    std::shared_ptr<std::vector<double>> x2sumv_t_;
+    std::shared_ptr<std::vector<double>> x3sumv_t_;
     //! sum over wT (over the centerlines in x1-, x2- and x3-direction)
-    Teuchos::RCP<std::vector<double>> x1sumw_t_;
-    Teuchos::RCP<std::vector<double>> x2sumw_t_;
-    Teuchos::RCP<std::vector<double>> x3sumw_t_;
+    std::shared_ptr<std::vector<double>> x1sumw_t_;
+    std::shared_ptr<std::vector<double>> x2sumw_t_;
+    std::shared_ptr<std::vector<double>> x3sumw_t_;
   };
 
 }  // namespace FLD

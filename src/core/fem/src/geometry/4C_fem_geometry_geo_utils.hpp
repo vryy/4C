@@ -25,7 +25,7 @@ namespace Core::Geo
   typedef std::vector<Core::Geo::BoundaryIntCell> BoundaryIntCells;
 
   //! shortcut for a vector of BoundaryCell pointers
-  typedef std::vector<Teuchos::RCP<Core::Geo::BoundaryIntCell>> BoundaryIntCellPtrs;
+  typedef std::vector<std::shared_ptr<Core::Geo::BoundaryIntCell>> BoundaryIntCellPtrs;
 
 
   //! based on this element property, one can speed up geometry algorithms

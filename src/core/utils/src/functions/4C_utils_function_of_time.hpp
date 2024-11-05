@@ -14,10 +14,9 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_functionvariables.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <complex>
 #include <iostream>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -66,7 +65,7 @@ namespace Core::Utils
      * variables vector.
      */
     SymbolicFunctionOfTime(const std::vector<std::string>& expressions,
-        std::vector<Teuchos::RCP<FunctionVariable>> variables);
+        std::vector<std::shared_ptr<FunctionVariable>> variables);
 
     [[nodiscard]] double evaluate(double time, std::size_t component = 0) const override;
 
@@ -74,15 +73,15 @@ namespace Core::Utils
 
    private:
     //! vector of parsed expressions
-    std::vector<Teuchos::RCP<Core::Utils::SymbolicExpression<double>>> expr_;
+    std::vector<std::shared_ptr<Core::Utils::SymbolicExpression<double>>> expr_;
 
 
     //! vector of the function variables and all their definitions
-    std::vector<Teuchos::RCP<FunctionVariable>> variables_;
+    std::vector<std::shared_ptr<FunctionVariable>> variables_;
   };
 
   //! create a vector function of time from multiple expressions
-  Teuchos::RCP<FunctionOfTime> try_create_function_of_time(
+  std::shared_ptr<FunctionOfTime> try_create_function_of_time(
       const std::vector<Input::LineDefinition>& function_line_defs);
 
 }  // namespace Core::Utils

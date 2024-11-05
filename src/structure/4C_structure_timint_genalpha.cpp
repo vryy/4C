@@ -83,9 +83,10 @@ void Solid::TimIntGenAlpha::verify_coeff()
 /* constructor */
 Solid::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::LinAlg::Solver> contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntImpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
       midavg_(Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(
           sdynparams.sublist("GENALPHA"), "GENAVG")),
@@ -94,20 +95,20 @@ Solid::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
       alphaf_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_F")),
       alpham_(sdynparams.sublist("GENALPHA").get<double>("ALPHA_M")),
       rho_inf_(sdynparams.sublist("GENALPHA").get<double>("RHO_INF")),
-      dism_(Teuchos::null),
-      velm_(Teuchos::null),
-      accm_(Teuchos::null),
-      fint_(Teuchos::null),
-      fintm_(Teuchos::null),
-      fintn_(Teuchos::null),
-      fext_(Teuchos::null),
-      fextm_(Teuchos::null),
-      fextn_(Teuchos::null),
-      finert_(Teuchos::null),
-      finertm_(Teuchos::null),
-      finertn_(Teuchos::null),
-      fviscm_(Teuchos::null),
-      fint_str_(Teuchos::null)
+      dism_(nullptr),
+      velm_(nullptr),
+      accm_(nullptr),
+      fint_(nullptr),
+      fintm_(nullptr),
+      fintn_(nullptr),
+      fext_(nullptr),
+      fextm_(nullptr),
+      fextn_(nullptr),
+      finert_(nullptr),
+      finertm_(nullptr),
+      finertn_(nullptr),
+      fviscm_(nullptr),
+      fint_str_(nullptr)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -121,7 +122,7 @@ Solid::TimIntGenAlpha::TimIntGenAlpha(const Teuchos::ParameterList& timeparams,
  *----------------------------------------------------------------------------------------------*/
 void Solid::TimIntGenAlpha::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
   Solid::TimIntImpl::init(timeparams, sdynparams, xparams, actdis, solver);
@@ -201,14 +202,13 @@ void Solid::TimIntGenAlpha::setup()
   fviscm_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // structural rhs for newton line search
-  if (fresn_str_ != Teuchos::null)
-    fint_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
+  if (fresn_str_ != nullptr) fint_str_ = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
   // create parameter list
   Teuchos::ParameterList params;
 
   // for line search
-  if (fintn_str_ != Teuchos::null)
+  if (fintn_str_ != nullptr)
   {
     params.set("cond_rhs_norm", 0.);
     params.set("MyPID", myrank_);
@@ -248,7 +248,7 @@ void Solid::TimIntGenAlpha::setup()
   }
 
   // init old time step value
-  if (fintn_str_ != Teuchos::null) fint_str_->Update(1., *fintn_str_, 0.);
+  if (fintn_str_ != nullptr) fint_str_->Update(1., *fintn_str_, 0.);
 }
 
 /*----------------------------------------------------------------------*/
@@ -485,7 +485,7 @@ void Solid::TimIntGenAlpha::evaluate_force_stiff_residual(Teuchos::ParameterList
   apply_force_stiff_contact_meshtying(stiff_, fres_, disn_, predict);
 
   // calculate RHS without local condensations (for NewtonLs)
-  if (fresn_str_ != Teuchos::null)
+  if (fresn_str_ != nullptr)
   {
     // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
     // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
@@ -609,7 +609,7 @@ void Solid::TimIntGenAlpha::evaluate_force_residual()
   }
 
   // calculate RHS without local condensations (for NewtonLs)
-  if (fresn_str_ != Teuchos::null)
+  if (fresn_str_ != nullptr)
   {
     // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
     // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
@@ -749,7 +749,7 @@ void Solid::TimIntGenAlpha::update_step_state()
   finert_->Update(1.0, *finertn_, 0.0);
 
   // update residual force vector for NewtonLS
-  if (fresn_str_ != Teuchos::null) fint_str_->Update(1., *fintn_str_, 0.);
+  if (fresn_str_ != nullptr) fint_str_->Update(1., *fintn_str_, 0.);
 
   // update constraints
   update_step_constraint();
@@ -786,8 +786,7 @@ void Solid::TimIntGenAlpha::update_step_element()
 
   if (!have_nonlinear_mass())
   {
-    discret_->evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
   else
   {
@@ -800,17 +799,17 @@ void Solid::TimIntGenAlpha::update_step_element()
     discret_->set_state("velocity", (*vel_)(0));
     discret_->set_state("acceleration", (*acc_)(0));
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> update_disp;
+    std::shared_ptr<Core::LinAlg::Vector<double>> update_disp;
     update_disp = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> update_vel;
+    std::shared_ptr<Core::LinAlg::Vector<double>> update_vel;
     update_vel = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> update_acc;
+    std::shared_ptr<Core::LinAlg::Vector<double>> update_acc;
     update_acc = Core::LinAlg::create_vector(*dof_row_map_view(), true);
 
 
-    discret_->evaluate(p, Teuchos::null, Teuchos::null, update_disp, update_vel, update_acc);
+    discret_->evaluate(p, nullptr, nullptr, update_disp, update_vel, update_acc);
 
     disn_->Update(1.0, *update_disp, 1.0);
     (*dis_)(0)->Update(1.0, *update_disp, 1.0);
@@ -836,7 +835,8 @@ void Solid::TimIntGenAlpha::read_restart_force()
 
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
-void Solid::TimIntGenAlpha::write_restart_force(Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+void Solid::TimIntGenAlpha::write_restart_force(
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   output->write_vector("fexternal", fext_);
   output->write_vector("fint", fint_);

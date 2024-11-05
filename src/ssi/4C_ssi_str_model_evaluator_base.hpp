@@ -42,23 +42,23 @@ namespace Solid::ModelEvaluator
 
     bool evaluate_stiff() override { return true; }
 
-    [[nodiscard]] Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+    [[nodiscard]] std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr()
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr()
         const override
     {
       FOUR_C_THROW("Not implemented!");
-      return Teuchos::null;
+      return nullptr;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
-        const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>>
+    get_last_time_step_solution_ptr() const override
     {
       FOUR_C_THROW("Not implemented!");
-      return Teuchos::null;
+      return nullptr;
     }
 
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> get_mechanical_stress_state()
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> get_mechanical_stress_state()
         const override
     {
       return mechanical_stress_state_;
@@ -110,7 +110,7 @@ namespace Solid::ModelEvaluator
 
    private:
     //! mechanical stress state
-    Teuchos::RCP<Core::LinAlg::Vector<double>> mechanical_stress_state_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> mechanical_stress_state_;
   };
 }  // namespace Solid::ModelEvaluator
 FOUR_C_NAMESPACE_CLOSE

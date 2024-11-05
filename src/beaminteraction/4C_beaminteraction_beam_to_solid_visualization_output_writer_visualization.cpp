@@ -24,8 +24,8 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
     const std::string& writer_full_name, Core::IO::VisualizationParameters visualization_params)
     : Core::IO::VisualizationManager(std::move(visualization_params),
           *(Global::Problem::instance()->get_communicators()->global_comm()), writer_full_name),
-      discret_(Teuchos::null),
-      node_gid_map_(Teuchos::null)
+      discret_(nullptr),
+      node_gid_map_(nullptr)
 {
 }
 
@@ -34,12 +34,12 @@ BEAMINTERACTION::BeamToSolidOutputWriterVisualization::BeamToSolidOutputWriterVi
  */
 void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
     add_discretization_nodal_reference_position(
-        const Teuchos::RCP<const Core::FE::Discretization>& discret)
+        const std::shared_ptr<const Core::FE::Discretization>& discret)
 {
   auto& visualization_data = get_visualization_data();
 
   // Check that the discretization is not already set, and that all data in the writer is empty.
-  if (discret_ != Teuchos::null)
+  if (discret_ != nullptr)
     FOUR_C_THROW(
         "When calling add_discretization_nodal_reference_position, the discretization can not be "
         "already set. Did you forget to reset the writer?");
@@ -82,7 +82,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
       point_coordinates.push_back(current_node->x()[dim]);
     }
   }
-  node_gid_map_ = Teuchos::make_rcp<Epetra_Map>(
+  node_gid_map_ = std::make_shared<Epetra_Map>(
       -1, my_global_dof_ids.size(), my_global_dof_ids.data(), 0, discret_->get_comm());
 }
 
@@ -93,7 +93,7 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::
     add_discretization_nodal_data_from_multivector(
         const std::string& data_name, const Core::LinAlg::MultiVector<double>& vector)
 {
-  if (discret_ == Teuchos::null || node_gid_map_ == Teuchos::null)
+  if (discret_ == nullptr || node_gid_map_ == nullptr)
     FOUR_C_THROW("discretization or node GID map is not set!");
 
   // Extract the vector according to the GIDs needed on this rank.
@@ -124,8 +124,8 @@ void BEAMINTERACTION::BeamToSolidOutputWriterVisualization::write(
   write_to_disk(time, timestep_number);
 
   // Reset the data.
-  discret_ = Teuchos::null;
-  node_gid_map_ = Teuchos::null;
+  discret_ = nullptr;
+  node_gid_map_ = nullptr;
   clear_data();
 }
 

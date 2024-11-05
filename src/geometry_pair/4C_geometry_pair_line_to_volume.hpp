@@ -13,8 +13,7 @@
 #include "4C_geometry_pair.hpp"
 #include "4C_geometry_pair_element.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -72,7 +71,7 @@ namespace GEOMETRYPAIR
      */
     GeometryPairLineToVolume(const Core::Elements::Element* element1,
         const Core::Elements::Element* element2,
-        const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data);
+        const std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData>& line_to_3d_evaluation_data);
 
 
     /**
@@ -100,7 +99,7 @@ namespace GEOMETRYPAIR
      * \brief Return the pointer to the evaluation data of this pair.
      * @return Pointer to the evaluation data.
      */
-    const Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData>& get_evaluation_data() const
+    const std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData>& get_evaluation_data() const
     {
       return line_to_3d_evaluation_data_;
     }
@@ -151,7 +150,7 @@ namespace GEOMETRYPAIR
 
    protected:
     //! Link to the geometry evaluation container.
-    Teuchos::RCP<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
+    std::shared_ptr<GEOMETRYPAIR::LineTo3DEvaluationData> line_to_3d_evaluation_data_;
   };
 
   /**

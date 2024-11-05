@@ -43,10 +43,10 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam,
-    Surface>::evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
   this->cast_geometry_pair()->evaluate(
@@ -136,7 +136,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
       *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
-  if (force_vector != Teuchos::null)
+  if (force_vector != nullptr)
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_force_vector.num_rows(); j_dof++)
@@ -145,7 +145,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<ScalarType, Beam
   }
 
   // If given, assemble force terms into the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < pair_force_vector.num_rows(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->fe_assemble(
@@ -170,10 +170,10 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
-    Surface>::evaluate_and_assemble(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-    const Teuchos::RCP<Epetra_FEVector>& force_vector,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& stiffness_matrix,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector)
+    Surface>::evaluate_and_assemble(const std::shared_ptr<const Core::FE::Discretization>& discret,
+    const std::shared_ptr<Epetra_FEVector>& force_vector,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& stiffness_matrix,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
   // Call Evaluate on the geometry Pair.
   this->cast_geometry_pair()->evaluate(
@@ -230,7 +230,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
       *discret, *this->element1(), *this->face_element_);
 
   // If given, assemble force terms into the global vector.
-  if (force_vector != Teuchos::null)
+  if (force_vector != nullptr)
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
     for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
@@ -239,7 +239,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairPotential<ScalarType, Beam,
   }
 
   // If given, assemble force terms into the global stiffness matrix.
-  if (stiffness_matrix != Teuchos::null)
+  if (stiffness_matrix != nullptr)
     for (unsigned int i_dof = 0; i_dof < pair_gid.size(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->fe_assemble(Core::FADUtils::cast_to_double(potential.dx(i_dof).dx(j_dof)),

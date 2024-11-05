@@ -34,7 +34,7 @@ void poroelast_drt()
   const Teuchos::ParameterList& poroelastdyn = problem->poroelast_dynamic_params();
 
   // choose algorithm depending on solution type
-  Teuchos::RCP<PoroElast::PoroBase> poroalgo =
+  std::shared_ptr<PoroElast::PoroBase> poroalgo =
       PoroElast::Utils::create_poro_algorithm(poroelastdyn, comm);
 
   // read the restart information, set vectors and variables

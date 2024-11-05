@@ -21,8 +21,8 @@ FOUR_C_NAMESPACE_OPEN
  *
  */
 BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
-    const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_1,
-    const Teuchos::RCP<const Core::Conditions::Condition>& condition_line_2)
+    const std::shared_ptr<const Core::Conditions::Condition>& condition_line_1,
+    const std::shared_ptr<const Core::Conditions::Condition>& condition_line_2)
     : BeamInteractionConditionBase(condition_line_1),
       condition_other_(condition_line_2),
       condition_contact_pairs_(),
@@ -34,7 +34,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::BeamToBeamContactCondition(
  *
  */
 void BEAMINTERACTION::BeamToBeamContactCondition::build_id_sets(
-    const Teuchos::RCP<const Core::FE::Discretization>& discretization)
+    const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Call the parent method to build the line maps.
   BeamInteractionConditionBase::build_id_sets(discretization);
@@ -70,12 +70,12 @@ void BEAMINTERACTION::BeamToBeamContactCondition::clear()
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   // Check if the given elements are in this condition.
-  if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return Teuchos::null;
+  if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return nullptr;
 
   // note: numnodes is to be interpreted as number of nodes used for centerline interpolation.
   // numnodalvalues = 1: only positions as primary nodal DoFs ==> Lagrange interpolation
@@ -95,19 +95,19 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
       {
         case 2:
         {
-          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<2, 1>>();
+          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<2, 1>>();
         }
         case 3:
         {
-          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<3, 1>>();
+          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<3, 1>>();
         }
         case 4:
         {
-          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<4, 1>>();
+          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<4, 1>>();
         }
         case 5:
         {
-          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<5, 1>>();
+          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<5, 1>>();
         }
         default:
         {
@@ -127,7 +127,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
       {
         case 2:
         {
-          return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamContactPair<2, 2>>();
+          return std::make_shared<BEAMINTERACTION::BeamToBeamContactPair<2, 2>>();
         }
         default:
         {
@@ -152,7 +152,7 @@ BEAMINTERACTION::BeamToBeamContactCondition::create_contact_pair(
     }
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 FOUR_C_NAMESPACE_CLOSE

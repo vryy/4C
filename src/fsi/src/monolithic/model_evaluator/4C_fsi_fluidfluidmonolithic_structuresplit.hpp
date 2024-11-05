@@ -50,16 +50,16 @@ namespace FSI
     void setup_dbc_map_extractor() override;
 
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<Adapter::FluidFluidFSI>& fluid_field() { return fluid_; }
+    const std::shared_ptr<Adapter::FluidFluidFSI>& fluid_field() { return fluid_; }
 
     /// access type-cast pointer to problem-specific ALE-wrapper
-    const Teuchos::RCP<Adapter::AleXFFsiWrapper>& ale_field() { return ale_; }
+    const std::shared_ptr<Adapter::AleXFFsiWrapper>& ale_field() { return ale_; }
 
     /// type-cast pointer to problem-specific fluid-wrapper
-    Teuchos::RCP<Adapter::FluidFluidFSI> fluid_;
+    std::shared_ptr<Adapter::FluidFluidFSI> fluid_;
 
     /// type-cast pointer to problem-specific ALE-wrapper
-    Teuchos::RCP<Adapter::AleXFFsiWrapper> ale_;
+    std::shared_ptr<Adapter::AleXFFsiWrapper> ale_;
   };
 }  // namespace FSI
 

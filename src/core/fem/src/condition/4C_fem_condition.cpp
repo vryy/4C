@@ -38,7 +38,7 @@ void Core::Conditions::Condition::print(std::ostream& os) const
     for (const auto& node_gid : nodes_) os << " " << node_gid;
     os << std::endl;
   }
-  if (geometry_ != Teuchos::null and (int) geometry_->size())
+  if (geometry_ != nullptr and (int) geometry_->size())
   {
     os << "Elements of this condition:";
     for (const auto& [ele_id, ele] : *geometry_) os << " " << ele_id;
@@ -48,8 +48,8 @@ void Core::Conditions::Condition::print(std::ostream& os) const
 
 void Core::Conditions::Condition::adjust_id(const int shift)
 {
-  std::map<int, Teuchos::RCP<Core::Elements::Element>> geometry;
-  std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator iter;
+  std::map<int, std::shared_ptr<Core::Elements::Element>> geometry;
+  std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator iter;
 
   for (const auto& [ele_id, ele] : *geometry_)
   {
@@ -60,9 +60,10 @@ void Core::Conditions::Condition::adjust_id(const int shift)
   swap(*geometry_, geometry);
 }
 
-Teuchos::RCP<Core::Conditions::Condition> Core::Conditions::Condition::copy_without_geometry() const
+std::shared_ptr<Core::Conditions::Condition> Core::Conditions::Condition::copy_without_geometry()
+    const
 {
-  Teuchos::RCP<Core::Conditions::Condition> copy(new Condition(*this));
+  std::shared_ptr<Core::Conditions::Condition> copy(new Condition(*this));
   copy->clear_geometry();
   return copy;
 }

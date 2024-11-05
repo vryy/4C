@@ -463,7 +463,7 @@ template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::Cel
 int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
     ndistype>::evaluate_edge_based_stabilization(Discret::Elements::FluidIntFace*
                                                      intface,  ///< internal face element
-    Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
+    std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
     Discret::Elements::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
     Discret::Elements::FluidEleParameterIntFace&
         fldintfacepara,                        ///< general parameter for internal face
@@ -678,8 +678,8 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
 
   //------------- extract patch velaf velocity---------
   // velocities (intermediate time step, n+alpha_F)
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
-  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
+  if (velaf == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
 
   std::vector<double> patch_velaf(ndofinpatch);
@@ -713,8 +713,8 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
   if (fldparatimint.is_genalpha_np())
   {
     // velocities (intermediate time step, n+1)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
-    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
+    if (velnp == nullptr) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     std::vector<double> patch_velnp(ndofinpatch);
     for (int i = 0; i < ndofinpatch; ++i)
@@ -754,15 +754,15 @@ int Discret::Elements::FluidInternalSurfaceStab<distype, pdistype,
   if (pele->is_ale())
   {
     // mesh displacements, new time step, n+1
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
-    if (dispnp == Teuchos::null)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+    if (dispnp == nullptr)
     {
       FOUR_C_THROW("Cannot get state vector 'dispnp'");
     }
 
     // ALE-grid velocities
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> gridv = discretization.get_state("gridv");
-    if (gridv == Teuchos::null)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> gridv = discretization.get_state("gridv");
+    if (gridv == nullptr)
     {
       FOUR_C_THROW("Cannot get state vector 'gridv'");
     }
@@ -1343,19 +1343,19 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::r
 //-----------------------------------------------------------------
 template <Core::FE::CellType distype, Core::FE::CellType pdistype, Core::FE::CellType ndistype>
 void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::get_element_data(
-    FluidIntFace* surfele,                        ///< surface FluidIntFace element
-    Fluid* master_ele,                            ///< master parent element
-    Fluid* slave_ele,                             ///< slave  parent element
-    Teuchos::RCP<Core::Mat::Material>& material,  ///< material associated with the faces
-    std::vector<double>& mypvelaf,                ///< master velaf
-    std::vector<double>& mypvelnp,                ///< master velnp
-    std::vector<double>& mypedispnp,              ///< master dispnp
-    std::vector<double>& mypgridv,                ///< master grid velocity (ALE)
-    std::vector<double>& myedispnp,               ///< surfele dispnp
-    std::vector<double>& mynvelaf,                ///< slave velaf
-    std::vector<double>& mynvelnp,                ///< slave velnp
-    std::vector<double>& mynedispnp,              ///< slave dispnp
-    std::vector<double>& myngridv                 ///< slave grid velocity (ALE)
+    FluidIntFace* surfele,                           ///< surface FluidIntFace element
+    Fluid* master_ele,                               ///< master parent element
+    Fluid* slave_ele,                                ///< slave  parent element
+    std::shared_ptr<Core::Mat::Material>& material,  ///< material associated with the faces
+    std::vector<double>& mypvelaf,                   ///< master velaf
+    std::vector<double>& mypvelnp,                   ///< master velnp
+    std::vector<double>& mypedispnp,                 ///< master dispnp
+    std::vector<double>& mypgridv,                   ///< master grid velocity (ALE)
+    std::vector<double>& myedispnp,                  ///< surfele dispnp
+    std::vector<double>& mynvelaf,                   ///< slave velaf
+    std::vector<double>& mynvelnp,                   ///< slave velnp
+    std::vector<double>& mynedispnp,                 ///< slave dispnp
+    std::vector<double>& myngridv                    ///< slave grid velocity (ALE)
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: get_element_data");
@@ -1517,7 +1517,7 @@ void Discret::Elements::FluidInternalSurfaceStab<distype, pdistype, ndistype>::g
       int matid = -1;
       matid = matlist->mat_id(nmaterial);
 
-      Teuchos::RCP<const Core::Mat::Material> matptr = matlist->material_by_id(matid);
+      std::shared_ptr<const Core::Mat::Material> matptr = matlist->material_by_id(matid);
       Core::Materials::MaterialType mattype = matptr->material_type();
 
       // choose from different materials

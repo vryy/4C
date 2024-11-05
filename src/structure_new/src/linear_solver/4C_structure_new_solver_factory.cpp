@@ -35,12 +35,12 @@ Solid::SOLVER::Factory::Factory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_lin_solvers(
+std::shared_ptr<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_lin_solvers(
     const std::set<enum Inpar::Solid::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
     Core::FE::Discretization& actdis) const
 {
   // create a new standard map
-  Teuchos::RCP<LinSolMap> linsolvers = Teuchos::make_rcp<LinSolMap>();
+  std::shared_ptr<LinSolMap> linsolvers = std::make_shared<LinSolMap>();
 
   std::set<enum Inpar::Solid::ModelType>::const_iterator mt_iter;
   // loop over all model types
@@ -91,7 +91,7 @@ Teuchos::RCP<Solid::SOLVER::Factory::LinSolMap> Solid::SOLVER::Factory::build_li
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_solver(
+std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_solver(
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
   // get the linear solver number used for structural problems
@@ -106,7 +106,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
   const Teuchos::ParameterList& linsolverparams =
       Global::Problem::instance()->solver_params(linsolvernumber);
 
-  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  std::shared_ptr<Core::LinAlg::Solver> linsolver = std::make_shared<Core::LinAlg::Solver>(
       linsolverparams, actdis.get_comm(), Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
           Global::Problem::instance()->io_params(), "VERBOSITY"));
@@ -137,24 +137,24 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
           actdis.dof(node, solidDofs);
       }
 
-      Teuchos::RCP<Epetra_Map> rowmap1 = Teuchos::rcp(
+      std::shared_ptr<Epetra_Map> rowmap1(
           new Epetra_Map(-1, solidDofs.size(), solidDofs.data(), 0, actdis.get_comm()));
-      Teuchos::RCP<Epetra_Map> rowmap2 =
-          Teuchos::rcp(new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm()));
+      std::shared_ptr<Epetra_Map> rowmap2(
+          new Epetra_Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm()));
 
-      std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+      std::vector<std::shared_ptr<const Epetra_Map>> maps;
       maps.emplace_back(rowmap1);
       maps.emplace_back(rowmap2);
 
-      Teuchos::RCP<Core::LinAlg::MultiMapExtractor> extractor =
-          Teuchos::rcp(new Core::LinAlg::MultiMapExtractor(*actdis.dof_row_map(), maps));
+      std::shared_ptr<Core::LinAlg::MultiMapExtractor> extractor(
+          new Core::LinAlg::MultiMapExtractor(*actdis.dof_row_map(), maps));
       linsolver->params()
           .sublist("Teko Parameters")
-          .set<Teuchos::RCP<Core::LinAlg::MultiMapExtractor>>("extractor", extractor);
+          .set<std::shared_ptr<Core::LinAlg::MultiMapExtractor>>("extractor", extractor);
 
       linsolver->params()
           .sublist("Inverse1")
-          .set<Teuchos::RCP<Epetra_Map>>("null space: map", rowmap1);
+          .set<std::shared_ptr<Epetra_Map>>("null space: map", rowmap1);
       Core::LinearSolver::Parameters::compute_solver_parameters(
           actdis, linsolver->params().sublist("Inverse1"));
 
@@ -170,7 +170,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_lin_s
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
+std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
     Core::FE::Discretization& actdis) const
 {
   const Teuchos::ParameterList& mcparams = Global::Problem::instance()->contact_dynamic_params();
@@ -187,11 +187,11 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
+std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_contact_lin_solver(
     Core::FE::Discretization& actdis, enum Inpar::CONTACT::SolvingStrategy sol_type,
     enum Inpar::CONTACT::SystemType sys_type, const int lin_solver_id)
 {
-  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Solver> linsolver = nullptr;
 
   // get mortar information
   std::vector<Core::Conditions::Condition*> mtcond(0);
@@ -238,7 +238,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
       }
 
       // build meshtying/contact solver
-      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      linsolver = std::make_shared<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(lin_solver_id), actdis.get_comm(),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -280,7 +280,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
             "Please set LINEAR_SOLVER in CONTACT DYNAMIC to a valid number!");
 
       // build meshtying solver
-      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      linsolver = std::make_shared<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(lin_solver_id), actdis.get_comm(),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -296,10 +296,10 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_conta
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
+std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constraint_lin_solver(
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
-  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Solver> linsolver = nullptr;
 
   const Teuchos::ParameterList& mcparams = Global::Problem::instance()->contact_dynamic_params();
   const Teuchos::ParameterList& strparams =
@@ -315,7 +315,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
       const int linsolvernumber = strparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      linsolver = std::make_shared<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -333,7 +333,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
       const int linsolvernumber = mcparams.get<int>("LINEAR_SOLVER");
 
       // build constraint-structural linear solver
-      linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+      linsolver = std::make_shared<Core::LinAlg::Solver>(
           Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
           Global::Problem::instance()->solver_params_callback(),
           Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -380,10 +380,10 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_lag_pen_constra
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
+std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0_d_lin_solver(
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis) const
 {
-  Teuchos::RCP<Core::LinAlg::Solver> linsolver = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Solver> linsolver = nullptr;
 
 
   const Teuchos::ParameterList& cardvasc0dstructparams =
@@ -391,7 +391,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
   const int linsolvernumber = cardvasc0dstructparams.get<int>("LINEAR_COUPLED_SOLVER");
 
   // build 0D cardiovascular-structural linear solver
-  linsolver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  linsolver = std::make_shared<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis.get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -439,7 +439,7 @@ Teuchos::RCP<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_cardiovascular0
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+std::shared_ptr<std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
 Solid::SOLVER::build_lin_solvers(const std::set<enum Inpar::Solid::ModelType>& modeltypes,
     const Teuchos::ParameterList& sdyn, Core::FE::Discretization& actdis)
 {

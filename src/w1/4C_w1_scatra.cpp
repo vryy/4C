@@ -28,23 +28,23 @@ Core::Communication::ParObject* Discret::Elements::Wall1ScatraType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "WALLSCATRA")
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      return Teuchos::make_rcp<Discret::Elements::Wall1Scatra>(id, owner);
+      return std::make_shared<Discret::Elements::Wall1Scatra>(id, owner);
     }
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Wall1ScatraType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Wall1Scatra>(id, owner);
+  return std::make_shared<Discret::Elements::Wall1Scatra>(id, owner);
 }
 
 void Discret::Elements::Wall1ScatraType::setup_element_definition(

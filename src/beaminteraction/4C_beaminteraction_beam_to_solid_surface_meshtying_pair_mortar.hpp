@@ -69,7 +69,7 @@ namespace BEAMINTERACTION
         Epetra_FEVector& global_constraint, Epetra_FEVector& global_kappa,
         Core::LinAlg::SparseMatrix& global_kappa_lin_beam,
         Core::LinAlg::SparseMatrix& global_kappa_lin_solid, Epetra_FEVector& global_lambda_active,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector) override;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector) override;
 
    protected:
     /**
@@ -87,7 +87,7 @@ namespace BEAMINTERACTION
    * @param mortar_shapefunction (in) Type of mortar shape function.
    * @return Pointer to the created pair.
    */
-  Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+  std::shared_ptr<BEAMINTERACTION::BeamContactPair>
   beam_to_solid_surface_meshtying_pair_mortar_factory(const Core::FE::CellType surface_shape,
       const Inpar::BeamToSolid::BeamToSolidMortarShapefunctions mortar_shapefunction);
 }  // namespace BEAMINTERACTION

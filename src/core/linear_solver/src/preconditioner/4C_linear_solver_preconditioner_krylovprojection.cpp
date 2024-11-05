@@ -14,8 +14,8 @@ FOUR_C_NAMESPACE_OPEN
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 Core::LinearSolver::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
-    Teuchos::RCP<Core::LinearSolver::PreconditionerTypeBase> preconditioner,
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector)
+    std::shared_ptr<Core::LinearSolver::PreconditionerTypeBase> preconditioner,
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector)
     : preconditioner_(preconditioner), projector_(projector)
 {
 }
@@ -34,7 +34,7 @@ void Core::LinearSolver::KrylovProjectionPreconditioner::setup(bool create, Epet
   // actual preconditioner is called first and the projection is done
   // afterwards.
 
-  p_ = Teuchos::make_rcp<Core::LinAlg::LinalgPrecondOperator>(
+  p_ = std::make_shared<Core::LinAlg::LinalgPrecondOperator>(
       preconditioner_->prec_operator(), true, projector_);
 }
 

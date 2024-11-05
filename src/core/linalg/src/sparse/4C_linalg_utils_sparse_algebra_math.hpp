@@ -19,7 +19,8 @@
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -90,11 +91,11 @@ namespace Core::LinAlg
 
   \param A          (in)     : Matrix to add to this (must have Filled()==true)
   \param scalarA    (in)     : scaling factor for #A
-  \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==Teuchos::null)
+  \param rowmap     (in)     : to put selectively on rows in #rowmap (inactive if ==nullptr)
   \param B          (in/out) : Matrix to be added to (must have Filled()==false)
   */
   void matrix_put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
-      Teuchos::RCP<const Epetra_Map> rowmap, Core::LinAlg::SparseMatrixBase& B);
+      std::shared_ptr<const Epetra_Map> rowmap, Core::LinAlg::SparseMatrixBase& B);
 
   /*!
    \brief Multiply a (transposed) sparse matrix with another (transposed): C = A(^T)*B(^T)
@@ -114,7 +115,7 @@ namespace Core::LinAlg
                             exit, (defaults to true)
    \return Matrix product A(^T)*B(^T)
    */
-  Teuchos::RCP<SparseMatrix> matrix_multiply(
+  std::unique_ptr<SparseMatrix> matrix_multiply(
       const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete = true);
 
   /*!
@@ -141,7 +142,7 @@ namespace Core::LinAlg
                                    exit, (defaults to true)
    \return Matrix product A(^T)*B(^T)
    */
-  Teuchos::RCP<SparseMatrix> matrix_multiply(const SparseMatrix& A, bool transA,
+  std::unique_ptr<SparseMatrix> matrix_multiply(const SparseMatrix& A, bool transA,
       const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
       bool complete = true);
 
@@ -157,7 +158,7 @@ namespace Core::LinAlg
 
    \return matrix_transpose of the input matrix A.
    */
-  Teuchos::RCP<SparseMatrix> matrix_transpose(const SparseMatrix& A);
+  std::shared_ptr<SparseMatrix> matrix_transpose(const SparseMatrix& A);
 
   /**
    * \brief Compute sparse inverse matrix of a sparse matrix explicitly
@@ -176,8 +177,8 @@ namespace Core::LinAlg
    *
    * \return Sparse inverse A^(-1) of the input matrix A.
    */
-  Teuchos::RCP<SparseMatrix> matrix_sparse_inverse(
-      const SparseMatrix& A, Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern);
+  std::shared_ptr<SparseMatrix> matrix_sparse_inverse(
+      const SparseMatrix& A, std::shared_ptr<Epetra_CrsGraph> sparsity_pattern);
 
 }  // namespace Core::LinAlg
 

@@ -20,7 +20,8 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 /*---------------------------------------------------------------------*
@@ -55,24 +56,25 @@ namespace Adapter
         Core::FE::ShapeFunctionType shape_function_type);
 
 
-    virtual void evaluate_poro_mt(Teuchos::RCP<Core::LinAlg::Vector<double>> fvel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> svel,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fpres,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sdisp,
-        const Teuchos::RCP<Core::FE::Discretization> sdis,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& f, Teuchos::RCP<Core::LinAlg::SparseMatrix>& k_fs,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& frhs, Coupling::Adapter::Coupling& coupfs,
-        Teuchos::RCP<const Epetra_Map> fdofrowmap);
+    virtual void evaluate_poro_mt(std::shared_ptr<Core::LinAlg::Vector<double>> fvel,
+        std::shared_ptr<Core::LinAlg::Vector<double>> svel,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fpres,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sdisp,
+        const std::shared_ptr<Core::FE::Discretization> sdis,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& f,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& k_fs,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& frhs, Coupling::Adapter::Coupling& coupfs,
+        std::shared_ptr<const Epetra_Map> fdofrowmap);
 
     void update_poro_mt();
 
-    void recover_fluid_lm_poro_mt(Teuchos::RCP<Core::LinAlg::Vector<double>> disi,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> veli);  // h.Willmann
+    void recover_fluid_lm_poro_mt(std::shared_ptr<Core::LinAlg::Vector<double>> disi,
+        std::shared_ptr<Core::LinAlg::Vector<double>> veli);  // h.Willmann
 
     // return the used poro lagrange strategy
-    Teuchos::RCP<CONTACT::LagrangeStrategyPoro> get_poro_strategy()
+    std::shared_ptr<CONTACT::LagrangeStrategyPoro> get_poro_strategy()
     {
-      if (porolagstrategy_ == Teuchos::null) FOUR_C_THROW("GetPoroStrategy(): No strategy set!");
+      if (porolagstrategy_ == nullptr) FOUR_C_THROW("GetPoroStrategy(): No strategy set!");
       return porolagstrategy_;
     };
 
@@ -81,43 +83,43 @@ namespace Adapter
     \brief Read Mortar Condition
 
     */
-    void read_mortar_condition(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
+    void read_mortar_condition(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, Core::Nodes::Node*>& mastergnodes,
         std::map<int, Core::Nodes::Node*>& slavegnodes,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements) override;
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements) override;
 
     /*!
     \brief Add Mortar Elments
 
     */
-    void add_mortar_elements(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<Core::Elements::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::Interface>& interface, int numcoupleddof) override;
+    void add_mortar_elements(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& masterelements,
+        std::map<int, std::shared_ptr<Core::Elements::Element>>& slaveelements,
+        std::shared_ptr<CONTACT::Interface>& interface, int numcoupleddof) override;
 
     /*!
     \brief complete interface, store as internal variable
            store maps as internal variable and do parallel redist.
 
     */
-    void complete_interface(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<CONTACT::Interface>& interface) override;
+    void complete_interface(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<CONTACT::Interface>& interface) override;
 
     /*!
     \brief create strategy object if required
 
     */
-    void create_strategy(Teuchos::RCP<Core::FE::Discretization> masterdis,
-        Teuchos::RCP<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
+    void create_strategy(std::shared_ptr<Core::FE::Discretization> masterdis,
+        std::shared_ptr<Core::FE::Discretization> slavedis, Teuchos::ParameterList& input,
         int numcoupleddof) override;
 
    private:
     // poro lagrange strategy
-    Teuchos::RCP<CONTACT::LagrangeStrategyPoro> porolagstrategy_;
+    std::shared_ptr<CONTACT::LagrangeStrategyPoro> porolagstrategy_;
 
     // firstinit
     bool firstinit_;

@@ -13,7 +13,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_result_test.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -60,14 +60,14 @@ namespace Arteries
         const Core::IO::InputParameterContainer& container, int& nerr, int& test_count) override;
 
    private:
-    /// Teuchos::RCP to scalar transport discretization
-    Teuchos::RCP<Core::FE::Discretization> dis_;
-    /// Teuchos::RCP to solution vector
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mysol_;
-    /// Teuchos::RCP to element volumetric flow
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> myelevolflow_;
-    /// Teuchos::RCP to element radius
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> myeleradius_;
+    /// std::shared_ptr to scalar transport discretization
+    std::shared_ptr<Core::FE::Discretization> dis_;
+    /// std::shared_ptr to solution vector
+    std::shared_ptr<const Core::LinAlg::Vector<double>> mysol_;
+    /// std::shared_ptr to element volumetric flow
+    std::shared_ptr<const Core::LinAlg::Vector<double>> myelevolflow_;
+    /// std::shared_ptr to element radius
+    std::shared_ptr<const Core::LinAlg::Vector<double>> myeleradius_;
   };
 
 }  // namespace Arteries

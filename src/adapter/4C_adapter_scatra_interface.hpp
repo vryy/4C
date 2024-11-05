@@ -13,7 +13,7 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -51,7 +51,7 @@ namespace Adapter
     virtual ~ScatraInterface() = default;
 
     //! return discretization
-    virtual Teuchos::RCP<Core::FE::Discretization> discretization() const = 0;
+    virtual std::shared_ptr<Core::FE::Discretization> discretization() const = 0;
 
     //! add parameters specific for time-integration scheme
     virtual void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) = 0;
@@ -60,13 +60,13 @@ namespace Adapter
     virtual int nds_disp() const = 0;
 
     //! return rcp ptr to neumann loads vector
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() = 0;
 
     //! return meshtying strategy (includes standard case without meshtying)
-    virtual const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& strategy() const = 0;
+    virtual const std::shared_ptr<ScaTra::MeshtyingStrategyBase>& strategy() const = 0;
 
     //! return scalar field phi at time n
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> phin() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> phin() = 0;
 
   };  // class ScatraInterface
 }  // namespace Adapter

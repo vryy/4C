@@ -72,7 +72,7 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
       // parse *.csv file
       if (ocpcsv[0] != '/')
       {
-        if (Global::Problem::instance()->output_control_file() == Teuchos::null)
+        if (Global::Problem::instance()->output_control_file() == nullptr)
         {
           std::cout << "WARNING: could not check, if OCP .csv file in MAT_electrode is correct."
                     << std::endl;
@@ -196,9 +196,9 @@ Mat::PAR::Electrode::Electrode(const Core::Mat::PAR::Parameter::Data& matdata)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::Electrode::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::Electrode::create_material()
 {
-  return Teuchos::make_rcp<Mat::Electrode>(this);
+  return std::make_shared<Mat::Electrode>(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -279,7 +279,7 @@ void Mat::Electrode::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

@@ -62,7 +62,8 @@ bool Discret::Elements::Ale3::read_element(const std::string& eletype, const std
   }  // end switch distype
 
   // set up of materials with GP data (e.g., history variables)
-  Teuchos::RCP<Mat::So3Material> so3mat = Teuchos::rcp_dynamic_cast<Mat::So3Material>(material());
+  std::shared_ptr<Mat::So3Material> so3mat =
+      std::dynamic_pointer_cast<Mat::So3Material>(material());
 
   const Core::FE::IntegrationPoints3D intpoints(gaussrule);
   const int numgp = intpoints.nquad;

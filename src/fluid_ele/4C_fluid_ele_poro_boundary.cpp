@@ -16,10 +16,10 @@ Discret::Elements::FluidPoroBoundaryType& Discret::Elements::FluidPoroBoundaryTy
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidPoroBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidPoroBoundaryType::create(
     const int id, const int owner)
 {
-  return Teuchos::null;
+  return nullptr;
 }
 
 Discret::Elements::FluidPoroBoundary::FluidPoroBoundary(int id, int owner, int nnode,

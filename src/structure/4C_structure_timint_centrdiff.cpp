@@ -20,15 +20,16 @@ FOUR_C_NAMESPACE_OPEN
 /* Constructor */
 Solid::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& ioparams, const Teuchos::ParameterList& sdynparams,
-    const Teuchos::ParameterList& xparams, Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Core::LinAlg::Solver> contactsolver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    const Teuchos::ParameterList& xparams, std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::LinAlg::Solver> contactsolver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimIntExpl(timeparams, ioparams, sdynparams, xparams, actdis, solver, contactsolver, output),
-      fextn_(Teuchos::null),
-      fintn_(Teuchos::null),
-      fviscn_(Teuchos::null),
-      fcmtn_(Teuchos::null),
-      frimpn_(Teuchos::null)
+      fextn_(nullptr),
+      fintn_(nullptr),
+      fviscn_(nullptr),
+      fcmtn_(nullptr),
+      frimpn_(nullptr)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -43,7 +44,7 @@ Solid::TimIntCentrDiff::TimIntCentrDiff(const Teuchos::ParameterList& timeparams
  *----------------------------------------------------------------------------------------------*/
 void Solid::TimIntCentrDiff::init(const Teuchos::ParameterList& timeparams,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver)
 {
   // call init() in base class
   Solid::TimIntExpl::init(timeparams, sdynparams, xparams, actdis, solver);
@@ -117,7 +118,7 @@ int Solid::TimIntCentrDiff::integrate_step()
   // *********** time measurement ***********
 
   // apply Dirichlet BCs
-  apply_dirichlet_bc(timen_, disn_, veln_, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, disn_, veln_, nullptr, false);
 
   // initialise stiffness matrix to zero
   stiff_->zero();
@@ -138,7 +139,8 @@ int Solid::TimIntCentrDiff::integrate_step()
     Core::LinAlg::Vector<double> disinc = Core::LinAlg::Vector<double>(*disn_);
     disinc.Update(-1.0, *(*dis_)(0), 1.0);
     // internal force
-    apply_force_internal(timen_, dt, disn_, Teuchos::rcpFromRef(disinc), veln_, fintn_);
+    apply_force_internal(
+        timen_, dt, disn_, Core::Utils::shared_ptr_from_ref(disinc), veln_, fintn_);
   }
 
   // *********** time measurement ***********
@@ -200,7 +202,7 @@ int Solid::TimIntCentrDiff::integrate_step()
 
     // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
     if (lumpmass_ == false ||
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_) == Teuchos::null)
+        std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(mass_) == nullptr)
     {
       // linear solver call
       // refactor==false: This is not necessary, because we always
@@ -214,9 +216,9 @@ int Solid::TimIntCentrDiff::integrate_step()
     // direct inversion based on lumped mass matrix
     else
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> massmatrix =
-          Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(mass_);
-      Teuchos::RCP<Core::LinAlg::Vector<double>> diagonal =
+      std::shared_ptr<Core::LinAlg::SparseMatrix> massmatrix =
+          std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(mass_);
+      std::shared_ptr<Core::LinAlg::Vector<double>> diagonal =
           Core::LinAlg::create_vector(*dof_row_map_view(), true);
       int error = massmatrix->extract_diagonal_copy(*diagonal);
       if (error != 0) FOUR_C_THROW("ERROR: ExtractDiagonalCopy went wrong");
@@ -225,7 +227,7 @@ int Solid::TimIntCentrDiff::integrate_step()
   }
 
   // apply Dirichlet BCs on accelerations
-  apply_dirichlet_bc(timen_, Teuchos::null, Teuchos::null, accn_, false);
+  apply_dirichlet_bc(timen_, nullptr, nullptr, accn_, false);
 
   // *********** time measurement ***********
   dtsolve_ = timer_->wallTime() - dtcpu;
@@ -272,7 +274,7 @@ void Solid::TimIntCentrDiff::update_step_element()
   // action for elements
   p.set("action", "calc_struct_update_istep");
   // go to elements
-  discret_->evaluate(p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 /*----------------------------------------------------------------------*/
@@ -286,7 +288,7 @@ void Solid::TimIntCentrDiff::read_restart_force()
 /*----------------------------------------------------------------------*/
 /* write internal and external forces for restart */
 void Solid::TimIntCentrDiff::write_restart_force(
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
 {
   return;
 }

@@ -33,16 +33,16 @@ Core::Communication::ParObject* Discret::Elements::Ale2Type::create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale2Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale2Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele;
+  std::shared_ptr<Core::Elements::Element> ele;
 
   if (eletype == "ALE2")
   {
     if (eledistype != "NURBS4" and eledistype != "NURBS9")
     {
-      ele = Teuchos::make_rcp<Discret::Elements::Ale2>(id, owner);
+      ele = std::make_shared<Discret::Elements::Ale2>(id, owner);
     }
   }
 
@@ -51,10 +51,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale2Type::create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale2Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale2Type::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Ale2>(id, owner);
+  return std::make_shared<Discret::Elements::Ale2>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -100,11 +100,11 @@ void Discret::Elements::Ale2Type::setup_element_definition(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale2LineType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale2LineType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale2Line( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -185,7 +185,7 @@ void Discret::Elements::Ale2::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Ale2::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Ale2::lines()
 {
   return Core::Communication::element_boundary_factory<Ale2Line, Ale2>(
       Core::Communication::buildLines, *this);
@@ -193,9 +193,9 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Ale2::line
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Ale2::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Ale2::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 /*----------------------------------------------------------------------------*/

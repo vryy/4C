@@ -12,7 +12,7 @@
 
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -45,10 +45,11 @@ namespace XFEM
     /** \brief initialize member variables for xfield<-->field couplings
      *
      *  An examples is the XFluidFluid problem. */
-    void init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
-        const Teuchos::RCP<Cut::CutWizard>& wizard, const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
-        const Teuchos::RCP<Core::FE::Discretization>& xfielddiscret,
-        const Teuchos::RCP<Core::FE::Discretization>& fielddiscret);
+    void init(const std::shared_ptr<XFEM::ConditionManager>& condition_manager,
+        const std::shared_ptr<Cut::CutWizard>& wizard,
+        const std::shared_ptr<XFEM::XFEMDofSet>& xdofset,
+        const std::shared_ptr<Core::FE::Discretization>& xfielddiscret,
+        const std::shared_ptr<Core::FE::Discretization>& fielddiscret);
 
     /// setup the stored state objects
     virtual void setup() = 0;
@@ -70,7 +71,7 @@ namespace XFEM
     Cut::CutWizard& cut_wizard()
     {
       check_init();
-      if (wizard_.is_null()) FOUR_C_THROW("The CutWizard was not initialized! (Teuchos::null)");
+      if (!wizard_) FOUR_C_THROW("The CutWizard was not initialized! (nullptr)");
       return *wizard_;
     }
 
@@ -78,8 +79,7 @@ namespace XFEM
     XFEM::ConditionManager& condition_manager()
     {
       check_init();
-      if (condition_manager_.is_null())
-        FOUR_C_THROW("The condition_manager was not initialized! (Teuchos::null)");
+      if (!condition_manager_) FOUR_C_THROW("The condition_manager was not initialized! (nullptr)");
       return *condition_manager_;
     }
 
@@ -87,41 +87,41 @@ namespace XFEM
     XFEM::XFEMDofSet& x_dof_set()
     {
       check_init();
-      if (xdofset_.is_null()) FOUR_C_THROW("The xDoF set was not initialized! (Teuchos::null)");
+      if (!xdofset_) FOUR_C_THROW("The xDoF set was not initialized! (nullptr)");
       return *xdofset_;
     }
 
    protected:
     /// Get cut wizard pointer
-    Teuchos::RCP<Cut::CutWizard>& cut_wizard_ptr() { return wizard_; }
+    std::shared_ptr<Cut::CutWizard>& cut_wizard_ptr() { return wizard_; }
 
     /// Get condition manager pointer
-    Teuchos::RCP<XFEM::ConditionManager>& condition_manager_ptr() { return condition_manager_; }
+    std::shared_ptr<XFEM::ConditionManager>& condition_manager_ptr() { return condition_manager_; }
 
     /// Get pointer to the dofset of the cut discretization
-    Teuchos::RCP<XFEM::XFEMDofSet>& x_dof_set_ptr() { return xdofset_; }
+    std::shared_ptr<XFEM::XFEMDofSet>& x_dof_set_ptr() { return xdofset_; }
 
     /// Returns the xFEM field discretizaton
     Core::FE::Discretization& x_field_discret()
     {
-      if (xfield_discret_ptr_.is_null()) FOUR_C_THROW("xfield_discret_ptr_ is nullptr!");
+      if (!xfield_discret_ptr_) FOUR_C_THROW("xfield_discret_ptr_ is nullptr!");
 
       return *xfield_discret_ptr_;
     }
 
     /// Returns a pointer to the xFEM discretization
-    Teuchos::RCP<Core::FE::Discretization>& x_field_discret_ptr() { return xfield_discret_ptr_; }
+    std::shared_ptr<Core::FE::Discretization>& x_field_discret_ptr() { return xfield_discret_ptr_; }
 
     /// Returns the standard field discretizaton
     Core::FE::Discretization& field_discret()
     {
-      if (field_discret_ptr_.is_null()) FOUR_C_THROW("field_discret_ptr_ is nullptr!");
+      if (!field_discret_ptr_) FOUR_C_THROW("field_discret_ptr_ is nullptr!");
 
       return *field_discret_ptr_;
     }
 
     /// Returns a pointer to the standard discretization
-    Teuchos::RCP<Core::FE::Discretization>& field_discret_ptr() { return field_discret_ptr_; }
+    std::shared_ptr<Core::FE::Discretization>& field_discret_ptr() { return field_discret_ptr_; }
 
     /// @}
 
@@ -148,19 +148,19 @@ namespace XFEM
 
    private:
     /// cut wizard
-    Teuchos::RCP<Cut::CutWizard> wizard_;
+    std::shared_ptr<Cut::CutWizard> wizard_;
 
     /// condition manager
-    Teuchos::RCP<XFEM::ConditionManager> condition_manager_;
+    std::shared_ptr<XFEM::ConditionManager> condition_manager_;
 
     /// XFEM dofset
-    Teuchos::RCP<XFEM::XFEMDofSet> xdofset_;
+    std::shared_ptr<XFEM::XFEMDofSet> xdofset_;
 
     /// XFEM field discretization pointer
-    Teuchos::RCP<Core::FE::Discretization> xfield_discret_ptr_;
+    std::shared_ptr<Core::FE::Discretization> xfield_discret_ptr_;
 
     /// field discretization pointer
-    Teuchos::RCP<Core::FE::Discretization> field_discret_ptr_;
+    std::shared_ptr<Core::FE::Discretization> field_discret_ptr_;
   };  // class XFieldState
 }  // namespace XFEM
 

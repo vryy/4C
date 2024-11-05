@@ -10,8 +10,7 @@
 
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -68,13 +67,13 @@ namespace BEAMINTERACTION
      *
      * \return beam interaction assembly manager
      */
-    static Teuchos::RCP<
+    static std::shared_ptr<
         BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManager>
-    create_assembly_manager(Teuchos::RCP<const Core::FE::Discretization> discretization1,
-        Teuchos::RCP<const Core::FE::Discretization> discretization2,
-        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
-        const Teuchos::RCP<FBI::BeamToFluidMeshtyingParams> params_ptr,
-        Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
+    create_assembly_manager(std::shared_ptr<const Core::FE::Discretization> discretization1,
+        std::shared_ptr<const Core::FE::Discretization> discretization2,
+        std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> interaction_pairs,
+        const std::shared_ptr<FBI::BeamToFluidMeshtyingParams> params_ptr,
+        std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy);
   };
 }  // namespace BEAMINTERACTION
 

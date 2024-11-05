@@ -352,7 +352,7 @@ namespace Discret
      private:
       Core::Nodes::Node** nodes() override;
 
-      Teuchos::RCP<Core::Mat::Material> material() const;
+      std::shared_ptr<Core::Mat::Material> material() const;
 
       int id() const;
 

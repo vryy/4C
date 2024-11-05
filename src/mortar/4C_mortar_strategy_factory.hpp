@@ -13,8 +13,8 @@
 #include "4C_inpar_contact.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -63,7 +63,7 @@ namespace Mortar
       Factory();
 
       //! initialization of class variables
-      void init(Teuchos::RCP<Core::FE::Discretization> dis);
+      void init(std::shared_ptr<Core::FE::Discretization> dis);
 
       /*! \brief Setup of class variables
        *
@@ -79,7 +79,8 @@ namespace Mortar
        *
        * @param[in] interfaces All meshtying interfaces
        */
-      void build_search_tree(const std::vector<Teuchos::RCP<Mortar::Interface>>& interfaces) const;
+      void build_search_tree(
+          const std::vector<std::shared_ptr<Mortar::Interface>>& interfaces) const;
 
       /*! \brief Check the problem dimension
        *
@@ -116,7 +117,7 @@ namespace Mortar
        *
        *  \author Farah */
       void prepare_nurbs_element(const Core::FE::Discretization& discret,
-          Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele) const;
+          std::shared_ptr<Core::Elements::Element> ele, Mortar::Element& cele) const;
 
       /*! \brief Prepare mortar node for NURBS case
        *
@@ -137,8 +138,8 @@ namespace Mortar
       //! returns a reference to a copy of the structural communicator
       Epetra_Comm& get_comm();
       const Epetra_Comm& get_comm() const;
-      Teuchos::RCP<Epetra_Comm> comm_ptr();
-      Teuchos::RCP<const Epetra_Comm> comm_ptr() const;
+      std::shared_ptr<Epetra_Comm> comm_ptr();
+      std::shared_ptr<const Epetra_Comm> comm_ptr() const;
 
       //! returns the problem dimension
       const int& n_dim() const;
@@ -146,7 +147,7 @@ namespace Mortar
       //!@}
 
       //! pointer to the structural problem discretization
-      Teuchos::RCP<Core::FE::Discretization> discret_ptr_;
+      std::shared_ptr<Core::FE::Discretization> discret_ptr_;
 
      private:
       //! @name Status flags
@@ -160,7 +161,7 @@ namespace Mortar
 
       //!@}
       //! pointer to a COPY of the structural communicator
-      Teuchos::RCP<Epetra_Comm> comm_ptr_;
+      std::shared_ptr<Epetra_Comm> comm_ptr_;
 
       int dim_;
     };  // namespace STRATEGY

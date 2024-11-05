@@ -21,11 +21,11 @@ namespace POROFLUIDMULTIPHASE
   {
    public:
     /// Standard Constructor
-    TimIntOneStepTheta(Teuchos::RCP<Core::FE::Discretization> dis,  //!< discretization
-        const int linsolvernumber,                                  //!< number of linear solver
-        const Teuchos::ParameterList& probparams,            //!< parameter list of global problem
-        const Teuchos::ParameterList& poroparams,            //!< paramter list of poro problem
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output  //!< output writer
+    TimIntOneStepTheta(std::shared_ptr<Core::FE::Discretization> dis,  //!< discretization
+        const int linsolvernumber,                                     //!< number of linear solver
+        const Teuchos::ParameterList& probparams,  //!< parameter list of global problem
+        const Teuchos::ParameterList& poroparams,  //!< paramter list of poro problem
+        std::shared_ptr<Core::IO::DiscretizationWriter> output  //!< output writer
     );
 
 

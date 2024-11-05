@@ -92,12 +92,12 @@ namespace Mat
        private:
         /// Override this method and throw error, as the material should be created in within the
         /// Factory method of the elastic summand
-        Teuchos::RCP<Core::Mat::Material> create_material() override
+        std::shared_ptr<Core::Mat::Material> create_material() override
         {
           FOUR_C_THROW(
               "Cannot create a material from this method, as it should be created in "
               "Mat::Elastic::Summand::Factory.");
-          return Teuchos::null;
+          return nullptr;
         };
       };  // class CoupAnisoSimple
     }     // namespace PAR

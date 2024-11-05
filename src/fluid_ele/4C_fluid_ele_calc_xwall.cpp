@@ -75,7 +75,7 @@ Discret::Elements::FluidEleCalcXWall<distype, enrtype>::instance(
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate_service(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -143,7 +143,7 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate_service(
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_wall(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::FE::Discretization& discretization,
     std::vector<int>& lm, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2, Core::LinAlg::SerialDenseVector& elevec3)
@@ -195,7 +195,7 @@ int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate_service_x_w
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -278,7 +278,7 @@ template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType e
 void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
     const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::Mat::Material>& mat)
+    std::shared_ptr<Core::Mat::Material>& mat)
 {
   is_blending_ele_ = false;
   visc_ = 0.0;
@@ -291,8 +291,8 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get xwall toggle
   {
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> xwalltoggle =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("xwalltoggle");
+    const std::shared_ptr<Core::LinAlg::Vector<double>> xwalltoggle =
+        params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("xwalltoggle");
 
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *xwalltoggle);
@@ -320,8 +320,8 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get wall distance
   {
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> walldist =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("walldist");
+    const std::shared_ptr<Core::LinAlg::Vector<double>> walldist =
+        params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("walldist");
     //      std::cout << *walldist << std::endl;
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *walldist);
@@ -334,8 +334,8 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get tauw
   {
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> tauw =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("tauw");
+    const std::shared_ptr<Core::LinAlg::Vector<double>> tauw =
+        params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("tauw");
 
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *tauw);
@@ -348,8 +348,8 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
   // get increment of tauw
   {
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> inctauw =
-        params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("inctauw");
+    const std::shared_ptr<Core::LinAlg::Vector<double>> inctauw =
+        params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("inctauw");
 
     std::vector<double> mylocal(ele->num_node());
     Core::FE::extract_my_node_based_values(ele, mylocal, *inctauw);
@@ -385,8 +385,8 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
     // get old wall distance in case of ale
     if (ele->is_ale())
     {
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> incwdist =
-          params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("incwalldist");
+      const std::shared_ptr<Core::LinAlg::Vector<double>> incwdist =
+          params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("incwalldist");
 
       std::vector<double> mylocal(ele->num_node());
       Core::FE::extract_my_node_based_values(ele, mylocal, *incwdist);
@@ -409,8 +409,8 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::get_ele_properties(
 
 
   // get element mk for stabilization
-  const Teuchos::RCP<Core::LinAlg::Vector<double>> mkvec =
-      params.get<Teuchos::RCP<Core::LinAlg::Vector<double>>>("mk");
+  const std::shared_ptr<Core::LinAlg::Vector<double>> mkvec =
+      params.get<std::shared_ptr<Core::LinAlg::Vector<double>>>("mk");
   mk_ = (*mkvec)[mkvec->Map().LID(ele->id())];
 
   numgpnorm_ = params.get<int>("gpnorm");
@@ -820,7 +820,7 @@ template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType e
 int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::tau_w_via_gradient(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseVector& elevec1,
     Core::LinAlg::SerialDenseVector& elevec2)
 {
   //----------------------------------------------------------------------------
@@ -1051,7 +1051,7 @@ double Discret::Elements::FluidEleCalcXWall<distype, enrtype>::calc_mk()
 template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType enrtype>
 int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::calc_mk(Discret::Elements::Fluid* ele,
     Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-    const std::vector<int>& lm, Teuchos::RCP<Core::Mat::Material>& mat,
+    const std::vector<int>& lm, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2)
 {
   //----------------------------------------------------------------------------
@@ -1075,7 +1075,7 @@ template <Core::FE::CellType distype, Discret::Elements::Fluid::EnrichmentType e
 int Discret::Elements::FluidEleCalcXWall<distype, enrtype>::x_wall_projection(
     Discret::Elements::Fluid* ele, Teuchos::ParameterList& params,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
+    std::shared_ptr<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1,
     Core::LinAlg::SerialDenseMatrix& elemat2)
 {
   const int numdof = 3;
@@ -1386,8 +1386,7 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::prepare_gauss_rule(
   }
   else  // hex8
   {
-    cgp_ =
-        Teuchos::make_rcp<Core::FE::CollectedGaussPoints>(numgpnorm_ * numgpplane_ * numgpplane_);
+    cgp_ = std::make_shared<Core::FE::CollectedGaussPoints>(numgpnorm_ * numgpplane_ * numgpplane_);
     // get the quad9 gaussrule for the in plane integration
     Core::FE::GaussIntegration intpointsplane(Core::FE::CellType::quad8, 2 * numgpplane_ - 1);
     // get the quad9 gaussrule for the in normal integration
@@ -1490,7 +1489,7 @@ void Discret::Elements::FluidEleCalcXWall<distype, enrtype>::sysmat(
     const Core::LinAlg::Matrix<nsd_, 2 * nen_>& egradphi,
     const Core::LinAlg::Matrix<nen_, 2 * 1>& ecurvature, const double thermpressaf,
     const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-    Teuchos::RCP<const Core::Mat::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
+    std::shared_ptr<const Core::Mat::Material> material, double& Cs_delta_sq, double& Ci_delta_sq,
     double& Cv, bool isale, double* saccn, double* sveln, double* svelnp,
     const Core::FE::GaussIntegration& intpoints)
 {

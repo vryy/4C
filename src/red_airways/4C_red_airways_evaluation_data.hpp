@@ -12,7 +12,7 @@
 
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 
 FOUR_C_NAMESPACE_OPEN
@@ -29,48 +29,48 @@ namespace Discret::ReducedLung
     EvaluationData() = default;
 
    public:
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_vnp_strain;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_vnp;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_vn;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acinar_v;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acinar_vnp_strain;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acinar_vnp;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acinar_vn;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acinar_v;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_nm;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_n;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qin_np;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_nm;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_n;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qin_np;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x_n;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x_np;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> open;
+    std::shared_ptr<Core::LinAlg::Vector<double>> x_n;
+    std::shared_ptr<Core::LinAlg::Vector<double>> x_np;
+    std::shared_ptr<Core::LinAlg::Vector<double>> open;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extn;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p_extnp;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> airway_acinus_dep;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p_extn;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p_extnp;
+    std::shared_ptr<Core::LinAlg::Vector<double>> airway_acinus_dep;
     bool compute_awacinter{};
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_np;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_n;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> qout_nm;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_np;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_n;
+    std::shared_ptr<Core::LinAlg::Vector<double>> qout_nm;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p0np;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p0n;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> p0nm;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemArea0;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p0np;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p0n;
+    std::shared_ptr<Core::LinAlg::Vector<double>> p0nm;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemArea0;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_e_volume;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolume;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumen;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemVolumenp;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_e_volume;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolume;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolumen;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemVolumenp;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> generations;
+    std::shared_ptr<Core::LinAlg::Vector<double>> generations;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> elemRadiusnp;
+    std::shared_ptr<Core::LinAlg::Vector<double>> elemRadiusnp;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cfl;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cfl;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> bcval;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dbctog;
+    std::shared_ptr<Core::LinAlg::Vector<double>> bcval;
+    std::shared_ptr<Core::LinAlg::Vector<double>> dbctog;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acini_bc;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acini_bc;
 
     double lungVolume_np{};
     double lungVolume_n{};

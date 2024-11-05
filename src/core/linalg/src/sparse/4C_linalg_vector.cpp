@@ -21,26 +21,26 @@ FOUR_C_NAMESPACE_OPEN
 
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_BlockMap& Map, bool zeroOut)
-    : vector_(Teuchos::make_rcp<Epetra_Vector>(Map, zeroOut))
+    : vector_(std::make_shared<Epetra_Vector>(Map, zeroOut))
 {
 }
 
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_Vector& Source)
-    : vector_(Teuchos::make_rcp<Epetra_Vector>(Source))
+    : vector_(std::make_shared<Epetra_Vector>(Source))
 {
 }
 
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Epetra_FEVector& Source)
-    : vector_(Teuchos::make_rcp<Epetra_Vector>(Epetra_DataAccess::Copy, Source, 0))
+    : vector_(std::make_shared<Epetra_Vector>(Epetra_DataAccess::Copy, Source, 0))
 {
   FOUR_C_ASSERT(Source.NumVectors() == 1, "Can only convert a FE vector with a single column.");
 }
 
 template <typename T>
 Core::LinAlg::Vector<T>::Vector(const Vector& other)
-    : vector_(Teuchos::make_rcp<Epetra_Vector>(other.get_ref_of_Epetra_Vector()))
+    : vector_(std::make_shared<Epetra_Vector>(other.get_ref_of_Epetra_Vector()))
 {
 }
 
@@ -57,7 +57,7 @@ template <typename T>
 Core::LinAlg::Vector<T>::operator const Core::LinAlg::MultiVector<T>&() const
 {
   sync_view();
-  FOUR_C_ASSERT(multi_vector_view_ != Teuchos::null, "Internal error.");
+  FOUR_C_ASSERT(multi_vector_view_ != nullptr, "Internal error.");
   return *multi_vector_view_;
 }
 
@@ -66,7 +66,7 @@ template <typename T>
 Core::LinAlg::Vector<T>::operator Core::LinAlg::MultiVector<T>&()
 {
   sync_view();
-  FOUR_C_ASSERT(multi_vector_view_ != Teuchos::null, "Internal error.");
+  FOUR_C_ASSERT(multi_vector_view_ != nullptr, "Internal error.");
   return *multi_vector_view_;
 }
 
@@ -197,17 +197,17 @@ template class Core::LinAlg::Vector<double>;
 
 
 Core::LinAlg::Vector<int>::Vector(const Epetra_BlockMap& map, bool zeroOut)
-    : vector_(Teuchos::make_rcp<Epetra_IntVector>(map, zeroOut))
+    : vector_(std::make_shared<Epetra_IntVector>(map, zeroOut))
 {
 }
 
 Core::LinAlg::Vector<int>::Vector(const Epetra_BlockMap& map, int* values)
-    : vector_(Teuchos::make_rcp<Epetra_IntVector>(Epetra_DataAccess::Copy, map, values))
+    : vector_(std::make_shared<Epetra_IntVector>(Epetra_DataAccess::Copy, map, values))
 {
 }
 
 Core::LinAlg::Vector<int>::Vector(const Vector& other)
-    : vector_(Teuchos::make_rcp<Epetra_IntVector>(*other.vector_))
+    : vector_(std::make_shared<Epetra_IntVector>(*other.vector_))
 {
 }
 
@@ -215,7 +215,7 @@ Core::LinAlg::Vector<int>::Vector(Vector&& other) noexcept : vector_(std::move(o
 
 Core::LinAlg::Vector<int>& Core::LinAlg::Vector<int>::operator=(const Vector& other)
 {
-  vector_ = Teuchos::make_rcp<Epetra_IntVector>(*other.vector_);
+  vector_ = std::make_shared<Epetra_IntVector>(*other.vector_);
   return *this;
 }
 

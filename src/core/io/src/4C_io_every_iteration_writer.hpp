@@ -13,7 +13,7 @@
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -231,7 +231,7 @@ namespace Core::IO
 
     EveryIterationWriterInterface* interface_;
 
-    Teuchos::RCP<Core::IO::DiscretizationWriter> every_iter_writer_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> every_iter_writer_;
 
     constexpr static unsigned MAX_NUMBER_LINE_SEARCH_ITERATIONS_ = 100;
   };

@@ -19,8 +19,8 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtCouplBase(
-    Teuchos::RCP<Core::FE::Discretization> arterydis,
-    Teuchos::RCP<Core::FE::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
+    std::shared_ptr<Core::FE::Discretization> arterydis,
+    std::shared_ptr<Core::FE::Discretization> contdis, const Teuchos::ParameterList& couplingparams,
     const std::string& condname, const std::string& artcoupleddofname,
     const std::string& contcoupleddofname)
     : arterydis_(arterydis),
@@ -98,7 +98,7 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::recompute_coupled_d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<const Epetra_Map>&
+const std::shared_ptr<const Epetra_Map>&
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::full_map() const
 {
   return globalex_->full_map();
@@ -106,7 +106,7 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::full_map() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const Teuchos::RCP<Core::LinAlg::MultiMapExtractor>&
+const std::shared_ptr<Core::LinAlg::MultiMapExtractor>&
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::global_extractor() const
 {
   return globalex_;
@@ -115,9 +115,9 @@ PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::global_extractor() const
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase::set_solution_vectors(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_cont,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_art)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phin_cont,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_art)
 {
   // do nothing
 }

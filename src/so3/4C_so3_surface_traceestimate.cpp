@@ -138,13 +138,13 @@ void Discret::Elements::StructuralSurface::trace_estimate_vol_matrix(
     if (not parent_scalar.empty())
     {
       // as long as we need the parameter list to pass the information, we need to wrap it into a
-      // Teuchos::RCP<> as the values of a Teuchos::ParameterList have to be printable
-      auto scalar_values_at_xi = Teuchos::make_rcp<std::vector<double>>();
+      // std::shared_ptr<> as the values of a Teuchos::ParameterList have to be printable
+      auto scalar_values_at_xi = std::make_shared<std::vector<double>>();
       *scalar_values_at_xi =
           Discret::Elements::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
       params.set("scalars", scalar_values_at_xi);
     }
-    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
+    std::dynamic_pointer_cast<Mat::So3Material>(parent_element()->material())
         ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->id());
     bc.multiply_tn(bop, cmat);
     vol.multiply(ip.ip().qwgt[gp] * jac, bc, bop, 1.);
@@ -204,13 +204,13 @@ void Discret::Elements::StructuralSurface::trace_estimate_surf_matrix(
     if (not parent_scalar.empty())
     {
       // as long as we need the parameter list to pass the information, we need to wrap it into a
-      // Teuchos::RCP<> as the values of a Teuchos::ParameterList have to be printable
-      auto scalar_values_at_xi = Teuchos::make_rcp<std::vector<double>>();
+      // std::shared_ptr<> as the values of a Teuchos::ParameterList have to be printable
+      auto scalar_values_at_xi = std::make_shared<std::vector<double>>();
       *scalar_values_at_xi =
           Discret::Elements::project_nodal_quantity_to_xi<dt_vol>(xi, parent_scalar);
       params.set("scalars", scalar_values_at_xi);
     }
-    Teuchos::rcp_dynamic_cast<Mat::So3Material>(parent_element()->material())
+    std::dynamic_pointer_cast<Mat::So3Material>(parent_element()->material())
         ->evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, parent_element()->id());
 
     double normalfac = 1.0;
@@ -510,8 +510,8 @@ void Discret::Elements::StructuralSurface::trace_estimate_vol_matrix_tsi(
   Core::FE::IntPointsAndWeights<dim> ip(Discret::Elements::DisTypeToOptGaussRule<dt_vol>::rule);
 
   if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
-  Teuchos::RCP<Mat::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->material(1), true);
+  std::shared_ptr<Mat::FourierIso> mat_thr =
+      std::dynamic_pointer_cast<Mat::FourierIso>(parent_element()->material(1));
   const double k0 = mat_thr->conductivity();
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)
@@ -561,8 +561,8 @@ void Discret::Elements::StructuralSurface::trace_estimate_surf_matrix_tsi(
   Core::LinAlg::SerialDenseMatrix deriv_surf(2, Core::FE::num_nodes<dt_surf>);
 
   if (parent_element()->num_material() < 2) FOUR_C_THROW("where's my second material");
-  Teuchos::RCP<Mat::FourierIso> mat_thr =
-      Teuchos::rcp_dynamic_cast<Mat::FourierIso>(parent_element()->material(1), true);
+  std::shared_ptr<Mat::FourierIso> mat_thr =
+      std::dynamic_pointer_cast<Mat::FourierIso>(parent_element()->material(1));
   const double k0 = mat_thr->conductivity();
 
   for (int gp = 0; gp < ip.ip().nquad; ++gp)

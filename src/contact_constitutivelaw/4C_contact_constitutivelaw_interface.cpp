@@ -23,12 +23,12 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                                       |
  *----------------------------------------------------------------------*/
 CONTACT::ConstitutivelawInterface::ConstitutivelawInterface(
-    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData, const int id,
+    const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact, const int contactconstitutivelawid)
     : Interface(interfaceData, id, comm, dim, icontact, selfcontact)
 {
-  Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
+  std::shared_ptr<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> coconstlaw =
       CONTACT::CONSTITUTIVELAW::ConstitutiveLaw::factory(contactconstitutivelawid);
   coconstlaw_ = coconstlaw;
   return;

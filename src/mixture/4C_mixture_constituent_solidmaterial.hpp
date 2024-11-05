@@ -77,7 +77,7 @@ namespace Mixture
     Mixture::PAR::MixtureConstituentSolidMaterial* params_;
 
     // reference to the so3 material
-    Teuchos::RCP<Mat::So3Material> material_;
+    std::shared_ptr<Mat::So3Material> material_;
   };
 
 }  // namespace Mixture

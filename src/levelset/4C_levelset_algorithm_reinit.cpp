@@ -80,7 +80,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
   eleparams.set<Inpar::ScaTra::FluxType>("calcflux_domain", calcflux_domain_);
 
   // set vector containing IDs of scalars for which flux vectors are calculated
-  eleparams.set<Teuchos::RCP<std::vector<int>>>("writefluxids", writefluxids_);
+  eleparams.set<std::shared_ptr<std::vector<int>>>("writefluxids", writefluxids_);
 
   // set level-set reinitialization specific parameters
   eleparams.sublist("REINITIALIZATION") = levelsetparams_->sublist("REINITIALIZATION");
@@ -115,8 +115,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_parameters(
                                   .get<Inpar::ScaTra::AssgdType>("DEFINITION_ARTDIFFREINIT"));
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   return;
 }
@@ -143,8 +142,7 @@ void ScaTra::LevelSetAlgorithm::set_reinitialization_element_time_parameters()
   eleparams.set<double>("alpha_F", 1.0);
 
   // call standard loop over elements
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
 
   return;
 }
@@ -301,7 +299,7 @@ void ScaTra::LevelSetAlgorithm::prepare_time_step_reinit()
   if (pseudostep_ == 0)
   {
     // TODO: Restructure enforcement of Dirichlet boundary conditions on phin_
-    apply_dirichlet_bc(time_, phin_, Teuchos::null);
+    apply_dirichlet_bc(time_, phin_, nullptr);
     calc_initial_time_derivative();
   }
 
@@ -339,7 +337,7 @@ void ScaTra::LevelSetAlgorithm::calc_node_based_reinit_vel()
   {
     // define vector for velocity component
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velcomp =
+    std::shared_ptr<Core::LinAlg::Vector<double>> velcomp =
         Core::LinAlg::create_vector(*dofrowmap, true);
     velcomp->PutScalar(0.0);
 
@@ -1420,7 +1418,7 @@ void ScaTra::LevelSetAlgorithm::reinit_elliptic(
     std::map<int, Core::Geo::BoundaryIntCells>& interface)
 {
   // store interface
-  interface_eleq_ = Teuchos::make_rcp<std::map<int, Core::Geo::BoundaryIntCells>>(interface);
+  interface_eleq_ = std::make_shared<std::map<int, Core::Geo::BoundaryIntCells>>(interface);
 
   // call the executing method
   reinitialize_with_elliptic_equation();
@@ -1512,8 +1510,8 @@ void ScaTra::LevelSetAlgorithm::reinitialize_with_elliptic_equation()
   set_element_turbulence_parameters();
 
   // clear variables
-  interface_eleq_ = Teuchos::null;
-  initialphireinit_ = Teuchos::null;
+  interface_eleq_ = nullptr;
+  initialphireinit_ = nullptr;
   if (projection_ == true) nb_grad_val_->PutScalar(0.0);
 
   return;

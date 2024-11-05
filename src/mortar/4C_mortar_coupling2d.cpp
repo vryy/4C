@@ -806,7 +806,8 @@ bool Mortar::Coupling2d::detect_overlap()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool Mortar::Coupling2d::integrate_overlap(const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+bool Mortar::Coupling2d::integrate_overlap(
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -911,7 +912,7 @@ Mortar::Coupling2dManager::Coupling2dManager(Core::FE::Discretization& idiscret,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::Coupling2dManager::integrate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // decide which type of numerical integration scheme
 
@@ -924,7 +925,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
     for (int m = 0; m < (int)master_elements().size(); ++m)
     {
       // create Coupling2d object and push back
-      coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+      coupling().push_back(std::make_shared<Coupling2d>(
           idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
       // project the element pair
@@ -990,7 +991,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling2d object and push back
-              coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+              coupling().push_back(std::make_shared<Coupling2d>(
                   idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
               // project the element pair
@@ -1013,7 +1014,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
             for (int m = 0; m < (int)master_elements().size(); ++m)
             {
               // create Coupling2d object and push back
-              coupling().push_back(Teuchos::make_rcp<Coupling2d>(
+              coupling().push_back(std::make_shared<Coupling2d>(
                   idiscret_, dim_, quad_, imortar_, slave_element(), master_element(m)));
 
               // project the element pair
@@ -1055,7 +1056,7 @@ void Mortar::Coupling2dManager::integrate_coupling(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 bool Mortar::Coupling2dManager::evaluate_coupling(
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   if (master_elements().size() == 0) return false;
 
@@ -1215,7 +1216,7 @@ void Mortar::Coupling2dManager::consistent_dual_shape()
     Core::LinAlg::invert_and_multiply_by_cholesky(me, de, ae);
 
   // store ae matrix in slave element data container
-  slave_element().mo_data().dual_shape() = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ae);
+  slave_element().mo_data().dual_shape() = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ae);
 }
 
 FOUR_C_NAMESPACE_CLOSE

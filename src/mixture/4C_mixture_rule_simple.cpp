@@ -13,10 +13,10 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_ConfigDefs.h>
-#include <Teuchos_RCP.hpp>
 
 #include <algorithm>
 #include <iosfwd>
+#include <memory>
 #include <numeric>
 
 FOUR_C_NAMESPACE_OPEN

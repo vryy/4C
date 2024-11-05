@@ -23,11 +23,11 @@ Discret::Elements::PreStress::PreStress(const int numnode, const int ngp, const 
     : ParObject(), isinit_(false), numnode_(numnode)
 {
   // allocate history memory
-  fhist_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ngp, 9);
+  fhist_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ngp, 9);
   if (!istet4)
-    inv_jhist_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ngp, 9);
+    inv_jhist_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ngp, 9);
   else
-    inv_jhist_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(ngp, 12);
+    inv_jhist_ = std::make_shared<Core::LinAlg::SerialDenseMatrix>(ngp, 12);
 
   // init the deformation gradient history
   Core::LinAlg::Matrix<3, 3> F(true);
@@ -42,8 +42,8 @@ Discret::Elements::PreStress::PreStress(const Discret::Elements::PreStress& old)
     : ParObject(old),
       isinit_(old.isinit_),
       numnode_(old.numnode_),
-      fhist_(Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(old.f_history())),
-      inv_jhist_(Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(old.j_history()))
+      fhist_(std::make_shared<Core::LinAlg::SerialDenseMatrix>(old.f_history())),
+      inv_jhist_(std::make_shared<Core::LinAlg::SerialDenseMatrix>(old.j_history()))
 {
   return;
 }

@@ -50,7 +50,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<celltype>::evaluate_nonlin
 
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].size());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "porofluid");
   Core::FE::extract_my_values(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 
@@ -173,7 +173,7 @@ void Discret::Elements::SolidPoroPressureBasedEleCalc<
 {
   // get primary variables of multiphase porous medium flow
   std::vector<double> fluidmultiphase_ephi(la[1].size());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(1, "porofluid");
   Core::FE::extract_my_values(*matrix_state, fluidmultiphase_ephi, la[1].lm_);
 

@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                            farah 09/13|
  *----------------------------------------------------------------------*/
 Wear::WearInterface::WearInterface(
-    const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
+    const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData_ptr, const int id,
     const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icontact,
     bool selfcontact)
     : CONTACT::Interface(interfaceData_ptr, id, comm, dim, icontact, selfcontact),
@@ -73,17 +73,17 @@ void Wear::WearInterface::assemble_te(
    ************************************************/
 
   // nodes for loop
-  Teuchos::RCP<Epetra_Map> considerednodes;
+  std::shared_ptr<Epetra_Map> considerednodes;
 
   // nothing to do if no active nodes
   if (sswear_)
   {
-    if (activenodes_ == Teuchos::null) return;
+    if (activenodes_ == nullptr) return;
     considerednodes = activenodes_;
   }
   else
   {
-    if (slipnodes_ == Teuchos::null) return;
+    if (slipnodes_ == nullptr) return;
     considerednodes = slipnodes_;
   }
 
@@ -194,9 +194,10 @@ void Wear::WearInterface::assemble_te_master(
   //*******************************************************
 
   // nothing to do if no active nodes
-  if (slipmasternodes_ == Teuchos::null) return;
+  if (slipmasternodes_ == nullptr) return;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
+  const std::shared_ptr<Epetra_Map> slmasternodes =
+      Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
   // loop over proc's slave nodes of the interface for assembly
   // use standard row map to assemble each node only once
@@ -290,17 +291,17 @@ void Wear::WearInterface::assemble_lin_t_d(Core::LinAlg::SparseMatrix& lintgloba
    ************************************************/
 
   // nodes for loop
-  Teuchos::RCP<Epetra_Map> considerednodes;
+  std::shared_ptr<Epetra_Map> considerednodes;
 
   // nothing to do if no active nodes
   if (sswear_)
   {
-    if (activenodes_ == Teuchos::null) return;
+    if (activenodes_ == nullptr) return;
     considerednodes = activenodes_;
   }
   else
   {
-    if (slipnodes_ == Teuchos::null) return;
+    if (slipnodes_ == nullptr) return;
     considerednodes = slipnodes_;
   }
 
@@ -443,7 +444,7 @@ void Wear::WearInterface::assemble_lin_t_d_master(Core::LinAlg::SparseMatrix& li
    ************************************************/
 
   // nothing to do if no active nodes
-  if (slipmasternodes_ == Teuchos::null) return;
+  if (slipmasternodes_ == nullptr) return;
 
   /**********************************************************************/
   // we have: T_wj,c with j = Lagrange multiplier slave dof
@@ -451,7 +452,8 @@ void Wear::WearInterface::assemble_lin_t_d_master(Core::LinAlg::SparseMatrix& li
   //                 with c = Displacement slave or master dof
   // we compute (LinT)_kc = T_wj,c * z_j
   /**********************************************************************/
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
+  const std::shared_ptr<Epetra_Map> slmasternodes =
+      Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
   {
@@ -585,17 +587,17 @@ void Wear::WearInterface::assemble_lin_e_d(Core::LinAlg::SparseMatrix& linegloba
    ************************************************/
 
   // nodes for loop
-  Teuchos::RCP<Epetra_Map> considerednodes;
+  std::shared_ptr<Epetra_Map> considerednodes;
 
   // nothing to do if no active nodes
   if (sswear_)
   {
-    if (activenodes_ == Teuchos::null) return;
+    if (activenodes_ == nullptr) return;
     considerednodes = activenodes_;
   }
   else
   {
-    if (slipnodes_ == Teuchos::null) return;
+    if (slipnodes_ == nullptr) return;
     considerednodes = slipnodes_;
   }
 
@@ -691,7 +693,8 @@ void Wear::WearInterface::assemble_lin_e_d_master(Core::LinAlg::SparseMatrix& li
   //                 with c = Displacement slave or master dof
   // we compute (LinE)_kc = T_wj,c * z_j
   /**********************************************************************/
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
+  const std::shared_ptr<Epetra_Map> slmasternodes =
+      Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
   // loop over all LM slave nodes (row map)
   for (int j = 0; j < slmasternodes->NumMyElements(); ++j)
@@ -770,17 +773,17 @@ void Wear::WearInterface::assemble_lin_t_lm(Core::LinAlg::SparseMatrix& lintglob
    ************************************************/
 
   // nodes for loop
-  Teuchos::RCP<Epetra_Map> considerednodes;
+  std::shared_ptr<Epetra_Map> considerednodes;
 
   // nothing to do if no active nodes
   if (sswear_)
   {
-    if (activenodes_ == Teuchos::null) return;
+    if (activenodes_ == nullptr) return;
     considerednodes = activenodes_;
   }
   else
   {
-    if (slipnodes_ == Teuchos::null) return;
+    if (slipnodes_ == nullptr) return;
     considerednodes = slipnodes_;
   }
 
@@ -836,9 +839,10 @@ void Wear::WearInterface::assemble_lin_t_lm_master(Core::LinAlg::SparseMatrix& l
    ************************************************/
 
   // nothing to do if no active nodes
-  if (slipmasternodes_ == Teuchos::null) return;
+  if (slipmasternodes_ == nullptr) return;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
+  const std::shared_ptr<Epetra_Map> slmasternodes =
+      Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
 
 
   // typedef std::map<int,double>::const_iterator CI;
@@ -919,7 +923,7 @@ void Wear::WearInterface::export_nodal_normals() const
   // call contact function
   CONTACT::Interface::export_nodal_normals();
 
-  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
+  std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -948,7 +952,7 @@ void Wear::WearInterface::export_nodal_normals() const
   // --------------------------------------------------------------------------------------
   if (wearboth_ and wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
+    const std::shared_ptr<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
     // build info on row map
     for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
@@ -959,8 +963,8 @@ void Wear::WearInterface::export_nodal_normals() const
       CONTACT::Node* cnode = dynamic_cast<CONTACT::Node*>(node);
 
       // fill nodal matrix
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 3);
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc =
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, 3);
       (*loc)(0, 0) = cnode->mo_data().n()[0];
       (*loc)(1, 0) = cnode->mo_data().n()[1];
       (*loc)(2, 0) = cnode->mo_data().n()[2];
@@ -1065,7 +1069,7 @@ void Wear::WearInterface::export_nodal_normals() const
       if (cnode->owner() == get_comm().MyPID()) continue;
 
       // extract info
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
       cnode->mo_data().n()[0] = (*loc)(0, 0);
       cnode->mo_data().n()[1] = (*loc)(1, 0);
       cnode->mo_data().n()[2] = (*loc)(2, 0);
@@ -1161,7 +1165,7 @@ void Wear::WearInterface::assemble_s(Core::LinAlg::SparseMatrix& sglobal)
   CONTACT::Interface::assemble_s(sglobal);
 
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -1207,7 +1211,7 @@ void Wear::WearInterface::assemble_s(Core::LinAlg::SparseMatrix& sglobal)
 void Wear::WearInterface::assemble_lin_g_w(Core::LinAlg::SparseMatrix& sglobal)
 {
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements(); ++i)
@@ -1246,8 +1250,8 @@ void Wear::WearInterface::assemble_lin_stick(Core::LinAlg::SparseMatrix& linstic
     Core::LinAlg::SparseMatrix& linstickDISglobal, Core::LinAlg::Vector<double>& linstickRHSglobal)
 {
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
+  std::shared_ptr<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  std::shared_ptr<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -2744,7 +2748,7 @@ void Wear::WearInterface::assemble_lin_w_lm(Core::LinAlg::SparseMatrix& sglobal)
   if (!wearimpl_) FOUR_C_THROW("This matrix deriv. is only required for implicit wear algorithm!");
 
   // nothing to do if no active nodes
-  if (activenodes_ == Teuchos::null) return;
+  if (activenodes_ == nullptr) return;
 
   // loop over all active slave nodes of the interface
   for (int i = 0; i < activenodes_->NumMyElements();
@@ -2789,8 +2793,8 @@ void Wear::WearInterface::assemble_lin_w_lm_st(Core::LinAlg::SparseMatrix& sglob
   if (!wearimpl_) FOUR_C_THROW("This matrix deriv. is only required for implicit wear algorithm!");
 
   // create map of stick nodes
-  Teuchos::RCP<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
-  Teuchos::RCP<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
+  std::shared_ptr<Epetra_Map> sticknodes = Core::LinAlg::split_map(*activenodes_, *slipnodes_);
+  std::shared_ptr<Epetra_Map> stickt = Core::LinAlg::split_map(*activet_, *slipt_);
 
   // nothing to do if no stick nodes
   if (sticknodes->NumMyElements() == 0) return;
@@ -3037,7 +3041,7 @@ void Wear::WearInterface::assemble_d2(Core::LinAlg::SparseMatrix& dglobal)
   // are filled with entries. Therefore, the integrated
   // entries are unique on nodes!
   //*******************************************************
-  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
+  const std::shared_ptr<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
   for (int i = 0; i < masternodes->NumMyElements(); ++i)  // mnoderowmap_
   {
@@ -3116,8 +3120,8 @@ bool Wear::WearInterface::build_active_set_master()
   Epetra_Map auxa(-1, (int)a.size(), a.data(), 0, get_comm());
   Epetra_Map auxsl(-1, (int)sl.size(), sl.data(), 0, get_comm());
 
-  const Teuchos::RCP<Epetra_Map> ara = Core::LinAlg::allreduce_e_map((auxa));
-  const Teuchos::RCP<Epetra_Map> arsl = Core::LinAlg::allreduce_e_map((auxsl));
+  const std::shared_ptr<Epetra_Map> ara = Core::LinAlg::allreduce_e_map((auxa));
+  const std::shared_ptr<Epetra_Map> arsl = Core::LinAlg::allreduce_e_map((auxsl));
 
   for (int j = 0; j < slave_col_nodes()->NumMyElements(); ++j)
   {
@@ -3148,7 +3152,8 @@ bool Wear::WearInterface::build_active_set_master()
   }
 
   // spread info for attached status...
-  const Teuchos::RCP<Epetra_Map> meleall = Core::LinAlg::allreduce_e_map(*(master_row_elements()));
+  const std::shared_ptr<Epetra_Map> meleall =
+      Core::LinAlg::allreduce_e_map(*(master_row_elements()));
   std::vector<int> eleatt;
 
   for (int j = 0; j < meleall->NumMyElements(); ++j)
@@ -3163,7 +3168,7 @@ bool Wear::WearInterface::build_active_set_master()
   }
 
   Epetra_Map auxe(-1, (int)eleatt.size(), eleatt.data(), 0, get_comm());
-  const Teuchos::RCP<Epetra_Map> att = Core::LinAlg::allreduce_e_map((auxe));
+  const std::shared_ptr<Epetra_Map> att = Core::LinAlg::allreduce_e_map((auxe));
 
   for (int j = 0; j < att->NumMyElements(); ++j)
   {
@@ -3239,8 +3244,8 @@ bool Wear::WearInterface::build_active_set_master()
 
   // reset nodes
   // loop over all master nodes on the current interface
-  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
-  const Teuchos::RCP<Epetra_Map> mastereles = Core::LinAlg::allreduce_e_map(*(melerowmap_));
+  const std::shared_ptr<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
+  const std::shared_ptr<Epetra_Map> mastereles = Core::LinAlg::allreduce_e_map(*(melerowmap_));
 
   for (int j = 0; j < masternodes->NumMyElements(); ++j)
   {
@@ -3265,8 +3270,8 @@ bool Wear::WearInterface::build_active_set_master()
   Epetra_Map slimn(-1, (int)wsl.size(), wsl.data(), 0, get_comm());
   Epetra_Map slimd(-1, (int)wsln.size(), wsln.data(), 0, get_comm());
 
-  const Teuchos::RCP<Epetra_Map> ARactmn = Core::LinAlg::allreduce_overlapping_e_map((actmn));
-  const Teuchos::RCP<Epetra_Map> ARslimn = Core::LinAlg::allreduce_overlapping_e_map((slimn));
+  const std::shared_ptr<Epetra_Map> ARactmn = Core::LinAlg::allreduce_overlapping_e_map((actmn));
+  const std::shared_ptr<Epetra_Map> ARslimn = Core::LinAlg::allreduce_overlapping_e_map((slimn));
 
   std::vector<int> ga;
   std::vector<int> gs;
@@ -3313,9 +3318,9 @@ bool Wear::WearInterface::build_active_set_master()
     }
   }
 
-  activmasternodes_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)ga.size(), ga.data(), 0, get_comm());
-  slipmasternodes_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)gs.size(), gs.data(), 0, get_comm());
-  slipmn_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)gsd.size(), gsd.data(), 0, get_comm());
+  activmasternodes_ = std::make_shared<Epetra_Map>(-1, (int)ga.size(), ga.data(), 0, get_comm());
+  slipmasternodes_ = std::make_shared<Epetra_Map>(-1, (int)gs.size(), gs.data(), 0, get_comm());
+  slipmn_ = std::make_shared<Epetra_Map>(-1, (int)gsd.size(), gsd.data(), 0, get_comm());
 
   for (int j = 0; j < slave_col_nodes()->NumMyElements(); ++j)
   {
@@ -3373,7 +3378,7 @@ bool Wear::WearInterface::build_active_set(bool init)
     // Note, this node could be ghosted! At the end, the owning proc will take the
     // information to build the map.
 
-    const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
+    const std::shared_ptr<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
     for (int k = 0; k < masternodes->NumMyElements(); ++k)  // mnoderowmap_
     {
@@ -3405,10 +3410,10 @@ bool Wear::WearInterface::build_active_set(bool init)
     }
 
     // create map for all involved master nodes -- both-sided wear specific
-    involvednodes_ = Teuchos::make_rcp<Epetra_Map>(
+    involvednodes_ = std::make_shared<Epetra_Map>(
         -1, (int)mymnodegids.size(), mymnodegids.data(), 0, get_comm());
     involveddofs_ =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)mymdofgids.size(), mymdofgids.data(), 0, get_comm());
+        std::make_shared<Epetra_Map>(-1, (int)mymdofgids.size(), mymdofgids.data(), 0, get_comm());
   }
 
   return true;
@@ -3430,7 +3435,7 @@ void Wear::WearInterface::initialize_data_container()
   //***********************************************************
   if (wearboth_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes =
+    const std::shared_ptr<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements(); ++i)  // MasterRowNodes()
@@ -3469,7 +3474,7 @@ void Wear::WearInterface::assemble_inactive_wear_rhs(Core::LinAlg::Vector<double
   // node set, i.e. nodes, which were active in the last iteration, are considered. Since you know,
   // that the lagrange multipliers of former inactive nodes are still equal zero.
 
-  Teuchos::RCP<Epetra_Map> inactivenodes;
+  std::shared_ptr<Epetra_Map> inactivenodes;
 
   if (sswear_)
     inactivenodes = Core::LinAlg::split_map(*snoderowmap_, *activenodes_);
@@ -3529,15 +3534,15 @@ void Wear::WearInterface::assemble_inactive_wear_rhs_master(Epetra_FEVector& ina
    *  This function is only for discrete Wear !!! *
    ************************************************/
 
-  Teuchos::RCP<Epetra_Map> inactivenodes =
+  std::shared_ptr<Epetra_Map> inactivenodes =
       Core::LinAlg::split_map(*mnoderowmap_, *slipmasternodes_);
-  Teuchos::RCP<Epetra_Map> inactivedofs = Core::LinAlg::split_map(*(mn_dofs()), *slipmn_);
+  std::shared_ptr<Epetra_Map> inactivedofs = Core::LinAlg::split_map(*(mn_dofs()), *slipmn_);
 
 
 
-  const Teuchos::RCP<Epetra_Map> allredi = Core::LinAlg::allreduce_e_map(*(inactivedofs));
+  const std::shared_ptr<Epetra_Map> allredi = Core::LinAlg::allreduce_e_map(*(inactivedofs));
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*allredi, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*allredi, true);
 
   for (int i = 0; i < inactivenodes->NumMyElements(); ++i)
   {
@@ -3599,17 +3604,17 @@ void Wear::WearInterface::assemble_wear_cond_rhs(Core::LinAlg::Vector<double>& r
    ************************************************/
 
   // nodes for loop
-  Teuchos::RCP<Epetra_Map> considerednodes;
+  std::shared_ptr<Epetra_Map> considerednodes;
 
   // nothing to do if no active nodes
   if (sswear_)
   {
-    if (activenodes_ == Teuchos::null) return;
+    if (activenodes_ == nullptr) return;
     considerednodes = activenodes_;
   }
   else
   {
-    if (slipnodes_ == Teuchos::null) return;
+    if (slipnodes_ == nullptr) return;
     considerednodes = slipnodes_;
   }
 
@@ -3702,7 +3707,7 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
    ************************************************/
 
   // nothing to do if no active nodes
-  if (slipmasternodes_ == Teuchos::null) return;
+  if (slipmasternodes_ == nullptr) return;
 
   auto systype =
       Teuchos::getIntegralValue<Inpar::CONTACT::SystemType>(interface_params(), "SYSTEM");
@@ -3711,10 +3716,11 @@ void Wear::WearInterface::assemble_wear_cond_rhs_master(Epetra_FEVector& RHS)
 
   typedef std::map<int, double>::const_iterator CI;
 
-  const Teuchos::RCP<Epetra_Map> slmasternodes = Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
-  const Teuchos::RCP<Epetra_Map> slmastern = Core::LinAlg::allreduce_e_map(*(slipmn_));
+  const std::shared_ptr<Epetra_Map> slmasternodes =
+      Core::LinAlg::allreduce_e_map(*(slipmasternodes_));
+  const std::shared_ptr<Epetra_Map> slmastern = Core::LinAlg::allreduce_e_map(*(slipmn_));
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*slmastern, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhs = Core::LinAlg::create_vector(*slmastern, true);
 
   for (int i = 0; i < slmasternodes->NumMyElements(); ++i)
   {
@@ -3810,7 +3816,7 @@ void Wear::WearInterface::initialize()
   //**************************************************
   if (wearboth_ and !wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes =
+    const std::shared_ptr<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
@@ -3940,7 +3946,7 @@ void Wear::WearInterface::initialize()
   // for both-sided wear with discrete wear
   if (wearboth_ and wearpv_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes =
+    const std::shared_ptr<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements();
@@ -4022,15 +4028,15 @@ void Wear::WearInterface::initialize()
 void Wear::WearInterface::split_slave_dofs()
 {
   // get out of here if active set is empty
-  if (snoderowmap_ == Teuchos::null)
+  if (snoderowmap_ == nullptr)
   {
-    sndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    sndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
   else if (snoderowmap_->NumGlobalElements() == 0)
   {
-    sndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    sndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
@@ -4067,7 +4073,7 @@ void Wear::WearInterface::split_slave_dofs()
     FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  sndofmap_ = Teuchos::make_rcp<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
+  sndofmap_ = std::make_shared<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
 
   return;
 }
@@ -4079,15 +4085,15 @@ void Wear::WearInterface::split_slave_dofs()
 void Wear::WearInterface::split_master_dofs()
 {
   // get out of here if active set is empty
-  if (mnoderowmap_ == Teuchos::null)
+  if (mnoderowmap_ == nullptr)
   {
-    mndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    mndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
   else if (mnoderowmap_->NumGlobalElements() == 0)
   {
-    mndofmap_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    mndofmap_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return;
   }
 
@@ -4124,7 +4130,7 @@ void Wear::WearInterface::split_master_dofs()
     FOUR_C_THROW("SplitSlaveDofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  mndofmap_ = Teuchos::make_rcp<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
+  mndofmap_ = std::make_shared<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
 
   return;
 }
@@ -4194,7 +4200,7 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
   // create interface w map
   // (if maxdofglobal_ == 0, we do not want / need this)
   if (maxdofwear > 0)
-    wdofmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)wdof.size(), wdof.data(), 0, get_comm());
+    wdofmap_ = std::make_shared<Epetra_Map>(-1, (int)wdof.size(), wdof.data(), 0, get_comm());
 
   //********************************************************************
   // For discrete both-sided wear
@@ -4223,7 +4229,7 @@ void Wear::WearInterface::update_w_sets(int offset_if, int maxdofwear, bool both
     // create interface w map
     // (if maxdofglobal_ == 0, we do not want / need this)
     if (maxdofwear > 0)
-      wmdofmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)wmdof.size(), wmdof.data(), 0, get_comm());
+      wmdofmap_ = std::make_shared<Epetra_Map>(-1, (int)wmdof.size(), wmdof.data(), 0, get_comm());
   }
 
   return;

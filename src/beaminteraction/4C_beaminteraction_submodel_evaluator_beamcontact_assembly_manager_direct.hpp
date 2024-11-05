@@ -33,7 +33,7 @@ namespace BEAMINTERACTION
        * class.
        */
       BeamContactAssemblyManagerDirect(
-          const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>&
+          const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
               assembly_contact_elepairs);
 
 
@@ -44,23 +44,24 @@ namespace BEAMINTERACTION
        * @param fe_sysvec (out) Global force vector.
        * @param fe_sysmat (out) Global stiffness matrix.
        */
-      void evaluate_force_stiff(Teuchos::RCP<Core::FE::Discretization> discret,
-          const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-          Teuchos::RCP<Epetra_FEVector> fe_sysvec,
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> fe_sysmat) override;
+      void evaluate_force_stiff(std::shared_ptr<Core::FE::Discretization> discret,
+          const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+          std::shared_ptr<Epetra_FEVector> fe_sysvec,
+          std::shared_ptr<Core::LinAlg::SparseMatrix> fe_sysmat) override;
 
       /**
        * \brief Return a const reference to the contact pairs in this assembly manager.
        * @return Reference to the pair vector.
        */
-      const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs() const
+      const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs()
+          const
       {
         return assembly_contact_elepairs_;
       }
 
      protected:
       //! Vector of pairs to be evaluated by this class.
-      std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
+      std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs_;
     };
   }  // namespace SUBMODELEVALUATOR
 }  // namespace BEAMINTERACTION

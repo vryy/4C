@@ -145,10 +145,10 @@ void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const d
   if (!A.Filled()) FOUR_C_THROW("fill_complete was not called on A");
 
   Epetra_CrsMatrix* Aprime = nullptr;
-  Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
+  std::shared_ptr<EpetraExt::RowMatrix_Transpose> Atrans = nullptr;
   if (transposeA)
   {
-    Atrans = Teuchos::make_rcp<EpetraExt::RowMatrix_Transpose>();
+    Atrans = std::make_shared<EpetraExt::RowMatrix_Transpose>();
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
@@ -180,7 +180,7 @@ void Core::LinAlg::add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double scalarA,
-    Teuchos::RCP<const Epetra_Map> rowmap, Core::LinAlg::SparseMatrixBase& B)
+    std::shared_ptr<const Epetra_Map> rowmap, Core::LinAlg::SparseMatrixBase& B)
 {
   // put values onto sysmat
   if (A.get_matrixtype() != Core::LinAlg::SparseMatrix::CRS_MATRIX)
@@ -195,7 +195,7 @@ void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double 
   // define row map to tackle
   // if #rowmap (a subset of #RowMap()) is provided, a selective replacing is perfomed
   const Epetra_Map* tomap = nullptr;
-  if (rowmap != Teuchos::null)
+  if (rowmap != nullptr)
     tomap = &(*rowmap);
   else
     tomap = &(B.row_map());
@@ -223,7 +223,7 @@ void Core::LinAlg::matrix_put(const Core::LinAlg::SparseMatrix& A, const double 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
+std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
     const SparseMatrix& A, bool transA, const SparseMatrix& B, bool transB, bool complete)
 {
   // make sure fill_complete was called on the matrices
@@ -235,7 +235,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
 
   // now create resultmatrix C with correct rowmap
   auto map = transA ? A.domain_map() : A.range_map();
-  auto C = Teuchos::make_rcp<SparseMatrix>(map, nnz, A.explicit_dirichlet(), A.save_graph());
+  auto C = std::make_unique<SparseMatrix>(map, nnz, A.explicit_dirichlet(), A.save_graph());
 
   EpetraExt::RowMatrix_Transpose transposer;
   Epetra_CrsMatrix* Atrans = nullptr;
@@ -270,7 +270,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const SparseMatrix& A,
+std::unique_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const SparseMatrix& A,
     bool transA, const SparseMatrix& B, bool transB, bool explicitdirichlet, bool savegraph,
     bool complete)
 {
@@ -283,7 +283,7 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const Spa
 
   // now create resultmatrix C with correct rowmap
   auto map = transA ? A.domain_map() : A.range_map();
-  auto C = Teuchos::make_rcp<SparseMatrix>(map, nnz, explicitdirichlet, savegraph);
+  auto C = std::make_unique<SparseMatrix>(map, nnz, explicitdirichlet, savegraph);
 
   EpetraExt::RowMatrix_Transpose transposer;
   Epetra_CrsMatrix* Atrans = nullptr;
@@ -318,28 +318,29 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_multiply(const Spa
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const SparseMatrix& A)
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_transpose(const SparseMatrix& A)
 {
   if (not A.filled()) FOUR_C_THROW("fill_complete was not called on matrix");
 
   EpetraExt::RowMatrix_Transpose transposer;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> matrix = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> matrix = nullptr;
 
   Epetra_CrsMatrix* a_prime = &(dynamic_cast<Epetra_CrsMatrix&>(transposer(*A.epetra_matrix())));
-  matrix = Teuchos::make_rcp<SparseMatrix>(
-      Teuchos::rcpFromRef(*a_prime), Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph());
+  matrix = std::make_shared<SparseMatrix>(Core::Utils::shared_ptr_from_ref(*a_prime),
+      Core::LinAlg::Copy, A.explicit_dirichlet(), A.save_graph());
 
   return matrix;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
-    const SparseMatrix& A, Teuchos::RCP<Epetra_CrsGraph> sparsity_pattern)
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::matrix_sparse_inverse(
+    const SparseMatrix& A, std::shared_ptr<Epetra_CrsGraph> sparsity_pattern)
 {
   // construct the inverse matrix with the given sparsity pattern
-  Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbc_map = Teuchos::null;
-  Teuchos::RCP<SparseMatrix> A_inverse = Teuchos::rcp(new SparseMatrix(sparsity_pattern, dbc_map));
+  std::shared_ptr<Core::LinAlg::MultiMapExtractor> dbc_map = nullptr;
+  std::shared_ptr<SparseMatrix> A_inverse =
+      std::make_shared<SparseMatrix>(sparsity_pattern, dbc_map);
 
   // gather missing rows from other procs to generate an overlapping map
   Epetra_Import rowImport = Epetra_Import(sparsity_pattern->ColMap(), sparsity_pattern->RowMap());

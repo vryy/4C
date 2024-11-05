@@ -23,7 +23,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::init(const int ndim,
-    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -33,9 +33,9 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
   auto scatra_integrator = ssi_base->scatra_field();
   auto scatradis = scatra_integrator->discretization();
   // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> structdofset = structdis->get_dof_set_proxy();
   // build a proxy of the scatra discretization for the structure field
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
+  std::shared_ptr<Core::DOFSets::DofSetInterface> scatradofset = scatradis->get_dof_set_proxy();
 
   // add proxy dofssets of other fields to discretizations and check if number of dofsets is correct
   if (scatradis->add_dof_set(structdofset) != ++scatra_dofset_counter)
@@ -49,8 +49,8 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
   {
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsettemp =
-        Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(numDofsPerNodeTemp, 0, 0, true);
+    std::shared_ptr<Core::DOFSets::DofSetInterface> dofsettemp =
+        std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(numDofsPerNodeTemp, 0, 0, true);
     if (structdis->add_dof_set(dofsettemp) != ++structure_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in structure field");
   }
@@ -60,7 +60,7 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
       Global::Problem::instance()->materials()->first_id_by_type(
           Core::Materials::m_newman_multiscale) != -1)
   {
-    auto dofsetmicro = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, true);
+    auto dofsetmicro = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(1, 0, 0, true);
     if (scatradis->add_dof_set(dofsetmicro) != ++scatra_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in scatra field");
     scatra_integrator->set_number_of_dof_set_micro_scale(scatra_dofset_counter);
@@ -71,8 +71,8 @@ void SSI::SSICouplingMatchingVolume::init(const int ndim,
   if (ssi_base->is_s2_i_kinetics_with_pseudo_contact())
   {
     const int numDofsPerNodeStresses = 6;
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetstresses =
-        Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+    std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetstresses =
+        std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             numDofsPerNodeStresses, 0, 0, true);
     if (structdis->add_dof_set(dofsetstresses) != ++structure_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in structure field");
@@ -99,8 +99,8 @@ void SSI::SSICouplingMatchingVolume::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::assign_material_pointers(
-    Teuchos::RCP<Core::FE::Discretization> structdis,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> structdis,
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   const int numelements = scatradis->num_my_col_elements();
 
@@ -121,7 +121,7 @@ void SSI::SSICouplingMatchingVolume::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(
     Core::FE::Discretization& scatradis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> stress_state, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> stress_state, unsigned nds)
 {
   scatradis.set_state(nds, "mechanicalStressState", stress_state);
 }
@@ -129,8 +129,8 @@ void SSI::SSICouplingMatchingVolume::set_mechanical_stress_state(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_mesh_disp(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(disp);
 }
@@ -138,21 +138,21 @@ void SSI::SSICouplingMatchingVolume::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_velocity_fields(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convvel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(convvel,  // convective vel.
-      Teuchos::null,                                   // acceleration
+      nullptr,                                         // acceleration
       vel,                                             // velocity
-      Teuchos::null                                    // fsvel
+      nullptr                                          // fsvel
   );
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_scalar_field(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", phi);
 }
@@ -160,7 +160,7 @@ void SSI::SSICouplingMatchingVolume::set_scalar_field(Core::FE::Discretization& 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_scalar_field_micro(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "MicroCon", phi);
 }
@@ -168,7 +168,7 @@ void SSI::SSICouplingMatchingVolume::set_scalar_field_micro(Core::FE::Discretiza
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolume::set_temperature_field(
-    Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector<double>> temp)
+    Core::FE::Discretization& structdis, std::shared_ptr<const Core::LinAlg::Vector<double>> temp)
 {
   structdis.set_state(2, "temperature", temp);
 }
@@ -176,7 +176,7 @@ void SSI::SSICouplingMatchingVolume::set_temperature_field(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_temperature_field(
-    Core::FE::Discretization& structdis, Teuchos::RCP<const Core::LinAlg::Vector<double>> temp)
+    Core::FE::Discretization& structdis, std::shared_ptr<const Core::LinAlg::Vector<double>> temp)
 {
   structdis.set_state(2, "temperature", temp);
 }
@@ -184,7 +184,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_temperature_field(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
-    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -210,12 +210,12 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
   const int ndofperelement_scatra = 0;
   const int ndofpernode_struct = structdis->num_dof(0, structdis->l_row_node(0));
   const int ndofperelement_struct = 0;
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
       ndofpernode_scatra, ndofperelement_scatra, 0, true);
   if (structdis->add_dof_set(dofsetaux) != ++structure_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in structure field");
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
       ndofpernode_struct, ndofperelement_struct, 0, true);
   if (scatradis_->add_dof_set(dofsetaux) != ++scatra_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -232,7 +232,7 @@ void SSI::SSICouplingNonMatchingBoundary::init(const int ndim,
   scatradis_->fill_complete(true, false, false);
 
   // setup mortar adapter for surface volume coupling
-  adaptermeshtying_ = Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(
+  adaptermeshtying_ = std::make_shared<Coupling::Adapter::CouplingMortar>(
       Global::Problem::instance()->n_dim(), Global::Problem::instance()->mortar_coupling_params(),
       Global::Problem::instance()->contact_dynamic_params(),
       Global::Problem::instance()->spatial_approximation_type());
@@ -249,7 +249,7 @@ void SSI::SSICouplingNonMatchingBoundary::setup()
   std::vector<int> coupleddof(problem_dimension_, 1);
   // Setup of meshtying adapter
 
-  adaptermeshtying_->setup(structdis_, scatradis_, Teuchos::null, coupleddof, "SSICoupling",
+  adaptermeshtying_->setup(structdis_, scatradis_, nullptr, coupleddof, "SSICoupling",
       structdis_->get_comm(), Global::Problem::instance()->function_manager(),
       Global::Problem::instance()->binning_strategy_params(),
       Global::Problem::instance()->discretization_map(),
@@ -258,7 +258,7 @@ void SSI::SSICouplingNonMatchingBoundary::setup()
 
 
   // extractor for coupled surface of structure discretization with surface scatra
-  extractor_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>(
+  extractor_ = std::make_shared<Core::LinAlg::MapExtractor>(
       *structdis_->dof_row_map(0), adaptermeshtying_->master_dof_map(), true);
 
   set_is_setup(true);
@@ -267,8 +267,8 @@ void SSI::SSICouplingNonMatchingBoundary::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::assign_material_pointers(
-    Teuchos::RCP<Core::FE::Discretization> structdis,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> structdis,
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   // nothing to do in this case, since
   // transferring scalar state to structure discretization not implemented for
@@ -278,8 +278,8 @@ void SSI::SSICouplingNonMatchingBoundary::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(
       adaptermeshtying_->master_to_slave(*extractor_->extract_cond_vector(*disp)));
@@ -288,23 +288,23 @@ void SSI::SSICouplingNonMatchingBoundary::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::set_velocity_fields(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convvel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(
       adaptermeshtying_->master_to_slave(
           *extractor_->extract_cond_vector(*convvel)),  // convective vel.
-      Teuchos::null,                                    // acceleration
+      nullptr,                                          // acceleration
       adaptermeshtying_->master_to_slave(*extractor_->extract_cond_vector(*vel)),  // velocity
-      Teuchos::null                                                                // fsvel
+      nullptr                                                                      // fsvel
   );
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::set_scalar_field(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   FOUR_C_THROW(
       "transferring scalar state to structure discretization not implemented for "
@@ -314,7 +314,7 @@ void SSI::SSICouplingNonMatchingBoundary::set_scalar_field(Core::FE::Discretizat
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingBoundary::set_scalar_field_micro(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
@@ -322,7 +322,7 @@ void SSI::SSICouplingNonMatchingBoundary::set_scalar_field_micro(Core::FE::Discr
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
-    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -341,12 +341,12 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
   const int ndofperelement_scatra = 0;
   const int ndofpernode_struct = structdis->num_dof(0, structdis->l_row_node(0));
   const int ndofperelement_struct = 0;
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
       ndofpernode_scatra, ndofperelement_scatra, 0, true);
   if (structdis->add_dof_set(dofsetaux) != ++structure_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in structure field");
-  dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+  dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
       ndofpernode_struct, ndofperelement_struct, 0, true);
   if (scatradis->add_dof_set(dofsetaux) != ++scatra_dofset_counter)
     FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -363,7 +363,7 @@ void SSI::SSICouplingNonMatchingVolume::init(const int ndim,
   scatradis->fill_complete(true, false, false);
 
   // Scheme: non matching meshes --> volumetric mortar coupling...
-  volcoupl_structurescatra_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+  volcoupl_structurescatra_ = std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
   // init projection matrices (use default material strategy)
   volcoupl_structurescatra_->init(ndim, structdis, scatradis);
@@ -391,8 +391,8 @@ void SSI::SSICouplingNonMatchingVolume::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
-    Teuchos::RCP<Core::FE::Discretization> structdis,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> structdis,
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   volcoupl_structurescatra_->assign_materials(structdis, scatradis,
       Global::Problem::instance()->volmortar_params(),
@@ -402,8 +402,8 @@ void SSI::SSICouplingNonMatchingVolume::assign_material_pointers(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::set_mesh_disp(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(
       volcoupl_structurescatra_->apply_vector_mapping21(*disp));
@@ -412,22 +412,22 @@ void SSI::SSICouplingNonMatchingVolume::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::set_velocity_fields(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convvel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(
       volcoupl_structurescatra_->apply_vector_mapping21(*convvel),  // convective vel.
-      Teuchos::null,                                                // acceleration
+      nullptr,                                                      // acceleration
       volcoupl_structurescatra_->apply_vector_mapping21(*vel),      // velocity
-      Teuchos::null                                                 // fsvel
+      nullptr                                                       // fsvel
   );
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::set_scalar_field(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", volcoupl_structurescatra_->apply_vector_mapping12(*phi));
 }
@@ -435,7 +435,7 @@ void SSI::SSICouplingNonMatchingVolume::set_scalar_field(Core::FE::Discretizatio
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingNonMatchingVolume::set_scalar_field_micro(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");
 }
@@ -443,7 +443,7 @@ void SSI::SSICouplingNonMatchingVolume::set_scalar_field_micro(Core::FE::Discret
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
-    Teuchos::RCP<Core::FE::Discretization> structdis, Teuchos::RCP<SSI::SSIBase> ssi_base)
+    std::shared_ptr<Core::FE::Discretization> structdis, std::shared_ptr<SSI::SSIBase> ssi_base)
 {
   set_is_setup(false);
 
@@ -458,7 +458,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
   //        is the same externally! The best thing is if you do this in your *_dyn.cpp,
   //        i.e., your global control algorithm.
 
-  if (ssi_base->scatra_manifold_base_algorithm() == Teuchos::null)
+  if (ssi_base->scatra_manifold_base_algorithm() == nullptr)
   {
     {
       // get condition which defines the coupling on target discretization
@@ -478,12 +478,12 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
       for (auto& cond_struct : conds_struct)
         couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> structgidmatchingdofset =
-          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+      std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> structgidmatchingdofset =
+          std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
               structdis, structdis->get_dof_set_proxy());
 
-      Teuchos::RCP<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_scatra =
-          Teuchos::make_rcp<Core::DOFSets::DofSetDefinedMappingWrapper>(
+      std::shared_ptr<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_scatra =
+          std::make_shared<Core::DOFSets::DofSetDefinedMappingWrapper>(
               structgidmatchingdofset, structdis, "SSICouplingSolidToScatra", couplingids);
 
       // add dofset and check if scatra field has 2 dofsets, so that coupling is possible
@@ -511,8 +511,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
       for (auto& cond_struct : conds_struct)
         couplingids.insert(cond_struct->parameters().get<int>("coupling id"));
 
-      Teuchos::RCP<Core::DOFSets::DofSetGIDBasedWrapper> scatragidmatchingdofset =
-          Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+      std::shared_ptr<Core::DOFSets::DofSetGIDBasedWrapper> scatragidmatchingdofset =
+          std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
               scatradis, scatradis->get_dof_set_proxy());
 
       for (int couplingid : couplingids)
@@ -520,8 +520,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
         std::set<int> tempset;
         tempset.insert(couplingid);
 
-        Teuchos::RCP<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_struct =
-            Teuchos::make_rcp<Core::DOFSets::DofSetDefinedMappingWrapper>(
+        std::shared_ptr<Core::DOFSets::DofSetDefinedMappingWrapper> newdofset_struct =
+            std::make_shared<Core::DOFSets::DofSetDefinedMappingWrapper>(
                 scatragidmatchingdofset, scatradis, "SSICouplingScatraToSolid", tempset);
 
         structdis->add_dof_set(newdofset_struct);
@@ -554,11 +554,11 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
     std::set<int> couplingids;
     couplingids.insert(0);
 
-    auto structgidmatchingdofset = Teuchos::make_rcp<Core::DOFSets::DofSetGIDBasedWrapper>(
+    auto structgidmatchingdofset = std::make_shared<Core::DOFSets::DofSetGIDBasedWrapper>(
         structdis, structdis->get_dof_set_proxy());
 
     auto proxy_structure_scatramanifold =
-        Teuchos::make_rcp<Core::DOFSets::DofSetDefinedMappingWrapper>(
+        std::make_shared<Core::DOFSets::DofSetDefinedMappingWrapper>(
             structgidmatchingdofset, scatra_manifold_dis, "SSISurfaceManifold", couplingids);
 
     if (scatra_manifold_dis->add_dof_set(proxy_structure_scatramanifold) !=
@@ -572,8 +572,8 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::init(const int ndim,
   {
     const int numDofsPerNodeTemp = 1;  // defined by temperature field
 
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsettemp =
-        Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(numDofsPerNodeTemp, 0, 0, true);
+    std::shared_ptr<Core::DOFSets::DofSetInterface> dofsettemp =
+        std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(numDofsPerNodeTemp, 0, 0, true);
     if (structdis->add_dof_set(dofsettemp) != ++structure_dofset_counter)
       FOUR_C_THROW("unexpected dof sets in structure field");
   }
@@ -596,16 +596,16 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::setup()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::assign_material_pointers(
-    Teuchos::RCP<Core::FE::Discretization> structdis,
-    Teuchos::RCP<Core::FE::Discretization> scatradis)
+    std::shared_ptr<Core::FE::Discretization> structdis,
+    std::shared_ptr<Core::FE::Discretization> scatradis)
 {
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_mesh_disp(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp)
 {
   scatra->scatra_field()->apply_mesh_movement(disp);
 }
@@ -613,21 +613,21 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_mesh_disp(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_velocity_fields(
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> convvel,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> convvel,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   scatra->scatra_field()->set_velocity_field(convvel,  // convective vel.
-      Teuchos::null,                                   // acceleration
+      nullptr,                                         // acceleration
       vel,                                             // velocity
-      Teuchos::null                                    // fsvel
+      nullptr                                          // fsvel
   );
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field(Core::FE::Discretization& dis,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, unsigned nds)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> phi, unsigned nds)
 {
   dis.set_state(nds, "scalarfield", phi);
 }
@@ -635,7 +635,7 @@ void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field(Core::FE::Discr
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void SSI::SSICouplingMatchingVolumeAndBoundary::set_scalar_field_micro(
-    Core::FE::Discretization& dis, Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
+    Core::FE::Discretization& dis, std::shared_ptr<const Core::LinAlg::Vector<double>> phi,
     unsigned nds)
 {
   FOUR_C_THROW("transferring micro scalar state to structure discretization not implemented.");

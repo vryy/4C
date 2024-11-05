@@ -45,16 +45,17 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     : AlgorithmBase(comm, Global::Problem::instance()->tsi_dynamic_params()),
-      dispnp_(Teuchos::null),
-      tempnp_(Teuchos::null),
+      dispnp_(nullptr),
+      tempnp_(nullptr),
       matchinggrid_(Global::Problem::instance()->tsi_dynamic_params().get<bool>("MATCHINGGRID")),
-      volcoupl_(Teuchos::null)
+      volcoupl_(nullptr)
 {
   // access the structural discretization
-  Teuchos::RCP<Core::FE::Discretization> structdis =
+  std::shared_ptr<Core::FE::Discretization> structdis =
       Global::Problem::instance()->get_dis("structure");
   // access the thermo discretization
-  Teuchos::RCP<Core::FE::Discretization> thermodis = Global::Problem::instance()->get_dis("thermo");
+  std::shared_ptr<Core::FE::Discretization> thermodis =
+      Global::Problem::instance()->get_dis("thermo");
 
   // get the problem instance
   Global::Problem* problem = Global::Problem::instance();
@@ -64,10 +65,10 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (!matchinggrid_)
   {
     // Scheme: non matching meshes --> volumetric mortar coupling...
-    volcoupl_ = Teuchos::make_rcp<Coupling::Adapter::MortarVolCoupl>();
+    volcoupl_ = std::make_shared<Coupling::Adapter::MortarVolCoupl>();
 
-    Teuchos::RCP<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
-        Teuchos::make_rcp<TSI::Utils::TSIMaterialStrategy>();
+    std::shared_ptr<Coupling::VolMortar::Utils::DefaultMaterialStrategy> materialstrategy =
+        std::make_shared<TSI::Utils::TSIMaterialStrategy>();
     // init coupling adapter projection matrices
     volcoupl_->init(Global::Problem::instance()->n_dim(), structdis, thermodis, nullptr, nullptr,
         nullptr, nullptr, materialstrategy);
@@ -94,7 +95,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     //  // access structural dynamic params list which will be possibly modified while creating the
     //  time integrator
     const Teuchos::ParameterList& sdyn = Global::Problem::instance()->structural_dynamic_params();
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr =
         Adapter::build_structure_algorithm(sdyn);
     adapterbase_ptr->init(Global::Problem::instance()->tsi_dynamic_params(),
         const_cast<Teuchos::ParameterList&>(sdyn), structdis);
@@ -114,7 +115,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 
     adapterbase_ptr->setup();
     structure_ =
-        Teuchos::rcp_dynamic_cast<Adapter::StructureWrapper>(adapterbase_ptr->structure_field());
+        std::dynamic_pointer_cast<Adapter::StructureWrapper>(adapterbase_ptr->structure_field());
 
     if (restart && Teuchos::getIntegralValue<Inpar::TSI::SolutionSchemeOverFields>(
                        Global::Problem::instance()->tsi_dynamic_params(), "COUPALGO") ==
@@ -127,15 +128,15 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   // initialise displacement field needed for output()
   // (get noderowmap of discretisation for creating this multivector)
   // TODO: why nds 0 and not 1????
-  dispnp_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  dispnp_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(thermo_field()->discretization()->node_row_map()), 3, true);
-  tempnp_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+  tempnp_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       *(structure_field()->discretization()->node_row_map()), 1, true);
 
   // setup coupling object for matching discretization
   if (matchinggrid_)
   {
-    coupST_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+    coupST_ = std::make_shared<Coupling::Adapter::Coupling>();
     coupST_->setup_coupling(*structure_field()->discretization(), *thermo_field()->discretization(),
         *structure_field()->discretization()->node_row_map(),
         *thermo_field()->discretization()->node_row_map(), 1, true);
@@ -148,7 +149,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
         structure_field()->discretization()->get_condition("MortarMulti");
     if (mrtrcond != nullptr)
     {
-      mortar_coupling_ = Teuchos::make_rcp<Mortar::MultiFieldCoupling>();
+      mortar_coupling_ = std::make_shared<Mortar::MultiFieldCoupling>();
       mortar_coupling_->push_back_coupling(structure_field()->discretization(), 0,
           std::vector<int>(3, 1), Global::Problem::instance()->mortar_coupling_params(),
           Global::Problem::instance()->contact_dynamic_params(),
@@ -189,7 +190,7 @@ void TSI::Algorithm::update()
   apply_thermo_coupling_state(thermo_field()->tempnp());
   structure_field()->update();
   thermo_field()->update();
-  if (contact_strategy_lagrange_ != Teuchos::null)
+  if (contact_strategy_lagrange_ != nullptr)
     contact_strategy_lagrange_->update((structure_field()->dispnp()));
   return;
 }
@@ -237,7 +238,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     }
     else
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dummy =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dummy =
           volcoupl_->apply_vector_mapping21(*structure_field()->dispnp());
 
       // determine number of space dimensions
@@ -294,7 +295,7 @@ void TSI::Algorithm::output(bool forced_writerestart)
     if (not matchinggrid_)
     {
       //************************************************************************************
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dummy1 =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dummy1 =
           volcoupl_->apply_vector_mapping12(*thermo_field()->tempnp());
 
       // loop over all local nodes of thermal discretisation
@@ -331,9 +332,9 @@ void TSI::Algorithm::output(bool forced_writerestart)
  | enable visualisation of thermal variables on deformed body           |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::output_deformation_in_thr(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp, Core::FE::Discretization& structdis)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp, Core::FE::Discretization& structdis)
 {
-  if (dispnp == Teuchos::null) FOUR_C_THROW("Got null pointer for displacements");
+  if (dispnp == nullptr) FOUR_C_THROW("Got null pointer for displacements");
 
   int err(0);
 
@@ -388,12 +389,12 @@ void TSI::Algorithm::output_deformation_in_thr(
  | calculate velocities                                      dano 12/10 |
  | like interface_velocity(disp) in FSI::DirichletNeumann                |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> TSI::Algorithm::calc_velocity(
+std::shared_ptr<const Core::LinAlg::Vector<double>> TSI::Algorithm::calc_velocity(
     const Core::LinAlg::Vector<double>& dispnp)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> vel = nullptr;
   // copy D_n onto V_n+1
-  vel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
+  vel = std::make_shared<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), dispnp, -1. / dt());
@@ -406,29 +407,28 @@ Teuchos::RCP<const Core::LinAlg::Vector<double>> TSI::Algorithm::calc_velocity(
  |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::apply_thermo_coupling_state(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> temp,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> temp_res)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> temp,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> temp_res)
 {
   if (matchinggrid_)
   {
-    if (temp != Teuchos::null)
-      structure_field()->discretization()->set_state(1, "temperature", temp);
-    if (temp_res != Teuchos::null)
+    if (temp != nullptr) structure_field()->discretization()->set_state(1, "temperature", temp);
+    if (temp_res != nullptr)
       structure_field()->discretization()->set_state(1, "residual temperature", temp_res);
   }
   else
   {
-    if (temp != Teuchos::null)
+    if (temp != nullptr)
       structure_field()->discretization()->set_state(
           1, "temperature", volcoupl_->apply_vector_mapping12(*temp));
   }
 
   // set new temperatures to contact
   {
-    if (contact_strategy_lagrange_ != Teuchos::null)
+    if (contact_strategy_lagrange_ != nullptr)
       contact_strategy_lagrange_->set_state(
-          Mortar::state_temperature, *coupST_()->slave_to_master(*thermo_field()->tempnp()));
-    if (contact_strategy_nitsche_ != Teuchos::null)
+          Mortar::state_temperature, *coupST_->slave_to_master(*thermo_field()->tempnp()));
+    if (contact_strategy_nitsche_ != nullptr)
       contact_strategy_nitsche_->set_state(Mortar::state_temperature, *thermo_field()->tempnp());
   }
 }  // apply_thermo_coupling_state()
@@ -438,20 +438,20 @@ void TSI::Algorithm::apply_thermo_coupling_state(
  |                                                                      |
  *----------------------------------------------------------------------*/
 void TSI::Algorithm::apply_struct_coupling_state(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> vel)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp,
+    std::shared_ptr<const Core::LinAlg::Vector<double>> vel)
 {
   if (matchinggrid_)
   {
-    if (disp != Teuchos::null) thermo_field()->discretization()->set_state(1, "displacement", disp);
-    if (vel != Teuchos::null) thermo_field()->discretization()->set_state(1, "velocity", vel);
+    if (disp != nullptr) thermo_field()->discretization()->set_state(1, "displacement", disp);
+    if (vel != nullptr) thermo_field()->discretization()->set_state(1, "velocity", vel);
   }
   else
   {
-    if (disp != Teuchos::null)
+    if (disp != nullptr)
       thermo_field()->discretization()->set_state(
           1, "displacement", volcoupl_->apply_vector_mapping21(*disp));
-    if (vel != Teuchos::null)
+    if (vel != nullptr)
       thermo_field()->discretization()->set_state(
           1, "velocity", volcoupl_->apply_vector_mapping21(*vel));
   }
@@ -471,12 +471,12 @@ void TSI::Algorithm::prepare_contact_strategy()
         Inpar::Solid::int_standard)
       FOUR_C_THROW("thermo-mechanical contact only with new structural time integration");
 
-    if (coupST_ == Teuchos::null) FOUR_C_THROW("coupST_ not yet here");
+    if (coupST_ == nullptr) FOUR_C_THROW("coupST_ not yet here");
 
     Solid::ModelEvaluator::Contact& a = static_cast<Solid::ModelEvaluator::Contact&>(
         structure_field()->model_evaluator(Inpar::Solid::model_contact));
     contact_strategy_nitsche_ =
-        Teuchos::rcp_dynamic_cast<CONTACT::NitscheStrategyTsi>(a.strategy_ptr(), false);
+        std::dynamic_pointer_cast<CONTACT::NitscheStrategyTsi>(a.strategy_ptr());
     contact_strategy_nitsche_->enable_redistribution();
 
     thermo_->set_nitsche_contact_strategy(contact_strategy_nitsche_);
@@ -506,7 +506,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     factory.check_dimension();
 
     // create some local variables (later to be stored in strategy)
-    std::vector<Teuchos::RCP<CONTACT::Interface>> interfaces;
+    std::vector<std::shared_ptr<CONTACT::Interface>> interfaces;
     Teuchos::ParameterList cparams;
 
     // read and check contact input parameters
@@ -523,8 +523,8 @@ void TSI::Algorithm::prepare_contact_strategy()
     // ---------------------------------------------------------------------
     // build the solver strategy object
     // ---------------------------------------------------------------------
-    contact_strategy_lagrange_ = Teuchos::rcp_dynamic_cast<CONTACT::LagrangeStrategyTsi>(
-        factory.build_strategy(cparams, poroslave, poromaster, 1e8, interfaces), true);
+    contact_strategy_lagrange_ = std::dynamic_pointer_cast<CONTACT::LagrangeStrategyTsi>(
+        factory.build_strategy(cparams, poroslave, poromaster, 1e8, interfaces));
 
     // build the search tree
     factory.build_search_tree(interfaces);
@@ -538,8 +538,8 @@ void TSI::Algorithm::prepare_contact_strategy()
 
     contact_strategy_lagrange_->store_dirichlet_status(structure_field()->get_dbc_map_extractor());
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zero_disp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> zero_disp =
+        std::make_shared<Core::LinAlg::Vector<double>>(*structure_field()->dof_row_map(), true);
     contact_strategy_lagrange_->set_state(Mortar::state_new_displacement, *zero_disp);
     contact_strategy_lagrange_->save_reference_state(zero_disp);
     contact_strategy_lagrange_->evaluate_reference_state();
@@ -550,7 +550,7 @@ void TSI::Algorithm::prepare_contact_strategy()
     contact_strategy_lagrange_->redistribute_contact(
         structure_field()->dispn(), structure_field()->veln());
 
-    if (contact_strategy_lagrange_ != Teuchos::null)
+    if (contact_strategy_lagrange_ != nullptr)
     {
       contact_strategy_lagrange_->set_alphaf_thermo(
           Global::Problem::instance()->thermal_dynamic_params());

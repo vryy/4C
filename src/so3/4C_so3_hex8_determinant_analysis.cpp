@@ -35,7 +35,7 @@ Core::LinAlg::Matrix<27, 27> Discret::Elements::SoHex8DeterminantAnalysis::map_l
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Elements::SoHex8DeterminantAnalysis>
+std::shared_ptr<Discret::Elements::SoHex8DeterminantAnalysis>
 Discret::Elements::SoHex8DeterminantAnalysis::create()
 {
   if (not issetup_)
@@ -45,7 +45,7 @@ Discret::Elements::SoHex8DeterminantAnalysis::create()
     issetup_ = true;
   }
 
-  return Teuchos::RCP(new SoHex8DeterminantAnalysis);
+  return std::shared_ptr<SoHex8DeterminantAnalysis>(new SoHex8DeterminantAnalysis);
 }
 
 /*----------------------------------------------------------------------------*

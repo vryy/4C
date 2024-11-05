@@ -45,10 +45,10 @@ Solid::ModelEvaluator::Structure::Structure()
     : dt_ele_ptr_(nullptr),
       masslin_type_(Inpar::Solid::ml_none),
       stiff_ptr_(nullptr),
-      stiff_ptc_ptr_(Teuchos::null),
-      dis_incr_ptr_(Teuchos::null),
-      vtu_writer_ptr_(Teuchos::null),
-      beam_vtu_writer_ptr_(Teuchos::null)
+      stiff_ptc_ptr_(nullptr),
+      dis_incr_ptr_(nullptr),
+      vtu_writer_ptr_(nullptr),
+      beam_vtu_writer_ptr_(nullptr)
 {
   // empty
 }
@@ -70,7 +70,7 @@ void Solid::ModelEvaluator::Structure::setup()
       global_state().create_structural_stiffness_matrix_block());
 
   // modified stiffness pointer for storing element based scaling operator (PTC)
-  stiff_ptc_ptr_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  stiff_ptc_ptr_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *global_state().dof_row_map_view(), 81, true, true);
 
   FOUR_C_ASSERT(stiff_ptr_ != nullptr, "Dynamic cast to Core::LinAlg::SparseMatrix failed!");
@@ -82,12 +82,12 @@ void Solid::ModelEvaluator::Structure::setup()
   }
   // setup new variables
   {
-    dis_incr_ptr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(dis_np().Map(), true);
+    dis_incr_ptr_ = std::make_shared<Core::LinAlg::Vector<double>>(dis_np().Map(), true);
   }
 
   // setup output writers
   {
-    if (global_in_output().get_runtime_output_params() != Teuchos::null)
+    if (global_in_output().get_runtime_output_params() != nullptr)
     {
       visualization_params_ = Core::IO::visualization_parameters_factory(
           Global::Problem::instance()->io_params().sublist("RUNTIME VTK OUTPUT"),
@@ -97,7 +97,7 @@ void Solid::ModelEvaluator::Structure::setup()
       // get the global number ob beam and non-beam elements here. Based on that number we know
       // which output writers need to be initialized.
       const auto discretization =
-          Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(discret_ptr(), true);
+          std::dynamic_pointer_cast<const Core::FE::Discretization>(discret_ptr());
       int number_my_solid_elements = std::count_if(discretization->my_row_element_range().begin(),
           discretization->my_row_element_range().end(),
           [](const auto* row_element)
@@ -249,7 +249,7 @@ bool Solid::ModelEvaluator::Structure::assemble_force(
 
   // add the scaled force contributions of the old time step
   // structural dofs of the right-hand-side vector at t_{n+timefac_n} (read-only)
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fstructold_ptr =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> fstructold_ptr =
       global_state().get_fstructure_old();
   Core::LinAlg::assemble_my_vector(1.0, f, 1.0, *fstructold_ptr);
 
@@ -280,13 +280,13 @@ bool Solid::ModelEvaluator::Structure::initialize_inertia_and_damping()
   check_init_setup();
 
   // currently a fixed number of matrix and vector pointers are supported
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   // create vector with zero entries
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> zeros = integrator().get_dbc().get_zeros_ptr();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> zeros =
+      integrator().get_dbc().get_zeros_ptr();
 
   // set vector values needed by elements
   // --> initially zero !!!
@@ -318,10 +318,9 @@ bool Solid::ModelEvaluator::Structure::apply_force_internal()
   check_init_setup();
 
   // currently a fixed number of matrix and vector pointers are supported
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   // set vector values needed by elements
   discret().clear_state();
@@ -358,7 +357,7 @@ bool Solid::ModelEvaluator::Structure::apply_force_external()
   if (eval_data().get_damping_type() == Inpar::Solid::damp_material)
     discret().set_state(0, "velocity", global_state().get_vel_n());
   discret().set_state(0, "displacement new", global_state().get_dis_np());
-  evaluate_neumann(*global_state().get_fext_np(), Teuchos::null);
+  evaluate_neumann(*global_state().get_fext_np(), nullptr);
 
   return eval_error_check();
 }
@@ -380,13 +379,13 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_external()
 
   // get load vector
   if (!tim_int().get_data_sdyn().get_load_lin())
-    evaluate_neumann(*global_state().get_fext_np(), Teuchos::null);
+    evaluate_neumann(*global_state().get_fext_np(), nullptr);
   else
   {
     discret().set_state(0, "displacement new", global_state().get_dis_np());
     /* Add the linearization of the external force to the stiffness
      * matrix. */
-    evaluate_neumann(*global_state().get_fext_np(), Teuchos::rcpFromRef(*stiff_ptr_));
+    evaluate_neumann(*global_state().get_fext_np(), Core::Utils::shared_ptr_from_ref(*stiff_ptr_));
   }
 
   return eval_error_check();
@@ -411,10 +410,9 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_internal()
 {
   check_init_setup();
   // currently a fixed number of matrix and vector pointers are supported
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   // set vector values needed by elements
   discret().clear_state();
@@ -443,13 +441,13 @@ bool Solid::ModelEvaluator::Structure::apply_force_stiff_internal()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::static_contributions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   // action for elements
   eval_data().set_action_type(Core::Elements::struct_calc_nlnstiff);
   // set default matrix
-  eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptr_);
+  eval_mat[0] = Core::Utils::shared_ptr_from_ref(*stiff_ptr_);
   // set default force vector
   eval_vec[0] = global_state().get_fint_np();
 }
@@ -457,7 +455,7 @@ void Solid::ModelEvaluator::Structure::static_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::static_contributions(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   // action for elements
   eval_data().set_action_type(Core::Elements::struct_calc_internalforce);
@@ -468,7 +466,7 @@ void Solid::ModelEvaluator::Structure::static_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::material_damping_contributions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat)
 {
   if (eval_data().get_damping_type() != Inpar::Solid::damp_material) return;
 
@@ -480,7 +478,7 @@ void Solid::ModelEvaluator::Structure::material_damping_contributions(
   // reset damping matrix
   damp().zero();
   // add the stiffness matrix as well (also for the apply_force case!)
-  eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptr_);
+  eval_mat[0] = Core::Utils::shared_ptr_from_ref(*stiff_ptr_);
   // set damping matrix
   eval_mat[1] = global_state().get_damp_matrix();
 }
@@ -488,8 +486,8 @@ void Solid::ModelEvaluator::Structure::material_damping_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::inertial_contributions(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
 
@@ -515,7 +513,7 @@ void Solid::ModelEvaluator::Structure::inertial_contributions(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::inertial_contributions(
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   check_init_setup();
 
@@ -577,7 +575,7 @@ void Solid::ModelEvaluator::Structure::rayleigh_damping_matrix()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Structure::get_inertial_force()
+std::shared_ptr<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Structure::get_inertial_force()
 {
   switch (masslin_type_)
   {
@@ -597,7 +595,7 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Structure::get
       exit(EXIT_FAILURE);
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -605,9 +603,9 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::ModelEvaluator::Structure::get
 void Solid::ModelEvaluator::Structure::init_output_runtime_structure()
 {
   check_init();
-  const auto discretization = Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(
-      const_cast<Solid::ModelEvaluator::Structure*>(this)->discret_ptr(), true);
-  vtu_writer_ptr_ = Teuchos::make_rcp<Core::IO::DiscretizationVisualizationWriterMesh>(
+  const auto discretization = std::dynamic_pointer_cast<const Core::FE::Discretization>(
+      const_cast<Solid::ModelEvaluator::Structure*>(this)->discret_ptr());
+  vtu_writer_ptr_ = std::make_shared<Core::IO::DiscretizationVisualizationWriterMesh>(
       discretization, visualization_params_,
       [](const Core::Elements::Element* element)
       {
@@ -630,10 +628,10 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure_gauss_point
   // Set all parameters in the evaluation data container.
   eval_data().set_action_type(Core::Elements::struct_init_gauss_point_data_output);
   eval_data().set_gauss_point_data_output_manager_ptr(
-      Teuchos::make_rcp<GaussPointDataOutputManager>(global_in_output()
-                                                         .get_runtime_output_params()
-                                                         ->get_structure_params()
-                                                         ->gauss_point_data_output()));
+      std::make_shared<GaussPointDataOutputManager>(global_in_output()
+                                                        .get_runtime_output_params()
+                                                        ->get_structure_params()
+                                                        ->gauss_point_data_output()));
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
 
@@ -641,10 +639,9 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_structure_gauss_point
   discret().clear_state();
 
   // Set dummy evaluation vectors and matrices.
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 
@@ -660,11 +657,11 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_structure(
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disn_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> veln_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> veln_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_vel_n(), *veln_col);
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
@@ -680,11 +677,11 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_structure(
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disnp_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> velnp_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_vel_np(), *velnp_col);
 
   auto [output_time, output_step] =
@@ -826,7 +823,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         case Inpar::Solid::GaussPointDataOutputType::element_center:
         {
           std::vector<std::optional<std::string>> context(size, name);
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> data =
+          std::shared_ptr<Core::LinAlg::MultiVector<double>> data =
               elementDataManager.get_element_center_data().at(name);
           vtu_writer_ptr_->append_result_data_vector_with_context(
               *data, Core::IO::OutputEntity::element, context);
@@ -834,7 +831,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         }
         case Inpar::Solid::GaussPointDataOutputType::gauss_points:
         {
-          const std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& data_list =
+          const std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& data_list =
               elementDataManager.get_gauss_point_data().at(name);
           for (std::size_t gp = 0; gp < data_list.size(); ++gp)
           {
@@ -848,7 +845,7 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_structure(
         case Inpar::Solid::GaussPointDataOutputType::nodes:
         {
           std::vector<std::optional<std::string>> context(size, name);
-          Teuchos::RCP<Core::LinAlg::MultiVector<double>> data =
+          std::shared_ptr<Core::LinAlg::MultiVector<double>> data =
               elementDataManager.get_nodal_data().at(name);
           vtu_writer_ptr_->append_result_data_vector_with_context(
               *data, Core::IO::OutputEntity::node, context);
@@ -876,7 +873,7 @@ void Solid::ModelEvaluator::Structure::evaluate_analytical_error()
 
     // Call the error evaluator
     Teuchos::ParameterList evaluation_parameters;
-    evaluation_parameters.set<Teuchos::RCP<Core::Elements::ParamsInterface>>(
+    evaluation_parameters.set<std::shared_ptr<Core::Elements::ParamsInterface>>(
         "interface", eval_data_ptr());
     ErrorEvaluator::evaluate_error(
         error_evaluator_parameters_, evaluation_parameters, *discret_ptr());
@@ -896,10 +893,10 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     eval_data().set_action_type(Core::Elements::struct_calc_stress);
     eval_data().set_total_time(global_state().get_time_np());
     eval_data().set_delta_time((*global_state().get_delta_time())[0]);
-    eval_data().set_stress_data(Teuchos::make_rcp<std::vector<char>>());
-    eval_data().set_coupling_stress_data(Teuchos::make_rcp<std::vector<char>>());
-    eval_data().set_strain_data(Teuchos::make_rcp<std::vector<char>>());
-    eval_data().set_plastic_strain_data(Teuchos::make_rcp<std::vector<char>>());
+    eval_data().set_stress_data(std::make_shared<std::vector<char>>());
+    eval_data().set_coupling_stress_data(std::make_shared<std::vector<char>>());
+    eval_data().set_strain_data(std::make_shared<std::vector<char>>());
+    eval_data().set_plastic_strain_data(std::make_shared<std::vector<char>>());
 
     // Set vector values needed by elements.
     discret().clear_state();
@@ -909,10 +906,9 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     // global_state().get_dis_np()->print(std::cout);
 
     // Set dummy evaluation vectors and matrices.
-    std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-        Teuchos::null, Teuchos::null, Teuchos::null};
-    std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-        Teuchos::null, Teuchos::null};
+    std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+        nullptr, nullptr, nullptr};
+    std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
     evaluate_internal_specified_elements(
         eval_mat.data(), eval_vec.data(), discret().element_row_map());
@@ -926,15 +922,15 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     auto EvaluateGaussPointData = [&](const std::vector<char>& raw_data)
     {
       // Get the values at the Gauss-points.
-      std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> mapdata{};
+      std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> mapdata{};
 
       Core::Communication::UnpackBuffer buffer(raw_data);
       for (int i = 0; i < discret_ptr()->element_row_map()->NumMyElements(); ++i)
       {
         if (DoPostprocessingOnElement(*discret().l_row_element(i)))
         {
-          Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> gpstress =
-              Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+          std::shared_ptr<Core::LinAlg::SerialDenseMatrix> gpstress =
+              std::make_shared<Core::LinAlg::SerialDenseMatrix>();
           extract_from_pack(buffer, *gpstress);
           mapdata[discret_ptr()->element_row_map()->GID(i)] = gpstress;
         }
@@ -943,7 +939,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     };
 
     auto PostprocessGaussPointDataToNodes =
-        [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
+        [&](const std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>& map_data,
             Core::LinAlg::MultiVector<double>& assembled_data)
     {
       discret_ptr()->evaluate(
@@ -956,7 +952,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     };
 
     auto PostprocessGaussPointDataToElementCenter =
-        [&](const std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>>& map_data,
+        [&](const std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>>& map_data,
             Core::LinAlg::MultiVector<double>& assembled_data)
     {
       discret_ptr()->evaluate(
@@ -970,7 +966,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
 
     if (global_in_output().get_stress_output_type() != Inpar::Solid::stress_none)
     {
-      std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> gp_stress_data =
+      std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*eval_data().get_stress_data());
 
       Core::Communication::Exporter ex(
@@ -978,9 +974,9 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
       ex.do_export(gp_stress_data);
 
       eval_data().get_stress_data_node_postprocessed() =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
       eval_data().get_stress_data_element_postprocessed() =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+          std::make_shared<Core::LinAlg::MultiVector<double>>(
               *discret().element_row_map(), 6, true);
 
 
@@ -993,7 +989,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
     }
     if (global_in_output().get_strain_output_type() != Inpar::Solid::strain_none)
     {
-      std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> gp_strain_data =
+      std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*eval_data().get_strain_data());
 
       Core::Communication::Exporter ex(
@@ -1001,9 +997,9 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_postprocess_stre
       ex.do_export(gp_strain_data);
 
       eval_data().get_strain_data_node_postprocessed() =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*discret().node_col_map(), 6, true);
       eval_data().get_strain_data_element_postprocessed() =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(
+          std::make_shared<Core::LinAlg::MultiVector<double>>(
               *discret().element_row_map(), 6, true);
 
       Core::LinAlg::MultiVector<double> row_nodal_data(*discret().node_row_map(), 6, true);
@@ -1036,10 +1032,9 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_gauss_point_data
     discret().set_state(0, "displacement", global_state().get_dis_np());
     discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
-    std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-        Teuchos::null, Teuchos::null, Teuchos::null};
-    std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-        Teuchos::null, Teuchos::null};
+    std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+        nullptr, nullptr, nullptr};
+    std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
     evaluate_internal(eval_mat.data(), eval_vec.data());
 
@@ -1051,7 +1046,7 @@ void Solid::ModelEvaluator::Structure::output_runtime_structure_gauss_point_data
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::init_output_runtime_beams()
 {
-  beam_vtu_writer_ptr_ = Teuchos::make_rcp<BeamDiscretizationRuntimeOutputWriter>(
+  beam_vtu_writer_ptr_ = std::make_shared<BeamDiscretizationRuntimeOutputWriter>(
       visualization_params_, dis_np().Comm());
 
   // get the parameter container object
@@ -1059,12 +1054,12 @@ void Solid::ModelEvaluator::Structure::init_output_runtime_beams()
       *global_in_output().get_runtime_output_params()->get_beam_params();
 
   // export displacement state to column format
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret().dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disn_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret().dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
   // get bounding box object only if periodic boundaries are active
-  Teuchos::RCP<Core::Geo::MeshFree::BoundingBox> bounding_box_ptr =
+  std::shared_ptr<Core::Geo::MeshFree::BoundingBox> bounding_box_ptr =
       tim_int().get_data_sdyn_ptr()->get_periodic_bounding_box();
 
   // initialize the writer object with current displacement state
@@ -1082,8 +1077,8 @@ void Solid::ModelEvaluator::Structure::write_time_step_output_runtime_beams() co
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disn_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disn_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_n(), *disn_col);
 
   auto [output_time, output_step] = Core::IO::get_time_and_time_step_index_for_output(
@@ -1099,8 +1094,8 @@ void Solid::ModelEvaluator::Structure::write_iteration_output_runtime_beams() co
 
   // export displacement state to column format
   const auto& discret = dynamic_cast<const Core::FE::Discretization&>(this->discret());
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_col =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> disnp_col =
+      std::make_shared<Core::LinAlg::Vector<double>>(*discret.dof_col_map(), true);
   Core::LinAlg::export_to(*global_state().get_dis_np(), *disnp_col);
 
   auto [output_time, output_step] =
@@ -1190,13 +1185,13 @@ void Solid::ModelEvaluator::Structure::write_output_runtime_beams(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::evaluate_internal(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   pre_evaluate_internal();
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   evaluate_internal(p, eval_mat, eval_vec);
 }
@@ -1204,8 +1199,8 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::evaluate_internal(Teuchos::ParameterList& p,
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec)
 {
   if (p.numParams() > 1)
   {
@@ -1213,7 +1208,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(Teuchos::ParameterList&
         "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   }
-  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
+  if (not p.INVALID_TEMPLATE_QUALIFIER isType<std::shared_ptr<Core::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
 
@@ -1226,13 +1221,14 @@ void Solid::ModelEvaluator::Structure::evaluate_internal(Teuchos::ParameterList&
 }
 
 void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
-    Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated)
+    std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec,
+    const Epetra_Map* ele_map_to_be_evaluated)
 {
   pre_evaluate_internal();
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   evaluate_internal_specified_elements(p, eval_mat, eval_vec, ele_map_to_be_evaluated);
 }
@@ -1240,8 +1236,9 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
-    Teuchos::ParameterList& p, Teuchos::RCP<Core::LinAlg::SparseOperator>* eval_mat,
-    Teuchos::RCP<Core::LinAlg::Vector<double>>* eval_vec, const Epetra_Map* ele_map_to_be_evaluated)
+    Teuchos::ParameterList& p, std::shared_ptr<Core::LinAlg::SparseOperator>* eval_mat,
+    std::shared_ptr<Core::LinAlg::Vector<double>>* eval_vec,
+    const Epetra_Map* ele_map_to_be_evaluated)
 {
   if (p.numParams() > 1)
   {
@@ -1249,7 +1246,7 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
         "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   }
-  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
+  if (not p.INVALID_TEMPLATE_QUALIFIER isType<std::shared_ptr<Core::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
 
@@ -1265,10 +1262,10 @@ void Solid::ModelEvaluator::Structure::evaluate_internal_specified_elements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::evaluate_neumann(Core::LinAlg::Vector<double>& eval_vec,
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat)
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& eval_mat)
 {
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
   evaluate_neumann(p, eval_vec, eval_mat);
 }
 
@@ -1276,7 +1273,7 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Core::LinAlg::Vector<dou
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& p,
     Core::LinAlg::Vector<double>& eval_vec,
-    const Teuchos::RCP<Core::LinAlg::SparseOperator>& eval_mat)
+    const std::shared_ptr<Core::LinAlg::SparseOperator>& eval_mat)
 {
   if (p.numParams() > 1)
   {
@@ -1284,7 +1281,7 @@ void Solid::ModelEvaluator::Structure::evaluate_neumann(Teuchos::ParameterList& 
         "Please use the Solid::Elements::Interface and its derived "
         "classes to set and get parameters.");
   }
-  if (not p.INVALID_TEMPLATE_QUALIFIER isType<Teuchos::RCP<Core::Elements::ParamsInterface>>(
+  if (not p.INVALID_TEMPLATE_QUALIFIER isType<std::shared_ptr<Core::Elements::ParamsInterface>>(
           "interface"))
     FOUR_C_THROW("The given parameter has the wrong type!");
   discret().evaluate_neumann(p, eval_vec, eval_mat.get());
@@ -1314,7 +1311,7 @@ void Solid::ModelEvaluator::Structure::read_restart(Core::IO::DiscretizationRead
   ioreader.read_vector(global_state().get_fstructure_old(), "fstructure_old");
   ioreader.read_vector(global_state().get_fint_n(), "fint");
   // read displacement field
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& disnp = global_state().get_dis_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& disnp = global_state().get_dis_np();
   ioreader.read_vector(disnp, "displacement");
   global_state().get_multi_dis()->update_steps(*disnp);
 }
@@ -1327,11 +1324,10 @@ void Solid::ModelEvaluator::Structure::predict(const Inpar::Solid::PredEnum& pre
   eval_data().set_action_type(Core::Elements::struct_calc_predict);
   eval_data().set_predictor_type(pred_type);
 
-  // set the matrix and vector pointers to Teuchos::null
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  // set the matrix and vector pointers to nullptr
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 }
@@ -1354,11 +1350,10 @@ void Solid::ModelEvaluator::Structure::run_recover()
   discret().set_state(0, "displacement", global_state().get_dis_np());
   // set the element action
   eval_data().set_action_type(Core::Elements::struct_calc_recover);
-  // set the matrix and vector pointers to Teuchos::null
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  // set the matrix and vector pointers to nullptr
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 }
@@ -1382,7 +1377,7 @@ void Solid::ModelEvaluator::Structure::run_post_iterate(const ::NOX::Solver::Gen
 {
   check_init_setup();
 
-  if (vtu_writer_ptr_ != Teuchos::null and
+  if (vtu_writer_ptr_ != nullptr and
       global_in_output().get_runtime_output_params()->output_every_iteration())
   {
     output_runtime_structure_postprocess_stress_strain();
@@ -1391,7 +1386,7 @@ void Solid::ModelEvaluator::Structure::run_post_iterate(const ::NOX::Solver::Gen
   }
 
   // write special output for beams if desired
-  if (beam_vtu_writer_ptr_ != Teuchos::null and
+  if (beam_vtu_writer_ptr_ != nullptr and
       global_in_output().get_runtime_output_params()->output_every_iteration())
     write_iteration_output_runtime_beams();
 }
@@ -1425,7 +1420,8 @@ void Solid::ModelEvaluator::Structure::update_step_state(const double& timefac_n
 
   // new at t_{n+1} -> t_{n+timefac_n}
   //    F^{struct}_{n+timefac_n} := timefac_n * F^{struct}_{n+1}
-  Teuchos::RCP<Core::LinAlg::Vector<double>>& fstructold_ptr = global_state().get_fstructure_old();
+  std::shared_ptr<Core::LinAlg::Vector<double>>& fstructold_ptr =
+      global_state().get_fstructure_old();
   fstructold_ptr->Update(timefac_n, fint_np(), 1.0);
   fstructold_ptr->Update(-timefac_n, fext_np(), 1.0);
 
@@ -1440,10 +1436,9 @@ void Solid::ModelEvaluator::Structure::evaluate_jacobian_contributions_from_elem
 {
   check_init_setup();
   // currently a fixed number of matrix and vector pointers are supported
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   eval_data().set_action_type(Core::Elements::struct_calc_addjacPTC);
 
@@ -1451,7 +1446,7 @@ void Solid::ModelEvaluator::Structure::evaluate_jacobian_contributions_from_elem
   discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_np());
 
-  eval_mat[0] = Teuchos::rcpFromRef(*stiff_ptc_ptr_);
+  eval_mat[0] = Core::Utils::shared_ptr_from_ref(*stiff_ptc_ptr_);
 
   // evaluate
   evaluate_internal(eval_mat.data(), eval_vec.data());
@@ -1460,7 +1455,7 @@ void Solid::ModelEvaluator::Structure::evaluate_jacobian_contributions_from_elem
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::assemble_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac, const double& timefac_n)
 {
   global_state().assign_model_block(*modjac, stiff_ptc(), type(), Solid::MatBlockType::displ_displ);
 }
@@ -1499,10 +1494,9 @@ void Solid::ModelEvaluator::Structure::update_step_element()
   discret().set_state("displacement", global_state().get_dis_n());
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
   evaluate_internal(eval_mat.data(), eval_vec.data());
 }
 
@@ -1530,10 +1524,10 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
   eval_data().set_action_type(Core::Elements::struct_calc_stress);
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
-  eval_data().set_stress_data(Teuchos::make_rcp<std::vector<char>>());
-  eval_data().set_coupling_stress_data(Teuchos::make_rcp<std::vector<char>>());
-  eval_data().set_strain_data(Teuchos::make_rcp<std::vector<char>>());
-  eval_data().set_plastic_strain_data(Teuchos::make_rcp<std::vector<char>>());
+  eval_data().set_stress_data(std::make_shared<std::vector<char>>());
+  eval_data().set_coupling_stress_data(std::make_shared<std::vector<char>>());
+  eval_data().set_strain_data(std::make_shared<std::vector<char>>());
+  eval_data().set_plastic_strain_data(std::make_shared<std::vector<char>>());
 
   // set vector values needed by elements
   discret().clear_state();
@@ -1541,10 +1535,9 @@ void Solid::ModelEvaluator::Structure::determine_stress_strain()
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal_specified_elements(
       eval_mat.data(), eval_vec.data(), discret().element_row_map());
@@ -1564,19 +1557,18 @@ void Solid::ModelEvaluator::Structure::determine_strain_energy(
 
   // set state vector values needed by elements
   discret().clear_state();
-  discret().set_state(0, "displacement", Teuchos::rcpFromRef(disnp));
+  discret().set_state(0, "displacement", Core::Utils::shared_ptr_from_ref(disnp));
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   pre_evaluate_internal();
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   // evaluate energy contributions on element level (row elements only)
   evaluate_internal_specified_elements(
@@ -1611,7 +1603,7 @@ void Solid::ModelEvaluator::Structure::determine_energy(const Core::LinAlg::Vect
   {
     double kinetic_energy_times2 = 0.0;
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> linear_momentum =
+    std::shared_ptr<Core::LinAlg::Vector<double>> linear_momentum =
         Core::LinAlg::create_vector(*global_state().dof_row_map_view(), true);
 
     mass().multiply(false, *velnp, *linear_momentum);
@@ -1653,7 +1645,7 @@ void Solid::ModelEvaluator::Structure::determine_optional_quantity()
   // set all parameters in the evaluation data container
   eval_data().set_total_time(global_state().get_time_np());
   eval_data().set_delta_time((*global_state().get_delta_time())[0]);
-  eval_data().set_opt_quantity_data(Teuchos::make_rcp<std::vector<char>>());
+  eval_data().set_opt_quantity_data(std::make_shared<std::vector<char>>());
 
   // set vector values needed by elements
   discret().clear_state();
@@ -1661,10 +1653,9 @@ void Solid::ModelEvaluator::Structure::determine_optional_quantity()
   discret().set_state(0, "residual displacement", dis_incr_ptr_);
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 }
@@ -1672,22 +1663,23 @@ void Solid::ModelEvaluator::Structure::determine_optional_quantity()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::ModelEvaluator::Structure::determine_element_volumes(
-    const Core::LinAlg::Vector<double>& x, Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols)
+    const Core::LinAlg::Vector<double>& x, std::shared_ptr<Core::LinAlg::Vector<double>>& ele_vols)
 {
   // set action in params-interface
   eval_data().set_action_type(Core::Elements::struct_calc_mass_volume);
 
   Teuchos::ParameterList p;
-  p.set<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
+  p.set<std::shared_ptr<Core::Elements::ParamsInterface>>("interface", eval_data_ptr());
 
   // set vector values needed by elements
   discret().clear_state();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp = global_state().extract_displ_entries(x);
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disnp =
+      global_state().extract_displ_entries(x);
   discret().set_state(0, "displacement", disnp);
 
   // start evaluation
   const Epetra_Map* relemap = discret().element_row_map();
-  ele_vols = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*relemap, true);
+  ele_vols = std::make_shared<Core::LinAlg::Vector<double>>(*relemap, true);
   const unsigned my_num_reles = relemap->NumMyElements();
 
   Core::Elements::LocationArray la(discret().num_dof_sets());
@@ -1773,7 +1765,7 @@ void Solid::ModelEvaluator::Structure::runtime_pre_output_step_state()
 {
   check_init_setup();
 
-  if (vtu_writer_ptr_ != Teuchos::null)
+  if (vtu_writer_ptr_ != nullptr)
   {
     output_runtime_structure_postprocess_stress_strain();
     output_runtime_structure_gauss_point_data();
@@ -1786,10 +1778,10 @@ void Solid::ModelEvaluator::Structure::runtime_output_step_state() const
 {
   check_init_setup();
 
-  if (vtu_writer_ptr_ != Teuchos::null) write_time_step_output_runtime_structure();
+  if (vtu_writer_ptr_ != nullptr) write_time_step_output_runtime_structure();
 
   // write special output for beams if desired
-  if (beam_vtu_writer_ptr_ != Teuchos::null) write_time_step_output_runtime_beams();
+  if (beam_vtu_writer_ptr_ != nullptr) write_time_step_output_runtime_beams();
 }
 
 /*----------------------------------------------------------------------------*
@@ -1810,10 +1802,9 @@ void Solid::ModelEvaluator::Structure::reset_step_state()
   eval_data().set_action_type(Core::Elements::struct_calc_reset_istep);
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
   evaluate_internal(eval_mat.data(), eval_vec.data());
 
   discret_ptr()->clear_state();
@@ -1821,7 +1812,8 @@ void Solid::ModelEvaluator::Structure::reset_step_state()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Structure::get_block_dof_row_map_ptr() const
+std::shared_ptr<const Epetra_Map> Solid::ModelEvaluator::Structure::get_block_dof_row_map_ptr()
+    const
 {
   check_init_setup();
   return global_state().dof_row_map();
@@ -1829,7 +1821,7 @@ Teuchos::RCP<const Epetra_Map> Solid::ModelEvaluator::Structure::get_block_dof_r
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Structure::get_current_solution_ptr() const
 {
   check_init();
@@ -1838,7 +1830,7 @@ Solid::ModelEvaluator::Structure::get_current_solution_ptr() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>>
+std::shared_ptr<const Core::LinAlg::Vector<double>>
 Solid::ModelEvaluator::Structure::get_last_time_step_solution_ptr() const
 {
   check_init();
@@ -1858,7 +1850,7 @@ void Solid::ModelEvaluator::Structure::post_output()
 Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_np()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_fint_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_fint_np(), "nullptr!");
 
   return *global_state().get_fint_np();
 }
@@ -1868,7 +1860,7 @@ Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_np()
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_np() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_fint_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_fint_np(), "nullptr!");
 
   return *global_state().get_fint_np();
 }
@@ -1878,7 +1870,7 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_np() 
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_n() const
 {
   check_init();
-  if (global_state().get_fint_n().is_null()) FOUR_C_THROW("NULL pointer!");
+  if (global_state().get_fint_n() == nullptr) FOUR_C_THROW("NULL pointer!");
 
   return *global_state().get_fint_n();
 }
@@ -1888,7 +1880,7 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fint_n() c
 Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fext_np()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_fext_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_fext_np(), "nullptr!");
 
   return *global_state().get_fext_np();
 }
@@ -1898,7 +1890,7 @@ Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fext_np()
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fext_np() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_fext_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_fext_np(), "nullptr!");
 
   return *global_state().get_fext_np();
 }
@@ -1908,7 +1900,7 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fext_np() 
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fext_n() const
 {
   check_init();
-  if (global_state().get_fext_n().is_null()) FOUR_C_THROW("NULL pointer!");
+  if (global_state().get_fext_n() == nullptr) FOUR_C_THROW("NULL pointer!");
 
   return *global_state().get_fext_n();
 }
@@ -1918,7 +1910,7 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fext_n() c
 Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::finertial_np()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_finertial_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_finertial_np(), "nullptr!");
 
   return *global_state().get_finertial_np();
 }
@@ -1928,7 +1920,7 @@ Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::finertial_np()
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::finertial_np() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_finertial_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_finertial_np(), "nullptr!");
 
   return *global_state().get_finertial_np();
 }
@@ -1938,7 +1930,7 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::finertial_
 Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fvisco_np()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_fvisco_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_fvisco_np(), "nullptr!");
 
   return *global_state().get_fvisco_np();
 }
@@ -1948,7 +1940,7 @@ Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fvisco_np()
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fvisco_np() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_fvisco_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_fvisco_np(), "nullptr!");
 
   return *global_state().get_fvisco_np();
 }
@@ -1958,7 +1950,7 @@ const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::fvisco_np(
 Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::dis_np()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_dis_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_dis_np(), "nullptr!");
 
   return *global_state().get_dis_np();
 }
@@ -1968,7 +1960,7 @@ Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::dis_np()
 const Core::LinAlg::Vector<double>& Solid::ModelEvaluator::Structure::dis_np() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_dis_np().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_dis_np(), "nullptr!");
 
   return *global_state().get_dis_np();
 }
@@ -1988,7 +1980,7 @@ Core::LinAlg::SparseMatrix& Solid::ModelEvaluator::Structure::stiff() const
 Core::LinAlg::SparseMatrix& Solid::ModelEvaluator::Structure::stiff_ptc() const
 {
   check_init();
-  FOUR_C_ASSERT(stiff_ptc_ptr_ != Teuchos::null, "nullptr!");
+  FOUR_C_ASSERT(stiff_ptc_ptr_ != nullptr, "nullptr!");
 
   return *stiff_ptc_ptr_;
 }
@@ -1998,7 +1990,7 @@ Core::LinAlg::SparseMatrix& Solid::ModelEvaluator::Structure::stiff_ptc() const
 Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::mass()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_mass_matrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_mass_matrix(), "nullptr!");
 
   return *global_state().get_mass_matrix();
 }
@@ -2008,7 +2000,7 @@ Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::mass()
 const Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::mass() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_mass_matrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_mass_matrix(), "nullptr!");
 
   return *global_state().get_mass_matrix();
 }
@@ -2018,7 +2010,7 @@ const Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::mass() con
 Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::damp()
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_damp_matrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_damp_matrix(), "nullptr!");
 
   return *global_state().get_damp_matrix();
 }
@@ -2028,7 +2020,7 @@ Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::damp()
 const Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::damp() const
 {
   check_init();
-  FOUR_C_ASSERT(!global_state().get_damp_matrix().is_null(), "nullptr!");
+  FOUR_C_ASSERT(global_state().get_damp_matrix(), "nullptr!");
 
   return *global_state().get_damp_matrix();
 }
@@ -2036,9 +2028,9 @@ const Core::LinAlg::SparseOperator& Solid::ModelEvaluator::Structure::damp() con
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::Structure::params_interface2_parameter_list(
-    Teuchos::RCP<Solid::ModelEvaluator::Data> interface_ptr, Teuchos::ParameterList& params)
+    std::shared_ptr<Solid::ModelEvaluator::Data> interface_ptr, Teuchos::ParameterList& params)
 {
-  FOUR_C_ASSERT(interface_ptr != Teuchos::null, "params_interface pointer not set");
+  FOUR_C_ASSERT(interface_ptr != nullptr, "params_interface pointer not set");
 
   params.set<double>("delta time", interface_ptr->get_delta_time());
   params.set<double>("total time", interface_ptr->get_total_time());
@@ -2145,10 +2137,11 @@ void Solid::ModelEvaluator::Structure::params_interface2_parameter_list(
   }
   params.set<std::string>("action", action);
 
-  params.set<Teuchos::RCP<std::vector<char>>>("stress", interface_ptr->stress_data_ptr());
-  params.set<Teuchos::RCP<std::vector<char>>>("strain", interface_ptr->strain_data_ptr());
-  params.set<Teuchos::RCP<std::vector<char>>>("plstrain", interface_ptr->plastic_strain_data_ptr());
-  params.set<Teuchos::RCP<std::vector<char>>>(
+  params.set<std::shared_ptr<std::vector<char>>>("stress", interface_ptr->stress_data_ptr());
+  params.set<std::shared_ptr<std::vector<char>>>("strain", interface_ptr->strain_data_ptr());
+  params.set<std::shared_ptr<std::vector<char>>>(
+      "plstrain", interface_ptr->plastic_strain_data_ptr());
+  params.set<std::shared_ptr<std::vector<char>>>(
       "optquantity", interface_ptr->opt_quantity_data_ptr());
   params.set<Inpar::Solid::StressType>("iostress", interface_ptr->get_stress_output_type());
   params.set<Inpar::Solid::StrainType>("iostrain", interface_ptr->get_strain_output_type());
@@ -2172,15 +2165,14 @@ void Solid::ModelEvaluator::Structure::create_backup_state(const Core::LinAlg::V
   // set vector values needed by elements
   discret().clear_state();
   discret().set_state(0, "displacement", global_state().get_dis_np());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dir_displ =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dir_displ =
       global_state().extract_displ_entries(dir);
   discret().set_state(0, "residual displacement", dir_displ);
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 }
@@ -2198,10 +2190,9 @@ void Solid::ModelEvaluator::Structure::recover_from_backup_state()
   discret().clear_state();
 
   // set dummy evaluation vectors and matrices
-  std::array<Teuchos::RCP<Core::LinAlg::Vector<double>>, 3> eval_vec = {
-      Teuchos::null, Teuchos::null, Teuchos::null};
-  std::array<Teuchos::RCP<Core::LinAlg::SparseOperator>, 2> eval_mat = {
-      Teuchos::null, Teuchos::null};
+  std::array<std::shared_ptr<Core::LinAlg::Vector<double>>, 3> eval_vec = {
+      nullptr, nullptr, nullptr};
+  std::array<std::shared_ptr<Core::LinAlg::SparseOperator>, 2> eval_mat = {nullptr, nullptr};
 
   evaluate_internal(eval_mat.data(), eval_vec.data());
 }

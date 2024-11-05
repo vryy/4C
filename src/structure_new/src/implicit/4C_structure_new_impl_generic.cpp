@@ -319,7 +319,7 @@ int NOX::Nln::PrePostOp::IMPLICIT::Generic::get_number_of_modified_newton_correc
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::IMPLICIT::Generic::compute_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
   model_eval().compute_jacobian_contributions_from_element_level_for_ptc(scalingMatrixOpPtr);
 }

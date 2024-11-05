@@ -175,7 +175,7 @@ namespace Cut
       void find_cycles(Element* element, Cycle& cycle);
 
      private:
-      Teuchos::RCP<SimplePointGraph2D::Graph> graph_2d_;
+      std::shared_ptr<SimplePointGraph2D::Graph> graph_2d_;
     };  // class SimplePointGraph_2D
 
   }  // namespace Impl

@@ -13,6 +13,7 @@
 #include "4C_global_data.hpp"
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_structure_new_utils.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_Time.hpp>
@@ -26,16 +27,16 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       issetup_(false),
       timemax_(-1.0),
       stepmax_(-1),
-      timer_(Teuchos::null),
+      timer_(nullptr),
       damptype_(Inpar::Solid::damp_none),
       dampk_(-1.0),
       dampm_(-1.0),
       masslintype_(Inpar::Solid::ml_none),
       lumpmass_(false),
       neglectinertia_(false),
-      modeltypes_(Teuchos::null),
-      eletechs_(Teuchos::null),
-      coupling_model_ptr_(Teuchos::null),
+      modeltypes_(nullptr),
+      eletechs_(nullptr),
+      coupling_model_ptr_(nullptr),
       dyntype_(Inpar::Solid::dyna_statics),
       stcscale_(Inpar::Solid::stc_none),
       stclayer_(-1),
@@ -48,9 +49,9 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       divergenceaction_(Inpar::Solid::divcont_stop),
       mid_time_energy_type_(Inpar::Solid::midavg_vague),
       maxdivconrefinementlevel_(-1),
-      noxparams_(Teuchos::null),
+      noxparams_(nullptr),
       ptc_delta_init_(0.0),
-      linsolvers_(Teuchos::null),
+      linsolvers_(nullptr),
       normtype_(Inpar::Solid::norm_vague),
       nox_normtype_(::NOX::Abstract::Vector::TwoNorm),
       tol_disp_incr_(-1.0),
@@ -97,7 +98,7 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
       rand_tsfac_(1.0),
       divconrefinementlevel_(0),
       divconnumfinestep_(0),
-      sdynparams_ptr_(Teuchos::null)
+      sdynparams_ptr_(nullptr)
 {
   // empty constructor
 }
@@ -105,11 +106,12 @@ Solid::TimeInt::BaseDataSDyn::BaseDataSDyn()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretization> discret,
+void Solid::TimeInt::BaseDataSDyn::init(const std::shared_ptr<Core::FE::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-    const Teuchos::RCP<std::set<enum Inpar::Solid::ModelType>> modeltypes,
-    const Teuchos::RCP<std::set<enum Inpar::Solid::EleTech>> eletechs,
-    const Teuchos::RCP<std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Core::LinAlg::Solver>>>
+    const std::shared_ptr<std::set<enum Inpar::Solid::ModelType>> modeltypes,
+    const std::shared_ptr<std::set<enum Inpar::Solid::EleTech>> eletechs,
+    const std::shared_ptr<
+        std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Core::LinAlg::Solver>>>
         linsolvers)
 {
   // We have to call setup() after init()
@@ -122,7 +124,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     timemax_ = sdynparams.get<double>("MAXTIME");
     stepmax_ = sdynparams.get<int>("NUMSTEP");
 
-    timer_ = Teuchos::make_rcp<Teuchos::Time>("", true);
+    timer_ = std::make_shared<Teuchos::Time>("", true);
 
     dyntype_ = Teuchos::getIntegralValue<Inpar::Solid::DynamicType>(sdynparams, "DYNAMICTYP");
 
@@ -159,18 +161,18 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     {
       if (modeltypes_->find(Inpar::Solid::model_monolithic_coupling) != modeltypes->end())
         FOUR_C_THROW("Cannot have both monolithic and partitioned coupling at the same time!");
-      coupling_model_ptr_ = sdynparams.get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>(
+      coupling_model_ptr_ = sdynparams.get<std::shared_ptr<Solid::ModelEvaluator::Generic>>(
           "Partitioned Coupling Model");
     }
     else if (modeltypes_->find(Inpar::Solid::model_monolithic_coupling) != modeltypes->end())
     {
-      coupling_model_ptr_ =
-          sdynparams.get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>("Monolithic Coupling Model");
+      coupling_model_ptr_ = sdynparams.get<std::shared_ptr<Solid::ModelEvaluator::Generic>>(
+          "Monolithic Coupling Model");
     }
     else if (modeltypes_->find(Inpar::Solid::model_basic_coupling) != modeltypes->end())
     {
       coupling_model_ptr_ =
-          sdynparams.get<Teuchos::RCP<Solid::ModelEvaluator::Generic>>("Basic Coupling Model");
+          sdynparams.get<std::shared_ptr<Solid::ModelEvaluator::Generic>>("Basic Coupling Model");
     }
   }
   // ---------------------------------------------------------------------------
@@ -193,7 +195,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
     mid_time_energy_type_ =
         Teuchos::getIntegralValue<Inpar::Solid::MidAverageEnum>(sdynparams, "MIDTIME_ENERGY_TYPE");
     maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
-    noxparams_ = Teuchos::make_rcp<Teuchos::ParameterList>(xparams.sublist("NOX"));
+    noxparams_ = std::make_shared<Teuchos::ParameterList>(xparams.sublist("NOX"));
     ptc_delta_init_ = sdynparams.get<double>("PTCDT");
   }
   // ---------------------------------------------------------------------------
@@ -289,7 +291,7 @@ void Solid::TimeInt::BaseDataSDyn::init(const Teuchos::RCP<Core::FE::Discretizat
 
   {
     // store the structural dynamics parameter list for derived Setup routines
-    sdynparams_ptr_ = Teuchos::rcpFromRef(sdynparams);
+    sdynparams_ptr_ = Core::Utils::shared_ptr_from_ref(sdynparams);
   }
 
   // -------------------------------------------------------------------------
@@ -320,12 +322,12 @@ void Solid::TimeInt::BaseDataSDyn::setup()
       case Inpar::Solid::model_beam_interaction_old:
       case Inpar::Solid::model_browniandyn:
       {
-        periodic_boundingbox_ = Teuchos::make_rcp<Core::Geo::MeshFree::BoundingBox>();
+        periodic_boundingbox_ = std::make_shared<Core::Geo::MeshFree::BoundingBox>();
         periodic_boundingbox_->init(Global::Problem::instance()->binning_strategy_params());
-        Teuchos::RCP<Core::FE::Discretization> boundingbox_dis =
+        std::shared_ptr<Core::FE::Discretization> boundingbox_dis =
             Global::Problem::instance()->does_exist_dis("boundingbox")
                 ? Global::Problem::instance()->get_dis("boundingbox")
-                : Teuchos::null;
+                : nullptr;
         periodic_boundingbox_->setup(Global::Problem::instance()->io_params(), boundingbox_dis,
             *Global::Problem::instance()->get_communicators()->global_comm(),
             Global::Problem::instance()->n_dim(),

@@ -88,11 +88,11 @@ namespace ScaTra
 
     void setup_meshtying() override;
 
-    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp, const int iteration,
+    void solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const override;
   };
 

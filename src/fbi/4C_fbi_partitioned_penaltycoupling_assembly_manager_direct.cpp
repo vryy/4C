@@ -25,8 +25,8 @@ FOUR_C_NAMESPACE_OPEN
  */
 BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
     PartitionedBeamInteractionAssemblyManagerDirect(
-        std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
-        Teuchos::RCP<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
+        std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> assembly_contact_elepairs,
+        std::shared_ptr<FBI::Utils::FBIAssemblyStrategy> assemblystrategy)
     : PartitionedBeamInteractionAssemblyManager(assembly_contact_elepairs),
       assemblystrategy_(assemblystrategy)
 {
@@ -38,13 +38,13 @@ BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDir
  */
 void BEAMINTERACTION::SUBMODELEVALUATOR::PartitionedBeamInteractionAssemblyManagerDirect::
     evaluate_force_stiff(const Core::FE::Discretization& discretization1,
-        const Core::FE::Discretization& discretization2, Teuchos::RCP<Epetra_FEVector>& ff,
-        Teuchos::RCP<Epetra_FEVector>& fb, Teuchos::RCP<Core::LinAlg::SparseOperator> cff,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbb,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cfb,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& cbf,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluid_vel,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> beam_vel)
+        const Core::FE::Discretization& discretization2, std::shared_ptr<Epetra_FEVector>& ff,
+        std::shared_ptr<Epetra_FEVector>& fb, std::shared_ptr<Core::LinAlg::SparseOperator> cff,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& cbb,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& cfb,
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& cbf,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluid_vel,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> beam_vel)
 {
   // resulting discrete element force vectors of the two interacting elements
   std::vector<Core::LinAlg::SerialDenseVector> eleforce(2);

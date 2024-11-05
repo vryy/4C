@@ -73,7 +73,7 @@ namespace Inpar::RveMpc
 
   /// set multi point constraint specific conditions
   void set_valid_conditions(
-      std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist);
+      std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist);
 }  // namespace Inpar::RveMpc
 
 FOUR_C_NAMESPACE_CLOSE

@@ -24,8 +24,8 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     const Teuchos::ParameterList& tdynparams, const Teuchos::ParameterList& xparams,
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::RCP<Core::LinAlg::Solver> solver,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+    std::shared_ptr<Core::FE::Discretization> actdis, std::shared_ptr<Core::LinAlg::Solver> solver,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : TimInt(ioparams, tdynparams, xparams, actdis, solver, output),
       pred_(Teuchos::getIntegralValue<Inpar::Thermo::PredEnum>(tdynparams, "PREDICT")),
       itertype_(Teuchos::getIntegralValue<Inpar::Thermo::NonlinSolTech>(tdynparams, "NLNSOL")),
@@ -47,11 +47,11 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
       normchartemp_(0.0),
       normfres_(0.0),
       normtempi_(0.0),
-      tempi_(Teuchos::null),
-      tempinc_(Teuchos::null),
+      tempi_(nullptr),
+      tempinc_(nullptr),
       timer_("", true),
-      fres_(Teuchos::null),
-      freact_(Teuchos::null)
+      fres_(nullptr),
+      freact_(nullptr)
 {
   // create empty residual force vector
   fres_ = Core::LinAlg::create_vector(*discret_->dof_row_map(), false);
@@ -73,14 +73,14 @@ Thermo::TimIntImpl::TimIntImpl(const Teuchos::ParameterList& ioparams,
     if (mrtrcond != nullptr)
     {
       adaptermeshtying_ =
-          Teuchos::make_rcp<Coupling::Adapter::CouplingMortar>(Global::Problem::instance()->n_dim(),
+          std::make_shared<Coupling::Adapter::CouplingMortar>(Global::Problem::instance()->n_dim(),
               Global::Problem::instance()->mortar_coupling_params(),
               Global::Problem::instance()->contact_dynamic_params(),
               Global::Problem::instance()->spatial_approximation_type());
 
       std::vector<int> coupleddof(1, 1);
-      adaptermeshtying_->setup(actdis, actdis, Teuchos::null, coupleddof, "Mortar",
-          actdis->get_comm(), Global::Problem::instance()->function_manager(),
+      adaptermeshtying_->setup(actdis, actdis, nullptr, coupleddof, "Mortar", actdis->get_comm(),
+          Global::Problem::instance()->function_manager(),
           Global::Problem::instance()->binning_strategy_params(),
           Global::Problem::instance()->discretization_map(),
           Global::Problem::instance()->output_control_file(),
@@ -104,18 +104,18 @@ void Thermo::TimIntImpl::integrate_step()
  | build linear system tangent matrix, rhs/force residual   bborn 08/09 |
  | Monolithic TSI accesses the linearised thermo problem                |
  *----------------------------------------------------------------------*/
-void Thermo::TimIntImpl::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi)
+void Thermo::TimIntImpl::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
   // there are Dirichlet conditions that need to be preserved. So take
   // the sum of increments we get from NOX and apply the latest
   // increment only.
-  //  if (temp != Teuchos::null)
+  //  if (temp != nullptr)
   //  {
   //    // residual temperatures (or iteration increments or iteratively
   //    // incremental temperatures)
-  //    Teuchos::RCP<Core::LinAlg::Vector<double>> tempi = Teuchos::rcp(new
+  //    std::shared_ptr<Core::LinAlg::Vector<double>> tempi = Teuchos::rcp(new
   //    Core::LinAlg::Vector<double>(*temp)); tempi->Update(-1.0, *tempinc_, 1.0);
   //
   //    // update incremental temperature member to provided step increments
@@ -128,7 +128,7 @@ void Thermo::TimIntImpl::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double
   //  }
   //  else
   //  {
-  //    thermo_->update_iter_incrementally(Teuchos::null);
+  //    thermo_->update_iter_incrementally(nullptr);
   //  }
 
   // TSI does not use NOX --> the Newton increment is passed to the field solver
@@ -176,14 +176,14 @@ void Thermo::TimIntImpl::predict()
   }
 
   // integrate the contact to obtain the contact-induced boundary condition
-  if (contact_strategy_nitsche_ != Teuchos::null)
+  if (contact_strategy_nitsche_ != nullptr)
   {
     // re-evaluate the contact
     contact_strategy_nitsche_->integrate(*contact_params_interface_);
   }
 
   // apply Dirichlet BCs
-  //  apply_dirichlet_bc(timen_, temon_, raten_, Teuchos::null, false);
+  //  apply_dirichlet_bc(timen_, temon_, raten_, nullptr, false);
   apply_dirichlet_bc(timen_, tempn_, raten_, false);
 
   // compute residual forces fres_ and tangent tang_
@@ -284,14 +284,14 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   tempi_->PutScalar(0.0);
 
   // for temperature increments on Dirichlet boundary
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcinc =
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbcinc =
       Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
 
   // copy last converged temperatures
   dbcinc->Update(1.0, *(*temp_)(0), 0.0);
 
   // get Dirichlet values at t_{n+1}
-  apply_dirichlet_bc(timen_, dbcinc, Teuchos::null, false);
+  apply_dirichlet_bc(timen_, dbcinc, nullptr, false);
 
   // subtract the temperatures of the last converged step
   // DBC-DOFs hold increments of current step
@@ -305,7 +305,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
   // add linear reaction forces to residual
   {
     // linear reactions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact =
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact =
         Core::LinAlg::create_vector(*discret_->dof_row_map(), true);
     tang_->multiply(false, *dbcinc, *freact);
 
@@ -363,8 +363,7 @@ void Thermo::TimIntImpl::predict_tang_temp_consist_rate()
     // set the total time
     p.set("total time", (*time_)[0]);
     // go to elements
-    discret_->evaluate(
-        p, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+    discret_->evaluate(p, nullptr, nullptr, nullptr, nullptr, nullptr);
     discret_->clear_state();
   }
 
@@ -498,7 +497,7 @@ Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full()
   timer_.reset();
 
   // Do mortar condensation
-  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, *fres_);
+  if (adaptermeshtying_ != nullptr) adaptermeshtying_->mortar_condensation(tang_, *fres_);
 
   // equilibrium iteration loop
   while (((not converged()) and (iter_ <= itermax_)) or (iter_ <= itermin_))
@@ -531,7 +530,7 @@ Inpar::Thermo::ConvergenceStatus Thermo::TimIntImpl::newton_full()
     solver_->reset_tolerance();
 
     // recover condensed variables
-    if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_recover(*tang_, *tempi_);
+    if (adaptermeshtying_ != nullptr) adaptermeshtying_->mortar_recover(*tang_, *tempi_);
 
     // update end-point temperatures etc
     update_iter(iter_);
@@ -570,7 +569,7 @@ void Thermo::TimIntImpl::blank_dirichlet_and_calc_norms()
   dbcmaps_->insert_cond_vector(*dbcmaps_->extract_cond_vector(*zeros_), *fres_);
 
   // do mortar condensation
-  if (adaptermeshtying_ != Teuchos::null) adaptermeshtying_->mortar_condensation(tang_, *fres_);
+  if (adaptermeshtying_ != nullptr) adaptermeshtying_->mortar_condensation(tang_, *fres_);
 
   // build residual force norm
   normfres_ = Thermo::Aux::calculate_vector_norm(iternorm_, *fres_);
@@ -742,11 +741,12 @@ void Thermo::TimIntImpl::update_iter(const int iter  //!< iteration counter
  | residual temperatures                                                |
  *----------------------------------------------------------------------*/
 void Thermo::TimIntImpl::update_iter_incrementally(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi  //!< input residual temperatures
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>
+        tempi  //!< input residual temperatures
 )
 {
   // select residual temperatures
-  if (tempi != Teuchos::null)
+  if (tempi != nullptr)
     // tempi_ = \f$\Delta{T}^{<k>}_{n+1}\f$
     tempi_->Update(1.0, *tempi, 0.0);  // set the new solution we just got
   else
@@ -783,7 +783,7 @@ void Thermo::TimIntImpl::update()
 /*----------------------------------------------------------------------*
  | update Newton step                                        dano 02/11 |
  *----------------------------------------------------------------------*/
-void Thermo::TimIntImpl::update_newton(Teuchos::RCP<const Core::LinAlg::Vector<double>> tempi)
+void Thermo::TimIntImpl::update_newton(std::shared_ptr<const Core::LinAlg::Vector<double>> tempi)
 {
   // Yes, this is complicated. But we have to be very careful
   // here. The field solver always expects an increment only. And
@@ -1039,7 +1039,7 @@ void Thermo::TimIntImpl::fd_check()
   // ------------------------------------------ initialise matrices and vectors
 
   // initialise discurbed increment vector
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disturbtempi =
+  std::shared_ptr<Core::LinAlg::Vector<double>> disturbtempi =
       Core::LinAlg::create_vector(*dof_row_map(), true);
   const int dofs = disturbtempi->GlobalLength();
   disturbtempi->PutScalar(0.0);
@@ -1051,7 +1051,8 @@ void Thermo::TimIntImpl::fd_check()
   Core::LinAlg::Vector<double> rhs_copy(*discret_->dof_row_map(), true);
 
   // initialise approximation of tangent
-  Teuchos::RCP<Epetra_CrsMatrix> tang_approx = Core::LinAlg::create_matrix((tang_->row_map()), 81);
+  std::shared_ptr<Epetra_CrsMatrix> tang_approx =
+      Core::LinAlg::create_matrix((tang_->row_map()), 81);
 
   Core::LinAlg::SparseMatrix tang_copy(tang_->epetra_matrix(), Core::LinAlg::Copy);
   std::cout << "\n****************** Thermo finite difference check ******************"
@@ -1107,8 +1108,8 @@ void Thermo::TimIntImpl::fd_check()
   tang_approx_sparse.add(tang_copy, false, -1.0, 1.0);
 
   // initialise CRSMatrices for the two tangents
-  Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = tang_copy.epetra_matrix();
-  Teuchos::RCP<Epetra_CrsMatrix> error_crs = tang_approx_sparse.epetra_matrix();
+  std::shared_ptr<Epetra_CrsMatrix> sparse_crs = tang_copy.epetra_matrix();
+  std::shared_ptr<Epetra_CrsMatrix> error_crs = tang_approx_sparse.epetra_matrix();
   error_crs->FillComplete();
   sparse_crs->FillComplete();
 

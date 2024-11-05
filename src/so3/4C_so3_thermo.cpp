@@ -182,8 +182,8 @@ inline Core::Nodes::Node** Discret::Elements::So3Thermo<So3Ele, distype>::nodes(
  | get the material from so3 (public)                        dano 08/12 |
  *----------------------------------------------------------------------*/
 template <class So3Ele, Core::FE::CellType distype>
-inline Teuchos::RCP<Core::Mat::Material> Discret::Elements::So3Thermo<So3Ele, distype>::material()
-    const
+inline std::shared_ptr<Core::Mat::Material>
+Discret::Elements::So3Thermo<So3Ele, distype>::material() const
 {
   return So3Ele::material();
 }

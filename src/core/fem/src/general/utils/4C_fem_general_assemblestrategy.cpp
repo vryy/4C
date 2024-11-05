@@ -14,11 +14,11 @@
 FOUR_C_NAMESPACE_OPEN
 
 Core::FE::AssembleStrategy::AssembleStrategy(int firstdofset, int seconddofset,
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix1,
-    Teuchos::RCP<LinAlg::SparseOperator> systemmatrix2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3)
+    std::shared_ptr<LinAlg::SparseOperator> systemmatrix1,
+    std::shared_ptr<LinAlg::SparseOperator> systemmatrix2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3)
     : firstdofset_(firstdofset),
       seconddofset_(seconddofset),
       systemmatrix1_(systemmatrix1),

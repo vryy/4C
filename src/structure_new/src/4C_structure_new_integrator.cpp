@@ -32,23 +32,24 @@ FOUR_C_NAMESPACE_OPEN
 Solid::Integrator::Integrator()
     : isinit_(false),
       issetup_(false),
-      modelevaluator_ptr_(Teuchos::null),
-      eval_data_ptr_(Teuchos::null),
-      sdyn_ptr_(Teuchos::null),
-      gstate_ptr_(Teuchos::null),
-      io_ptr_(Teuchos::null),
-      dbc_ptr_(Teuchos::null),
-      timint_ptr_(Teuchos::null)
+      modelevaluator_ptr_(nullptr),
+      eval_data_ptr_(nullptr),
+      sdyn_ptr_(nullptr),
+      gstate_ptr_(nullptr),
+      io_ptr_(nullptr),
+      dbc_ptr_(nullptr),
+      timint_ptr_(nullptr)
 {
   // empty constructor
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Integrator::init(const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& io_ptr, const Teuchos::RCP<Solid::Dbc>& dbc_ptr,
-    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
+void Solid::Integrator::init(const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataIO>& io_ptr,
+    const std::shared_ptr<Solid::Dbc>& dbc_ptr,
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr)
 {
   issetup_ = false;
 
@@ -69,22 +70,22 @@ void Solid::Integrator::setup()
   // ---------------------------------------------------------------------------
   // build model evaluator data container
   // ---------------------------------------------------------------------------
-  eval_data_ptr_ = Teuchos::make_rcp<Solid::ModelEvaluator::Data>();
+  eval_data_ptr_ = std::make_shared<Solid::ModelEvaluator::Data>();
   eval_data_ptr_->init(timint_ptr_);
   eval_data_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build model evaluator
   // ---------------------------------------------------------------------------
-  modelevaluator_ptr_ = Teuchos::make_rcp<Solid::ModelEvaluatorManager>();
-  modelevaluator_ptr_->init(
-      eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_, Teuchos::rcpFromRef(*this), timint_ptr_);
+  modelevaluator_ptr_ = std::make_shared<Solid::ModelEvaluatorManager>();
+  modelevaluator_ptr_->init(eval_data_ptr_, sdyn_ptr_, gstate_ptr_, io_ptr_,
+      Core::Utils::shared_ptr_from_ref(*this), timint_ptr_);
   modelevaluator_ptr_->setup();
 
   // ---------------------------------------------------------------------------
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
-  monitor_dbc_ptr_ = Teuchos::make_rcp<Solid::MonitorDbc>();
+  monitor_dbc_ptr_ = std::make_shared<Solid::MonitorDbc>();
   monitor_dbc_ptr_->init(io_ptr_, *gstate_ptr_->get_discret(), *gstate_ptr_, *dbc_ptr_);
   monitor_dbc_ptr_->setup();
 
@@ -173,8 +174,8 @@ void Solid::Integrator::equilibrate_initial_state()
   check_init();
 
   // temporary right-hand-side
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs_ptr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhs_ptr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*global_state().dof_row_map_view(), true);
 
   // initialize a temporal structural stiffness matrix
   Teuchos::RCP<Core::LinAlg::SparseOperator> stiff_ptr =
@@ -185,9 +186,9 @@ void Solid::Integrator::equilibrate_initial_state()
   // overwrite initial state vectors with Dirichlet BCs
   // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
   const double& timen = (*global_state().get_multi_time())[0];
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
   dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
 
@@ -240,8 +241,8 @@ void Solid::Integrator::equilibrate_initial_state()
   // ---------------------------------------------------------------------------
   // get the structural linear solver
   std::map<enum NOX::Nln::SolutionType, Teuchos::RCP<Core::LinAlg::Solver>> str_linsolver;
-  str_linsolver[NOX::Nln::sol_structure] =
-      tim_int().get_data_sdyn().get_lin_solvers().at(Inpar::Solid::model_structure);
+  str_linsolver[NOX::Nln::sol_structure] = Teuchos::rcpFromRef(
+      *tim_int().get_data_sdyn().get_lin_solvers().at(Inpar::Solid::model_structure));
 
   // copy the nox parameter-list
   Teuchos::ParameterList p_nox = tim_int().get_data_sdyn().get_nox_params();
@@ -251,7 +252,7 @@ void Solid::Integrator::equilibrate_initial_state()
   Core::LinAlg::Vector<double> soln_ptr(*global_state().dof_row_map_view(), true);
   // wrap the soln_ptr in a nox_epetra_Vector
   Teuchos::RCP<::NOX::Epetra::Vector> nox_soln_ptr = Teuchos::make_rcp<::NOX::Epetra::Vector>(
-      soln_ptr.get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*soln_ptr.get_ptr_of_Epetra_Vector()), ::NOX::Epetra::Vector::CreateView);
 
   // Check if we are using a Newton direction
   std::string dir_str = p_nox.sublist("Direction").get<std::string>("Method");
@@ -316,9 +317,9 @@ bool Solid::Integrator::current_state_is_equilibrium(const double& tol)
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*global_state().get_multi_time())[0];
-  Teuchos::RCP<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>> disnp_ptr = global_state().get_dis_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
+  std::shared_ptr<Core::LinAlg::Vector<double>> accnp_ptr = global_state().get_acc_np();
   dbc().apply_dirichlet_bc(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
   // set the evaluate parameters of the current base class
@@ -378,22 +379,22 @@ double Solid::Integrator::get_total_mid_time_str_energy(const Core::LinAlg::Vect
         " Please add a meaningful MIDTIME_ENERGY_TYPE to the ---STRUCTURAL DYNAMIC"
         " section of your Input file.");
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disnp_ptr =
       global_state().extract_displ_entries(x);
   const Core::LinAlg::Vector<double>& disnp = *disnp_ptr;
 
   set_state(disnp);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velnp_ptr = global_state().get_vel_np();
   const Core::LinAlg::Vector<double>& velnp = *velnp_ptr;
 
   eval_data().clear_values_for_all_energy_types();
   Solid::ModelEvaluator::Structure& str_model =
       dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dis_avg =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dis_avg =
       mt_energy_.average(disnp, *global_state().get_dis_n(), get_int_param());
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel_avg =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> vel_avg =
       mt_energy_.average(velnp, *global_state().get_vel_n(), get_int_param());
 
   str_model.determine_energy(*dis_avg, vel_avg.get(), true);
@@ -428,7 +429,7 @@ void Solid::Integrator::determine_optional_quantity()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool Solid::Integrator::determine_element_volumes(
-    const Core::LinAlg::Vector<double>& x, Teuchos::RCP<Core::LinAlg::Vector<double>>& ele_vols)
+    const Core::LinAlg::Vector<double>& x, std::shared_ptr<Core::LinAlg::Vector<double>>& ele_vols)
 {
   check_init_setup();
   Solid::ModelEvaluator::Generic& model = evaluator(Inpar::Solid::model_structure);
@@ -592,7 +593,7 @@ const Solid::ModelEvaluatorManager& Solid::Integrator::model_eval() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Solid::ModelEvaluatorManager> Solid::Integrator::model_eval_ptr() const
+std::shared_ptr<const Solid::ModelEvaluatorManager> Solid::Integrator::model_eval_ptr() const
 {
   check_init();
   return modelevaluator_ptr_;
@@ -769,14 +770,14 @@ double Solid::Integrator::MidTimeEnergy::get_total() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::Integrator::MidTimeEnergy::average(
+std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::Integrator::MidTimeEnergy::average(
     const Core::LinAlg::Vector<double>& state_np, const Core::LinAlg::Vector<double>& state_n,
     const double fac_n) const
 {
   const double fac_np = 1.0 - fac_n;
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> state_avg =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(state_np);
+  std::shared_ptr<Core::LinAlg::Vector<double>> state_avg =
+      std::make_shared<Core::LinAlg::Vector<double>>(state_np);
   switch (avg_type_)
   {
     case Inpar::Solid::midavg_vague:

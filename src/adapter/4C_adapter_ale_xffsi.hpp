@@ -38,15 +38,15 @@ namespace Adapter
     //@{
 
     //! constructor
-    explicit AleXFFsiWrapper(Teuchos::RCP<Ale> ale);
+    explicit AleXFFsiWrapper(std::shared_ptr<Ale> ale);
 
     //@}
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override;
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override;
 
     /// evaluate and assemble residual and jacobian matrix
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             stepinc  ///< step increment such that \f$ x_{n+1}^{k+1} =
                      ///< x_{n}^{converged}+ stepinc \f$
         ) override;
@@ -63,7 +63,7 @@ namespace Adapter
 
    private:
     /// map extractor for the fluid-fluid interface dof
-    Teuchos::RCP<ALE::Utils::XFluidFluidMapExtractor> xff_interface_;
+    std::shared_ptr<ALE::Utils::XFluidFluidMapExtractor> xff_interface_;
 
   };  // class AleXFFsiWrapper
 }  // namespace Adapter

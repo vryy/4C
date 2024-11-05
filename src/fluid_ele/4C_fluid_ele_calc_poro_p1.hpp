@@ -80,7 +80,8 @@ namespace Discret
       */
       int evaluate(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -106,7 +107,8 @@ namespace Discret
       */
       int evaluate_od(Discret::Elements::Fluid* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -156,8 +158,9 @@ namespace Discret
           const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
           const Core::LinAlg::Matrix<nsd_, nen_>& egridvn,
           const Core::LinAlg::Matrix<nen_, 1>& escaaf,
-          const Core::LinAlg::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<Core::Mat::Material> mat,
-          bool isale, const Core::FE::GaussIntegration& intpoints);
+          const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
+          std::shared_ptr<Core::Mat::Material> mat, bool isale,
+          const Core::FE::GaussIntegration& intpoints);
 
       /*!
         \brief calculate off diagonal element matrix and rhs for porous flow
@@ -199,7 +202,7 @@ namespace Discret
           const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& ecoupl,
           Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-          Teuchos::RCP<const Core::Mat::Material> material, bool isale,
+          std::shared_ptr<const Core::Mat::Material> material, bool isale,
           const Core::FE::GaussIntegration& intpoints);
 
       /*!
@@ -248,7 +251,7 @@ namespace Discret
           Core::LinAlg::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
           Core::LinAlg::Matrix<nen_ * nsd_, nen_>& ecouplp1_u,
           Core::LinAlg::Matrix<nen_, nen_>& ecouplp1_p,
-          Teuchos::RCP<const Core::Mat::Material> material,
+          std::shared_ptr<const Core::Mat::Material> material,
           const Core::FE::GaussIntegration& intpoints);
 
       /*!

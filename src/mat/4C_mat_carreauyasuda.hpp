@@ -44,7 +44,7 @@ namespace Mat
       //@}
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class CarreauYasuda
 
@@ -122,9 +122,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<CarreauYasuda>(*this);
+      return std::make_shared<CarreauYasuda>(*this);
     }
 
     /// return material parameters for element calculation

@@ -14,40 +14,43 @@
 
 #include <Epetra_Export.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMasterConverter::src_to_dst(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> source_vector) const
+std::shared_ptr<Core::LinAlg::Vector<double>>
+Coupling::Adapter::CouplingMasterConverter::src_to_dst(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> source_vector) const
 {
   return coup_.master_to_slave(*source_vector);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingMasterConverter::dst_to_src(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> destination_vector) const
+std::shared_ptr<Core::LinAlg::Vector<double>>
+Coupling::Adapter::CouplingMasterConverter::dst_to_src(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> destination_vector) const
 {
   return coup_.slave_to_master(*destination_vector);
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::src_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::src_map() const
 {
   return coup_.master_dof_map();
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::dst_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::dst_map() const
 {
   return coup_.slave_dof_map();
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::perm_src_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::perm_src_map() const
 {
   return coup_.perm_master_dof_map();
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::perm_dst_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingMasterConverter::perm_dst_map() const
 {
   return coup_.perm_slave_dof_map();
 }
@@ -59,34 +62,34 @@ void Coupling::Adapter::CouplingMasterConverter::fill_src_to_dst_map(
 }
 
 
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::src_to_dst(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> source_vector) const
+std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::src_to_dst(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> source_vector) const
 {
   return coup_.slave_to_master(*source_vector);
 }
 
-Teuchos::RCP<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::dst_to_src(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> destination_vector) const
+std::shared_ptr<Core::LinAlg::Vector<double>> Coupling::Adapter::CouplingSlaveConverter::dst_to_src(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> destination_vector) const
 {
   return coup_.master_to_slave(*destination_vector);
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::src_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::src_map() const
 {
   return coup_.slave_dof_map();
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::dst_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::dst_map() const
 {
   return coup_.master_dof_map();
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::perm_src_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::perm_src_map() const
 {
   return coup_.perm_slave_dof_map();
 }
 
-Teuchos::RCP<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::perm_dst_map() const
+std::shared_ptr<const Epetra_Map> Coupling::Adapter::CouplingSlaveConverter::perm_dst_map() const
 {
   return coup_.perm_master_dof_map();
 }
@@ -105,7 +108,7 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
     const CouplingConverter* col_converter, Core::LinAlg::SparseMatrix& dst, bool exactmatch,
     bool addmatrix)
 {
-  Teuchos::RCP<Epetra_CrsMatrix> esrc = src.epetra_matrix();
+  std::shared_ptr<Epetra_CrsMatrix> esrc = src.epetra_matrix();
   const Epetra_Map* final_range_map = &logical_range_map;
   const Epetra_Map* matching_dst_rows = &logical_range_map;
 
@@ -128,13 +131,13 @@ bool Coupling::Adapter::MatrixLogicalSplitAndTransform::operator()(
     // need communication -> call import on permuted map
     if (!gsubset)
     {
-      if (exporter_ == Teuchos::null)
+      if (exporter_ == nullptr)
       {
-        exporter_ = Teuchos::make_rcp<Epetra_Export>(permsrcmap, src.row_map());
+        exporter_ = std::make_shared<Epetra_Export>(permsrcmap, src.row_map());
       }
 
-      Teuchos::RCP<Epetra_CrsMatrix> permsrc =
-          Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, permsrcmap, 0);
+      std::shared_ptr<Epetra_CrsMatrix> permsrc =
+          std::make_shared<Epetra_CrsMatrix>(::Copy, permsrcmap, 0);
       int err = permsrc->Import(*src.epetra_matrix(), *exporter_, Insert);
       if (err) FOUR_C_THROW("Import failed with err=%d", err);
 

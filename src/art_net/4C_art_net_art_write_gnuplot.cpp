@@ -54,7 +54,7 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 Arteries::Utils::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     : discret_(actdis)
 {
   // -------------------------------------------------------------------
@@ -145,7 +145,7 @@ Arteries::Utils::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
       // ---------------------------------------------------------------
-      Teuchos::RCP<ArtWriteGnuplot> artgnu_c = Teuchos::make_rcp<ArtWriteGnuplot>(Artery_Number);
+      std::shared_ptr<ArtWriteGnuplot> artgnu_c = std::make_shared<ArtWriteGnuplot>(Artery_Number);
 
 
       // ---------------------------------------------------------------
@@ -193,7 +193,7 @@ void Arteries::Utils::ArtWriteGnuplotWrapper::write(Teuchos::ParameterList& para
     // -------------------------------------------------------------------
     // loop over all conditions and export the arteries values
     // -------------------------------------------------------------------
-    std::map<const int, Teuchos::RCP<class ArtWriteGnuplot>>::iterator mapiter;
+    std::map<const int, std::shared_ptr<class ArtWriteGnuplot>>::iterator mapiter;
 
     // defining a constant that will have the artery number
     int art_num;
@@ -233,7 +233,7 @@ Arteries::Utils::ArtWriteGnuplot::ArtWriteGnuplot(int ArteryNum) : artery_num_(A
   str += ".art";
   cstr = new char[str.size() + 1];
   strcpy(cstr, str.c_str());
-  fout_ = Teuchos::make_rcp<std::ofstream>(cstr);
+  fout_ = std::make_shared<std::ofstream>(cstr);
   delete[] cstr;
 
   // Avoid warning on unused variable
@@ -310,7 +310,7 @@ void Arteries::Utils::ArtWriteGnuplot::write(Core::FE::Discretization& discret,
               pow(xyze(2, 0) - xyze(2, 1), 2));
 
     // get the degrees of freedom
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> qanp = discret.get_state("qanp");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> qanp = discret.get_state("qanp");
     std::vector<double> myqanp(lm.size());
     Core::FE::extract_my_values(*qanp, myqanp, lm);
 

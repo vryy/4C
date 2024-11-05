@@ -31,7 +31,7 @@ namespace Mat
       ParticleMaterialDEM(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! create material instance of matching type with parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
@@ -108,9 +108,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ParticleMaterialDEM>(*this);
+      return std::make_shared<ParticleMaterialDEM>(*this);
     }
 
     //! return quick accessible material parameter data

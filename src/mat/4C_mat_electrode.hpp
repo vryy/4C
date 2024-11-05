@@ -38,7 +38,7 @@ namespace Mat
 
 
       //! create instance of electrode material
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! @name parameters for electrode material
       //! @{
@@ -157,9 +157,9 @@ namespace Mat
     };
 
     //! clone electrode material
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Electrode>(*this);
+      return std::make_shared<Electrode>(*this);
     };
 
     //! return lithiation value corresponding to saturation value of intercalated Lithium

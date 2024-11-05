@@ -170,14 +170,14 @@ void Inpar::BEAMINTERACTION::set_valid_parameters(Teuchos::ParameterList& list)
 }
 
 void Inpar::BEAMINTERACTION::set_valid_conditions(
-    std::vector<Teuchos::RCP<Core::Conditions::ConditionDefinition>>& condlist)
+    std::vector<std::shared_ptr<Core::Conditions::ConditionDefinition>>& condlist)
 {
   using namespace Input;
 
   /*-------------------------------------------------------------------*/
   // beam potential interaction: atom/charge density per unit length on LINE
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> beam_filament_condition =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> beam_filament_condition =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN LINE BEAM FILAMENT CONDITIONS", "BeamLineFilamentCondition",
           "Beam_Line_Filament_Condition", Core::Conditions::FilamentBeamLineCondition, false,
           Core::Conditions::geometry_type_line);
@@ -193,8 +193,8 @@ void Inpar::BEAMINTERACTION::set_valid_conditions(
   condlist.push_back(beam_filament_condition);
 
   /*-------------------------------------------------------------------*/
-  Teuchos::RCP<Core::Conditions::ConditionDefinition> penalty_coupling_condition =
-      Teuchos::make_rcp<Core::Conditions::ConditionDefinition>(
+  std::shared_ptr<Core::Conditions::ConditionDefinition> penalty_coupling_condition =
+      std::make_shared<Core::Conditions::ConditionDefinition>(
           "DESIGN POINT PENALTY COUPLING CONDITIONS", "PenaltyPointCouplingCondition",
           "Couples beam nodes that lie on the same position",
           Core::Conditions::PenaltyPointCouplingCondition, false,

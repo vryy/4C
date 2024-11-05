@@ -10,22 +10,22 @@
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <fstream>
 #include <iterator>
+#include <memory>
 #include <sstream>
 
 FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SparseMatrix::SparseMatrix(
-    Teuchos::RCP<Epetra_CrsGraph> crsgraph, Teuchos::RCP<Core::LinAlg::MultiMapExtractor> dbcmaps)
+Core::LinAlg::SparseMatrix::SparseMatrix(std::shared_ptr<Epetra_CrsGraph> crsgraph,
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> dbcmaps)
     : explicitdirichlet_(true), savegraph_(true), matrixtype_(CRS_MATRIX)
 {
-  sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, *crsgraph);
+  sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, *crsgraph);
   graph_ = crsgraph;
   dbcmaps_ = dbcmaps;
 }
@@ -35,8 +35,8 @@ Core::LinAlg::SparseMatrix::SparseMatrix(
  *----------------------------------------------------------------------*/
 Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr,
     bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
-    : graph_(Teuchos::null),
-      dbcmaps_(Teuchos::null),
+    : graph_(nullptr),
+      dbcmaps_(nullptr),
       explicitdirichlet_(explicitdirichlet),
       savegraph_(savegraph),
       matrixtype_(matrixtype)
@@ -44,9 +44,9 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr
   if (!rowmap.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, npr, false);
+    sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, npr, false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, npr, false);
+    sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, npr, false);
   else
     FOUR_C_THROW("matrix type is not correct");
 }
@@ -55,8 +55,8 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, const int npr
  *----------------------------------------------------------------------*/
 Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<int>& numentries,
     bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
-    : graph_(Teuchos::null),
-      dbcmaps_(Teuchos::null),
+    : graph_(nullptr),
+      dbcmaps_(nullptr),
       explicitdirichlet_(explicitdirichlet),
       savegraph_(savegraph),
       matrixtype_(matrixtype)
@@ -67,9 +67,9 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<i
     FOUR_C_THROW("estimate for non zero entries per row does not match the size of row map");
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
+    sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
+    sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else
     FOUR_C_THROW("matrix type is not correct");
 }
@@ -78,10 +78,10 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Epetra_Map& rowmap, std::vector<i
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Core::LinAlg::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, DataAccess access,
-    bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
-    : graph_(Teuchos::null),
-      dbcmaps_(Teuchos::null),
+Core::LinAlg::SparseMatrix::SparseMatrix(std::shared_ptr<Epetra_CrsMatrix> matrix,
+    DataAccess access, bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
+    : graph_(nullptr),
+      dbcmaps_(nullptr),
       explicitdirichlet_(explicitdirichlet),
       savegraph_(savegraph),
       matrixtype_(matrixtype)
@@ -89,11 +89,11 @@ Core::LinAlg::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, 
   if (access == Copy)
   {
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*matrix);
+      sysmat_ = std::make_shared<Epetra_CrsMatrix>(*matrix);
     else if (matrixtype_ == FE_MATRIX)
     {
-      sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(
-          *(Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix)));
+      sysmat_ = std::make_shared<Epetra_FECrsMatrix>(
+          *(std::dynamic_pointer_cast<Epetra_FECrsMatrix>(matrix)));
     }
     else
       FOUR_C_THROW("matrix type is not correct");
@@ -103,14 +103,14 @@ Core::LinAlg::SparseMatrix::SparseMatrix(Teuchos::RCP<Epetra_CrsMatrix> matrix, 
     if (matrixtype_ == CRS_MATRIX)
       sysmat_ = matrix;
     else if (matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(matrix, true);
+      sysmat_ = std::dynamic_pointer_cast<Epetra_FECrsMatrix>(matrix);
     else
       FOUR_C_THROW("matrix type is not correct");
   }
 
   if (sysmat_->Filled() and savegraph_)
   {
-    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
+    graph_ = std::make_shared<Epetra_CrsGraph>(sysmat_->Graph());
   }
 }
 
@@ -143,8 +143,8 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const SparseMatrix& mat, DataAccess acc
  *----------------------------------------------------------------------*/
 Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Vector<double>& diag,
     bool explicitdirichlet, bool savegraph, MatrixType matrixtype)
-    : graph_(Teuchos::null),
-      dbcmaps_(Teuchos::null),
+    : graph_(nullptr),
+      dbcmaps_(nullptr),
       explicitdirichlet_(explicitdirichlet),
       savegraph_(savegraph),
       matrixtype_(matrixtype)
@@ -154,9 +154,9 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Vector<double>& dia
   if (!map.UniqueGIDs()) FOUR_C_THROW("Row map is not unique");
 
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, map, map, 1, false);
+    sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, map, map, 1, false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, map, map, 1, false);
+    sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, map, map, 1, false);
   else
     FOUR_C_THROW("matrix type is not correct");
 
@@ -175,37 +175,37 @@ Core::LinAlg::SparseMatrix::SparseMatrix(const Core::LinAlg::Vector<double>& dia
 bool Core::LinAlg::SparseMatrix::destroy(bool throw_exception)
 {
   // delete first the epetra matrix object
-  if (throw_exception and sysmat_.strong_count() > 1)
+  if (throw_exception and sysmat_.use_count() > 1)
   {
     std::stringstream msg;
     msg << "Epetra_CrsMatrix cannot be finally deleted: The strong counter "
-           "is still larger than 1. ( strong_count() = "
-        << sysmat_.strong_count() << " )";
+           "is still larger than 1. ( use_count() = "
+        << sysmat_.use_count() << " )";
     FOUR_C_THROW(msg.str());
   }
-  sysmat_ = Teuchos::null;
+  sysmat_ = nullptr;
 
   // delete now also the matrix' graph
-  if (throw_exception and graph_.strong_count() > 1)
+  if (throw_exception and graph_.use_count() > 1)
   {
     std::stringstream msg;
     msg << "Epetra_CrsGraph cannot be finally deleted: The strong counter is "
-           "still larger than 1. ( strong_count() = "
-        << graph_.strong_count() << " )";
+           "still larger than 1. ( use_count() = "
+        << graph_.use_count() << " )";
     FOUR_C_THROW(msg.str());
   }
-  graph_ = Teuchos::null;
+  graph_ = nullptr;
 
   // delete now also the matrix' graph
-  if (throw_exception and dbcmaps_.strong_count() > 1)
+  if (throw_exception and dbcmaps_.use_count() > 1)
   {
     std::stringstream msg;
     msg << "DBCMaps cannot be finally deleted: The strong counter is still "
-           "larger than 1. ( strong_count() = "
-        << dbcmaps_.strong_count() << " )";
+           "larger than 1. ( use_count() = "
+        << dbcmaps_.use_count() << " )";
     FOUR_C_THROW(msg.str());
   }
-  dbcmaps_ = Teuchos::null;
+  dbcmaps_ = nullptr;
 
   return true;
 }
@@ -231,11 +231,11 @@ Core::LinAlg::SparseMatrix& Core::LinAlg::SparseMatrix::operator=(const SparseMa
   if (mat.filled())
   {
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(*mat.sysmat_);
+      sysmat_ = std::make_shared<Epetra_CrsMatrix>(*mat.sysmat_);
     else if (matrixtype_ == FE_MATRIX)
     {
       sysmat_ =
-          Teuchos::make_rcp<Epetra_FECrsMatrix>(dynamic_cast<Epetra_FECrsMatrix&>(*mat.sysmat_));
+          std::make_shared<Epetra_FECrsMatrix>(dynamic_cast<Epetra_FECrsMatrix&>(*mat.sysmat_));
     }
     else
       FOUR_C_THROW("matrix type is not correct");
@@ -243,17 +243,17 @@ Core::LinAlg::SparseMatrix& Core::LinAlg::SparseMatrix::operator=(const SparseMa
   else
   {
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, mat.row_map(), 0, false);
+      sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, mat.row_map(), 0, false);
     else if (matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, mat.row_map(), 0, false);
+      sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, mat.row_map(), 0, false);
     else
       FOUR_C_THROW("matrix type is not correct");
   }
 
-  if (mat.graph_ != Teuchos::null)
-    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(*mat.graph_);
+  if (mat.graph_ != nullptr)
+    graph_ = std::make_shared<Epetra_CrsGraph>(*mat.graph_);
   else
-    graph_ = Teuchos::null;
+    graph_ = nullptr;
 
   return *this;
 }
@@ -284,7 +284,7 @@ void Core::LinAlg::SparseMatrix::assign(DataAccess access, const SparseMatrix& m
  *----------------------------------------------------------------------*/
 void Core::LinAlg::SparseMatrix::zero()
 {
-  if (graph_ == Teuchos::null)
+  if (graph_ == nullptr)
   {
     if (filled() && !explicitdirichlet_)
       sysmat_->PutScalar(0.);
@@ -297,11 +297,11 @@ void Core::LinAlg::SparseMatrix::zero()
     const Epetra_Map rangemap = sysmat_->RangeMap();
     // Remove old matrix before creating a new one so we do not have old and
     // new matrix in memory at the same time!
-    sysmat_ = Teuchos::null;
+    sysmat_ = nullptr;
     if (matrixtype_ == CRS_MATRIX)
-      sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, *graph_);
+      sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, *graph_);
     else if (matrixtype_ == FE_MATRIX)
-      sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, *graph_);
+      sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, *graph_);
     else
       FOUR_C_THROW("matrix type is not correct");
 
@@ -339,16 +339,16 @@ void Core::LinAlg::SparseMatrix::reset()
   }
   // Remove old matrix before creating a new one so we do not have old and
   // new matrix in memory at the same time!
-  sysmat_ = Teuchos::null;
+  sysmat_ = nullptr;
   if (matrixtype_ == CRS_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
+    sysmat_ = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else if (matrixtype_ == FE_MATRIX)
-    sysmat_ = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
+    sysmat_ = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, numentries.data(), false);
   else
     FOUR_C_THROW("matrix type is not correct");
 
-  graph_ = Teuchos::null;
-  dbcmaps_ = Teuchos::null;
+  graph_ = nullptr;
+  dbcmaps_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -406,7 +406,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const std::vector<int>& lmstr
       const int rgid = lmrow[lrow];
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
-      if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid)) continue;
+      if (dbcmaps_ != nullptr and dbcmaps_->Map(1)->MyGID(rgid)) continue;
 
       const int rlid = rowmap.LID(rgid);
 
@@ -519,7 +519,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const std::vector<int>& lmstr
       // #endif
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
-      if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid)) continue;
+      if (dbcmaps_ != nullptr and dbcmaps_->Map(1)->MyGID(rgid)) continue;
 
       for (int lcol = 0; lcol < lcoldim; ++lcol)
       {
@@ -594,7 +594,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const Core::LinAlg::SerialDen
       const int rgid = lmrow[lrow];
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
-      if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid)) continue;
+      if (dbcmaps_ != nullptr and dbcmaps_->Map(1)->MyGID(rgid)) continue;
 
       const int rlid = rowmap.LID(rgid);
 #ifdef FOUR_C_ENABLE_ASSERTIONS
@@ -624,7 +624,7 @@ void Core::LinAlg::SparseMatrix::assemble(int eid, const Core::LinAlg::SerialDen
 #endif
 
       // if we have a Dirichlet map check if this row is a Dirichlet row
-      if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid)) continue;
+      if (dbcmaps_ != nullptr and dbcmaps_->Map(1)->MyGID(rgid)) continue;
 
       for (int lcol = 0; lcol < lcoldim; ++lcol)
       {
@@ -661,8 +661,8 @@ void Core::LinAlg::SparseMatrix::fe_assemble(const Core::LinAlg::SerialDenseMatr
   if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     FOUR_C_THROW("Mismatch in dimensions");
 
-  Teuchos::RCP<Epetra_FECrsMatrix> fe_mat =
-      Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
+  std::shared_ptr<Epetra_FECrsMatrix> fe_mat =
+      std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_);
   const int myrank = fe_mat->Comm().MyPID();
 
   // loop rows of local matrix
@@ -693,7 +693,7 @@ void Core::LinAlg::SparseMatrix::fe_assemble(const Core::LinAlg::SerialDenseMatr
   // not used here, therefore check only for ">" rather than "!="
   if (lrowdim > Aele.numRows() || lcoldim > Aele.numCols()) FOUR_C_THROW("Mismatch in dimensions");
 
-  Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true);
+  std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_);
 
   // loop rows of local matrix
   for (int lrow = 0; lrow < lrowdim; ++lrow)
@@ -713,7 +713,7 @@ void Core::LinAlg::SparseMatrix::fe_assemble(const Core::LinAlg::SerialDenseMatr
  *----------------------------------------------------------------------*/
 void Core::LinAlg::SparseMatrix::assemble(double val, int rgid, int cgid)
 {
-  if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid))
+  if (dbcmaps_ != nullptr and dbcmaps_->Map(1)->MyGID(rgid))
     FOUR_C_THROW("no assembling to Dirichlet row");
 
   // SumIntoGlobalValues works for filled matrices as well!
@@ -732,7 +732,7 @@ void Core::LinAlg::SparseMatrix::assemble(double val, int rgid, int cgid)
  *----------------------------------------------------------------------*/
 void Core::LinAlg::SparseMatrix::set_value(double val, int rgid, int cgid)
 {
-  if (dbcmaps_ != Teuchos::null and dbcmaps_->Map(1)->MyGID(rgid))
+  if (dbcmaps_ != nullptr and dbcmaps_->Map(1)->MyGID(rgid))
     FOUR_C_THROW("no assembling to Dirichlet row");
 
   int errone = sysmat_->ReplaceGlobalValues(rgid, 1, &val, &cgid);
@@ -749,12 +749,12 @@ void Core::LinAlg::SparseMatrix::set_value(double val, int rgid, int cgid)
 void Core::LinAlg::SparseMatrix::fe_assemble(double val, int rgid, int cgid)
 {
   // SumIntoGlobalValues works for filled matrices as well!
-  int errone = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true))
+  int errone = (std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_))
                    ->SumIntoGlobalValues(1, &rgid, 1, &cgid, &val);
   // if value not already present , error > 0 then use insert method
   if (errone > 0 and not filled())
   {
-    int errtwo = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_, true))
+    int errtwo = (std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_))
                      ->InsertGlobalValues(1, &rgid, 1, &cgid, &val);
     if (errtwo < 0)
       FOUR_C_THROW("Epetra_FECrsMatrix::InsertGlobalValues returned error code %d", errtwo);
@@ -775,7 +775,7 @@ void Core::LinAlg::SparseMatrix::complete(bool enforce_complete)
   if (matrixtype_ == FE_MATRIX)
   {
     // false indicates here that fill_complete() is not called within GlobalAssemble()
-    int err = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))->GlobalAssemble(false);
+    int err = (std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_))->GlobalAssemble(false);
     if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d", err);
   }
 
@@ -785,9 +785,9 @@ void Core::LinAlg::SparseMatrix::complete(bool enforce_complete)
   if (err) FOUR_C_THROW("Epetra_CrsMatrix::fill_complete(domain,range) returned err=%d", err);
 
   // keep mask for further use
-  if (savegraph_ and graph_ == Teuchos::null)
+  if (savegraph_ and graph_ == nullptr)
   {
-    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
+    graph_ = std::make_shared<Epetra_CrsGraph>(sysmat_->Graph());
   }
 }
 
@@ -804,7 +804,7 @@ void Core::LinAlg::SparseMatrix::complete(
   if (matrixtype_ == FE_MATRIX)
   {
     // false indicates here that fill_complete() is not called within GlobalAssemble()
-    int err = (Teuchos::rcp_dynamic_cast<Epetra_FECrsMatrix>(sysmat_))
+    int err = (std::dynamic_pointer_cast<Epetra_FECrsMatrix>(sysmat_))
                   ->GlobalAssemble(domainmap, rangemap, false);
     if (err) FOUR_C_THROW("Epetra_FECrsMatrix::GlobalAssemble() returned err=%d", err);
   }
@@ -820,9 +820,9 @@ void Core::LinAlg::SparseMatrix::complete(
   if (err) FOUR_C_THROW("Epetra_CrsMatrix::fill_complete(domain,range) returned err=%d", err);
 
   // keep mask for further use
-  if (savegraph_ and graph_ == Teuchos::null)
+  if (savegraph_ and graph_ == nullptr)
   {
-    graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
+    graph_ = std::make_shared<Epetra_CrsGraph>(sysmat_->Graph());
   }
 }
 
@@ -847,11 +847,11 @@ void Core::LinAlg::SparseMatrix::un_complete()
   const Epetra_Map& colmap = sysmat_->ColMap();
   int elements = rowmap.NumMyElements();
 
-  Teuchos::RCP<Epetra_CrsMatrix> mat = Teuchos::null;
+  std::shared_ptr<Epetra_CrsMatrix> mat = nullptr;
   if (matrixtype_ == CRS_MATRIX)
-    mat = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, nonzeros.data(), false);
+    mat = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, nonzeros.data(), false);
   else if (matrixtype_ == FE_MATRIX)
-    mat = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, nonzeros.data(), false);
+    mat = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, nonzeros.data(), false);
   else
     FOUR_C_THROW("matrix type is not correct");
 
@@ -876,7 +876,7 @@ void Core::LinAlg::SparseMatrix::un_complete()
     if (err) FOUR_C_THROW("InsertGlobalValues err=%d", err);
   }
   sysmat_ = mat;
-  graph_ = Teuchos::null;
+  graph_ = nullptr;
 }
 
 
@@ -890,7 +890,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(
   // distributed
   if (not filled()) FOUR_C_THROW("expect filled matrix to apply dirichlet conditions");
 
-  if (dbcmaps_ != Teuchos::null)
+  if (dbcmaps_ != nullptr)
   {
     FOUR_C_THROW("Dirichlet map and toggle vector cannot be combined");
   }
@@ -900,9 +900,9 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(
     // Save graph of original matrix if not done already.
     // This will never happen as the matrix is guaranteed to be filled. But to
     // make the code more explicit...
-    if (savegraph_ and graph_ == Teuchos::null)
+    if (savegraph_ and graph_ == nullptr)
     {
-      graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
+      graph_ = std::make_shared<Epetra_CrsGraph>(sysmat_->Graph());
       if (not graph_->Filled()) FOUR_C_THROW("got unfilled graph from filled matrix");
     }
 
@@ -911,11 +911,11 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(
     const int nummyrows = sysmat_->NumMyRows();
     const int maxnumentries = sysmat_->MaxNumEntries();
 
-    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
+    std::shared_ptr<Epetra_CrsMatrix> Anew = nullptr;
     if (matrixtype_ == CRS_MATRIX)
-      Anew = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, maxnumentries, false);
+      Anew = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else if (matrixtype_ == FE_MATRIX)
-      Anew = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, maxnumentries, false);
+      Anew = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else
       FOUR_C_THROW("matrix type is not correct");
 
@@ -1004,7 +1004,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Map& dbctoggle, bo
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to apply dirichlet conditions");
 
-  if (dbcmaps_ != Teuchos::null)
+  if (dbcmaps_ != nullptr)
   {
 #ifdef FOUR_C_ENABLE_ASSERTIONS
     if (not dbctoggle.SameAs(*dbcmaps_->Map(1)))
@@ -1032,9 +1032,9 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Map& dbctoggle, bo
     // Save graph of original matrix if not done already.
     // This will never happen as the matrix is guaranteed to be filled. But to
     // make the code more explicit...
-    if (savegraph_ and graph_ == Teuchos::null)
+    if (savegraph_ and graph_ == nullptr)
     {
-      graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
+      graph_ = std::make_shared<Epetra_CrsGraph>(sysmat_->Graph());
       if (not graph_->Filled()) FOUR_C_THROW("got unfilled graph from filled matrix");
     }
 
@@ -1043,14 +1043,14 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet(const Epetra_Map& dbctoggle, bo
     const int nummyrows = sysmat_->NumMyRows();
     const int maxnumentries = sysmat_->MaxNumEntries();
 
-    // Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new
+    // std::shared_ptr<Epetra_CrsMatrix> Anew = Teuchos::rcp(new
     // Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
 
-    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::null;
+    std::shared_ptr<Epetra_CrsMatrix> Anew = nullptr;
     if (matrixtype_ == CRS_MATRIX)
-      Anew = Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, maxnumentries, false);
+      Anew = std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else if (matrixtype_ == FE_MATRIX)
-      Anew = Teuchos::make_rcp<Epetra_FECrsMatrix>(::Copy, rowmap, maxnumentries, false);
+      Anew = std::make_shared<Epetra_FECrsMatrix>(::Copy, rowmap, maxnumentries, false);
     else
       FOUR_C_THROW("matrix type is not correct");
 
@@ -1142,7 +1142,7 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to apply dirichlet conditions");
 
-  if (dbcmaps_ != Teuchos::null)
+  if (dbcmaps_ != nullptr)
   {
     FOUR_C_THROW("Dirichlet map and transformations cannot be combined");
   }
@@ -1152,9 +1152,9 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
     // Save graph of original matrix if not done already.
     // This will never happen as the matrix is guaranteed to be filled. But to
     // make the code more explicit...
-    if (savegraph_ and graph_ == Teuchos::null)
+    if (savegraph_ and graph_ == nullptr)
     {
-      graph_ = Teuchos::make_rcp<Epetra_CrsGraph>(sysmat_->Graph());
+      graph_ = std::make_shared<Epetra_CrsGraph>(sysmat_->Graph());
       if (not graph_->Filled()) FOUR_C_THROW("got unfilled graph from filled matrix");
     }
 
@@ -1172,8 +1172,8 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
 
     // initialise matrix Anew with general size (rowmap x colmap)
     // in case of coupled problem (e.g. TSI) transform the rectangular off-diagonal block k_Td
-    Teuchos::RCP<Epetra_CrsMatrix> Anew =
-        Teuchos::make_rcp<Epetra_CrsMatrix>(::Copy, rowmap, colmap, maxnumentries, false);
+    std::shared_ptr<Epetra_CrsMatrix> Anew =
+        std::make_shared<Epetra_CrsMatrix>(::Copy, rowmap, colmap, maxnumentries, false);
     std::vector<int> indices(maxnumentries, 0);
     std::vector<double> values(maxnumentries, 0.0);
     for (int i = 0; i < nummyrows; ++i)
@@ -1297,12 +1297,12 @@ void Core::LinAlg::SparseMatrix::apply_dirichlet_with_trafo(const Core::LinAlg::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dirichlet_rows(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dirichlet_rows(
     const Core::LinAlg::Vector<double>& dbctoggle)
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
 
-  Teuchos::RCP<SparseMatrix> dl = Teuchos::make_rcp<SparseMatrix>(
+  std::shared_ptr<SparseMatrix> dl = std::make_shared<SparseMatrix>(
       row_map(), max_num_entries(), explicit_dirichlet(), save_graph());
 
   const Epetra_Map& rowmap = sysmat_->RowMap();
@@ -1337,13 +1337,13 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dir
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dirichlet_rows(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::SparseMatrix::extract_dirichlet_rows(
     const Epetra_Map& dbctoggle)
 {
   if (not filled()) FOUR_C_THROW("expect filled matrix to extract dirichlet lines");
   if (not dbctoggle.UniqueGIDs()) FOUR_C_THROW("unique map required");
 
-  Teuchos::RCP<SparseMatrix> dl = Teuchos::make_rcp<SparseMatrix>(
+  std::shared_ptr<SparseMatrix> dl = std::make_shared<SparseMatrix>(
       row_map(), max_num_entries(), explicit_dirichlet(), save_graph());
 
   const Epetra_Map& rowmap = sysmat_->RowMap();
@@ -1392,23 +1392,23 @@ void Core::LinAlg::SparseMatrix::add(const Core::LinAlg::SparseMatrixBase& A, co
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Core::LinAlg::cast_to_sparse_matrix_and_check_success(
-    Teuchos::RCP<Core::LinAlg::SparseOperator> input_matrix)
+std::shared_ptr<Core::LinAlg::SparseMatrix> Core::LinAlg::cast_to_sparse_matrix_and_check_success(
+    std::shared_ptr<Core::LinAlg::SparseOperator> input_matrix)
 {
-  auto sparse_matrix = Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(input_matrix);
-  FOUR_C_ASSERT(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
+  auto sparse_matrix = std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(input_matrix);
+  FOUR_C_ASSERT(sparse_matrix != nullptr, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix>
+std::shared_ptr<const Core::LinAlg::SparseMatrix>
 Core::LinAlg::cast_to_const_sparse_matrix_and_check_success(
-    Teuchos::RCP<const Core::LinAlg::SparseOperator> input_matrix)
+    std::shared_ptr<const Core::LinAlg::SparseOperator> input_matrix)
 {
-  auto sparse_matrix = Teuchos::rcp_dynamic_cast<const Core::LinAlg::SparseMatrix>(input_matrix);
-  FOUR_C_ASSERT(sparse_matrix != Teuchos::null, "Matrix is not a sparse matrix!");
+  auto sparse_matrix = std::dynamic_pointer_cast<const Core::LinAlg::SparseMatrix>(input_matrix);
+  FOUR_C_ASSERT(sparse_matrix != nullptr, "Matrix is not a sparse matrix!");
 
   return sparse_matrix;
 }

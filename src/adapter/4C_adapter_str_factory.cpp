@@ -24,10 +24,10 @@ Adapter::StructureFactory::StructureFactory()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::StructureBaseAlgorithmNew>
+std::shared_ptr<Adapter::StructureBaseAlgorithmNew>
 Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterList& sdyn) const
 {
-  Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase = Teuchos::null;
+  std::shared_ptr<Adapter::StructureBaseAlgorithmNew> adapterbase = nullptr;
 
   const auto intstrat =
       Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY");
@@ -35,7 +35,7 @@ Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterLis
   switch (intstrat)
   {
     case Inpar::Solid::int_standard:
-      adapterbase = Teuchos::make_rcp<Adapter::StructureBaseAlgorithmNew>();
+      adapterbase = std::make_shared<Adapter::StructureBaseAlgorithmNew>();
       break;
     default:
       FOUR_C_THROW("Unknown integration strategy!");
@@ -47,7 +47,7 @@ Adapter::StructureFactory::build_structure_algorithm(const Teuchos::ParameterLis
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> Adapter::build_structure_algorithm(
+std::shared_ptr<Adapter::StructureBaseAlgorithmNew> Adapter::build_structure_algorithm(
     const Teuchos::ParameterList& sdyn)
 {
   StructureFactory factory;

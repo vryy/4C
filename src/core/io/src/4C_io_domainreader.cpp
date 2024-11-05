@@ -70,8 +70,8 @@ namespace Core::IO
 
   /*----------------------------------------------------------------------*/
   /*----------------------------------------------------------------------*/
-  DomainReader::DomainReader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
-      std::string sectionname)
+  DomainReader::DomainReader(std::shared_ptr<Core::FE::Discretization> dis,
+      Core::IO::InputFile& input, std::string sectionname)
       : name_(dis->name()),
         input_(input),
         comm_(dis->get_comm()),

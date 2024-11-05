@@ -85,7 +85,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 void print_valid_parameters()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = Input::valid_parameters();
+  std::shared_ptr<const Teuchos::ParameterList> list = Input::valid_parameters();
   list->print(std::cout,
       Teuchos::ParameterList::PrintOptions().showDoc(true).showFlags(false).indent(4).showTypes(
           false));
@@ -324,13 +324,13 @@ void Input::print_dat_header(
 
 void print_default_dat_header()
 {
-  Teuchos::RCP<const Teuchos::ParameterList> list = Input::valid_parameters();
+  std::shared_ptr<const Teuchos::ParameterList> list = Input::valid_parameters();
   Input::print_dat_header(std::cout, *list);
 }
 
-Teuchos::RCP<const Teuchos::ParameterList> Input::valid_parameters()
+std::shared_ptr<const Teuchos::ParameterList> Input::valid_parameters()
 {
-  Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::make_rcp<Teuchos::ParameterList>();
+  std::shared_ptr<Teuchos::ParameterList> list = std::make_shared<Teuchos::ParameterList>();
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& discret = list->sublist("DISCRETISATION", false, "");

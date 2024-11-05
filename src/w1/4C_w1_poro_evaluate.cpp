@@ -34,7 +34,7 @@ void Discret::Elements::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
       if (discretization.has_state(2, "scalar"))
       {
         // check if you can get the scalar state
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarnp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> scalarnp =
             discretization.get_state(2, "scalar");
 
         // extract local values of the global vectors
@@ -42,18 +42,19 @@ void Discret::Elements::Wall1Poro<distype>::pre_evaluate(Teuchos::ParameterList&
         Core::FE::extract_my_values(*scalarnp, myscalar, la[2].lm_);
 
         if (num_material() < 3) FOUR_C_THROW("no third material defined for Wall poro element!");
-        Teuchos::RCP<Core::Mat::Material> scatramat = material(2);
+        std::shared_ptr<Core::Mat::Material> scatramat = material(2);
 
         int numscal = 1;
         if (scatramat->material_type() == Core::Materials::m_matlist or
             scatramat->material_type() == Core::Materials::m_matlist_reactions)
         {
-          Teuchos::RCP<Mat::MatList> matlist = Teuchos::rcp_dynamic_cast<Mat::MatList>(scatramat);
+          std::shared_ptr<Mat::MatList> matlist =
+              std::dynamic_pointer_cast<Mat::MatList>(scatramat);
           numscal = matlist->num_mat();
         }
 
-        Teuchos::RCP<std::vector<double>> scalar =
-            Teuchos::make_rcp<std::vector<double>>(numscal, 0.0);
+        std::shared_ptr<std::vector<double>> scalar =
+            std::make_shared<std::vector<double>>(numscal, 0.0);
         if ((int)myscalar.size() != numscal * numnod_) FOUR_C_THROW("sizes do not match!");
 
         for (int i = 0; i < numnod_; i++)
@@ -260,7 +261,7 @@ int Discret::Elements::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+            std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -330,7 +331,7 @@ int Discret::Elements::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
           {
             // get primary variables of multiphase porous medium flow
             std::vector<double> myephi(la[1].size());
-            Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+            std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
                 discretization.get_state(1, "porofluid");
             Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -388,7 +389,7 @@ int Discret::Elements::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
               discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -445,7 +446,7 @@ int Discret::Elements::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
         {
           // get primary variables of multiphase porous medium flow
           std::vector<double> myephi(la[1].size());
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+          std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
               discretization.get_state(1, "porofluid");
           Core::FE::extract_my_values(*matrix_state, myephi, la[1].lm_);
 
@@ -477,10 +478,10 @@ int Discret::Elements::Wall1Poro<distype>::my_evaluate(Teuchos::ParameterList& p
       Core::LinAlg::Matrix<numdim_, numnod_> mydisp(true);
       extract_values_from_global_vector(discretization, 0, lm, &mydisp, nullptr, "displacement");
 
-      Teuchos::RCP<std::vector<char>> couplstressdata =
-          params.get<Teuchos::RCP<std::vector<char>>>("couplstress", Teuchos::null);
+      std::shared_ptr<std::vector<char>> couplstressdata =
+          params.get<std::shared_ptr<std::vector<char>>>("couplstress", nullptr);
 
-      if (couplstressdata == Teuchos::null) FOUR_C_THROW("Cannot get 'couplstress' data");
+      if (couplstressdata == nullptr) FOUR_C_THROW("Cannot get 'couplstress' data");
 
       Core::LinAlg::SerialDenseMatrix couplstress(numgpt_, Wall1::numstr_);
 
@@ -1752,7 +1753,8 @@ void Discret::Elements::Wall1Poro<distype>::coupling_stress_poroelast(
   Core::LinAlg::Matrix<numdim_, numnod_> deriv;
 
   // get structure material
-  Teuchos::RCP<Mat::StructPoro> structmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(material());
+  std::shared_ptr<Mat::StructPoro> structmat =
+      std::dynamic_pointer_cast<Mat::StructPoro>(material());
   if (structmat->material_type() != Core::Materials::m_structporo)
     FOUR_C_THROW("invalid structure material for poroelasticity");
 
@@ -2385,9 +2387,9 @@ void Discret::Elements::Wall1Poro<distype>::extract_values_from_global_vector(
 {
   // put on higher level
   // get state of the global vector
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
       discretization.get_state(dofset, state);
-  if (matrix_state == Teuchos::null) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
+  if (matrix_state == nullptr) FOUR_C_THROW("Cannot get state vector %s", state.c_str());
 
   const int numdofpernode = discretization.num_dof(dofset, nodes()[0]);
 

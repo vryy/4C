@@ -67,8 +67,8 @@ namespace FLD
   class XFluidOutputService
   {
    public:
-    XFluidOutputService(const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager);
+    XFluidOutputService(const std::shared_ptr<XFEM::DiscretizationXFEM>& discret,
+        const std::shared_ptr<XFEM::ConditionManager>& cond_manager);
 
     virtual ~XFluidOutputService() = default;
 
@@ -77,20 +77,20 @@ namespace FLD
 
     /// standard output routine
     void output(int step, double time, bool write_restart_data, const FLD::XFluidState& state,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp = Teuchos::null,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnp = Teuchos::null);
+        std::shared_ptr<Core::LinAlg::Vector<double>> dispnp = nullptr,
+        std::shared_ptr<Core::LinAlg::Vector<double>> gridvnp = nullptr);
 
     /// Gmsh solution output
     virtual void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
         int step,                                                        ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,                     ///< state
+        const std::shared_ptr<FLD::XFluidState>& state,                  ///< state
         int count = -1){};
 
     /// Gmsh solution output for previous time step
     virtual void gmsh_solution_output_previous(
-        const std::string& filename_base,             ///< name for output file
-        int step,                                     ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,  ///< state
+        const std::string& filename_base,                ///< name for output file
+        int step,                                        ///< step number
+        const std::shared_ptr<FLD::XFluidState>& state,  ///< state
         int count = -1){};
 
     /// Gmsh output of solution (debug)
@@ -98,7 +98,7 @@ namespace FLD
         const std::string& filename_base,  ///< name for output file
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
-        const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+        const std::shared_ptr<FLD::XFluidState>& state  ///< state
     ){};
 
     /// Gmsh output of residual (debug)
@@ -106,7 +106,7 @@ namespace FLD
         const std::string& filename_base,  ///< name for output file
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
-        const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+        const std::shared_ptr<FLD::XFluidState>& state  ///< state
     ){};
 
     /// Gmsh output of increment (debug)
@@ -114,7 +114,7 @@ namespace FLD
         const std::string& filename_base,  ///< name for output file
         int step,                          ///< step number
         int count,                         ///< counter for iterations within a global time step
-        const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+        const std::shared_ptr<FLD::XFluidState>& state  ///< state
     ){};
 
     /// Gmsh output of discretization
@@ -126,35 +126,35 @@ namespace FLD
         const std::string& prefix,                              ///< data prefix
         int step,                                               ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<Cut::CutWizard>& wizard,  ///< cut wizard
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
+        const std::shared_ptr<Cut::CutWizard>& wizard,  ///< cut wizard
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
             vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
-            Teuchos::null  ///< vector holding acceleration
+        std::shared_ptr<const Core::LinAlg::Vector<double>> acc =
+            nullptr  ///< vector holding acceleration
     ){};
 
     /// Gmsh output for EOS
-    virtual void gmsh_output_eos(int step,          ///< step number
-        Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
+    virtual void gmsh_output_eos(int step,             ///< step number
+        std::shared_ptr<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
     ){};
 
    protected:
     //! @name XFEM discretization
     //@{
-    const Teuchos::RCP<XFEM::DiscretizationXFEM> discret_;
+    const std::shared_ptr<XFEM::DiscretizationXFEM> discret_;
     //@}
 
     //! XFEM condition manager
-    const Teuchos::RCP<XFEM::ConditionManager> cond_manager_;
+    const std::shared_ptr<XFEM::ConditionManager> cond_manager_;
 
     //! dofset for fluid output
-    Teuchos::RCP<Core::DOFSets::IndependentDofSet> dofset_out_;
+    std::shared_ptr<Core::DOFSets::IndependentDofSet> dofset_out_;
 
     //! output vector (mapped to initial fluid dofrowmap)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> outvec_fluid_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> outvec_fluid_;
 
     //! vel-pres splitter for output purpose
-    Teuchos::RCP<Core::LinAlg::MapExtractor> velpressplitter_out_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> velpressplitter_out_;
 
     bool firstoutputofrun_;
 
@@ -169,40 +169,40 @@ namespace FLD
   {
    public:
     XFluidOutputServiceGmsh(Teuchos::ParameterList& params_xfem,
-        const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
-        const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner);
+        const std::shared_ptr<XFEM::DiscretizationXFEM>& discret,
+        const std::shared_ptr<XFEM::ConditionManager>& cond_manager, const bool include_inner);
 
     /// Gmsh solution output
     void gmsh_solution_output(const std::string& filename_base,  ///< name for output file
         int step,                                                ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,             ///< state
+        const std::shared_ptr<FLD::XFluidState>& state,          ///< state
         int count = -1) override;
 
     /// Gmsh solution output for previous time step
     void gmsh_solution_output_previous(const std::string& filename_base,  ///< name for output file
         int step,                                                         ///< step number
-        const Teuchos::RCP<FLD::XFluidState>& state,                      ///< state
+        const std::shared_ptr<FLD::XFluidState>& state,                   ///< state
         int count = -1) override;
 
     /// Gmsh output of solution (debug)
     void gmsh_solution_output_debug(const std::string& filename_base,  ///< name for output file
         int step,                                                      ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+        const std::shared_ptr<FLD::XFluidState>& state  ///< state
         ) override;
 
     /// Gmsh output of residual (debug)
     void gmsh_residual_output_debug(const std::string& filename_base,  ///< name for output file
         int step,                                                      ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+        const std::shared_ptr<FLD::XFluidState>& state  ///< state
         ) override;
 
     /// Gmsh output of increment (debug)
     void gmsh_increment_output_debug(const std::string& filename_base,  ///< name for output file
         int step,                                                       ///< step number
         int count,  ///< counter for iterations within a global time step
-        const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+        const std::shared_ptr<FLD::XFluidState>& state  ///< state
         ) override;
 
     /// Gmsh output of discretization
@@ -216,15 +216,15 @@ namespace FLD
         int count,               ///< counter for iterations within a global time step
         Cut::CutWizard& wizard,  ///< cut wizard
         const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
-            Teuchos::null,  ///< vector holding acceleration
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
-            Teuchos::null  ///< vector holding ale displacements
+        std::shared_ptr<const Core::LinAlg::Vector<double>> acc =
+            nullptr,  ///< vector holding acceleration
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+            nullptr  ///< vector holding ale displacements
     );
 
     /// Gmsh output for EOS
-    void gmsh_output_eos(int step,                  ///< step number
-        Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
+    void gmsh_output_eos(int step,                     ///< step number
+        std::shared_ptr<XFEM::XfemEdgeStab> edge_stab  ///< stabilization handler
         ) override;
 
    private:
@@ -237,10 +237,10 @@ namespace FLD
         Core::Elements::Element* actele,          ///< element
         std::vector<int>& nds,                    ///< vector holding the nodal dofsets
         const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc =
-            Teuchos::null,  ///< vector holding acceleration
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp =
-            Teuchos::null  ///< vector holding ale displacements
+        std::shared_ptr<const Core::LinAlg::Vector<double>> acc =
+            nullptr,  ///< vector holding acceleration
+        std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+            nullptr  ///< vector holding ale displacements
     );
 
     /// Gmsh output function for volumecells
@@ -254,8 +254,8 @@ namespace FLD
         Cut::VolumeCell* vc,                         ///< volumecell
         const std::vector<int>& nds,                 ///< vector holding the nodal dofsets
         const Core::LinAlg::Vector<double>& velvec,  ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> accvec =
-            Teuchos::null  ///< vector holding acceleration
+        std::shared_ptr<const Core::LinAlg::Vector<double>> accvec =
+            nullptr  ///< vector holding acceleration
     );
 
     /// Gmsh output function for boundarycells

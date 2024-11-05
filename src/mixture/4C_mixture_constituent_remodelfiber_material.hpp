@@ -31,7 +31,7 @@ namespace Mixture
     {
      public:
       RemodelFiberMaterial(const Core::Mat::PAR::Parameter::Data& matdata);
-      Teuchos::RCP<Core::Mat::Material> create_material() override
+      std::shared_ptr<Core::Mat::Material> create_material() override
       {
         FOUR_C_THROW("This type of material is not created with create_material()");
         std::exit(1);

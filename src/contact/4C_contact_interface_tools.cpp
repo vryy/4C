@@ -982,8 +982,8 @@ void CONTACT::Interface::visualize_gmsh(
 void CONTACT::Interface::fd_check_normal_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
@@ -1247,8 +1247,8 @@ void CONTACT::Interface::fd_check_normal_deriv()
 void CONTACT::Interface::fd_check_normal_cpp_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for normals / tangents
@@ -1736,8 +1736,8 @@ void CONTACT::Interface::fd_check_normal_cpp_deriv()
 void CONTACT::Interface::fd_check_mortar_d_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for D-Matrix entries
@@ -2006,8 +2006,8 @@ void CONTACT::Interface::fd_check_mortar_d_deriv()
 void CONTACT::Interface::fd_check_mortar_m_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for M-Matrix entries
@@ -2274,8 +2274,8 @@ void CONTACT::Interface::fd_check_mortar_m_deriv()
 void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -2507,8 +2507,8 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_txi()
 void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -2741,8 +2741,8 @@ void CONTACT::Interface::fd_check_slip_incr_deriv_teta()
 void CONTACT::Interface::fd_check_alpha_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3114,8 +3114,8 @@ void CONTACT::Interface::fd_check_alpha_deriv()
 void CONTACT::Interface::fd_check_gap_deriv_ltl()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3496,8 +3496,8 @@ void CONTACT::Interface::fd_check_gap_deriv_ltl()
 void CONTACT::Interface::fd_check_jump_deriv_ltl()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -3877,8 +3877,8 @@ void CONTACT::Interface::fd_check_jump_deriv_ltl()
 void CONTACT::Interface::fd_check_gap_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for gap values
@@ -4247,8 +4247,8 @@ void CONTACT::Interface::fd_check_gap_deriv()
 void CONTACT::Interface::fd_check_tang_lm_deriv()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for tangential LM values
@@ -4423,7 +4423,7 @@ void CONTACT::Interface::fd_check_tang_lm_deriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      mortar_coupling(selement, melements, Teuchos::null);
+      mortar_coupling(selement, melements, nullptr);
     }
     // *******************************************************************
 
@@ -4625,7 +4625,7 @@ void CONTACT::Interface::fd_check_tang_lm_deriv()
       // 2) integrate Mortar matrix M and weighted gap g
       // 3) compute directional derivative of M and g and store into nodes
       //********************************************************************
-      mortar_coupling(selement, melements, Teuchos::null);
+      mortar_coupling(selement, melements, nullptr);
     }
     // *******************************************************************
 
@@ -4798,7 +4798,7 @@ void CONTACT::Interface::fd_check_tang_lm_deriv()
     // 2) integrate Mortar matrix M and weighted gap g
     // 3) compute directional derivative of M and g and store into nodes
     //********************************************************************
-    mortar_coupling(selement, melements, Teuchos::null);
+    mortar_coupling(selement, melements, nullptr);
   }
   // *******************************************************************
 
@@ -4817,8 +4817,8 @@ void CONTACT::Interface::fd_check_stick_deriv(
   std::ostringstream oss;
 
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // create storage for values of complementary function C
@@ -5026,7 +5026,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
@@ -5050,7 +5050,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
@@ -5241,7 +5241,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs = linstickDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
@@ -5265,7 +5265,7 @@ void CONTACT::Interface::fd_check_stick_deriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs2 = linstickDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
@@ -5348,8 +5348,8 @@ void CONTACT::Interface::fd_check_slip_deriv(
     Core::LinAlg::SparseMatrix& linslipLMglobal, Core::LinAlg::SparseMatrix& linslipDISglobal)
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list
@@ -5604,7 +5604,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipLMglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs = linslipLMglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
@@ -5628,7 +5628,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipLMglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs2 = linslipLMglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
@@ -5843,7 +5843,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
@@ -5867,7 +5867,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
@@ -6081,7 +6081,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       // ************************************************************************
 
       // ********************************* TXI
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs = linslipDISglobal.epetra_matrix();
       sparse_crs->FillComplete();
       double sparse_ij = 0.0;
       int sparsenumentries = 0;
@@ -6105,7 +6105,7 @@ void CONTACT::Interface::fd_check_slip_deriv(
       double analyt_txi = sparse_ij;
 
       // ********************************* TETA
-      Teuchos::RCP<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.epetra_matrix();
+      std::shared_ptr<Epetra_CrsMatrix> sparse_crs2 = linslipDISglobal.epetra_matrix();
       sparse_crs2->FillComplete();
       double sparse_2 = 0.0;
       int sparsenumentries2 = 0;
@@ -6185,8 +6185,8 @@ void CONTACT::Interface::fd_check_slip_deriv(
 void CONTACT::Interface::fd_check_penalty_trac_nor()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   std::cout << std::setprecision(14);
@@ -6471,8 +6471,8 @@ void CONTACT::Interface::fd_check_penalty_trac_nor()
 void CONTACT::Interface::fd_check_penalty_trac_fric()
 {
   // FD checks only for serial case
-  Teuchos::RCP<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
-  Teuchos::RCP<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
+  std::shared_ptr<Epetra_Map> snodefullmap = Core::LinAlg::allreduce_e_map(*snoderowmap_);
+  std::shared_ptr<Epetra_Map> mnodefullmap = Core::LinAlg::allreduce_e_map(*mnoderowmap_);
   if (get_comm().NumProc() > 1) FOUR_C_THROW("FD checks only for serial case");
 
   // information from interface contact parameter list

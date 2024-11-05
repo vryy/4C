@@ -40,7 +40,7 @@ namespace Discret
        *  set-up as well.
        *
        *  \return RCP to the created class object. */
-      static Teuchos::RCP<SoHex8DeterminantAnalysis> create();
+      static std::shared_ptr<SoHex8DeterminantAnalysis> create();
 
       /** \brief Test the validity of the current element
        *

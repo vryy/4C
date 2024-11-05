@@ -51,9 +51,9 @@ namespace Discret
       /*========================================================================*/
 
       //! get diffusion manager for anisotropic diffusivity
-      Teuchos::RCP<ScaTraEleDiffManagerAniso<nsd_>> diff_manager()
+      std::shared_ptr<ScaTraEleDiffManagerAniso<nsd_>> diff_manager()
       {
-        return Teuchos::rcp_static_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
+        return std::static_pointer_cast<ScaTraEleDiffManagerAniso<nsd_>>(my::diffmanager_);
       };
 
       /*========================================================================*/

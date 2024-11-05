@@ -85,8 +85,8 @@ namespace
         Discret::Elements::DisTypeToOptGaussRule<distype>::rule);
 
     // format as Discret::Utils::GaussIntegration
-    Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
-        Teuchos::make_rcp<Core::FE::CollectedGaussPoints>();
+    std::shared_ptr<Core::FE::CollectedGaussPoints> gp =
+        std::make_shared<Core::FE::CollectedGaussPoints>();
 
     std::array<double, nsd> xi{};
     for (int i = 0; i < intpoints.ip().nquad; ++i)

@@ -32,16 +32,16 @@ Core::Communication::ParObject* Discret::Elements::Ale3Type::create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale3Type::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele;
+  std::shared_ptr<Core::Elements::Element> ele;
 
   if (eletype == "ALE3")
   {
     if (eledistype != "NURBS27")
     {
-      ele = Teuchos::make_rcp<Discret::Elements::Ale3>(id, owner);
+      ele = std::make_shared<Discret::Elements::Ale3>(id, owner);
     }
   }
 
@@ -50,10 +50,10 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3Type::create(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3Type::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale3Type::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Ale3>(id, owner);
+  return std::make_shared<Discret::Elements::Ale3>(id, owner);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -108,11 +108,11 @@ void Discret::Elements::Ale3Type::setup_element_definition(
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Ale3SurfaceType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Ale3SurfaceType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new Ale3Surface( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -201,7 +201,7 @@ void Discret::Elements::Ale3::print(std::ostream& os) const
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Ale3::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Ale3::surfaces()
 {
   return Core::Communication::element_boundary_factory<Ale3Surface, Ale3>(
       Core::Communication::buildSurfaces, *this);

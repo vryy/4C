@@ -16,7 +16,7 @@
 #include "4C_utils_function_manager.hpp"
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -42,18 +42,19 @@ namespace Mortar
 
 
     /// add a new discretization to perform coupling on
-    void push_back_coupling(const Teuchos::RCP<Core::FE::Discretization>& dis,  ///< discretization
-        const int nodeset,                       ///< nodeset to couple
-        const std::vector<int>& dofs_to_couple,  ///< dofs to couple
+    void push_back_coupling(
+        const std::shared_ptr<Core::FE::Discretization>& dis,  ///< discretization
+        const int nodeset,                                     ///< nodeset to couple
+        const std::vector<int>& dofs_to_couple,                ///< dofs to couple
         const Teuchos::ParameterList& mortar_params, const Teuchos::ParameterList& contact_params,
         const Teuchos::ParameterList& binning_params,
-        const std::map<std::string, Teuchos::RCP<Core::FE::Discretization>>& discretization_map,
+        const std::map<std::string, std::shared_ptr<Core::FE::Discretization>>& discretization_map,
         const Core::Utils::FunctionManager& function_manager,
-        Teuchos::RCP<Core::IO::OutputControl> output_control,
+        std::shared_ptr<Core::IO::OutputControl> output_control,
         Core::FE::ShapeFunctionType shape_function_typ, int ndim);
 
     /// Perform condensation in all blocks of the matrix
-    void condense_matrix(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& mat);
+    void condense_matrix(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>& mat);
 
     /// Perform condensation in the right-hand side
     void condense_rhs(Core::LinAlg::Vector<double>& rhs);
@@ -62,7 +63,7 @@ namespace Mortar
     void recover_incr(Core::LinAlg::Vector<double>& incr);
 
    private:
-    std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>> p_;
+    std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>> p_;
   };
 }  // namespace Mortar
 

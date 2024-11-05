@@ -18,7 +18,8 @@
 #include "4C_material_parameter_base.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,7 +37,7 @@ namespace Mat
       AAAneohooke(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       // !brief enum for mapping between material parameter and entry in the matparams_ vector
       enum Matparamnames
@@ -73,7 +74,7 @@ namespace Mat
       }
 
      private:
-      std::vector<Teuchos::RCP<Core::LinAlg::Vector<double>>> matparams_;
+      std::vector<std::shared_ptr<Core::LinAlg::Vector<double>>> matparams_;
     };  // class AAAneohooke
 
   }  // namespace PAR
@@ -169,9 +170,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<AAAneohooke>(*this);
+      return std::make_shared<AAAneohooke>(*this);
     }
 
     // THE material routine

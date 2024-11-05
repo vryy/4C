@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
  |  Constructor (public)                                     gammi 09/08|
  *----------------------------------------------------------------------*/
 FLD::DynSmagFilter::DynSmagFilter(
-    Teuchos::RCP<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
+    std::shared_ptr<Core::FE::Discretization> actdis, Teuchos::ParameterList& params)
     :  // call constructor for "nontrivial" objects
       discret_(actdis),
       params_(params),
@@ -117,7 +117,7 @@ FLD::DynSmagFilter::DynSmagFilter(
     }
   }
 
-  boxf_ = Teuchos::make_rcp<FLD::Boxfilter>(discret_, params_);
+  boxf_ = std::make_shared<FLD::Boxfilter>(discret_, params_);
 
   return;
 }
@@ -127,11 +127,11 @@ FLD::DynSmagFilter::DynSmagFilter(
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |
  * ---------------------------------------------------------------------*/
-void FLD::DynSmagFilter::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatradis)
+void FLD::DynSmagFilter::add_scatra(std::shared_ptr<Core::FE::Discretization> scatradis)
 {
   scatradiscret_ = scatradis;
 
-  boxfsc_ = Teuchos::make_rcp<FLD::Boxfilter>(scatradiscret_, params_);
+  boxfsc_ = std::make_shared<FLD::Boxfilter>(scatradiscret_, params_);
   boxfsc_->add_scatra(scatradiscret_);
 
   return;
@@ -145,9 +145,9 @@ void FLD::DynSmagFilter::add_scatra(Teuchos::RCP<Core::FE::Discretization> scatr
  |                                                           gammi 09/08|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> velocity,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> velocity,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle)
 {
   const Epetra_Map* nodecolmap = discret_->node_col_map();
 
@@ -157,11 +157,11 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
 
   if (apply_dynamic_smagorinsky_)
   {
-    col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+    col_filtered_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
     col_filtered_reynoldsstress_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
     col_filtered_modeled_subgrid_stress_ =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
+        std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 9, true);
     boxf_->get_filtered_velocity(*col_filtered_vel_);
     boxf_->get_filtered_reynolds_stress(*col_filtered_reynoldsstress_);
     boxf_->get_filtered_modeled_subgrid_stress(*col_filtered_modeled_subgrid_stress_);
@@ -169,10 +169,10 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
     if (physicaltype_ == Inpar::FLUID::loma)
     {
       col_filtered_dens_vel_ =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
-      col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+      col_filtered_dens_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
       col_filtered_dens_strainrate_ =
-          Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+          std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
       boxf_->get_filtered_dens_velocity(*col_filtered_dens_vel_);
       boxf_->get_density(*col_filtered_dens_);
       boxf_->get_density_strainrate(*col_filtered_dens_strainrate_);
@@ -192,14 +192,15 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
       modelparams->get<std::string>("CANONICAL_FLOW", "no") == "loma_channel_flow_of_height_2" or
       modelparams->get<std::string>("CANONICAL_FLOW", "no") == "scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_sum")).size();
+    size_t nlayer =
+        (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Cs_sum")).size();
     for (size_t rr = 0; rr < nlayer; rr++)
     {
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_sum"))[rr] = 0.0;
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_sum"))[rr] = 0.0;
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_visceff_sum"))[rr] = 0.0;
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Ci_sum"))[rr] = 0.0;
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Ci_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Cs_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Cs_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_visceff_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Ci_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Ci_delta_sq_sum"))[rr] = 0.0;
     }
   }
 
@@ -214,24 +215,24 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_cs(
  |                                                       rasthofer 08/12|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichtoggle,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalar, const double thermpress,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> dirichtoggle,
     Teuchos::ParameterList& extraparams, const int ndsvel)
 {
   const Epetra_Map* nodecolmap = scatradiscret_->node_col_map();
 
   // perform filtering
   boxfsc_->apply_filter_scatra(scalar, thermpress, dirichtoggle, ndsvel);
-  col_filtered_vel_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_vel_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_vel_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_vel_temp_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
   col_filtered_dens_rateofstrain_temp_ =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
-  col_filtered_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_dens_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
-  col_filtered_dens_temp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*nodecolmap, 3, true);
+  col_filtered_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_dens_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
+  col_filtered_dens_temp_ = std::make_shared<Core::LinAlg::Vector<double>>(*nodecolmap, true);
   boxfsc_->get_filtered_velocity(*col_filtered_vel_);
   boxfsc_->get_filtered_dens_velocity(*col_filtered_dens_vel_);
   boxfsc_->get_filtered_dens_velocity_temp(*col_filtered_dens_vel_temp_);
@@ -255,29 +256,31 @@ void FLD::DynSmagFilter::apply_filter_for_dynamic_computation_of_prt(
       modelparams->get<std::string>("CANONICAL_FLOW", "no") == "loma_channel_flow_of_height_2" or
       modelparams->get<std::string>("CANONICAL_FLOW", "no") == "scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Prt_sum")).size();
+    size_t nlayer =
+        (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Prt_sum")).size();
     for (size_t rr = 0; rr < nlayer; rr++)
     {
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<Teuchos::RCP<std::vector<double>>>("local_diffeff_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_Cs_delta_sq_Prt_sum"))[rr] =
+          0.0;
+      (*modelparams->get<std::shared_ptr<std::vector<double>>>("local_diffeff_sum"))[rr] = 0.0;
     }
-    extramodelparams->set<Teuchos::RCP<std::vector<double>>>(
-        "local_Prt_sum", modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Prt_sum"));
-    extramodelparams->set<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_Prt_sum",
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_Prt_sum"));
-    extramodelparams->set<Teuchos::RCP<std::vector<double>>>("local_diffeff_sum",
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_diffeff_sum"));
+    extramodelparams->set<std::shared_ptr<std::vector<double>>>(
+        "local_Prt_sum", modelparams->get<std::shared_ptr<std::vector<double>>>("local_Prt_sum"));
+    extramodelparams->set<std::shared_ptr<std::vector<double>>>("local_Cs_delta_sq_Prt_sum",
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_Cs_delta_sq_Prt_sum"));
+    extramodelparams->set<std::shared_ptr<std::vector<double>>>("local_diffeff_sum",
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_diffeff_sum"));
     // add (Cs*h)^2 to calculate Prt
     // therefore, it is assumed that finally the scatra field is solved after the fluid fields
     // be careful since this vector has not yet been commuicated
-    Teuchos::RCP<std::vector<double>> local_Cs_delta_sq_sum =
-        modelparams->get<Teuchos::RCP<std::vector<double>>>("local_Cs_delta_sq_sum");
-    Teuchos::RCP<std::vector<double>> global_Cs_delta_sq_sum;
-    global_Cs_delta_sq_sum = Teuchos::make_rcp<std::vector<double>>(nlayer, 0.0);
+    std::shared_ptr<std::vector<double>> local_Cs_delta_sq_sum =
+        modelparams->get<std::shared_ptr<std::vector<double>>>("local_Cs_delta_sq_sum");
+    std::shared_ptr<std::vector<double>> global_Cs_delta_sq_sum;
+    global_Cs_delta_sq_sum = std::make_shared<std::vector<double>>(nlayer, 0.0);
     discret_->get_comm().SumAll(local_Cs_delta_sq_sum->data(), global_Cs_delta_sq_sum->data(),
         local_Cs_delta_sq_sum->size());
-    extramodelparams->set<Teuchos::RCP<std::vector<double>>>(
+    extramodelparams->set<std::shared_ptr<std::vector<double>>>(
         "global_Cs_delta_sq_sum", global_Cs_delta_sq_sum);
     extramodelparams->set<int>("numele_layer", numele_layer);
   }
@@ -299,15 +302,15 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
   // hom. direction
   int numlayers = 0;
 
-  Teuchos::RCP<std::vector<double>> averaged_LijMij = Teuchos::make_rcp<std::vector<double>>();
-  Teuchos::RCP<std::vector<double>> averaged_MijMij = Teuchos::make_rcp<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> averaged_LijMij = std::make_shared<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> averaged_MijMij = std::make_shared<std::vector<double>>();
 
   // additional averaged quantities for extension to variable-density flow at low-Mach number
   // quantities to estimate CI
-  Teuchos::RCP<std::vector<double>> averaged_CI_numerator =
-      Teuchos::make_rcp<std::vector<double>>();
-  Teuchos::RCP<std::vector<double>> averaged_CI_denominator =
-      Teuchos::make_rcp<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> averaged_CI_numerator =
+      std::make_shared<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> averaged_CI_denominator =
+      std::make_shared<std::vector<double>>();
 
   std::vector<int> count_for_average;
   std::vector<int> local_count_for_average;
@@ -333,10 +336,9 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     {
       // get planecoordinates
       Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_ =
-          modelparams->get<Teuchos::RCP<std::vector<double>>>("planecoords_", Teuchos::null);
+      dir1coords_ = modelparams->get<std::shared_ptr<std::vector<double>>>("planecoords_", nullptr);
 
-      if (dir1coords_ == Teuchos::null)
+      if (dir1coords_ == nullptr)
       {
         FOUR_C_THROW("need the coordinates of planes for in plane averaging");
       }
@@ -352,12 +354,10 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     {
       // get coordinates
       Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_ =
-          modelparams->get<Teuchos::RCP<std::vector<double>>>("dir1coords_", Teuchos::null);
-      dir2coords_ =
-          modelparams->get<Teuchos::RCP<std::vector<double>>>("dir2coords_", Teuchos::null);
+      dir1coords_ = modelparams->get<std::shared_ptr<std::vector<double>>>("dir1coords_", nullptr);
+      dir2coords_ = modelparams->get<std::shared_ptr<std::vector<double>>>("dir2coords_", nullptr);
 
-      if (dir1coords_ == Teuchos::null)
+      if (dir1coords_ == nullptr)
       {
         FOUR_C_THROW("need the coordinates 1 for averaging");
       }
@@ -365,7 +365,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       {
         FOUR_C_THROW("no coordinates 1 for averaging are available");
       }
-      if (dir1coords_ == Teuchos::null)
+      if (dir1coords_ == nullptr)
       {
         FOUR_C_THROW("need the coordinates 2 for averaging");
       }
@@ -589,21 +589,23 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
 
   // export from row to column map
   const Epetra_Map* elecolmap = discret_->element_col_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> col_Cs_delta_sq =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elecolmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> col_Cs_delta_sq =
+      std::make_shared<Core::LinAlg::Vector<double>>(*elecolmap, true);
   col_Cs_delta_sq->PutScalar(0.0);
 
   Core::LinAlg::export_to(Cs_delta_sq, *col_Cs_delta_sq);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> col_Ci_delta_sq =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elecolmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> col_Ci_delta_sq =
+      std::make_shared<Core::LinAlg::Vector<double>>(*elecolmap, true);
   col_Ci_delta_sq->PutScalar(0.0);
 
   Core::LinAlg::export_to(Ci_delta_sq, *col_Ci_delta_sq);
 
   // store in parameters
   Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
-  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Cs_delta_sq", col_Cs_delta_sq);
-  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_Ci_delta_sq", col_Ci_delta_sq);
+  modelparams->set<std::shared_ptr<Core::LinAlg::Vector<double>>>(
+      "col_Cs_delta_sq", col_Cs_delta_sq);
+  modelparams->set<std::shared_ptr<Core::LinAlg::Vector<double>>>(
+      "col_Ci_delta_sq", col_Ci_delta_sq);
 
   // ----------------------------------------------------
   // global in plane averaging of quantities for
@@ -657,13 +659,13 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
     }
     // provide necessary information for the elements
     {
-      modelparams->set<Teuchos::RCP<std::vector<double>>>("averaged_LijMij_", averaged_LijMij);
-      modelparams->set<Teuchos::RCP<std::vector<double>>>("averaged_MijMij_", averaged_MijMij);
+      modelparams->set<std::shared_ptr<std::vector<double>>>("averaged_LijMij_", averaged_LijMij);
+      modelparams->set<std::shared_ptr<std::vector<double>>>("averaged_MijMij_", averaged_MijMij);
       if (physicaltype_ == Inpar::FLUID::loma)
       {
-        modelparams->set<Teuchos::RCP<std::vector<double>>>(
+        modelparams->set<std::shared_ptr<std::vector<double>>>(
             "averaged_CI_numerator_", averaged_CI_numerator);
-        modelparams->set<Teuchos::RCP<std::vector<double>>>(
+        modelparams->set<std::shared_ptr<std::vector<double>>>(
             "averaged_CI_denominator_", averaged_CI_denominator);
       }
       if (special_flow_homdir_ == "xyz")
@@ -673,13 +675,13 @@ void FLD::DynSmagFilter::dyn_smag_compute_cs()
       else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or
                special_flow_homdir_ == "yz")
       {
-        modelparams->set<Teuchos::RCP<std::vector<double>>>("planecoords_", dir1coords_);
+        modelparams->set<std::shared_ptr<std::vector<double>>>("planecoords_", dir1coords_);
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or
                special_flow_homdir_ == "z")
       {
-        modelparams->set<Teuchos::RCP<std::vector<double>>>("dir1coords_", dir1coords_);
-        modelparams->set<Teuchos::RCP<std::vector<double>>>("dir2coords_", dir2coords_);
+        modelparams->set<std::shared_ptr<std::vector<double>>>("dir1coords_", dir1coords_);
+        modelparams->set<std::shared_ptr<std::vector<double>>>("dir2coords_", dir2coords_);
       }
       else
         FOUR_C_THROW("More than two homogeneous directions not supported!");
@@ -708,8 +710,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
   // hom. direction
   int numlayers = 0;
 
-  Teuchos::RCP<std::vector<double>> averaged_LkMk = Teuchos::make_rcp<std::vector<double>>();
-  Teuchos::RCP<std::vector<double>> averaged_MkMk = Teuchos::make_rcp<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> averaged_LkMk = std::make_shared<std::vector<double>>();
+  std::shared_ptr<std::vector<double>> averaged_MkMk = std::make_shared<std::vector<double>>();
 
   std::vector<int> count_for_average;
   std::vector<int> local_count_for_average;
@@ -728,10 +730,9 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
     {
       // get planecoordinates
       Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_ =
-          modelparams->get<Teuchos::RCP<std::vector<double>>>("planecoords_", Teuchos::null);
+      dir1coords_ = modelparams->get<std::shared_ptr<std::vector<double>>>("planecoords_", nullptr);
 
-      if (dir1coords_ == Teuchos::null)
+      if (dir1coords_ == nullptr)
       {
         FOUR_C_THROW("need the coordinates of planes for in plane averaging");
       }
@@ -747,12 +748,10 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
     {
       // get coordinates
       Teuchos::ParameterList* modelparams = &(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_ =
-          modelparams->get<Teuchos::RCP<std::vector<double>>>("dir1coords_", Teuchos::null);
-      dir2coords_ =
-          modelparams->get<Teuchos::RCP<std::vector<double>>>("dir2coords_", Teuchos::null);
+      dir1coords_ = modelparams->get<std::shared_ptr<std::vector<double>>>("dir1coords_", nullptr);
+      dir2coords_ = modelparams->get<std::shared_ptr<std::vector<double>>>("dir2coords_", nullptr);
 
-      if (dir1coords_ == Teuchos::null)
+      if (dir1coords_ == nullptr)
       {
         FOUR_C_THROW("need the coordinates 1 for averaging");
       }
@@ -760,7 +759,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
       {
         FOUR_C_THROW("no coordinates 1 for averaging are available");
       }
-      if (dir1coords_ == Teuchos::null)
+      if (dir1coords_ == nullptr)
       {
         FOUR_C_THROW("need the coordinates 2 for averaging");
       }
@@ -958,13 +957,13 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
 
   // export from row to column map
   const Epetra_Map* elecolmap = scatradiscret_->element_col_map();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> col_Prt =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*elecolmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> col_Prt =
+      std::make_shared<Core::LinAlg::Vector<double>>(*elecolmap, true);
   col_Prt->PutScalar(0.0);
   Core::LinAlg::export_to(Prt, *col_Prt);
   // store in parameters
   Teuchos::ParameterList* modelparams = &(extraparams.sublist("TURBULENCE MODEL"));
-  modelparams->set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("col_ele_Prt", col_Prt);
+  modelparams->set<std::shared_ptr<Core::LinAlg::Vector<double>>>("col_ele_Prt", col_Prt);
 
   // ----------------------------------------------------
   // global in plane averaging of quantities for
@@ -1002,8 +1001,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
 
     // provide necessary information for the elements
     {
-      modelparams->set<Teuchos::RCP<std::vector<double>>>("averaged_LkMk_", averaged_LkMk);
-      modelparams->set<Teuchos::RCP<std::vector<double>>>("averaged_MkMk_", averaged_MkMk);
+      modelparams->set<std::shared_ptr<std::vector<double>>>("averaged_LkMk_", averaged_LkMk);
+      modelparams->set<std::shared_ptr<std::vector<double>>>("averaged_MkMk_", averaged_MkMk);
       if (special_flow_homdir_ == "xyz")
       {
         // nothing to do
@@ -1011,7 +1010,7 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
       else if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or
                special_flow_homdir_ == "yz")
       {
-        modelparams->set<Teuchos::RCP<std::vector<double>>>("planecoords_", dir1coords_);
+        modelparams->set<std::shared_ptr<std::vector<double>>>("planecoords_", dir1coords_);
         // channel flow only
         // return number of elements per layer
         // equal number of elements in each layer assumed
@@ -1020,8 +1019,8 @@ void FLD::DynSmagFilter::dyn_smag_compute_prt(
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or
                special_flow_homdir_ == "z")
       {
-        modelparams->set<Teuchos::RCP<std::vector<double>>>("dir1coords_", dir1coords_);
-        modelparams->set<Teuchos::RCP<std::vector<double>>>("dir2coords_", dir2coords_);
+        modelparams->set<std::shared_ptr<std::vector<double>>>("dir1coords_", dir1coords_);
+        modelparams->set<std::shared_ptr<std::vector<double>>>("dir2coords_", dir2coords_);
       }
       else
         FOUR_C_THROW("More than two homogeneous directions not supported!");

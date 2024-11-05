@@ -28,11 +28,11 @@ Solid::Dbc::Dbc()
     : isinit_(false),
       issetup_(false),
       islocsys_(false),
-      discret_ptr_(Teuchos::null),
-      timint_ptr_(Teuchos::null),
-      locsysman_ptr_(Teuchos::null),
-      zeros_ptr_(Teuchos::null),
-      dbcmap_ptr_(Teuchos::null),
+      discret_ptr_(nullptr),
+      timint_ptr_(nullptr),
+      locsysman_ptr_(nullptr),
+      zeros_ptr_(nullptr),
+      dbcmap_ptr_(nullptr),
       freact_ptr_(nullptr)
 {
   // empty constructor
@@ -40,9 +40,9 @@ Solid::Dbc::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::init(const Teuchos::RCP<Core::FE::Discretization>& discret_ptr,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& freact_ptr,
-    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
+void Solid::Dbc::init(const std::shared_ptr<Core::FE::Discretization>& discret_ptr,
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& freact_ptr,
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr)
 {
   // reset the setup indicator
   issetup_ = false;
@@ -62,14 +62,13 @@ void Solid::Dbc::setup()
   // ---------------------------------------------------------------------------
   // Create Dirichlet Boundary Condition map
   // ---------------------------------------------------------------------------
-  zeros_ptr_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*g_state().dof_row_map_view(), true);
+  zeros_ptr_ = std::make_shared<Core::LinAlg::Vector<double>>(*g_state().dof_row_map_view(), true);
   Teuchos::ParameterList p;
   p.set<double>("total time", timint_ptr_->get_data_global_state().get_time_np());
-  dbcmap_ptr_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  dbcmap_ptr_ = std::make_shared<Core::LinAlg::MapExtractor>();
   p.set<const Core::Utils::FunctionManager*>(
       "function_manager", &Global::Problem::instance()->function_manager());
-  discret_ptr_->evaluate_dirichlet(
-      p, zeros_ptr_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmap_ptr_);
+  discret_ptr_->evaluate_dirichlet(p, zeros_ptr_, nullptr, nullptr, nullptr, dbcmap_ptr_);
   // clear the system vector of possibly inserted non-zero DBC values
   zeros_ptr_->PutScalar(0.0);
 
@@ -80,7 +79,7 @@ void Solid::Dbc::setup()
   discret_ptr_->get_condition("Locsys", locsysconditions);
   if (locsysconditions.size())
   {
-    locsysman_ptr_ = Teuchos::make_rcp<Core::Conditions::LocsysManager>(
+    locsysman_ptr_ = std::make_shared<Core::Conditions::LocsysManager>(
         *discret_ptr_, Global::Problem::instance()->n_dim());
     // in case we have no time dependent locsys conditions in our problem,
     // this is the only time where the whole setup routine is conducted.
@@ -132,7 +131,7 @@ void Solid::Dbc::check_init_setup() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> Solid::Dbc::discret_ptr()
+std::shared_ptr<Core::FE::Discretization> Solid::Dbc::discret_ptr()
 {
   check_init();
   return discret_ptr_;
@@ -140,10 +139,10 @@ Teuchos::RCP<Core::FE::Discretization> Solid::Dbc::discret_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::FE::Discretization> Solid::Dbc::discret_ptr() const
+std::shared_ptr<const Core::FE::Discretization> Solid::Dbc::discret_ptr() const
 {
   check_init();
-  return Teuchos::rcp_dynamic_cast<const Core::FE::Discretization>(discret_ptr_, true);
+  return std::dynamic_pointer_cast<const Core::FE::Discretization>(discret_ptr_);
 }
 
 /*----------------------------------------------------------------------------*
@@ -160,16 +159,16 @@ void Solid::Dbc::update_loc_sys_manager()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::Dbc::get_dirichlet_increment()
+std::shared_ptr<Core::LinAlg::Vector<double>> Solid::Dbc::get_dirichlet_increment()
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disn =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disn =
       timint_ptr_->get_data_global_state().get_dis_n();
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dbcincr =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*disn);
+  std::shared_ptr<Core::LinAlg::Vector<double>> dbcincr =
+      std::make_shared<Core::LinAlg::Vector<double>>(*disn);
   const double& timenp = g_state().get_time_np();
 
   // get the new value for the Dirichlet DOFs
-  apply_dirichlet_bc(timenp, dbcincr, Teuchos::null, Teuchos::null, false);
+  apply_dirichlet_bc(timenp, dbcincr, nullptr, nullptr, false);
 
   /* Subtract the displacements of the last converged step:
    * --> DBC-DOFs hold increments of current step
@@ -182,15 +181,16 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> Solid::Dbc::get_dirichlet_increment()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Dbc::apply_dirichlet_bc(const double& time,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dis, Teuchos::RCP<Core::LinAlg::Vector<double>> vel,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acc, bool recreatemap) const
+    std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+    std::shared_ptr<Core::LinAlg::Vector<double>> vel,
+    std::shared_ptr<Core::LinAlg::Vector<double>> acc, bool recreatemap) const
 {
   check_init_setup();
   // We have to rotate forward ...
   // ---------------------------------------------------------------------------
-  if (!dis.is_null()) rotate_global_to_local(*dis, true);
-  if (!vel.is_null()) rotate_global_to_local(*vel);
-  if (!acc.is_null()) rotate_global_to_local(*acc);
+  if (dis) rotate_global_to_local(*dis, true);
+  if (vel) rotate_global_to_local(*vel);
+  if (acc) rotate_global_to_local(*acc);
 
   // Apply DBCs
   // ---------------------------------------------------------------------------
@@ -203,17 +203,17 @@ void Solid::Dbc::apply_dirichlet_bc(const double& time,
   // \c dis then also holds prescribed new Dirichlet displacements
   discret_ptr_->clear_state();
   if (recreatemap)
-    discret_ptr_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, dbcmap_ptr_);
+    discret_ptr_->evaluate_dirichlet(p, dis, vel, acc, nullptr, dbcmap_ptr_);
   else
-    discret_ptr_->evaluate_dirichlet(p, dis, vel, acc, Teuchos::null, Teuchos::null);
+    discret_ptr_->evaluate_dirichlet(p, dis, vel, acc, nullptr, nullptr);
 
   discret_ptr_->clear_state();
 
   // We have to rotate back into global Cartesian frame
   // ---------------------------------------------------------------------------
-  if (dis != Teuchos::null) rotate_local_to_global(*dis, true);
-  if (vel != Teuchos::null) rotate_local_to_global(*vel);
-  if (acc != Teuchos::null) rotate_local_to_global(*acc);
+  if (dis != nullptr) rotate_local_to_global(*dis, true);
+  if (vel != nullptr) rotate_local_to_global(*vel);
+  if (acc != nullptr) rotate_local_to_global(*acc);
 }
 
 /*----------------------------------------------------------------------------*
@@ -278,7 +278,7 @@ void Solid::Dbc::apply_dirichlet_to_local_jacobian(Core::LinAlg::SparseOperator&
 
   if (rotate_global_to_local(A))
   {
-    Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> mats =
+    std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> mats =
         g_state().extract_displ_row_of_blocks(A);
 
     for (unsigned i = 0; i < mats->size(); ++i)
@@ -332,11 +332,11 @@ bool Solid::Dbc::rotate_global_to_local(Core::LinAlg::SparseOperator& A) const
   check_init_setup();
   if (not is_loc_sys()) return false;
 
-  Teuchos::RCP<std::vector<Core::LinAlg::SparseMatrix*>> mats =
+  std::shared_ptr<std::vector<Core::LinAlg::SparseMatrix*>> mats =
       g_state().extract_displ_row_of_blocks(A);
 
   for (unsigned i = 0; i < mats->size(); ++i)
-    locsysman_ptr_->rotate_global_to_local(Teuchos::rcpFromRef(*(*mats)[i]));
+    locsysman_ptr_->rotate_global_to_local(Core::Utils::shared_ptr_from_ref(*(*mats)[i]));
 
   if (not A.filled()) A.complete();
 
@@ -376,10 +376,10 @@ bool Solid::Dbc::rotate_local_to_global(Core::LinAlg::Vector<double>& v, bool of
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix> Solid::Dbc::get_loc_sys_trafo() const
+std::shared_ptr<const Core::LinAlg::SparseMatrix> Solid::Dbc::get_loc_sys_trafo() const
 {
   check_init_setup();
-  if (not is_loc_sys()) return Teuchos::null;
+  if (not is_loc_sys()) return nullptr;
 
   return locsysman_ptr_->trafo();
 }
@@ -394,7 +394,7 @@ void Solid::Dbc::extract_freact(Core::LinAlg::Vector<double>& b) const
   freact().Scale(-1.0);
 
   // put zeros on all non-DBC dofs
-  insert_vector_in_non_dbc_dofs(zeros_ptr_, Teuchos::rcpFromRef(freact()));
+  insert_vector_in_non_dbc_dofs(zeros_ptr_, Core::Utils::shared_ptr_from_ref(freact()));
 
   // turn the reaction forces back to the global coordinate system if necessary
   rotate_local_to_global(freact());
@@ -403,8 +403,8 @@ void Solid::Dbc::extract_freact(Core::LinAlg::Vector<double>& b) const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::Dbc::insert_vector_in_non_dbc_dofs(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> source_ptr,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> target_ptr) const
+    std::shared_ptr<const Core::LinAlg::Vector<double>> source_ptr,
+    std::shared_ptr<Core::LinAlg::Vector<double>> target_ptr) const
 {
   check_init_setup();
   dbcmap_ptr_->insert_other_vector(*dbcmap_ptr_->extract_other_vector(*source_ptr), *target_ptr);
@@ -412,7 +412,7 @@ void Solid::Dbc::insert_vector_in_non_dbc_dofs(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::Dbc::get_dbc_map_extractor() const
+std::shared_ptr<const Core::LinAlg::MapExtractor> Solid::Dbc::get_dbc_map_extractor() const
 {
   check_init_setup();
   return dbcmap_ptr_;
@@ -420,7 +420,7 @@ Teuchos::RCP<const Core::LinAlg::MapExtractor> Solid::Dbc::get_dbc_map_extractor
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Conditions::LocsysManager> Solid::Dbc::loc_sys_manager_ptr()
+std::shared_ptr<Core::Conditions::LocsysManager> Solid::Dbc::loc_sys_manager_ptr()
 {
   check_init_setup();
   return locsysman_ptr_;
@@ -436,7 +436,7 @@ const Core::LinAlg::Vector<double>& Solid::Dbc::get_zeros() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::Vector<double>> Solid::Dbc::get_zeros_ptr() const
+std::shared_ptr<const Core::LinAlg::Vector<double>> Solid::Dbc::get_zeros_ptr() const
 {
   check_init_setup();
   return zeros_ptr_;
@@ -460,23 +460,23 @@ const Solid::TimeInt::BaseDataGlobalState& Solid::Dbc::g_state() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
+void Solid::Dbc::add_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoadd)
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> condmaps;
   condmaps.push_back(maptoadd);
   condmaps.push_back(dbcmap_ptr_->cond_map());
-  Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
+  std::shared_ptr<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
   *dbcmap_ptr_ = Core::LinAlg::MapExtractor(*(discret_ptr_->dof_row_map()), condmerged);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void Solid::Dbc::remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove)
+void Solid::Dbc::remove_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoremove)
 {
-  std::vector<Teuchos::RCP<const Epetra_Map>> othermaps;
+  std::vector<std::shared_ptr<const Epetra_Map>> othermaps;
   othermaps.push_back(maptoremove);
   othermaps.push_back(dbcmap_ptr_->other_map());
-  Teuchos::RCP<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
+  std::shared_ptr<Epetra_Map> othermerged = Core::LinAlg::MultiMapExtractor::merge_maps(othermaps);
   *dbcmap_ptr_ = Core::LinAlg::MapExtractor(*(discret_ptr_->dof_row_map()), othermerged, false);
 }
 
@@ -496,7 +496,7 @@ void NOX::Nln::LinSystem::PrePostOp::Dbc::run_pre_apply_jacobian_inverse(
 {
   ::NOX::Epetra::Vector& rhs_epetra = dynamic_cast<::NOX::Epetra::Vector&>(rhs);
   Core::LinAlg::VectorView rhs_view(rhs_epetra.getEpetraVector());
-  Teuchos::RCP<Core::LinAlg::SparseOperator> jac_ptr = Teuchos::rcpFromRef(jac);
+  std::shared_ptr<Core::LinAlg::SparseOperator> jac_ptr = Core::Utils::shared_ptr_from_ref(jac);
   // apply the dirichlet condition and rotate the system if desired
   dbc_ptr_->apply_dirichlet_to_local_system(*jac_ptr, rhs_view);
 }

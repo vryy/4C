@@ -28,21 +28,21 @@ FOUR_C_NAMESPACE_OPEN
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
 void Discret::Elements::Wall1::w1_call_matgeononl(
-    const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-    Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
-    Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
-    const int numeps,                                  ///< number of strains
-    Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
-    Teuchos::ParameterList& params,                    ///< element parameter list
-    const int gp                                       ///< Gauss point
+    const Core::LinAlg::SerialDenseVector& strain,        ///< Green-Lagrange strain vector
+    Core::LinAlg::SerialDenseMatrix& stress,              ///< stress vector
+    Core::LinAlg::SerialDenseMatrix& C,                   ///< elasticity matrix
+    const int numeps,                                     ///< number of strains
+    std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
+    Teuchos::ParameterList& params,                       ///< element parameter list
+    const int gp                                          ///< Gauss point
 )
 {
   if (material->material_type() == Core::Materials::m_structporo or
       material->material_type() == Core::Materials::m_structpororeaction or
       material->material_type() == Core::Materials::m_structpororeactionECM)
   {
-    Teuchos::RCP<const Mat::StructPoro> actmat =
-        Teuchos::rcp_static_cast<const Mat::StructPoro>(material);
+    std::shared_ptr<const Mat::StructPoro> actmat =
+        std::static_pointer_cast<const Mat::StructPoro>(material);
     // setup is done in so3_poro
     // actmat->setup(NUMGPT_SOH8);
     material = actmat->get_material();
@@ -347,8 +347,9 @@ void Discret::Elements::Wall1::material_response3d(Core::LinAlg::Matrix<6, 1>* s
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
-double Discret::Elements::Wall1::energy_internal(Teuchos::RCP<const Core::Mat::Material> material,
-    Teuchos::ParameterList& params, const Core::LinAlg::SerialDenseVector& Ev, const int gp)
+double Discret::Elements::Wall1::energy_internal(
+    std::shared_ptr<const Core::Mat::Material> material, Teuchos::ParameterList& params,
+    const Core::LinAlg::SerialDenseVector& Ev, const int gp)
 {
   // switch material type
   switch (material->material_type())

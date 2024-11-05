@@ -32,22 +32,22 @@ namespace Mat
       ElchPhase(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// provide ids of the individual mat
       const std::vector<int>& mat_ids() const { return matids_; }
 
       /// provide access to phases by its ID
-      Teuchos::RCP<Core::Mat::Material> mat_by_id(const int id) const
+      std::shared_ptr<Core::Mat::Material> mat_by_id(const int id) const
       {
         if (not local_)
         {
-          std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m = mat_.find(id);
+          std::map<int, std::shared_ptr<Core::Mat::Material>>::const_iterator m = mat_.find(id);
 
           if (m == mat_.end())
           {
             FOUR_C_THROW("Material %d could not be found", id);
-            return Teuchos::null;
+            return nullptr;
           }
           else
             return m->second;
@@ -55,7 +55,7 @@ namespace Mat
         else
           FOUR_C_THROW("This is not allowed");
 
-        return Teuchos::null;
+        return nullptr;
       }
 
       /// @name material parameters
@@ -80,7 +80,7 @@ namespace Mat
 
      private:
       /// map to materials (only used for local_==true)
-      std::map<int, Teuchos::RCP<Core::Mat::Material>> mat_;
+      std::map<int, std::shared_ptr<Core::Mat::Material>> mat_;
 
     };  // class ElchPhase
 
@@ -158,9 +158,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<ElchPhase>(*this);
+      return std::make_shared<ElchPhase>(*this);
     }
 
     /// return constant porosity
@@ -183,15 +183,15 @@ namespace Mat
     }
 
     /// provide access to material by its ID
-    Teuchos::RCP<Core::Mat::Material> mat_by_id(const int id) const
+    std::shared_ptr<Core::Mat::Material> mat_by_id(const int id) const
     {
       if (params_->local_)
       {
-        std::map<int, Teuchos::RCP<Core::Mat::Material>>::const_iterator m = mat_.find(id);
+        std::map<int, std::shared_ptr<Core::Mat::Material>>::const_iterator m = mat_.find(id);
         if (m == mat_.end())
         {
           FOUR_C_THROW("Material %d could not be found", id);
-          return Teuchos::null;
+          return nullptr;
         }
         else
           return m->second;
@@ -214,7 +214,7 @@ namespace Mat
     Mat::PAR::ElchPhase* params_;
 
     /// map to materials
-    std::map<int, Teuchos::RCP<Core::Mat::Material>> mat_;
+    std::map<int, std::shared_ptr<Core::Mat::Material>> mat_;
   };
 
 }  // namespace Mat

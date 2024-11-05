@@ -107,7 +107,7 @@ namespace Cut
     };
 
     /// add a nodal dofset to the composite of nodal dofsets
-    void add(Teuchos::RCP<NodalDofSet> nds, bool allow_connect_std_and_ghost_sets)
+    void add(std::shared_ptr<NodalDofSet> nds, bool allow_connect_std_and_ghost_sets)
     {
       if (allow_connect_std_and_ghost_sets)
       {
@@ -142,7 +142,7 @@ namespace Cut
     void print() override;
 
    private:
-    std::vector<Teuchos::RCP<NodalDofSet>>
+    std::vector<std::shared_ptr<NodalDofSet>>
         nodal_dofsets_;  ///< a collection of NodalDofSet objects combined to one composite
   };
 
@@ -275,7 +275,10 @@ namespace Cut
     int num_dof_sets() const;
 
     /// return a vector of all nodal dofsets
-    const std::vector<Teuchos::RCP<NodalDofSet>>& nodal_dof_sets() const { return nodaldofsets_; }
+    const std::vector<std::shared_ptr<NodalDofSet>>& nodal_dof_sets() const
+    {
+      return nodaldofsets_;
+    }
 
     /// return a vector of all nodal dofsets
     NodalDofSet* get_nodal_dof_set(const int nds) const { return &*nodaldofsets_[nds]; }
@@ -326,7 +329,7 @@ namespace Cut
 
     std::vector<plain_volumecell_set> dofsets_;  ///< set of Volumecells (unused old version)
 
-    std::vector<Teuchos::RCP<NodalDofSet>> nodaldofsets_;  ///< nodal dofsets
+    std::vector<std::shared_ptr<NodalDofSet>> nodaldofsets_;  ///< nodal dofsets
 
     Point::PointPosition selfcutposition_;  ///< every cutsidenode knows its selfcutposition
   };
@@ -341,7 +344,8 @@ namespace Cut
   class NodalDofSetCmp
   {
    public:
-    bool operator()(Teuchos::RCP<NodalDofSet> nodaldofset1, Teuchos::RCP<NodalDofSet> nodaldofset2);
+    bool operator()(
+        std::shared_ptr<NodalDofSet> nodaldofset1, std::shared_ptr<NodalDofSet> nodaldofset2);
   };
 
   /** \brief Find if the nodes in nelement share a common element,

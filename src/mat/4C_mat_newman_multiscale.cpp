@@ -29,9 +29,9 @@ Mat::PAR::NewmanMultiScale::NewmanMultiScale(const Core::Mat::PAR::Parameter::Da
 /*--------------------------------------------------------------------*
  | create instance of Newman multi-scale material          fang 07/17 |
  *--------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::NewmanMultiScale::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::NewmanMultiScale::create_material()
 {
-  return Teuchos::make_rcp<Mat::NewmanMultiScale>(this);
+  return std::make_shared<Mat::NewmanMultiScale>(this);
 }
 
 
@@ -96,7 +96,7 @@ void Mat::NewmanMultiScale::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {

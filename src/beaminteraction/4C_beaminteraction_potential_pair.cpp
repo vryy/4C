@@ -15,7 +15,7 @@
 #include "4C_rigidsphere.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -24,7 +24,7 @@ FOUR_C_NAMESPACE_OPEN
 BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
     : isinit_(false),
       issetup_(false),
-      beam_potential_params_(Teuchos::null),
+      beam_potential_params_(nullptr),
       element1_(nullptr),
       element2_(nullptr)
 {
@@ -34,7 +34,7 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BEAMINTERACTION::BeamPotentialPair::init(
-    const Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> params_ptr,
+    const std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> params_ptr,
     const Core::Elements::Element* element1, const Core::Elements::Element* element2)
 {
   issetup_ = false;
@@ -59,7 +59,7 @@ void BEAMINTERACTION::BeamPotentialPair::setup()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::create(
+std::shared_ptr<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialPair::create(
     std::vector<Core::Elements::Element const*> const& ele_ptrs,
     BEAMINTERACTION::BeamPotentialParams const& beam_potential_params)
 {
@@ -83,53 +83,53 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         case 2:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<2, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, Sacado::Fad::DFad<double>>>();
             else
-              return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>>();
+              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<2, 1, double>>();
           }
         }
         case 3:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<3, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, Sacado::Fad::DFad<double>>>();
             else
-              return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>>();
+              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<3, 1, double>>();
           }
         }
         case 4:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<4, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, Sacado::Fad::DFad<double>>>();
             else
-              return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>>();
+              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<4, 1, double>>();
           }
         }
         case 5:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<5, 1>>();
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, Sacado::Fad::DFad<double>>>();
             else
-              return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>>();
+              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<5, 1, double>>();
           }
         }
         default:
@@ -151,14 +151,14 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
         case 2:
         {
           if (ele_ptrs[1]->element_type() == Discret::Elements::RigidsphereType::instance())
-            return Teuchos::make_rcp<BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>>();
+            return std::make_shared<BEAMINTERACTION::BeamToSpherePotentialPair<2, 2>>();
           else
           {
             if (beam_potential_params.use_fad())
-              return Teuchos::make_rcp<
+              return std::make_shared<
                   BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, Sacado::Fad::DFad<double>>>();
             else
-              return Teuchos::make_rcp<BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>>();
+              return std::make_shared<BEAMINTERACTION::BeamToBeamPotentialPair<2, 2, double>>();
           }
         }
         default:
@@ -182,7 +182,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair> BEAMINTERACTION::BeamPotentialP
     }
   }
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*-----------------------------------------------------------------------------------------------*

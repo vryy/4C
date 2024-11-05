@@ -15,9 +15,9 @@
 
 #include <Epetra_Comm.h>
 #include <Sacado.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <cmath>
+#include <memory>
 #include <set>
 
 FOUR_C_NAMESPACE_OPEN
@@ -51,7 +51,7 @@ namespace PoroMultiPhaseScaTra
         const bool artery_coupl);
 
     //! create solution algorithm depending on input file
-    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
+    std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraBase>
     create_poro_multi_phase_scatra_algorithm(Inpar::PoroMultiPhaseScaTra::SolutionSchemeOverFields
                                                  solscheme,  //!< solution scheme to build (i)
         const Teuchos::ParameterList& timeparams,            //!< problem parameters (i)
@@ -59,9 +59,9 @@ namespace PoroMultiPhaseScaTra
     );
 
     //! create coupling strategy for coupling with 1D network depending on input file
-    Teuchos::RCP<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
-    create_and_init_artery_coupling_strategy(Teuchos::RCP<Core::FE::Discretization> arterydis,
-        Teuchos::RCP<Core::FE::Discretization> contdis,
+    std::shared_ptr<PoroMultiPhaseScaTra::PoroMultiPhaseScaTraArtCouplBase>
+    create_and_init_artery_coupling_strategy(std::shared_ptr<Core::FE::Discretization> arterydis,
+        std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& meshtyingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname,
         const bool evaluate_on_lateral_surface);

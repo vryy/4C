@@ -29,22 +29,22 @@ namespace Adapter
     /*========================================================================*/
 
     /// fluid field
-    const Teuchos::RCP<Adapter::Fluid>& fluid_field() override { return fluid_; }
+    const std::shared_ptr<Adapter::Fluid>& fluid_field() override { return fluid_; }
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() override;
+    std::shared_ptr<Core::FE::Discretization> discretization() override;
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
+    std::shared_ptr<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
     {
       return fluid_->interface();
     }
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& struct_interface();
+    virtual std::shared_ptr<FLD::Utils::MapExtractor> const& struct_interface();
 
     //@}
 
@@ -69,12 +69,12 @@ namespace Adapter
     /*========================================================================*/
 
     /// nonlinear solve
-    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -82,7 +82,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -90,10 +90,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override;
     //@}
 
     /*========================================================================*/
@@ -116,16 +116,16 @@ namespace Adapter
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> integrate_interface_shape() override;
 
     /// create the testing of fields
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override;
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override;
 
 
 
    private:
     /// fluid base algorithm object
-    Teuchos::RCP<Fluid> fluid_;
+    std::shared_ptr<Fluid> fluid_;
   };
 
 }  // namespace Adapter

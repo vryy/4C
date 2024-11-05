@@ -9,7 +9,7 @@
 
 #include "4C_utils_demangle.hpp"
 
-#include <Teuchos_RCPDecl.hpp>
+#include <memory>
 
 namespace DemangleTest
 {
@@ -40,14 +40,15 @@ namespace
 
   TEST(DemangleTest, RCP)
   {
-    EXPECT_EQ(Core::Utils::try_demangle(typeid(Teuchos::RCP<DemangleTest::TestStruct>).name()),
-        "Teuchos::RCP<DemangleTest::TestStruct>");
+    EXPECT_EQ(Core::Utils::try_demangle(typeid(std::shared_ptr<DemangleTest::TestStruct>).name()),
+        "std::shared_ptr<DemangleTest::TestStruct>");
   }
 
-  TEST(DemangleTest, PointerOfRCP)
+  TEST(DemangleTest, SharedPtr)
   {
-    Teuchos::RCP<DemangleTest::TestStruct>* ptr = nullptr;
-    EXPECT_EQ(Core::Utils::get_dynamic_type_name(ptr), "Teuchos::RCP<DemangleTest::TestStruct>*");
+    std::shared_ptr<DemangleTest::TestStruct>* ptr = nullptr;
+    EXPECT_EQ(
+        Core::Utils::get_dynamic_type_name(ptr), "std::shared_ptr<DemangleTest::TestStruct>*");
   }
 
   TEST(DemangleTest, BaseDerivedRef)

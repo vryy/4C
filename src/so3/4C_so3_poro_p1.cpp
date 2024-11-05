@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 
 template <class So3Ele, Core::FE::CellType distype>
 Discret::Elements::So3PoroP1<So3Ele, distype>::So3PoroP1(int id, int owner)
-    : So3Poro<So3Ele, distype>(id, owner), init_porosity_(Teuchos::null), is_init_porosity_(false)
+    : So3Poro<So3Ele, distype>(id, owner), init_porosity_(nullptr), is_init_porosity_(false)
 {
 }
 
@@ -64,7 +64,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::unpack(
 
   if (is_init_porosity_)
   {
-    init_porosity_ = Teuchos::make_rcp<Core::LinAlg::Matrix<Base::numnod_, 1>>(true);
+    init_porosity_ = std::make_shared<Core::LinAlg::Matrix<Base::numnod_, 1>>(true);
     extract_from_pack(buffer, *init_porosity_);
   }
 
@@ -79,7 +79,7 @@ void Discret::Elements::So3PoroP1<So3Ele, distype>::unpack(
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::So3PoroP1<So3Ele, distype>::surfaces()
 {
   return Core::Communication::element_boundary_factory<StructuralSurface, Core::Elements::Element>(
@@ -87,7 +87,7 @@ Discret::Elements::So3PoroP1<So3Ele, distype>::surfaces()
 }
 
 template <class So3Ele, Core::FE::CellType distype>
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::So3PoroP1<So3Ele, distype>::lines()
 {
   return Core::Communication::element_boundary_factory<StructuralLine, Core::Elements::Element>(

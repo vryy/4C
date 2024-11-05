@@ -12,8 +12,7 @@
 
 #include "4C_material_parameter_base.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -165,7 +164,7 @@ namespace Mat
     virtual const Mat::PAR::ScatraMicroMacroCoupling* params() const = 0;
 
     //! map between Gauss point ID and Gauss point submaterial
-    std::map<int, Teuchos::RCP<ScatraMultiScaleGP>> matgp_;
+    std::map<int, std::shared_ptr<ScatraMultiScaleGP>> matgp_;
   };  // material wrapper
 }  // namespace Mat
 FOUR_C_NAMESPACE_CLOSE

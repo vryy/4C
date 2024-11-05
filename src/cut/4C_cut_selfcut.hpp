@@ -139,7 +139,7 @@ namespace Cut
     void find_islands();
 
     /// Get next Sides
-    void next_sides(Side* cutside, Teuchos::RCP<Cut::BoundingBox>& tmpbb,
+    void next_sides(Side* cutside, std::shared_ptr<Cut::BoundingBox>& tmpbb,
         // plain_side_set allselfcutsides,
         plain_side_set& selfcutsides, plain_side_set& islandsides, bool& IsIsland);
 
@@ -234,11 +234,11 @@ namespace Cut
     /// The Cut Meshhandle (Interface to the outer world)
     Cut::MeshHandle& meshhandle_;
 
-    std::map<plain_int_set, Teuchos::RCP<Side>> selfcut_sides_;
+    std::map<plain_int_set, std::shared_ptr<Side>> selfcut_sides_;
 
-    std::map<plain_int_set, Teuchos::RCP<Edge>> selfcut_edges_;
+    std::map<plain_int_set, std::shared_ptr<Edge>> selfcut_edges_;
 
-    std::map<int, Teuchos::RCP<Node>> selfcut_nodes_;
+    std::map<int, std::shared_ptr<Node>> selfcut_nodes_;
 
     std::map<int, plain_node_set> selfcut_connectivity_;
 

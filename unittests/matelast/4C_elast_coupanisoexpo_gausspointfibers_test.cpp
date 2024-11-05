@@ -67,7 +67,7 @@ namespace
     void setup_anisotropy_extension()
     {
       int fiber_id = std::get<0>(GetParam());
-      auto strategy = Teuchos::make_rcp<Mat::Elastic::StructuralTensorStrategyStandard>(nullptr);
+      auto strategy = std::make_shared<Mat::Elastic::StructuralTensorStrategyStandard>(nullptr);
       anisotropyExtension_ = std::make_unique<Mat::Elastic::CoupAnisoExpoAnisotropyExtension>(
           3, 0.0, false, strategy, fiber_id);
       anisotropyExtension_->register_needed_tensors(

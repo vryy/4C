@@ -108,7 +108,7 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
   }
 
   double activationFunction = 0.0;
-  Teuchos::RCP<Core::Mat::Material> scatramat;
+  std::shared_ptr<Core::Mat::Material> scatramat;
   if (params_->sourceactiv_ == 0)
   {
     activationFunction = params.get<double>("scalar", 0.0);
@@ -118,12 +118,11 @@ void Mat::Elastic::AnisoActiveStressEvolution::add_stress_aniso_principal(
     if (params.isParameter("scalars"))
     {
       // get pointer to vector containing the scalar values at the Gauss points
-      Teuchos::RCP<std::vector<double>> scalars =
-          params.get<Teuchos::RCP<std::vector<double>>>("scalars");
+      std::shared_ptr<std::vector<double>> scalars =
+          params.get<std::shared_ptr<std::vector<double>>>("scalars");
 
       // safety check
-      FOUR_C_THROW_UNLESS(
-          scalars != Teuchos::null, "Activation is not provided via scalars parameter");
+      FOUR_C_THROW_UNLESS(scalars != nullptr, "Activation is not provided via scalars parameter");
 
       // check if activation is above the given threshold
       if (scalars->at(0) >= params_->activationthreshold_)

@@ -513,8 +513,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  Teuchos::RCP<Core::Conditions::Condition> fdp_cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+  std::shared_ptr<Core::Conditions::Condition> fdp_cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
 
   // find out whether there is a time curve and get factor:
   // usable as a time-curve factor for fixed pressure as well as
@@ -676,9 +676,9 @@ void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
     // extract parent and boundary values from global distributed vectors
     //---------------------------------------------------------------------
     // parent velocity at n+alpha_F
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> scaaf = discretization.get_state("scaaf");
-    if (velaf == Teuchos::null or scaaf == Teuchos::null)
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> scaaf = discretization.get_state("scaaf");
+    if (velaf == nullptr or scaaf == nullptr)
       FOUR_C_THROW("Cannot get state vector 'velaf' and/or 'scaaf'");
 
     std::vector<double> mypvelaf(plm.size());
@@ -702,8 +702,9 @@ void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
     std::vector<double> mybedispnp((blm).size());
     if (surfele->parent_element()->is_ale())
     {
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
-      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
+      if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
       Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
       Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
@@ -795,7 +796,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::flow_dep_pressure_bc(
 
       // evaluate material at integration point
       double rateofstrain = 0.0;
-      Teuchos::RCP<Core::Mat::Material> material = parent->material();
+      std::shared_ptr<Core::Mat::Material> material = parent->material();
 
       // compute measure for rate of strain at n+alpha_F or n+1 if required
       // for non-Newtonian fluid
@@ -1336,8 +1337,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
-  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
+  if (velaf == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
   Core::FE::extract_my_values(*velaf, mypvelaf, plm);
@@ -1367,8 +1368,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
   std::vector<double> mybedispnp((blm).size());
   if (surfele->parent_element()->is_ale())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
     Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
@@ -1459,7 +1460,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::slip_supp_bc(
 
     // evaluate material at integration point
     double rateofstrain = 0.0;  // Only Newtonian-fluids supported
-    Teuchos::RCP<Core::Mat::Material> material = parent->material();
+    std::shared_ptr<Core::Mat::Material> material = parent->material();
 
     // get viscosity at integration point
     get_density_and_viscosity(material, 0.0, 0.0, rateofstrain);
@@ -1670,8 +1671,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::navier_slip_bc(
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
-  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
+  if (velaf == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
   Core::FE::extract_my_values(*velaf, mypvelaf, plm);
@@ -1690,8 +1691,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::navier_slip_bc(
   std::vector<double> mybedispnp((blm).size());
   if (surfele->parent_element()->is_ale())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
     Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
@@ -1837,8 +1838,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
   //---------------------------------------------------------------------
   // get condition information
   //---------------------------------------------------------------------
-  Teuchos::RCP<Core::Conditions::Condition> wdbc_cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+  std::shared_ptr<Core::Conditions::Condition> wdbc_cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
 
   // type of consistency (default: adjoint-consistent)
   const std::string& consistency =
@@ -2009,8 +2010,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
   // extract parent and boundary values from global distributed vectors
   //---------------------------------------------------------------------
   // parent velocity at n+alpha_F
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
-  if (velaf == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> velaf = discretization.get_state("velaf");
+  if (velaf == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   std::vector<double> mypvelaf(plm.size());
   Core::FE::extract_my_values(*velaf, mypvelaf, plm);
@@ -2029,8 +2030,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
   if (fldparatimint_->time_algo() == Inpar::FLUID::timeint_npgenalpha)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
-    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
+    if (velnp == nullptr) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     Core::FE::extract_my_values(*velnp, mypvelnp, plm);
   }
@@ -2053,8 +2054,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
   std::vector<double> mybedispnp((blm).size());
   if (surfele->parent_element()->is_ale())
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
-    if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
+    if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
     Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
     Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
@@ -2230,7 +2231,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::evaluate_weak_dbc(
 
     // evaluate material at integration point
     double rateofstrain = 0.0;
-    Teuchos::RCP<Core::Mat::Material> material = parent->material();
+    std::shared_ptr<Core::Mat::Material> material = parent->material();
 
     // compute measure for rate of strain at n+alpha_F or n+1 if required
     // for non-Newtonian fluid
@@ -3818,8 +3819,9 @@ void Discret::Elements::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
       // parent and boundary displacement at n+1
       std::vector<double> mypedispnp((plm).size());
       std::vector<double> mybedispnp((blm).size());
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp = discretization.get_state("dispnp");
-      if (dispnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'dispnp'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp =
+          discretization.get_state("dispnp");
+      if (dispnp == nullptr) FOUR_C_THROW("Cannot get state vector 'dispnp'");
 
       Core::FE::extract_my_values(*dispnp, mypedispnp, plm);
       Core::FE::extract_my_values(*dispnp, mybedispnp, blm);
@@ -4252,7 +4254,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::estimate_nitsche_trace_max
   const double maxeigenvalue = Core::LinAlg::generalized_eigen(elemat_epetra1, elemat_epetra2);
 
   // fill the map: every side id has it's own parameter beta
-  (*params.get<Teuchos::RCP<std::map<int, double>>>(
+  (*params.get<std::shared_ptr<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map"))[surfele->id()] = maxeigenvalue;
 
   return;
@@ -4275,7 +4277,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
 
   // evaluate material at integration point
   const double rateofstrain = 0.0;
-  Teuchos::RCP<Core::Mat::Material> material = parent->material();
+  std::shared_ptr<Core::Mat::Material> material = parent->material();
 
   if (material->material_type() == Core::Materials::m_carreauyasuda or
       material->material_type() == Core::Materials::m_modpowerlaw or
@@ -4319,8 +4321,8 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
 
   //--------------------------------------------------
   // get the condition information
-  Teuchos::RCP<Core::Conditions::Condition> hixhybdbc_cond =
-      params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+  std::shared_ptr<Core::Conditions::Condition> hixhybdbc_cond =
+      params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
 
   // get value for boundary condition
   const auto& val = (*hixhybdbc_cond).parameters().get<std::vector<double>>("val");
@@ -4419,14 +4421,14 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
   Core::LinAlg::Matrix<nsd, piel> pevel(true);
   Core::LinAlg::Matrix<piel, 1> pepres(true);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velaf");
-  if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velaf'");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velaf");
+  if (vel == nullptr) FOUR_C_THROW("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
   if (fldparatimint_->time_algo() == Inpar::FLUID::timeint_npgenalpha)
   {
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
-    if (velnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'velnp'");
+    std::shared_ptr<const Core::LinAlg::Vector<double>> velnp = discretization.get_state("velnp");
+    if (velnp == nullptr) FOUR_C_THROW("Cannot get state vector 'velnp'");
 
     double maxvel = 0;
 
@@ -5748,7 +5750,7 @@ void Discret::Elements::FluidBoundaryParent<distype>::mix_hyb_dirichlet(
  *----------------------------------------------------------------------*/
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidBoundaryParent<distype>::get_density_and_viscosity(
-    Teuchos::RCP<const Core::Mat::Material> material, const double pscaaf,
+    std::shared_ptr<const Core::Mat::Material> material, const double pscaaf,
     const double thermpressaf, const double rateofstrain)
 {
   // initially set density to 1.0

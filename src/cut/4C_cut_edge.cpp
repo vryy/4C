@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Edge> Cut::Edge::create(
+std::shared_ptr<Cut::Edge> Cut::Edge::create(
     Core::FE::CellType edgetype, const std::vector<Node*>& nodes)
 {
   EdgeFactory factory;
@@ -29,7 +29,7 @@ Teuchos::RCP<Cut::Edge> Cut::Edge::create(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Edge> Cut::Edge::create(unsigned shardskey, const std::vector<Node*>& nodes)
+std::shared_ptr<Cut::Edge> Cut::Edge::create(unsigned shardskey, const std::vector<Node*>& nodes)
 {
   return Edge::create(Core::Elements::shards_key_to_dis_type(shardskey), nodes);
 }
@@ -569,7 +569,7 @@ template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
 bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::cut(
     Mesh& mesh, Side& side, PointSet& cuts)
 {
-  Teuchos::RCP<Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
+  std::shared_ptr<Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
 
   inter_ptr->init(&mesh, this, &side, false, false, true);
   return inter_ptr->intersect(cuts);
@@ -582,7 +582,7 @@ template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
 bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::just_parallel_cut(
     Mesh& mesh, Side& side, PointSet& cuts, int skip_id)
 {
-  Teuchos::RCP<Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
+  std::shared_ptr<Cut::IntersectionBase> inter_ptr = intersection_ptr(side.shape());
 
   inter_ptr->init(&mesh, this, &side, false, false, false);
   return (inter_ptr->handle_parallel_intersection(cuts, skip_id) > 0);
@@ -766,7 +766,7 @@ bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::compute_c
   xyze_other.shape(other->n_prob_dim(), other->num_nodes());
   other->coordinates(xyze_other);
 
-  Teuchos::RCP<Cut::IntersectionBase> inter_ptr = intersection_ptr(other->shape());
+  std::shared_ptr<Cut::IntersectionBase> inter_ptr = intersection_ptr(other->shape());
   // other is line element, this is surface
   inter_ptr->init(xyze_other, xyze_this, false, false, false, &(mesh->get_options()));
 
@@ -881,7 +881,7 @@ bool Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::compute_c
  *----------------------------------------------------------------------------*/
 template <unsigned prob_dim, Core::FE::CellType edge_type, unsigned dim_edge,
     unsigned num_nodes_edge>
-Teuchos::RCP<Cut::IntersectionBase>
+std::shared_ptr<Cut::IntersectionBase>
 Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::intersection_ptr(
     const Core::FE::CellType& sidetype) const
 {
@@ -890,16 +890,17 @@ Cut::ConcreteEdge<prob_dim, edge_type, dim_edge, num_nodes_edge>::intersection_p
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Cut::Edge> Cut::EdgeFactory::create_edge(
+std::shared_ptr<Cut::Edge> Cut::EdgeFactory::create_edge(
     const Core::FE::CellType& edgetype, const std::vector<Node*>& nodes) const
 {
-  Teuchos::RCP<Edge> cedge_ptr = Teuchos::null;
+  std::shared_ptr<Edge> cedge_ptr = nullptr;
   const int probdim = Global::Problem::instance()->n_dim();
   switch (edgetype)
   {
     case Core::FE::CellType::line2:
     {
-      cedge_ptr = Teuchos::RCP(create_concrete_edge<Core::FE::CellType::line2>(nodes, probdim));
+      cedge_ptr = std::shared_ptr<Cut::Edge>(
+          create_concrete_edge<Core::FE::CellType::line2>(nodes, probdim));
       break;
     }
     default:

@@ -14,7 +14,7 @@
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_node.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

@@ -36,17 +36,17 @@ void BEAMINTERACTION::BeamToBeamPointCouplingCondition::clear() {}
 /**
  *
  */
-Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
+std::shared_ptr<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
     const std::vector<Core::Elements::Element const*>& ele_ptrs)
 {
   {
     // Check if the given elements are in this condition.
-    if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return Teuchos::null;
+    if (!ids_in_condition(ele_ptrs[0]->id(), ele_ptrs[1]->id())) return nullptr;
 
     // Create the beam contact pair.
-    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> contact_pair =
-        Teuchos::make_rcp<BeamToBeamPointCouplingPair<GEOMETRYPAIR::t_hermite>>(
+    std::shared_ptr<BEAMINTERACTION::BeamContactPair> contact_pair =
+        std::make_shared<BeamToBeamPointCouplingPair<GEOMETRYPAIR::t_hermite>>(
             rotational_penalty_parameter_, positional_penalty_parameter_,
             local_parameter_coordinates_);
     // Return the newly created pair.
@@ -58,7 +58,7 @@ BEAMINTERACTION::BeamToBeamPointCouplingCondition::create_contact_pair(
  *
  */
 void BEAMINTERACTION::BeamToBeamPointCouplingCondition::build_id_sets(
-    const Teuchos::RCP<const Core::FE::Discretization>& discretization)
+    const std::shared_ptr<const Core::FE::Discretization>& discretization)
 {
   // Set the IDs of the nodes to be coupled
   const std::vector<int> node_ids = *(condition_line_->get_nodes());

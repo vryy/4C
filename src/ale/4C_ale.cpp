@@ -36,9 +36,9 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ALE::Ale::Ale(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : discret_(actdis),
       solver_(solver),
       params_(params),
@@ -50,15 +50,15 @@ ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
       dt_(params_->get<double>("TIMESTEP")),
       writerestartevery_(params->get<int>("RESTARTEVRY")),
       writeresultsevery_(params->get<int>("RESULTSEVRY")),
-      sysmat_(Teuchos::null),
-      residual_(Teuchos::null),
-      rhs_(Teuchos::null),
-      dispnp_(Teuchos::null),
-      dispn_(Teuchos::null),
-      disi_(Teuchos::null),
-      zeros_(Teuchos::null),
-      eledetjac_(Teuchos::null),
-      elequality_(Teuchos::null),
+      sysmat_(nullptr),
+      residual_(nullptr),
+      rhs_(nullptr),
+      dispnp_(nullptr),
+      dispn_(nullptr),
+      disi_(nullptr),
+      zeros_(nullptr),
+      eledetjac_(nullptr),
+      elequality_(nullptr),
       elequalityyesno_(params->get<bool>("ASSESSMESHQUALITY")),
       aletype_(Teuchos::getIntegralValue<Inpar::ALE::AleDynamic>(*params, "ALE_TYPE")),
       maxiter_(params->get<int>("MAXITER")),
@@ -96,12 +96,12 @@ ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
 
   if (msht_ == Inpar::ALE::meshsliding)
   {
-    meshtying_ = Teuchos::make_rcp<Meshsliding>(
+    meshtying_ = std::make_shared<Meshsliding>(
         discret_, *solver_, msht_, Global::Problem::instance()->n_dim(), nullptr);
   }
   else if (msht_ == Inpar::ALE::meshtying)
   {
-    meshtying_ = Teuchos::make_rcp<Meshtying>(
+    meshtying_ = std::make_shared<Meshtying>(
         discret_, *solver_, msht_, Global::Problem::instance()->n_dim(), nullptr);
   }
 
@@ -114,7 +114,7 @@ ALE::Ale::Ale(Teuchos::RCP<Core::FE::Discretization> actdis,
     if (locsysconditions.size())
     {
       // Initialize locsys manager
-      locsysman_ = Teuchos::make_rcp<Core::Conditions::LocsysManager>(
+      locsysman_ = std::make_shared<Core::Conditions::LocsysManager>(
           *discret_, Global::Problem::instance()->n_dim());
     }
   }
@@ -179,7 +179,7 @@ void ALE::Ale::set_initial_displacement(const Inpar::ALE::InitialDisp init, cons
 }
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::Utils::MapExtractor> interface)
+void ALE::Ale::create_system_matrix(std::shared_ptr<const ALE::Utils::MapExtractor> interface)
 {
   if (msht_ != Inpar::ALE::no_meshtying)
   {
@@ -187,27 +187,27 @@ void ALE::Ale::create_system_matrix(Teuchos::RCP<const ALE::Utils::MapExtractor>
     sysmat_ = meshtying_->setup(coupleddof, dispnp_);
     meshtying_->dirichlet_on_master(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
 
-    if (interface != Teuchos::null)
+    if (interface != nullptr)
     {
       meshtying_->is_multifield(*interface, true);
     }
   }
-  else if (interface == Teuchos::null)
+  else if (interface == nullptr)
   {
     const Epetra_Map* dofrowmap = discret_->dof_row_map();
-    sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 81, false, true);
+    sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 81, false, true);
   }
   else
   {
-    sysmat_ = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        *interface, *interface, 81, false, true);
+    sysmat_ =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            *interface, *interface, 81, false, true);
   }
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc,
+void ALE::Ale::evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> stepinc,
     ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
   // We save the current solution here. This will not change the
@@ -219,7 +219,7 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc
 
   disi_->PutScalar(0.0);
 
-  if (stepinc != Teuchos::null)
+  if (stepinc != nullptr)
   {
     dispnp_->Update(1.0, *stepinc, 1.0, *dispn_, 0.0);
   }
@@ -240,18 +240,18 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc
   }
 
   // dispnp_ has zeros at the Dirichlet-entries, so we maintain zeros there.
-  if (locsys_manager() != Teuchos::null)
+  if (locsys_manager() != nullptr)
   {
     // Transform system matrix and rhs to local coordinate systems
     locsys_manager()->rotate_global_to_local(
-        Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_), *residual_);
+        std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_), *residual_);
 
     // When using local systems, a rotated dispnp_ vector needs to be used as dbcval for
     // apply_dirichlet_to_system
     Core::LinAlg::Vector<double> dispnp_local(*(zeros_));
     locsys_manager()->rotate_global_to_local(dispnp_local);
 
-    if (get_loc_sys_trafo() != Teuchos::null)
+    if (get_loc_sys_trafo() != nullptr)
     {
       Core::LinAlg::apply_dirichlet_to_system(
           *Core::LinAlg::cast_to_sparse_matrix_and_check_success(sysmat_), *disi_, *residual_,
@@ -282,8 +282,8 @@ void ALE::Ale::evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> stepinc
 int ALE::Ale::solve()
 {
   // We need the negative residual here as right hand side of the linear problem
-  Teuchos::RCP<Core::LinAlg::Vector<double>> rhs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*residual_);
+  std::shared_ptr<Core::LinAlg::Vector<double>> rhs =
+      std::make_shared<Core::LinAlg::Vector<double>>(*residual_);
   rhs->Scale(-1.0);
 
   // ToDo (mayr) Why can't we use rhs_ instead of local variable rhs???
@@ -392,23 +392,23 @@ std::string ALE::Ale::element_action_string(const enum Inpar::ALE::AleDynamic na
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_Map> ALE::Ale::dof_row_map() const
+std::shared_ptr<const Epetra_Map> ALE::Ale::dof_row_map() const
 {
-  return Teuchos::rcpFromRef(*discret_->dof_row_map());
+  return Core::Utils::shared_ptr_from_ref(*discret_->dof_row_map());
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> ALE::Ale::system_matrix()
+std::shared_ptr<Core::LinAlg::SparseMatrix> ALE::Ale::system_matrix()
 {
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_);
+  return std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> ALE::Ale::block_system_matrix()
+std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> ALE::Ale::block_system_matrix()
 {
-  return Teuchos::rcp_dynamic_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
+  return std::dynamic_pointer_cast<Core::LinAlg::BlockSparseMatrixBase>(sysmat_);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -526,7 +526,7 @@ void ALE::Ale::prepare_time_step()
     print_time_step_header();
 
   // Update local coordinate systems (which may be time dependent)
-  if (locsysman_ != Teuchos::null)
+  if (locsysman_ != nullptr)
   {
     discret_->clear_state();
     discret_->set_state("dispnp", dispnp_);
@@ -541,7 +541,7 @@ void ALE::Ale::prepare_time_step()
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // Apply Dirichlet boundary conditions on provided state vector
-  ALE::Ale::apply_dirichlet_bc(eleparams, dispnp_, Teuchos::null, Teuchos::null, false);
+  ALE::Ale::apply_dirichlet_bc(eleparams, dispnp_, nullptr, nullptr, false);
 
   return;
 }
@@ -556,7 +556,7 @@ void ALE::Ale::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
   // Newton loop to deal with possible non-linearities
   while (!is_converged && iter < maxiter_)
   {
-    evaluate(Teuchos::null, dbc_type);
+    evaluate(nullptr, dbc_type);
 
     if (converged(iter))
     {
@@ -600,8 +600,8 @@ void ALE::Ale::print_time_step_header() const
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType dbc_type,
-    Teuchos::RCP<const ALE::Utils::MapExtractor> interface,
-    Teuchos::RCP<const ALE::Utils::XFluidFluidMapExtractor> xff_interface)
+    std::shared_ptr<const ALE::Utils::MapExtractor> interface,
+    std::shared_ptr<const ALE::Utils::XFluidFluidMapExtractor> xff_interface)
 {
   // set fixed nodes (conditions != 0 are not supported right now). hahn: Why?!
   Teuchos::ParameterList eleparams;
@@ -611,12 +611,12 @@ void ALE::Ale::setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType dbc_type
       "function_manager", &Global::Problem::instance()->function_manager());
 
   // some consistency checks
-  if (interface == Teuchos::null && dbc_type != ALE::Utils::MapExtractor::dbc_set_std &&
+  if (interface == nullptr && dbc_type != ALE::Utils::MapExtractor::dbc_set_std &&
       dbc_type != ALE::Utils::MapExtractor::dbc_set_x_ff)
     FOUR_C_THROW(
         "For non-standard use of SetupDBCMapEx, please provide a valid ALE::Utils::MapExtractor.");
 
-  if (xff_interface == Teuchos::null && dbc_type == ALE::Utils::MapExtractor::dbc_set_x_ff)
+  if (xff_interface == nullptr && dbc_type == ALE::Utils::MapExtractor::dbc_set_x_ff)
     FOUR_C_THROW(
         "For non-standard use of SetupDBCMapEx with fluid-fluid coupling, please provide a "
         "x_fluid_fluid_map_extractor.");
@@ -627,42 +627,45 @@ void ALE::Ale::setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType dbc_type
   {
     case ALE::Utils::MapExtractor::dbc_set_std:
       dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std] =
-          Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
-      apply_dirichlet_bc(eleparams, dispnp_, Teuchos::null, Teuchos::null, true);
+          std::make_shared<Core::LinAlg::MapExtractor>();
+      apply_dirichlet_bc(eleparams, dispnp_, nullptr, nullptr, true);
       break;
     case ALE::Utils::MapExtractor::dbc_set_x_ff:
     {
-      std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+      std::vector<std::shared_ptr<const Epetra_Map>> condmaps;
       condmaps.push_back(xff_interface->xfluid_fluid_cond_map());
       condmaps.push_back(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
-      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
+      std::shared_ptr<Epetra_Map> condmerged =
+          Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[ALE::Utils::MapExtractor::dbc_set_x_ff] =
-          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
+          std::make_shared<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
     case ALE::Utils::MapExtractor::dbc_set_x_fsi:
     case ALE::Utils::MapExtractor::dbc_set_biofilm:
     case ALE::Utils::MapExtractor::dbc_set_part_fsi:
     {
-      std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+      std::vector<std::shared_ptr<const Epetra_Map>> condmaps;
       condmaps.push_back(interface->fsi_cond_map());
       condmaps.push_back(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
-      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
+      std::shared_ptr<Epetra_Map> condmerged =
+          Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
 
       dbcmaps_[dbc_type] =
-          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
+          std::make_shared<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
     case ALE::Utils::MapExtractor::dbc_set_wear:
     {
-      std::vector<Teuchos::RCP<const Epetra_Map>> condmaps;
+      std::vector<std::shared_ptr<const Epetra_Map>> condmaps;
       condmaps.push_back(interface->ale_wear_cond_map());
       condmaps.push_back(dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]->cond_map());
 
-      Teuchos::RCP<Epetra_Map> condmerged = Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
+      std::shared_ptr<Epetra_Map> condmerged =
+          Core::LinAlg::MultiMapExtractor::merge_maps(condmaps);
       dbcmaps_[ALE::Utils::MapExtractor::dbc_set_wear] =
-          Teuchos::make_rcp<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
+          std::make_shared<Core::LinAlg::MapExtractor>(*(discret_->dof_row_map()), condmerged);
       break;
     }
     default:
@@ -675,25 +678,25 @@ void ALE::Ale::setup_dbc_map_ex(ALE::Utils::MapExtractor::AleDBCSetType dbc_type
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> ALE::Ale::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> ALE::Ale::create_field_test()
 {
-  return Teuchos::make_rcp<ALE::AleResultTest>(*this);
+  return std::make_shared<ALE::AleResultTest>(*this);
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectord,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> systemvectordd, bool recreatemap)
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvectord,
+    std::shared_ptr<Core::LinAlg::Vector<double>> systemvectordd, bool recreatemap)
 {
   // In the case of local coordinate systems, we have to rotate forward ...
   // ---------------------------------------------------------------------------
-  if (locsysman_ != Teuchos::null)
+  if (locsysman_ != nullptr)
   {
-    if (systemvector != Teuchos::null) locsysman_->rotate_global_to_local(*systemvector);
-    if (systemvectord != Teuchos::null) locsysman_->rotate_global_to_local(*systemvectord);
-    if (systemvectordd != Teuchos::null) locsysman_->rotate_global_to_local(*systemvectordd);
+    if (systemvector != nullptr) locsysman_->rotate_global_to_local(*systemvector);
+    if (systemvectord != nullptr) locsysman_->rotate_global_to_local(*systemvectord);
+    if (systemvectordd != nullptr) locsysman_->rotate_global_to_local(*systemvectordd);
   }
 
   // Apply DBCs
@@ -701,23 +704,23 @@ void ALE::Ale::apply_dirichlet_bc(Teuchos::ParameterList& params,
   discret_->clear_state();
   if (recreatemap)
   {
-    discret_->evaluate_dirichlet(params, systemvector, systemvectord, systemvectordd, Teuchos::null,
+    discret_->evaluate_dirichlet(params, systemvector, systemvectord, systemvectordd, nullptr,
         dbcmaps_[ALE::Utils::MapExtractor::dbc_set_std]);
   }
   else
   {
     discret_->evaluate_dirichlet(
-        params, systemvector, systemvectord, systemvectordd, Teuchos::null, Teuchos::null);
+        params, systemvector, systemvectord, systemvectordd, nullptr, nullptr);
   }
   discret_->clear_state();
 
   // In the case of local coordinate systems, we have to rotate back into global Cartesian frame
   // ---------------------------------------------------------------------------
-  if (locsysman_ != Teuchos::null)
+  if (locsysman_ != nullptr)
   {
-    if (systemvector != Teuchos::null) locsysman_->rotate_local_to_global(*systemvector);
-    if (systemvectord != Teuchos::null) locsysman_->rotate_local_to_global(*systemvectord);
-    if (systemvectordd != Teuchos::null) locsysman_->rotate_local_to_global(*systemvectordd);
+    if (systemvector != nullptr) locsysman_->rotate_local_to_global(*systemvector);
+    if (systemvectord != nullptr) locsysman_->rotate_local_to_global(*systemvectord);
+    if (systemvectordd != nullptr) locsysman_->rotate_local_to_global(*systemvectordd);
   }
 
   return;
@@ -765,16 +768,16 @@ void ALE::Ale::set_dt(const double dtnew)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-Teuchos::RCP<const Core::LinAlg::SparseMatrix> ALE::Ale::get_loc_sys_trafo() const
+std::shared_ptr<const Core::LinAlg::SparseMatrix> ALE::Ale::get_loc_sys_trafo() const
 {
-  if (locsysman_ != Teuchos::null) return locsysman_->trafo();
+  if (locsysman_ != nullptr) return locsysman_->trafo();
 
-  return Teuchos::null;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void ALE::Ale::update_slave_dof(Teuchos::RCP<Core::LinAlg::Vector<double>>& a)
+void ALE::Ale::update_slave_dof(std::shared_ptr<Core::LinAlg::Vector<double>>& a)
 {
   if (msht_ != Inpar::ALE::no_meshtying)
   {
@@ -851,9 +854,9 @@ bool ALE::Ale::evaluate_element_quality()
 ////////////////////////////////////////////////////////////////////////////////
 
 /*----------------------------------------------------------------------------*/
-ALE::AleLinear::AleLinear(Teuchos::RCP<Core::FE::Discretization> actdis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params_in,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ALE::AleLinear::AleLinear(std::shared_ptr<Core::FE::Discretization> actdis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params_in,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : Ale(actdis, solver, params_in, output), validsysmat_(false), updateeverystep_(false)
 {
   updateeverystep_ = params().get<bool>("UPDATEMATRIX");
@@ -872,7 +875,7 @@ void ALE::AleLinear::prepare_time_step()
 /*----------------------------------------------------------------------------*/
 void ALE::AleLinear::time_step(ALE::Utils::MapExtractor::AleDBCSetType dbc_type)
 {
-  evaluate(Teuchos::null, dbc_type);
+  evaluate(nullptr, dbc_type);
   solve();
   update_iter();
 
@@ -888,9 +891,9 @@ void ALE::AleLinear::evaluate_elements()
 
     validsysmat_ = true;
   }
-  else if (not system_matrix().is_null())
+  else if (system_matrix())
     system_matrix()->Apply(*dispnp(), *write_access_residual());
-  else if (not block_system_matrix().is_null())
+  else if (block_system_matrix())
     block_system_matrix()->Apply(*dispnp(), *write_access_residual());
   else
     FOUR_C_THROW("Can't compute residual for linear ALE.");

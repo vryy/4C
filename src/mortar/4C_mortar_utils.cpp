@@ -148,12 +148,12 @@ void Mortar::sort(double* dlist, int N, int* list2)
 /*----------------------------------------------------------------------*
  | transform the row map of a matrix (GIDs)                   popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform_gids(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform_gids(
     const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap)
 {
   // initialize output matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(newrowmap, 100, false, true);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(newrowmap, 100, false, true);
 
   // transform input matrix to newrowmap
   for (int i = 0; i < (inmat.epetra_matrix())->NumMyRows(); ++i)
@@ -186,12 +186,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform_gids(
 /*----------------------------------------------------------------------*
  | transform the column map of a matrix (GIDs)                popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
     const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newdomainmap)
 {
   // initialize output matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(inmat.row_map(), 100, false, true);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(inmat.row_map(), 100, false, true);
 
   // mapping of column gids
   std::map<int, int> gidmap;
@@ -243,14 +243,14 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform_gids(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
-    const Epetra_Map& newdomainmap, Teuchos::RCP<Epetra_Map>& newcolmap)
+    const Epetra_Map& newdomainmap, std::shared_ptr<Epetra_Map>& newcolmap)
 {
   if (not mat.filled()) FOUR_C_THROW("Matrix must be filled!");
 
-  if (not newcolmap.is_null() and mat.col_map().SameAs(*newcolmap)) return;
+  if (newcolmap and mat.col_map().SameAs(*newcolmap)) return;
 
   // reset old no longer correct column map
-  newcolmap = Teuchos::null;
+  newcolmap = nullptr;
 
   // mapping of column gids
   std::map<int, int> gidmap;
@@ -278,18 +278,18 @@ void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
     my_col_gids[lid] = cit->second;
   }
 
-  newcolmap = Teuchos::make_rcp<Epetra_Map>(mat.col_map().NumGlobalElements(),
+  newcolmap = std::make_shared<Epetra_Map>(mat.col_map().NumGlobalElements(),
       static_cast<int>(my_col_gids.size()), my_col_gids.data(), 0, mat.Comm());
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::replace_column_and_domain_map(Core::LinAlg::SparseMatrix& mat,
-    const Epetra_Map& newdomainmap, Teuchos::RCP<Epetra_Map>* const newcolmap_ptr)
+    const Epetra_Map& newdomainmap, std::shared_ptr<Epetra_Map>* const newcolmap_ptr)
 {
   if (not mat.filled()) FOUR_C_THROW("Matrix must be filled!");
 
-  Teuchos::RCP<Epetra_Map> newcolmap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> newcolmap = nullptr;
   if (newcolmap_ptr)
   {
     create_new_col_map(mat, newdomainmap, *newcolmap_ptr);
@@ -310,13 +310,13 @@ void Mortar::replace_column_and_domain_map(Core::LinAlg::SparseMatrix& mat,
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix (GIDs)       popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
     const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap,
     const Epetra_Map& newdomainmap)
 {
   // initialize output matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(newrowmap, 100, true, true);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(newrowmap, 100, true, true);
 
   // mapping of column gids
   std::map<int, int> gidmap;
@@ -368,15 +368,15 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform_gids(
 /*----------------------------------------------------------------------*
  | transform the row map of a matrix                          popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform(
     const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap)
 {
   // redistribute input matrix
-  Teuchos::RCP<Epetra_CrsMatrix> permmat = redistribute(inmat, newrowmap, inmat.domain_map());
+  std::shared_ptr<Epetra_CrsMatrix> permmat = redistribute(inmat, newrowmap, inmat.domain_map());
 
   // output matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(permmat, Core::LinAlg::Copy, true);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(permmat, Core::LinAlg::Copy, true);
 
   return outmat;
 }
@@ -384,12 +384,12 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_transform(
 /*----------------------------------------------------------------------*
  | transform the column map of a matrix                       popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform(
     const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newdomainmap)
 {
   // initialize output matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(inmat);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(inmat);
 
   // complete output matrix
   outmat->un_complete();
@@ -401,29 +401,29 @@ Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_col_transform(
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix              popp 08/10|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform(
+std::shared_ptr<Core::LinAlg::SparseMatrix> Mortar::matrix_row_col_transform(
     const Core::LinAlg::SparseMatrix& inmat, const Epetra_Map& newrowmap,
     const Epetra_Map& newdomainmap)
 {
   // redistribute input matrix
-  Teuchos::RCP<Epetra_CrsMatrix> permmat = redistribute(inmat, newrowmap, newdomainmap);
+  std::shared_ptr<Epetra_CrsMatrix> permmat = redistribute(inmat, newrowmap, newdomainmap);
 
   // output matrix
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> outmat =
-      Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(permmat, Core::LinAlg::Copy, false);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> outmat =
+      std::make_shared<Core::LinAlg::SparseMatrix>(permmat, Core::LinAlg::Copy, false);
 
   return outmat;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsMatrix> Mortar::redistribute(const Core::LinAlg::SparseMatrix& src,
+std::shared_ptr<Epetra_CrsMatrix> Mortar::redistribute(const Core::LinAlg::SparseMatrix& src,
     const Epetra_Map& permrowmap, const Epetra_Map& permdomainmap)
 {
   Epetra_Export exporter(permrowmap, src.row_map());
 
-  Teuchos::RCP<Epetra_CrsMatrix> permsrc =
-      Teuchos::make_rcp<Epetra_CrsMatrix>(Copy, permrowmap, src.max_num_entries());
+  std::shared_ptr<Epetra_CrsMatrix> permsrc =
+      std::make_shared<Epetra_CrsMatrix>(Copy, permrowmap, src.max_num_entries());
   int err = permsrc->Import(*src.epetra_matrix(), exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err=%d", err);
 
@@ -711,7 +711,7 @@ int Mortar::sort_convex_hull_points(bool out, Core::LinAlg::SerialDenseMatrix& t
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_src,
-    const std::vector<Teuchos::RCP<Core::FE::Discretization>>& voldis,
+    const std::vector<std::shared_ptr<Core::FE::Discretization>>& voldis,
     std::vector<std::pair<int, int>> material_links, bool check_on_in, bool check_on_exit)
 {
   if (voldis.size() == 0) return;
@@ -730,7 +730,7 @@ void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_s
 
     // Fill rdata with existing colmap
     const Epetra_Map* elecolmap = voldis[disidx]->element_col_map();
-    const Teuchos::RCP<Epetra_Map> allredelecolmap =
+    const std::shared_ptr<Epetra_Map> allredelecolmap =
         Core::LinAlg::allreduce_e_map(*voldis[disidx]->element_row_map());
 
     for (int i = 0; i < elecolmap->NumMyElements(); ++i)
@@ -815,8 +815,8 @@ void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_s
   for (std::vector<std::pair<int, int>>::const_iterator m = material_links.begin();
        m != material_links.end(); ++m)
   {
-    Teuchos::RCP<Core::FE::Discretization> dis_src_mat = voldis.at(m->first);
-    Teuchos::RCP<Core::FE::Discretization> dis_tar_mat = voldis.at(m->second);
+    std::shared_ptr<Core::FE::Discretization> dis_src_mat = voldis.at(m->first);
+    std::shared_ptr<Core::FE::Discretization> dis_tar_mat = voldis.at(m->second);
 
     for (int i = 0; i < dis_tar_mat->num_my_col_elements(); ++i)
     {
@@ -836,18 +836,18 @@ void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_s
  |  Prepare mortar element for nurbs-case                    farah 11/14|
  *----------------------------------------------------------------------*/
 void Mortar::Utils::prepare_nurbs_element(Core::FE::Discretization& discret,
-    Teuchos::RCP<Core::Elements::Element> ele, Mortar::Element& cele, int dim)
+    std::shared_ptr<Core::Elements::Element> ele, Mortar::Element& cele, int dim)
 {
   Core::FE::Nurbs::NurbsDiscretization* nurbsdis =
       dynamic_cast<Core::FE::Nurbs::NurbsDiscretization*>(&(discret));
 
-  Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
+  std::shared_ptr<Core::FE::Nurbs::Knotvector> knots = (*nurbsdis).get_knot_vector();
   std::vector<Core::LinAlg::SerialDenseVector> parentknots(dim);
   std::vector<Core::LinAlg::SerialDenseVector> mortarknots(dim - 1);
 
   double normalfac = 0.0;
-  Teuchos::RCP<Core::Elements::FaceElement> faceele =
-      Teuchos::rcp_dynamic_cast<Core::Elements::FaceElement>(ele, true);
+  std::shared_ptr<Core::Elements::FaceElement> faceele =
+      std::dynamic_pointer_cast<Core::Elements::FaceElement>(ele);
   bool zero_size = knots->get_boundary_ele_and_parent_knots(parentknots, mortarknots, normalfac,
       faceele->parent_master_element()->id(), faceele->face_master_number());
 
@@ -874,49 +874,49 @@ void Mortar::Utils::prepare_nurbs_node(Core::Nodes::Node* node, Mortar::Node& mn
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Utils::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::SparseMatrix>& k,
-    const Teuchos::RCP<const Core::LinAlg::SparseMatrix>& p_row,
-    const Teuchos::RCP<const Core::LinAlg::SparseMatrix>& p_col)
+void Mortar::Utils::mortar_matrix_condensation(std::shared_ptr<Core::LinAlg::SparseMatrix>& k,
+    const std::shared_ptr<const Core::LinAlg::SparseMatrix>& p_row,
+    const std::shared_ptr<const Core::LinAlg::SparseMatrix>& p_col)
 {
   // prepare maps
-  Teuchos::RCP<Epetra_Map> gsrow = Teuchos::rcp_const_cast<Epetra_Map>(
-      Teuchos::rcpFromRef<const Epetra_Map>(p_row->range_map()));
-  Teuchos::RCP<Epetra_Map> gmrow = Teuchos::rcp_const_cast<Epetra_Map>(
-      Teuchos::rcpFromRef<const Epetra_Map>(p_row->domain_map()));
-  Teuchos::RCP<Epetra_Map> gsmrow = Core::LinAlg::merge_map(gsrow, gmrow, false);
-  Teuchos::RCP<Epetra_Map> gnrow = Core::LinAlg::split_map(k->range_map(), *gsmrow);
+  std::shared_ptr<Epetra_Map> gsrow = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p_row->range_map()));
+  std::shared_ptr<Epetra_Map> gmrow = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p_row->domain_map()));
+  std::shared_ptr<Epetra_Map> gsmrow = Core::LinAlg::merge_map(gsrow, gmrow, false);
+  std::shared_ptr<Epetra_Map> gnrow = Core::LinAlg::split_map(k->range_map(), *gsmrow);
 
-  Teuchos::RCP<Epetra_Map> gscol = Teuchos::rcp_const_cast<Epetra_Map>(
-      Teuchos::rcpFromRef<const Epetra_Map>(p_col->range_map()));
-  Teuchos::RCP<Epetra_Map> gmcol = Teuchos::rcp_const_cast<Epetra_Map>(
-      Teuchos::rcpFromRef<const Epetra_Map>(p_col->domain_map()));
-  Teuchos::RCP<Epetra_Map> gsmcol = Core::LinAlg::merge_map(gscol, gmcol, false);
-  Teuchos::RCP<Epetra_Map> gncol = Core::LinAlg::split_map(k->domain_map(), *gsmcol);
+  std::shared_ptr<Epetra_Map> gscol = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p_col->range_map()));
+  std::shared_ptr<Epetra_Map> gmcol = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p_col->domain_map()));
+  std::shared_ptr<Epetra_Map> gsmcol = Core::LinAlg::merge_map(gscol, gmcol, false);
+  std::shared_ptr<Epetra_Map> gncol = Core::LinAlg::split_map(k->domain_map(), *gsmcol);
 
   /*--------------------------------------------------------------------*/
   /* Split kteff into 3x3 block matrix                                  */
   /*--------------------------------------------------------------------*/
   // we want to split k into 3 groups s,m,n = 9 blocks
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kss = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksm = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksn = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kms = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmm = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kmn = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kns = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> knm = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> knn = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kss = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksm = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksn = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kms = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmm = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kmn = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kns = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> knm = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> knn = nullptr;
 
   // temporarily we need the blocks ksmsm, ksmn, knsm
   // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksmsm = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> ksmn = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> knsm = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksmsm = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> ksmn = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> knsm = nullptr;
 
-  // some temporary Teuchos::RCPs
-  Teuchos::RCP<Epetra_Map> tempmap;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx1 = Teuchos::null;
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> tempmtx2 = Teuchos::null;
+  // some temporary std::shared_ptrs
+  std::shared_ptr<Epetra_Map> tempmap;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx1 = nullptr;
+  std::shared_ptr<Core::LinAlg::SparseMatrix> tempmtx2 = nullptr;
 
   // split
   Core::LinAlg::split_matrix2x2(k, gsmrow, gnrow, gsmcol, gncol, ksmsm, ksmn, knsm, knn);
@@ -924,8 +924,9 @@ void Mortar::Utils::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::Sparse
   Core::LinAlg::split_matrix2x2(ksmn, gsrow, gmrow, gncol, tempmap, ksn, tempmtx1, kmn, tempmtx2);
   Core::LinAlg::split_matrix2x2(knsm, gnrow, tempmap, gscol, gmcol, kns, knm, tempmtx1, tempmtx2);
 
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kteffnew = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
-      k->row_map(), 81, true, false, k->get_matrixtype());
+  std::shared_ptr<Core::LinAlg::SparseMatrix> kteffnew =
+      std::make_shared<Core::LinAlg::SparseMatrix>(
+          k->row_map(), 81, true, false, k->get_matrixtype());
 
   // build new stiffness matrix
   kteffnew->add(*knn, false, 1.0, 1.0);
@@ -960,10 +961,10 @@ void Mortar::Utils::mortar_rhs_condensation(
     Core::LinAlg::Vector<double>& rhs, Core::LinAlg::SparseMatrix& p)
 {
   // prepare maps
-  Teuchos::RCP<Epetra_Map> gsdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.range_map()));
-  Teuchos::RCP<Epetra_Map> gmdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.domain_map()));
+  std::shared_ptr<Epetra_Map> gsdofrowmap = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p.range_map()));
+  std::shared_ptr<Epetra_Map> gmdofrowmap = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p.domain_map()));
 
   Core::LinAlg::Vector<double> fs(*gsdofrowmap);
   Core::LinAlg::Vector<double> fm_cond(*gmdofrowmap);
@@ -986,10 +987,10 @@ void Mortar::Utils::mortar_rhs_condensation(
 void Mortar::Utils::mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinAlg::SparseMatrix& p)
 {
   // prepare maps
-  Teuchos::RCP<Epetra_Map> gsdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.range_map()));
-  Teuchos::RCP<Epetra_Map> gmdofrowmap =
-      Teuchos::rcp_const_cast<Epetra_Map>(Teuchos::rcpFromRef<const Epetra_Map>(p.domain_map()));
+  std::shared_ptr<Epetra_Map> gsdofrowmap = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p.range_map()));
+  std::shared_ptr<Epetra_Map> gmdofrowmap = std::const_pointer_cast<Epetra_Map>(
+      Core::Utils::shared_ptr_from_ref<const Epetra_Map>(p.domain_map()));
 
   Core::LinAlg::Vector<double> m_inc(*gmdofrowmap);
   Core::LinAlg::export_to(inc, m_inc);
@@ -1005,18 +1006,19 @@ void Mortar::Utils::mortar_recover(Core::LinAlg::Vector<double>& inc, Core::LinA
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mortar::Utils::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase>& k,
-    const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
+void Mortar::Utils::mortar_matrix_condensation(
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase>& k,
+    const std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>>& p)
 {
-  Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> cond_mat =
-      Teuchos::make_rcp<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+  std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> cond_mat =
+      std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
           k->domain_extractor(), k->range_extractor(), 81, false, true);
 
   for (int row = 0; row < k->rows(); ++row)
     for (int col = 0; col < k->cols(); ++col)
     {
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> new_matrix =
-          Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(k->matrix(row, col));
+      std::shared_ptr<Core::LinAlg::SparseMatrix> new_matrix =
+          std::make_shared<Core::LinAlg::SparseMatrix>(k->matrix(row, col));
       mortar_matrix_condensation(new_matrix, p.at(row), p.at(col) /*,row!=col*/);
       cond_mat->assign(row, col, Core::LinAlg::Copy, *new_matrix);
     }
@@ -1029,7 +1031,7 @@ void Mortar::Utils::mortar_matrix_condensation(Teuchos::RCP<Core::LinAlg::BlockS
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::Utils::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
-    const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
+    const std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>>& p)
 {
   for (unsigned i = 0; i < p.size(); mortar_rhs_condensation(rhs, *p[i++]))
     ;
@@ -1038,7 +1040,7 @@ void Mortar::Utils::mortar_rhs_condensation(Core::LinAlg::Vector<double>& rhs,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void Mortar::Utils::mortar_recover(Core::LinAlg::Vector<double>& inc,
-    const std::vector<Teuchos::RCP<Core::LinAlg::SparseMatrix>>& p)
+    const std::vector<std::shared_ptr<Core::LinAlg::SparseMatrix>>& p)
 {
   for (unsigned i = 0; i < p.size(); mortar_recover(inc, *p[i++]))
     ;

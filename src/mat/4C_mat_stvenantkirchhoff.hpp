@@ -41,7 +41,7 @@ namespace Mat
 
       //@}
 
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
     };  // class StVenantKirchhoff
   }     // namespace PAR
@@ -95,9 +95,9 @@ namespace Mat
         FOUR_C_THROW("element and material kinematics are not compatible");
     }
 
-    [[nodiscard]] Teuchos::RCP<Core::Mat::Material> clone() const override
+    [[nodiscard]] std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<StVenantKirchhoff>(*this);
+      return std::make_shared<StVenantKirchhoff>(*this);
     }
 
     /// Young's modulus

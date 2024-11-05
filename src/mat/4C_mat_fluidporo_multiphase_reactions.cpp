@@ -40,7 +40,7 @@ Mat::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
     for (m = reacids_.begin(); m != reacids_.end(); ++m)
     {
       const int reacid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(reacid);
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(reacid);
 
       // safety check and cast
       if (mat->material_type() != Core::Materials::m_fluidporo_singlereaction)
@@ -51,14 +51,15 @@ Mat::PAR::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions(
             "TOTALNUMDOF in MAT_FluidPoroSingleReaction does not correspond to NUMMAT in "
             "MAT_FluidPoroMultiPhaseReactions");
 
-      material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
+      material_map_write()->insert(
+          std::pair<int, std::shared_ptr<Core::Mat::Material>>(reacid, mat));
     }
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhaseReactions::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::FluidPoroMultiPhaseReactions::create_material()
 {
-  return Teuchos::make_rcp<Mat::FluidPoroMultiPhaseReactions>(this);
+  return std::make_shared<Mat::FluidPoroMultiPhaseReactions>(this);
 }
 
 
@@ -110,9 +111,9 @@ void Mat::FluidPoroMultiPhaseReactions::setup_mat_map()
   for (m = paramsreac_->reac_ids()->begin(); m != paramsreac_->reac_ids()->end(); ++m)
   {
     const int reacid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(reacid);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(reacid, mat));
+    std::shared_ptr<Core::Mat::Material> mat = Mat::factory(reacid);
+    if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+    material_map_write()->insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(reacid, mat));
   }
   return;
 }
@@ -163,7 +164,7 @@ void Mat::FluidPoroMultiPhaseReactions::unpack(Core::Communication::UnpackBuffer
   int matid(-1);
   extract_from_pack(buffer, matid);
   paramsreac_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

@@ -16,9 +16,9 @@
 #include "4C_linalg_vector.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -56,15 +56,15 @@ namespace FBI
      *
      * \param[in] binning binning strategy
      */
-    void set_binning(Teuchos::RCP<Core::Binstrategy::BinningStrategy> binning) override;
+    void set_binning(std::shared_ptr<Core::Binstrategy::BinningStrategy> binning) override;
 
     /** \brief Setup the Geoemtry object
      *
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    void setup(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement) override;
+    void setup(std::vector<std::shared_ptr<Core::FE::Discretization>>&,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> structure_displacement) override;
 
     /**
      * \brief Performs the search to find possible beam-fluid element pairs
@@ -79,17 +79,18 @@ namespace FBI
      *
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
-    Teuchos::RCP<std::map<int, std::vector<int>>> search(
-        std::vector<Teuchos::RCP<Core::FE::Discretization>>& discretizations,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& column_structure_displacement) override;
+    std::shared_ptr<std::map<int, std::vector<int>>> search(
+        std::vector<std::shared_ptr<Core::FE::Discretization>>& discretizations,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& column_structure_displacement)
+        override;
 
     /** \brief Update distribution of elements to bins
      *
      * \param[in] structure_discretization structure discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    void update_binning(Teuchos::RCP<Core::FE::Discretization>& structure_discretization,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_column_displacement) override;
+    void update_binning(std::shared_ptr<Core::FE::Discretization>& structure_discretization,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> structure_column_displacement) override;
 
    protected:
     /**
@@ -106,34 +107,34 @@ namespace FBI
      * \param[in] disp current displacements
      */
     void compute_current_positions(Core::FE::Discretization& dis,
-        Teuchos::RCP<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp) const override;
+        std::shared_ptr<std::map<int, Core::LinAlg::Matrix<3, 1>>> positions,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp) const override;
 
     /** \brief Setup the Binning object
      *
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void setup_binning(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement);
+    virtual void setup_binning(std::vector<std::shared_ptr<Core::FE::Discretization>>&,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> structure_displacement);
 
     /** \brief Partition the Problem into bins
      *
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void partition_geometry(std::vector<Teuchos::RCP<Core::FE::Discretization>>&,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> structure_displacement);
+    virtual void partition_geometry(std::vector<std::shared_ptr<Core::FE::Discretization>>&,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> structure_displacement);
 
    private:
     /// binning strategy
-    Teuchos::RCP<Core::Binstrategy::BinningStrategy> binstrategy_;
+    std::shared_ptr<Core::Binstrategy::BinningStrategy> binstrategy_;
 
     /// Map relating bins to elements they contain
     std::map<int, std::set<int>> bintoelemap_;
 
     /// Row map of the bin discretization
-    Teuchos::RCP<Epetra_Map> binrowmap_;
+    std::shared_ptr<Epetra_Map> binrowmap_;
   };
 }  // namespace FBI
 

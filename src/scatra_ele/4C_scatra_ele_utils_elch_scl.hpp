@@ -41,23 +41,25 @@ namespace Discret
       );
 
       //! evaluate electrolyte material
-      void mat_elch_mat(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte material
-          const std::vector<double>& concentrations,              //!< local concentration values
-          double temperature,                                     //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
-          Inpar::ElCh::DiffCondMat& diffcondmat                   //!< ion type
+      void mat_elch_mat(
+          std::shared_ptr<const Core::Mat::Material> material,       //!< electrolyte material
+          const std::vector<double>& concentrations,                 //!< local concentration values
+          double temperature,                                        //!< temperature
+          std::shared_ptr<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
+          Inpar::ElCh::DiffCondMat& diffcondmat                      //!< ion type
       );
       //! evaluate electrolyte phase
-      void mat_elch_phase(Teuchos::RCP<const Core::Mat::Material> material,  //!< electrolyte phase
-          const std::vector<double>& concentrations,              //!< local concentration values
-          double temperature,                                     //!< temperature
-          Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
-          Inpar::ElCh::DiffCondMat& diffcondmat                   //!< ion type
+      void mat_elch_phase(
+          std::shared_ptr<const Core::Mat::Material> material,       //!< electrolyte phase
+          const std::vector<double>& concentrations,                 //!< local concentration values
+          double temperature,                                        //!< temperature
+          std::shared_ptr<ScaTraEleDiffManagerElchScl> diffmanager,  //!< diffusion manager
+          Inpar::ElCh::DiffCondMat& diffcondmat                      //!< ion type
       );
 
       //! evaluate Space Charge Layer Material
-      void mat_scl(Teuchos::RCP<const Core::Mat::Material> material, const double concentration,
-          const double temperature, Teuchos::RCP<ScaTraEleDiffManagerElchScl> diffmanager);
+      void mat_scl(std::shared_ptr<const Core::Mat::Material> material, const double concentration,
+          const double temperature, std::shared_ptr<ScaTraEleDiffManagerElchScl> diffmanager);
 
      protected:
       //! private constructor for singletons

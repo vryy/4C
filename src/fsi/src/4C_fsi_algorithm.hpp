@@ -16,7 +16,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,10 +64,10 @@ namespace FSI
     virtual void setup();
 
     /// access to structure field
-    const Teuchos::RCP<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }
+    const std::shared_ptr<Adapter::FSIStructureWrapper>& structure_field() { return structure_; }
 
     /// access to fluid field
-    const Teuchos::RCP<Adapter::FluidMovingBoundary>& mb_fluid_field() { return fluid_; }
+    const std::shared_ptr<Adapter::FluidMovingBoundary>& mb_fluid_field() { return fluid_; }
 
     /// read restart data
     void read_restart(int step) override;
@@ -89,14 +90,14 @@ namespace FSI
     //@}
 
     //! @name Transfer helpers
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv);
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> iv);
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> struct_to_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fluid_to_struct(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_fluid(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_struct(
+        std::shared_ptr<Core::LinAlg::Vector<double>> iv);
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> struct_to_fluid(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fluid_to_struct(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const;
     //@}
 
     /// return the structure fluid coupling object
@@ -107,20 +108,20 @@ namespace FSI
 
    protected:
     /// underlying structure of the FSI problem
-    Teuchos::RCP<Adapter::FSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::FSIStructureWrapper> structure_;
 
     /// underlying fluid of the FSI problem
-    Teuchos::RCP<Adapter::FluidMovingBoundary> fluid_;
+    std::shared_ptr<Adapter::FluidMovingBoundary> fluid_;
 
     /// RCP pointer to the base algorithm of the structure
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr_;
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> adapterbase_ptr_;
 
     /// use deprecated old structural time integration. todo Has to be removed !
     bool use_old_structure_;
 
    private:
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupsf_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupsf_;
   };
 }  // namespace FSI
 

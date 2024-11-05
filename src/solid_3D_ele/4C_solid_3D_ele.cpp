@@ -89,17 +89,17 @@ void Discret::Elements::SolidType::setup_element_definition(
                                .build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType::create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLID") return create(id, owner);
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Solid>(id, owner);
+  return std::make_shared<Discret::Elements::Solid>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::Elements::SolidType::create(
@@ -153,12 +153,12 @@ int Discret::Elements::Solid::num_volume() const
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Solid::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid::lines()
 {
   return Core::Communication::get_element_lines<StructuralLine, Solid>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Solid::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Solid::surfaces()
 {
   return Core::Communication::get_element_surfaces<StructuralSurface, Solid>(*this);
 }
@@ -216,11 +216,11 @@ void Discret::Elements::Solid::set_params_interface_ptr(const Teuchos::Parameter
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<FourC::Solid::Elements::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = std::dynamic_pointer_cast<FourC::Solid::Elements::ParamsInterface>(
+        p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"));
   }
   else
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
 }
 
 bool Discret::Elements::Solid::read_element(const std::string& eletype, const std::string& celltype,
@@ -244,10 +244,9 @@ bool Discret::Elements::Solid::read_element(const std::string& eletype, const st
   return true;
 }
 
-Teuchos::RCP<Mat::So3Material> Discret::Elements::Solid::solid_material(int nummat) const
+std::shared_ptr<Mat::So3Material> Discret::Elements::Solid::solid_material(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 void Discret::Elements::Solid::vis_names(std::map<std::string, int>& names)

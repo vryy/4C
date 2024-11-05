@@ -13,7 +13,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 Core::DOFSets::TransparentDofSet::TransparentDofSet(
-    Teuchos::RCP<Core::FE::Discretization> sourcedis, bool parallel)
+    std::shared_ptr<Core::FE::Discretization> sourcedis, bool parallel)
     : Core::DOFSets::DofSet(), sourcedis_(sourcedis), parallel_(parallel)
 {
   return;
@@ -84,7 +84,7 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
   }
 
   dofrowmap_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm());
 
   // build dofcolvec
   std::set<int> dofcolset;
@@ -123,7 +123,7 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
   }
 
   dofcolmap_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm());
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
@@ -284,7 +284,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   dofrowmap_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm());
 
   // build dofcolvec
   std::set<int> dofcolset;
@@ -318,7 +318,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   dofcolmap_ =
-      Teuchos::make_rcp<Epetra_Map>(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm());
+      std::make_shared<Epetra_Map>(-1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm());
 
 
   return;

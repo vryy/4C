@@ -71,7 +71,7 @@ Discret::Elements::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
       dtau_dphi_(true),
       tau_struct_(0.0),
       mixres_(true),
-      struct_mat_(Teuchos::null),
+      struct_mat_(nullptr),
       const_permeability_(true),
       kintype_(Inpar::Solid::KinemType::vague)
 {
@@ -94,7 +94,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::pre_evaluate(Teuchos::Paramet
 
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_service(Discret::Elements::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseMatrix& elemat1, Core::LinAlg::SerialDenseMatrix& elemat2,
     Core::LinAlg::SerialDenseVector& elevec1, Core::LinAlg::SerialDenseVector& elevec2,
@@ -125,14 +125,15 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_service(Discret::Elem
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
     Core::LinAlg::SerialDenseVector& elevec2_epetra,
     Core::LinAlg::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
-  Teuchos::RCP<const Mat::FluidPoro> actmat = Teuchos::rcp_static_cast<const Mat::FluidPoro>(mat);
+  std::shared_ptr<const Mat::FluidPoro> actmat =
+      std::static_pointer_cast<const Mat::FluidPoro>(mat);
   const_permeability_ = (actmat->permeability_function() == Mat::PAR::constant);
 
   auto* poroele = dynamic_cast<Discret::Elements::FluidPoro*>(ele);
@@ -159,7 +160,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fl
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -318,7 +319,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Discret::Elements::Fl
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_od(Discret::Elements::Fluid* ele,
     Core::FE::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
     Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
     Core::LinAlg::SerialDenseVector& elevec1_epetra,
@@ -487,7 +488,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate(Teuchos::ParameterLis
     const Core::LinAlg::Matrix<nsd_, nen_>& egridvn, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
     const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
     const Core::LinAlg::Matrix<nen_, 1>* eporositydot,
-    const Core::LinAlg::Matrix<nen_, 1>* eporositydotn, Teuchos::RCP<Core::Mat::Material> mat,
+    const Core::LinAlg::Matrix<nen_, 1>* eporositydotn, std::shared_ptr<Core::Mat::Material> mat,
     bool isale, const Core::FE::GaussIntegration& intpoints)
 {
   // flag for higher order elements
@@ -522,7 +523,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::evaluate_od(Teuchos::Parameter
     const Core::LinAlg::Matrix<nsd_, nen_>& edispn, const Core::LinAlg::Matrix<nsd_, nen_>& egridv,
     const Core::LinAlg::Matrix<nsd_, nen_>& egridvn, const Core::LinAlg::Matrix<nen_, 1>& escaaf,
     const Core::LinAlg::Matrix<nsd_, nen_>& emhist, const Core::LinAlg::Matrix<nen_, 1>& echist,
-    const Core::LinAlg::Matrix<nen_, 1>* eporositynp, Teuchos::RCP<Core::Mat::Material> mat,
+    const Core::LinAlg::Matrix<nen_, 1>* eporositynp, std::shared_ptr<Core::Mat::Material> mat,
     bool isale, const Core::FE::GaussIntegration& intpoints)
 {
   // flag for higher order elements
@@ -563,7 +564,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::sysmat(Teuchos::ParameterList
     const Core::LinAlg::Matrix<nen_, 1>* eporositydotn,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& estif,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-    Teuchos::RCP<const Core::Mat::Material> material, bool isale,
+    std::shared_ptr<const Core::Mat::Material> material, bool isale,
     const Core::FE::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
@@ -718,7 +719,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::sysmat_od(Teuchos::ParameterL
     const Core::LinAlg::Matrix<nen_, 1>& echist, const Core::LinAlg::Matrix<nen_, 1>* eporositynp,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, nsd_ * nen_>& ecoupl,
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
-    Teuchos::RCP<const Core::Mat::Material> material, bool isale,
+    std::shared_ptr<const Core::Mat::Material> material, bool isale,
     const Core::FE::GaussIntegration& intpoints)
 {
   //------------------------------------------------------------------------
@@ -1117,7 +1118,8 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
     Core::LinAlg::Matrix<nen_ * nsd_, nen_>& estif_p_v,
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& estif_q_u, Core::LinAlg::Matrix<nen_, nen_>& ppmat,
     Core::LinAlg::Matrix<nen_, 1>& preforce, Core::LinAlg::Matrix<nsd_, nen_>& velforce,
-    Teuchos::RCP<const Core::Mat::Material> material, const Core::FE::GaussIntegration& intpoints)
+    std::shared_ptr<const Core::Mat::Material> material,
+    const Core::FE::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors
   static Core::LinAlg::Matrix<nsd_ * nsd_, nen_> lin_resM_Du(true);
@@ -1163,10 +1165,10 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop(Teuchos::Par
     porosity_ = 0.0;
 
     // compute scalar at n+alpha_F or n+1
-    Teuchos::RCP<std::vector<double>> scalars = Teuchos::make_rcp<std::vector<double>>(0);
+    std::shared_ptr<std::vector<double>> scalars = std::make_shared<std::vector<double>>(0);
     const double scalaraf = Base::funct_.dot(escaaf);
     scalars->push_back(scalaraf);
-    params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
+    params.set<std::shared_ptr<std::vector<double>>>("scalar", scalars);
 
     compute_porosity(params, press_, volchange, *(iquad), Base::funct_, eporositynp, porosity_,
         &dphi_dp, &dphi_dJ, &dphi_dJdp,
@@ -1624,7 +1626,8 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop_od(
     Core::LinAlg::Matrix<(nsd_ + 1) * nen_, 1>& eforce,
     Core::LinAlg::Matrix<nen_ * nsd_, nen_ * nsd_>& ecoupl_u,
     Core::LinAlg::Matrix<nen_, nen_ * nsd_>& ecoupl_p,
-    Teuchos::RCP<const Core::Mat::Material> material, const Core::FE::GaussIntegration& intpoints)
+    std::shared_ptr<const Core::Mat::Material> material,
+    const Core::FE::GaussIntegration& intpoints)
 {
   // definition of velocity-based momentum residual vectors
   static Core::LinAlg::Matrix<nsd_, nen_ * nsd_> lin_resM_Dus(true);
@@ -1668,10 +1671,10 @@ void Discret::Elements::FluidEleCalcPoro<distype>::gauss_point_loop_od(
     //************************************************auxilary variables for computing the porosity_
 
     // compute scalar at n+alpha_F or n+1
-    Teuchos::RCP<std::vector<double>> scalars = Teuchos::make_rcp<std::vector<double>>(0);
+    std::shared_ptr<std::vector<double>> scalars = std::make_shared<std::vector<double>>(0);
     const double scalaraf = Base::funct_.dot(escaaf);
     scalars->push_back(scalaraf);
-    params.set<Teuchos::RCP<std::vector<double>>>("scalar", scalars);
+    params.set<std::shared_ptr<std::vector<double>>>("scalar", scalars);
 
     double dphi_dp = 0.0;
     double dphi_dJ = 0.0;
@@ -4927,7 +4930,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::get_struct_material(
     // access second material in structure element
     if (ele->num_material() > 1)
     {
-      struct_mat_ = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(ele->material(1));
+      struct_mat_ = std::dynamic_pointer_cast<Mat::StructPoro>(ele->material(1));
       if (struct_mat_->material_type() != Core::Materials::m_structporo and
           struct_mat_->material_type() != Core::Materials::m_structpororeaction and
           struct_mat_->material_type() != Core::Materials::m_structpororeactionECM)
@@ -5106,12 +5109,12 @@ void Discret::Elements::FluidEleCalcPoro<distype>::reac_stab(
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcPoro<distype>::get_material_paramters(
-    Teuchos::RCP<const Core::Mat::Material> material)
+    std::shared_ptr<const Core::Mat::Material> material)
 {
   if (Base::fldpara_->mat_gp())
   {
-    Teuchos::RCP<const Mat::FluidPoro> actmat =
-        Teuchos::rcp_static_cast<const Mat::FluidPoro>(material);
+    std::shared_ptr<const Mat::FluidPoro> actmat =
+        std::static_pointer_cast<const Mat::FluidPoro>(material);
     if (actmat->material_type() != Core::Materials::m_fluidporo)
       FOUR_C_THROW("invalid fluid material for poroelasticity");
 
@@ -5131,11 +5134,11 @@ void Discret::Elements::FluidEleCalcPoro<distype>::get_material_paramters(
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcPoro<distype>::compute_spatial_reaction_terms(
-    Teuchos::RCP<const Core::Mat::Material> material,
+    std::shared_ptr<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nsd_>& invdefgrd)
 {
-  Teuchos::RCP<const Mat::FluidPoro> actmat =
-      Teuchos::rcp_static_cast<const Mat::FluidPoro>(material);
+  std::shared_ptr<const Mat::FluidPoro> actmat =
+      std::static_pointer_cast<const Mat::FluidPoro>(material);
 
   // Acquire anisotropic permeability coefficients at the GP in case of a nodal orthotropic material
   const std::vector<double> anisotropic_permeability_coeffs = std::invoke(
@@ -5180,13 +5183,13 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_spatial_reaction_term
 
 template <Core::FE::CellType distype>
 void Discret::Elements::FluidEleCalcPoro<distype>::compute_lin_spatial_reaction_terms(
-    Teuchos::RCP<const Core::Mat::Material> material,
+    std::shared_ptr<const Core::Mat::Material> material,
     const Core::LinAlg::Matrix<nsd_, nsd_>& defgrd_inv,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>* dJ_dus,
     const Core::LinAlg::Matrix<1, nsd_ * nen_>* dphi_dus)
 {
-  Teuchos::RCP<const Mat::FluidPoro> actmat =
-      Teuchos::rcp_static_cast<const Mat::FluidPoro>(material);
+  std::shared_ptr<const Mat::FluidPoro> actmat =
+      std::static_pointer_cast<const Mat::FluidPoro>(material);
   if (actmat->varying_permeability())
     FOUR_C_THROW("varying material permeability not yet supported!");
 
@@ -6228,7 +6231,7 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_def_gradient(
 
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Elements::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1)
 {
@@ -6241,7 +6244,7 @@ int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Element
 
 template <Core::FE::CellType distype>
 int Discret::Elements::FluidEleCalcPoro<distype>::compute_error(Discret::Elements::Fluid* ele,
-    Teuchos::ParameterList& params, Teuchos::RCP<Core::Mat::Material>& mat,
+    Teuchos::ParameterList& params, std::shared_ptr<Core::Mat::Material>& mat,
     Core::FE::Discretization& discretization, std::vector<int>& lm,
     Core::LinAlg::SerialDenseVector& elevec1, const Core::FE::GaussIntegration& intpoints)
 {
@@ -6783,21 +6786,21 @@ void Discret::Elements::FluidEleCalcPoro<distype>::compute_mixture_strong_residu
 template <Core::FE::CellType distype>
 double Discret::Elements::FluidEleCalcPoro<distype>::compute_effective_stiffness()
 {
-  Teuchos::RCP<Core::Mat::Material> curmat = struct_mat_->get_material();
+  std::shared_ptr<Core::Mat::Material> curmat = struct_mat_->get_material();
   double effective_stiffness = 0.0;
 
   switch (struct_mat_->get_material()->material_type())
   {
     case Core::Materials::m_stvenant:
     {
-      Teuchos::RCP<Mat::StVenantKirchhoff> stvmat =
-          Teuchos::rcp_dynamic_cast<Mat::StVenantKirchhoff>(curmat);
+      std::shared_ptr<Mat::StVenantKirchhoff> stvmat =
+          std::dynamic_pointer_cast<Mat::StVenantKirchhoff>(curmat);
       effective_stiffness = stvmat->shear_mod();
       break;
     }
     case Core::Materials::m_elasthyper:
     {
-      Teuchos::RCP<Mat::ElastHyper> ehmat = Teuchos::rcp_dynamic_cast<Mat::ElastHyper>(curmat);
+      std::shared_ptr<Mat::ElastHyper> ehmat = std::dynamic_pointer_cast<Mat::ElastHyper>(curmat);
       effective_stiffness = ehmat->shear_mod();
       break;
     }

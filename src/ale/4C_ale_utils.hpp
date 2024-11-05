@@ -61,13 +61,13 @@ namespace ALE
         Core::LinAlg::DefaultBlockMatrixStrategy::assemble(val, rgid, cgid);
       }
 
-      void set_cond_elements(Teuchos::RCP<std::set<int>> condelements)
+      void set_cond_elements(std::shared_ptr<std::set<int>> condelements)
       {
         condelements_ = condelements;
       }
 
      private:
-      Teuchos::RCP<std::set<int>> condelements_;
+      std::shared_ptr<std::set<int>> condelements_;
     };
   }  // namespace Utils
 }  // namespace ALE

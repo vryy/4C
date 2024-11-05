@@ -36,8 +36,8 @@ namespace XFEM
     /// constructor
     // in idx ... idx[0] structureal discretization index , idx[1] fluid discretization index in the
     // blockmatrix
-    explicit XfsCouplingManager(Teuchos::RCP<ConditionManager> condmanager,
-        Teuchos::RCP<Adapter::Structure> structure, Teuchos::RCP<FLD::XFluid> xfluid,
+    explicit XfsCouplingManager(std::shared_ptr<ConditionManager> condmanager,
+        std::shared_ptr<Adapter::Structure> structure, std::shared_ptr<FLD::XFluid> xfluid,
         std::vector<int> idx);
 
     //! @name Destruction
@@ -61,7 +61,7 @@ namespace XFEM
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    void add_coupling_rhs(Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
+    void add_coupling_rhs(std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
         const Core::LinAlg::MultiMapExtractor& me, double scaling) override;
 
     //! Update (Perform after Each Timestep)
@@ -78,12 +78,12 @@ namespace XFEM
     double get_interface_timefac();
 
     //! FSI Mesh Coupling Object
-    Teuchos::RCP<MeshCouplingFSI> mcfsi_;
+    std::shared_ptr<MeshCouplingFSI> mcfsi_;
 
     //! Structural Object
-    Teuchos::RCP<Adapter::Structure> struct_;
+    std::shared_ptr<Adapter::Structure> struct_;
     //! eXtendedFluid
-    Teuchos::RCP<FLD::XFluid> xfluid_;
+    std::shared_ptr<FLD::XFluid> xfluid_;
 
     //"XFEMSurfFSIMono"
     const std::string cond_name_;
@@ -99,7 +99,7 @@ namespace XFEM
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie forces onto the structure,
     //! Robin-type forces consisting of fluid forces and the Nitsche penalty term contribution)
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_;
   };
 }  // namespace XFEM
 FOUR_C_NAMESPACE_CLOSE

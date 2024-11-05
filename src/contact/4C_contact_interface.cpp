@@ -45,28 +45,28 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
       non_smooth_contact_(false),
       two_half_pass_(false),
       constr_direction_(Inpar::CONTACT::constr_vague),
-      activenodes_(Teuchos::null),
-      activedofs_(Teuchos::null),
-      inactivenodes_(Teuchos::null),
-      inactivedofs_(Teuchos::null),
-      activen_(Teuchos::null),
-      activet_(Teuchos::null),
-      slipnodes_(Teuchos::null),
-      slipdofs_(Teuchos::null),
-      slipt_(Teuchos::null),
-      nonsmoothnodes_(Teuchos::null),
-      smoothnodes_(Teuchos::null),
-      sdof_vertex_rowmap_(Teuchos::null),
-      sdof_vertex_colmap_(Teuchos::null),
-      sdof_edge_rowmap_(Teuchos::null),
-      sdof_edge_colmap_(Teuchos::null),
-      sdof_surf_rowmap_(Teuchos::null),
-      sdof_surf_colmap_(Teuchos::null),
-      nextendedghosting_(Teuchos::null),
-      eextendedghosting_(Teuchos::null),
-      binarytreeself_(Teuchos::null),
-      cn_values_(Teuchos::null),
-      ct_values_(Teuchos::null),
+      activenodes_(nullptr),
+      activedofs_(nullptr),
+      inactivenodes_(nullptr),
+      inactivedofs_(nullptr),
+      activen_(nullptr),
+      activet_(nullptr),
+      slipnodes_(nullptr),
+      slipdofs_(nullptr),
+      slipt_(nullptr),
+      nonsmoothnodes_(nullptr),
+      smoothnodes_(nullptr),
+      sdof_vertex_rowmap_(nullptr),
+      sdof_vertex_colmap_(nullptr),
+      sdof_edge_rowmap_(nullptr),
+      sdof_edge_colmap_(nullptr),
+      sdof_surf_rowmap_(nullptr),
+      sdof_surf_colmap_(nullptr),
+      nextendedghosting_(nullptr),
+      eextendedghosting_(nullptr),
+      binarytreeself_(nullptr),
+      cn_values_(nullptr),
+      ct_values_(nullptr),
       smpairs_(0),
       smintpairs_(0),
       intcells_(0)
@@ -75,18 +75,19 @@ CONTACT::InterfaceDataContainer::InterfaceDataContainer()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::Interface> CONTACT::Interface::create(const int id, const Epetra_Comm& comm,
-    const int spatialDim, const Teuchos::ParameterList& icontact, const bool selfcontact)
+std::shared_ptr<CONTACT::Interface> CONTACT::Interface::create(const int id,
+    const Epetra_Comm& comm, const int spatialDim, const Teuchos::ParameterList& icontact,
+    const bool selfcontact)
 {
-  Teuchos::RCP<Mortar::InterfaceDataContainer> interfaceData_ptr =
-      Teuchos::make_rcp<CONTACT::InterfaceDataContainer>();
-  return Teuchos::make_rcp<Interface>(
+  std::shared_ptr<Mortar::InterfaceDataContainer> interfaceData_ptr =
+      std::make_shared<CONTACT::InterfaceDataContainer>();
+  return std::make_shared<Interface>(
       interfaceData_ptr, id, comm, spatialDim, icontact, selfcontact);
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer>& interfaceData)
+CONTACT::Interface::Interface(const std::shared_ptr<CONTACT::InterfaceDataContainer>& interfaceData)
     : Mortar::Interface(interfaceData),
       interface_data_(interfaceData),
       selfcontact_(interface_data_->is_self_contact()),
@@ -126,14 +127,13 @@ CONTACT::Interface::Interface(const Teuchos::RCP<CONTACT::InterfaceDataContainer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::Interface::Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>& interfaceData,
+CONTACT::Interface::Interface(const std::shared_ptr<Mortar::InterfaceDataContainer>& interfaceData,
     const int id, const Epetra_Comm& comm, const int spatialDim,
     const Teuchos::ParameterList& icontact, bool selfcontact)
     : Mortar::Interface(interfaceData, id, comm, spatialDim, icontact,
           Global::Problem::instance()->output_control_file(),
           Global::Problem::instance()->spatial_approximation_type()),
-      interface_data_(
-          Teuchos::rcp_dynamic_cast<CONTACT::InterfaceDataContainer>(interfaceData, true)),
+      interface_data_(std::dynamic_pointer_cast<CONTACT::InterfaceDataContainer>(interfaceData)),
       selfcontact_(interface_data_->is_self_contact()),
       friction_(interface_data_->is_friction()),
       nonSmoothContact_(interface_data_->is_non_smooth_contact()),
@@ -209,8 +209,8 @@ CONTACT::Interface::Interface(const Teuchos::RCP<Mortar::InterfaceDataContainer>
   }
 
   // initialize extended ghosting for RR loop
-  eextendedghosting_ = Teuchos::null;
-  nextendedghosting_ = Teuchos::null;
+  eextendedghosting_ = nullptr;
+  nextendedghosting_ = nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -278,13 +278,13 @@ void CONTACT::Interface::update_master_slave_sets()
     }
 
     sdofVertexRowmap_ =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)sVr.size(), sVr.data(), 0, get_comm());
+        std::make_shared<Epetra_Map>(-1, (int)sVr.size(), sVr.data(), 0, get_comm());
     sdofVertexColmap_ =
-        Teuchos::make_rcp<Epetra_Map>(-1, (int)sVc.size(), sVc.data(), 0, get_comm());
-    sdofEdgeRowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sEr.size(), sEr.data(), 0, get_comm());
-    sdofEdgeColmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sEc.size(), sEc.data(), 0, get_comm());
-    sdofSurfRowmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sSr.size(), sSr.data(), 0, get_comm());
-    sdofSurfColmap_ = Teuchos::make_rcp<Epetra_Map>(-1, (int)sSc.size(), sSc.data(), 0, get_comm());
+        std::make_shared<Epetra_Map>(-1, (int)sVc.size(), sVc.data(), 0, get_comm());
+    sdofEdgeRowmap_ = std::make_shared<Epetra_Map>(-1, (int)sEr.size(), sEr.data(), 0, get_comm());
+    sdofEdgeColmap_ = std::make_shared<Epetra_Map>(-1, (int)sEc.size(), sEc.data(), 0, get_comm());
+    sdofSurfRowmap_ = std::make_shared<Epetra_Map>(-1, (int)sSr.size(), sSr.data(), 0, get_comm());
+    sdofSurfColmap_ = std::make_shared<Epetra_Map>(-1, (int)sSc.size(), sSc.data(), 0, get_comm());
   }
 }
 
@@ -381,12 +381,15 @@ void CONTACT::Interface::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  add contact node (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_node(Teuchos::RCP<CONTACT::Node> cnode) { idiscret_->add_node(cnode); }
+void CONTACT::Interface::add_node(std::shared_ptr<CONTACT::Node> cnode)
+{
+  idiscret_->add_node(cnode);
+}
 
 /*----------------------------------------------------------------------*
  |  add contact element (public)                             mwgee 10/07|
  *----------------------------------------------------------------------*/
-void CONTACT::Interface::add_element(Teuchos::RCP<CONTACT::Element> cele)
+void CONTACT::Interface::add_element(std::shared_ptr<CONTACT::Element> cele)
 {
   // check for quadratic 2d slave elements to be modified
   if (cele->is_slave() && (cele->shape() == Core::FE::CellType::line3)) quadslave_ = true;
@@ -451,7 +454,7 @@ void CONTACT::Interface::fill_complete_new(const bool isFinalParallelDistributio
    * specialized DofSet class will not assign new dofs but will assign the dofs stored in the nodes.
    */
   {
-    Teuchos::RCP<Mortar::DofSet> mrtrdofset = Teuchos::make_rcp<Mortar::DofSet>();
+    std::shared_ptr<Mortar::DofSet> mrtrdofset = std::make_shared<Mortar::DofSet>();
     discret().replace_dof_set(mrtrdofset);
   }
 
@@ -483,8 +486,6 @@ void CONTACT::Interface::fill_complete_new(const bool isFinalParallelDistributio
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVelocity)
 {
-  using Teuchos::RCP;
-
   if (discret().node_col_map() == nullptr) FOUR_C_THROW("NodeColMap not set.");
   if (discret().element_col_map() == nullptr) FOUR_C_THROW("ElementColMap not set.");
 
@@ -492,10 +493,10 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
   // thus store the standard column maps first
   {
     // get standard nodal column map (overlap=1)
-    oldnodecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(discret().node_col_map()));
+    oldnodecolmap_ = std::make_shared<Epetra_Map>(*(discret().node_col_map()));
 
     // get standard element column map (overlap=1)
-    oldelecolmap_ = Teuchos::make_rcp<Epetra_Map>(*(discret().element_col_map()));
+    oldelecolmap_ = std::make_shared<Epetra_Map>(*(discret().element_col_map()));
   }
 
   switch (interface_data_->get_extend_ghosting())
@@ -641,7 +642,7 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
       // Extend master column map via binning
 
       // Create the binning strategy
-      RCP<Core::Binstrategy::BinningStrategy> binningstrategy =
+      auto binningstrategy =
           setup_binning_strategy(Global::Problem::instance()->binning_strategy_params(),
               meanVelocity, Global::Problem::instance()->output_control_file(),
               Global::Problem::instance()->spatial_approximation_type());
@@ -661,9 +662,8 @@ void CONTACT::Interface::extend_interface_ghosting_safely(const double meanVeloc
 
       // Extend ghosting of the master elements
       std::map<int, std::set<int>> ext_bin_to_ele_map;
-      RCP<const Epetra_Map> extendedmastercolmap =
-          binningstrategy->extend_element_col_map(slavebinelemap, masterbinelemap,
-              ext_bin_to_ele_map, Teuchos::null, Teuchos::null, discret().element_col_map());
+      auto extendedmastercolmap = binningstrategy->extend_element_col_map(slavebinelemap,
+          masterbinelemap, ext_bin_to_ele_map, nullptr, nullptr, discret().element_col_map());
 
       discret().export_column_elements(*extendedmastercolmap);
 
@@ -712,7 +712,7 @@ void CONTACT::Interface::redistribute()
   }
 
   // some local variables
-  Teuchos::RCP<Epetra_Comm> comm = Teuchos::RCP(Interface::get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> comm(Interface::get_comm().Clone());
   const int myrank = comm->MyPID();
   const int numproc = comm->NumProc();
   Teuchos::Time time("", true);
@@ -832,8 +832,8 @@ void CONTACT::Interface::redistribute()
   // (3b) PREPARATIONS build initial node graph
   //**********************************************************************
   // create graph object
-  Teuchos::RCP<Epetra_CrsGraph> graph =
-      Teuchos::make_rcp<Epetra_CrsGraph>(Copy, *slave_row_nodes(), 108, false);
+  std::shared_ptr<Epetra_CrsGraph> graph =
+      std::make_shared<Epetra_CrsGraph>(Copy, *slave_row_nodes(), 108, false);
 
   // loop over all row nodes to fill graph
   const int numMySlaveRowNodes = slave_row_nodes()->NumMyElements();
@@ -893,7 +893,7 @@ void CONTACT::Interface::redistribute()
 
   //**********************************************************************
   // call parallel redistribution
-  Teuchos::RCP<const Epetra_CrsGraph> slaveCloseNodeGraph =
+  std::shared_ptr<const Epetra_CrsGraph> slaveCloseNodeGraph =
       Core::Rebalance::build_graph(*idiscret_, slaveCloseRowEles);
 
   Teuchos::ParameterList slaveCloseRebalanceParams;
@@ -920,7 +920,7 @@ void CONTACT::Interface::redistribute()
 
   //**********************************************************************
   // call parallel redistribution
-  Teuchos::RCP<const Epetra_CrsGraph> slaveNonCloseNodeGraph =
+  std::shared_ptr<const Epetra_CrsGraph> slaveNonCloseNodeGraph =
       Core::Rebalance::build_graph(*idiscret_, slaveNonCloseRowEles);
 
   Teuchos::ParameterList slaveNonCloseRebalanceParams;
@@ -934,8 +934,8 @@ void CONTACT::Interface::redistribute()
   //**********************************************************************
   // (6) MASTER redistribution
   //**********************************************************************
-  Teuchos::RCP<Epetra_Map> mrownodes = Teuchos::null;
-  Teuchos::RCP<Epetra_Map> mcolnodes = Teuchos::null;
+  std::shared_ptr<Epetra_Map> mrownodes = nullptr;
+  std::shared_ptr<Epetra_Map> mcolnodes = nullptr;
 
   redistribute_master_side(mrownodes, mcolnodes, masterRowEles, *comm, mproc, imbalance_tol);
 
@@ -943,10 +943,10 @@ void CONTACT::Interface::redistribute()
   // (7) Merge global interface node row and column map
   //**********************************************************************
   // merge slave node row map from close and non-close parts
-  Teuchos::RCP<Epetra_Map> srownodes = Teuchos::null;
+  std::shared_ptr<Epetra_Map> srownodes = nullptr;
 
   //----------------------------------CASE 1: ONE OR BOTH SLAVE SETS EMPTY
-  if (slaveCloseRowNodes == Teuchos::null || slaveNonCloseRowNodes == Teuchos::null)
+  if (slaveCloseRowNodes == nullptr || slaveNonCloseRowNodes == nullptr)
   {
     FOUR_C_THROW("CONTACT redistribute: Both slave sets (close/non-close) are empty");
   }
@@ -988,12 +988,12 @@ void CONTACT::Interface::redistribute()
     }
     mygids.resize(count);
     sort(mygids.begin(), mygids.end());
-    srownodes = Teuchos::make_rcp<Epetra_Map>(
+    srownodes = std::make_shared<Epetra_Map>(
         -1, (int)mygids.size(), mygids.data(), 0, slaveCloseRowNodes->Comm());
   }
 
   // merge interface node row map from slave and master parts
-  Teuchos::RCP<Epetra_Map> rownodes = Core::LinAlg::merge_map(srownodes, mrownodes, false);
+  std::shared_ptr<Epetra_Map> rownodes = Core::LinAlg::merge_map(srownodes, mrownodes, false);
 
   // IMPORTANT NOTE:
   // While merging from the two different slave parts of the discretization
@@ -1006,14 +1006,14 @@ void CONTACT::Interface::redistribute()
   // and by then asking for its column map.
 
   // create the output graph (with new slave node row map) and export to it
-  Teuchos::RCP<Epetra_CrsGraph> outgraph =
-      Teuchos::make_rcp<Epetra_CrsGraph>(Copy, *srownodes, 108, false);
+  std::shared_ptr<Epetra_CrsGraph> outgraph =
+      std::make_shared<Epetra_CrsGraph>(Copy, *srownodes, 108, false);
   Epetra_Export exporter(graph->RowMap(), *srownodes);
   int err = outgraph->Export(*graph, exporter, Add);
   if (err < 0) FOUR_C_THROW("Graph export returned err=%d", err);
 
   // trash old graph
-  graph = Teuchos::null;
+  graph = nullptr;
 
   // call fill complete and optimize storage
   outgraph->FillComplete();
@@ -1022,14 +1022,14 @@ void CONTACT::Interface::redistribute()
   // get column map from the graph -> build slave node column map
   // (do stupid conversion from Epetra_BlockMap to Epetra_Map)
   const Epetra_BlockMap& bcol = outgraph->ColMap();
-  Teuchos::RCP<Epetra_Map> scolnodes = Teuchos::make_rcp<Epetra_Map>(bcol.NumGlobalElements(),
+  std::shared_ptr<Epetra_Map> scolnodes = std::make_shared<Epetra_Map>(bcol.NumGlobalElements(),
       bcol.NumMyElements(), bcol.MyGlobalElements(), 0, Interface::get_comm());
 
   // trash new graph
-  outgraph = Teuchos::null;
+  outgraph = nullptr;
 
   // merge interface node column map from slave and master parts
-  Teuchos::RCP<Epetra_Map> colnodes = Core::LinAlg::merge_map(scolnodes, mcolnodes, false);
+  std::shared_ptr<Epetra_Map> colnodes = Core::LinAlg::merge_map(scolnodes, mcolnodes, false);
 
   //**********************************************************************
   // (8) Get partitioning information into discretization
@@ -1150,21 +1150,21 @@ void CONTACT::Interface::create_search_tree()
       set_state(Mortar::state_new_displacement, zero);
 
       // create fully overlapping map of all contact elements
-      Teuchos::RCP<Epetra_Map> elefullmap =
+      std::shared_ptr<Epetra_Map> elefullmap =
           Core::LinAlg::allreduce_e_map(*idiscret_->element_row_map());
 
       // create binary tree object for self contact search
       if (!two_half_pass())
       {
         // (NOTE THAT SELF CONTACT SEARCH IS NOT YET FULLY PARALLELIZED!)
-        binarytreeself_ = Teuchos::make_rcp<CONTACT::SelfBinaryTree>(
+        binarytreeself_ = std::make_shared<CONTACT::SelfBinaryTree>(
             discret(), interface_params(), elefullmap, n_dim(), search_param());
       }
       else
       {
         // if we use the two half pass algorithm, we use the unbiased self binary tree
         // implementation
-        binarytreeself_ = Teuchos::make_rcp<CONTACT::UnbiasedSelfBinaryTree>(
+        binarytreeself_ = std::make_shared<CONTACT::UnbiasedSelfBinaryTree>(
             discret(), interface_params(), elefullmap, n_dim(), search_param());
       }
       // initialize the self binary tree
@@ -1173,7 +1173,7 @@ void CONTACT::Interface::create_search_tree()
     //*****TWO BODY CONTACT*****
     else
     {
-      Teuchos::RCP<Epetra_Map> melefullmap = Teuchos::null;
+      std::shared_ptr<Epetra_Map> melefullmap = nullptr;
       switch (interface_data_->get_extend_ghosting())
       {
         case Inpar::Mortar::ExtendGhosting::roundrobin:
@@ -1201,7 +1201,7 @@ void CONTACT::Interface::create_search_tree()
             interface_params(), "BINARYTREE_UPDATETYPE");
 
         // create binary tree object for contact search and setup tree
-        binarytree_ = Teuchos::make_rcp<Mortar::BinaryTree>(discret(), selecolmap_, melefullmap,
+        binarytree_ = std::make_shared<Mortar::BinaryTree>(discret(), selecolmap_, melefullmap,
             n_dim(), search_param(), updatetype, search_use_aux_pos());
         // initialize the binary tree
         binarytree_->init();
@@ -1232,7 +1232,7 @@ void CONTACT::Interface::initialize_data_container()
   // normal field!
   if (interface_params().get<bool>("CPP_NORMALS") || nonSmoothContact_)
   {
-    const Teuchos::RCP<Epetra_Map> masternodes =
+    const std::shared_ptr<Epetra_Map> masternodes =
         Core::LinAlg::allreduce_e_map(*(master_row_nodes()));
 
     for (int i = 0; i < masternodes->NumMyElements(); ++i)
@@ -3260,7 +3260,7 @@ void CONTACT::Interface::post_evaluate(const int step, const int iter)
  |  evaluate coupling type segment-to-segment coupl          farah 02/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::evaluate_sts(
-    const Epetra_Map& selecolmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const Epetra_Map& selecolmap, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   Mortar::Interface::evaluate_sts(selecolmap, mparams_ptr);
 }
@@ -3269,7 +3269,7 @@ void CONTACT::Interface::evaluate_sts(
  |  protected evaluate routine                               farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::evaluate_coupling(const Epetra_Map& selecolmap,
-    const Epetra_Map* snoderowmap, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const Epetra_Map* snoderowmap, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // ask if non-smooth contact is activated!
   if (nonSmoothContact_)
@@ -3992,7 +3992,7 @@ void CONTACT::Interface::evaluate_cpp_normals()
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::export_master_nodal_normals() const
 {
-  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
+  std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> triad;
 
   std::map<int, std::vector<int>> n_x_key;
   std::map<int, std::vector<int>> n_y_key;
@@ -4016,7 +4016,7 @@ void CONTACT::Interface::export_master_nodal_normals() const
 
   Core::Gen::Pairedvector<int, double>::iterator iter;
 
-  const Teuchos::RCP<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
+  const std::shared_ptr<Epetra_Map> masternodes = Core::LinAlg::allreduce_e_map(*(mnoderowmap_));
 
   // build info on row map
   for (int i = 0; i < mnoderowmap_->NumMyElements(); ++i)
@@ -4027,8 +4027,8 @@ void CONTACT::Interface::export_master_nodal_normals() const
     auto* cnode = dynamic_cast<CONTACT::Node*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 3);
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc =
+        std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, 3);
     (*loc)(0, 0) = cnode->mo_data().n()[0];
     (*loc)(1, 0) = cnode->mo_data().n()[1];
     (*loc)(2, 0) = cnode->mo_data().n()[2];
@@ -4133,7 +4133,7 @@ void CONTACT::Interface::export_master_nodal_normals() const
     if (cnode->owner() == get_comm().MyPID()) continue;
 
     // extract info
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
     cnode->mo_data().n()[0] = (*loc)(0, 0);
     cnode->mo_data().n()[1] = (*loc)(1, 0);
     cnode->mo_data().n()[2] = (*loc)(2, 0);
@@ -5112,7 +5112,7 @@ void CONTACT::Interface::set_cpp_normal(Mortar::Node& snode, double* normal,
 void CONTACT::Interface::export_nodal_normals() const
 {
   // create empty data objects
-  std::map<int, Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>> triad;
+  std::map<int, std::shared_ptr<Core::LinAlg::SerialDenseMatrix>> triad;
   std::map<int, std::map<int, std::vector<double>>> node_data_collection;
 
   // Define keys for the nodal data map
@@ -5147,8 +5147,8 @@ void CONTACT::Interface::export_nodal_normals() const
     Node* cnode = dynamic_cast<Node*>(node);
 
     // Fill nodal matrix
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, 3);
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc =
+        std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, 3);
     (*loc)(0, 0) = cnode->mo_data().n()[0];
     (*loc)(1, 0) = cnode->mo_data().n()[1];
     (*loc)(2, 0) = cnode->mo_data().n()[2];
@@ -5234,7 +5234,7 @@ void CONTACT::Interface::export_nodal_normals() const
     Node* cnode = dynamic_cast<Node*>(node);
 
     // extract info
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> loc = triad[gid];
     cnode->mo_data().n()[0] = (*loc)(0, 0);
     cnode->mo_data().n()[1] = (*loc)(1, 0);
     cnode->mo_data().n()[2] = (*loc)(2, 0);
@@ -5450,7 +5450,7 @@ void CONTACT::Interface::evaluate_stl()
             donebefore.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+            std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
                 j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
@@ -5507,7 +5507,7 @@ void CONTACT::Interface::evaluate_lts()
       FOUR_C_THROW("LTS algorithm only for tri3/quad4!");
 
     // empty vector of master element pointers
-    std::vector<Teuchos::RCP<Mortar::Element>> lineElements;
+    std::vector<std::shared_ptr<Mortar::Element>> lineElements;
     std::vector<Element*> meleElements;
 
     // compute slave normal
@@ -5682,7 +5682,7 @@ void CONTACT::Interface::evaluate_lts()
         donebefore.insert(actIDstw);
 
         // create line ele:
-        Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+        std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
             j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
         // get nodes
@@ -5731,7 +5731,7 @@ void CONTACT::Interface::evaluate_ltl()
     auto* selement = dynamic_cast<Element*>(ele1);
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<Mortar::Element>> lineElementsS;
+    std::vector<std::shared_ptr<Mortar::Element>> lineElementsS;
 
     if (selement->shape() == Core::FE::CellType::quad4)
     {
@@ -5795,7 +5795,7 @@ void CONTACT::Interface::evaluate_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+          std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
               j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
@@ -5865,7 +5865,7 @@ void CONTACT::Interface::evaluate_ltl()
           donebeforeS.insert(actIDstw);
 
           // create line ele:
-          Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+          std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
               j, selement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
           // get nodes
@@ -5890,7 +5890,7 @@ void CONTACT::Interface::evaluate_ltl()
     std::set<std::pair<int, int>> donebeforeM;
 
     // empty vector of slave element pointers
-    std::vector<Teuchos::RCP<Mortar::Element>> lineElementsM;
+    std::vector<std::shared_ptr<Mortar::Element>> lineElementsM;
 
     // loop over the candidate master elements of sele_
     // use slave element's candidate list SearchElements !!!
@@ -5965,7 +5965,7 @@ void CONTACT::Interface::evaluate_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+            std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
                 j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
@@ -6037,7 +6037,7 @@ void CONTACT::Interface::evaluate_ltl()
             donebeforeM.insert(actIDstw);
 
             // create line ele:
-            Teuchos::RCP<Mortar::Element> lineEle = Teuchos::make_rcp<Mortar::Element>(
+            std::shared_ptr<Mortar::Element> lineEle = std::make_shared<Mortar::Element>(
                 j, melement->owner(), Core::FE::CellType::line2, 2, nodeIds, false);
 
             // get nodes
@@ -6116,7 +6116,7 @@ void CONTACT::Interface::evaluate_nts()
  |  Integrate matrix M and gap g on slave/master overlaps     popp 11/08|
  *----------------------------------------------------------------------*/
 bool CONTACT::Interface::mortar_coupling(Mortar::Element* sele, std::vector<Mortar::Element*> mele,
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
   // do stuff before the actual coupling is going to be evaluated
   pre_mortar_coupling(sele, mele, mparams_ptr);
@@ -6229,7 +6229,7 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
         Teuchos::getIntegralValue<Inpar::Mortar::LagMultQuad>(interface_params(), "LM_QUAD");
 
     // build linear integration elements from quadratic CElements
-    std::vector<Teuchos::RCP<Mortar::IntElement>> sauxelements(0);
+    std::vector<std::shared_ptr<Mortar::IntElement>> sauxelements(0);
     split_int_elements(sele, sauxelements);
 
     // different options for mortar integration
@@ -6293,9 +6293,9 @@ bool CONTACT::Interface::integrate_kappa_penalty(CONTACT::Element& sele)
  |  Evaluate relative movement (jump) of a slave node     gitterle 10/09|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::evaluate_relative_movement(
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> xsmod,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix> dmatrixmod,
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix> doldmod)
+    const std::shared_ptr<Core::LinAlg::Vector<double>> xsmod,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix> dmatrixmod,
+    const std::shared_ptr<Core::LinAlg::SparseMatrix> doldmod)
 {
   if (not friction_)
   {
@@ -6476,7 +6476,7 @@ void CONTACT::Interface::evaluate_relative_movement(
 
       /*** 01  **********************************************************/
 
-      if (dmatrixmod == Teuchos::null)
+      if (dmatrixmod == nullptr)
       {
         // loop over according slave nodes
         for (scurr = snodes.begin(); scurr != snodes.end(); scurr++)
@@ -6655,7 +6655,7 @@ void CONTACT::Interface::evaluate_relative_movement(
  |  calculate nodal distances (public)                     pfaller Jan15|
  *----------------------------------------------------------------------*/
 void CONTACT::Interface::evaluate_distances(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& vec,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& vec,
     std::map<int, std::vector<double>>& mynormals,
     std::map<int, std::vector<Core::Gen::Pairedvector<int, double>>>& dmynormals,
     std::map<int, double>& mygap, std::map<int, std::map<int, double>>& dmygap)
@@ -7391,11 +7391,11 @@ bool CONTACT::Interface::build_active_set(bool init)
 bool CONTACT::Interface::split_active_dofs()
 {
   // get out of here if active set is empty
-  if (activenodes_ == Teuchos::null or activenodes_->NumGlobalElements() == 0)
+  if (activenodes_ == nullptr or activenodes_->NumGlobalElements() == 0)
   {
-    activen_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
-    activet_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
-    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    activen_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    activet_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
+    slipt_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
@@ -7444,8 +7444,8 @@ bool CONTACT::Interface::split_active_dofs()
     FOUR_C_THROW("split_active_dofs: Splitting went wrong!");
 
   // create Nmap and Tmap objects
-  activen_ = Teuchos::make_rcp<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
-  activet_ = Teuchos::make_rcp<Epetra_Map>(gcountT, countT, myTgids.data(), 0, get_comm());
+  activen_ = std::make_shared<Epetra_Map>(gcountN, countN, myNgids.data(), 0, get_comm());
+  activet_ = std::make_shared<Epetra_Map>(gcountT, countT, myTgids.data(), 0, get_comm());
 
   // *******************************************************************
   // FRICTION - EXTRACTING TANGENTIAL DOFS FROM SLIP DOFS
@@ -7458,15 +7458,15 @@ bool CONTACT::Interface::split_active_dofs()
   }
 
   // get out of here if slip set is empty
-  if (slipnodes_ == Teuchos::null)
+  if (slipnodes_ == nullptr)
   {
-    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    slipt_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
   if (slipnodes_->NumGlobalElements() == 0)
   {
-    slipt_ = Teuchos::make_rcp<Epetra_Map>(0, 0, get_comm());
+    slipt_ = std::make_shared<Epetra_Map>(0, 0, get_comm());
     return true;
   }
 
@@ -7503,8 +7503,7 @@ bool CONTACT::Interface::split_active_dofs()
   get_comm().SumAll(&countslipT, &gcountslipT, 1);
 
   // create Tslipmap objects
-  slipt_ =
-      Teuchos::make_rcp<Epetra_Map>(gcountslipT, countslipT, myslipTgids.data(), 0, get_comm());
+  slipt_ = std::make_shared<Epetra_Map>(gcountslipT, countslipT, myslipTgids.data(), 0, get_comm());
 
   return true;
 }
@@ -7588,7 +7587,7 @@ void CONTACT::Interface::update_self_contact_lag_mult_set(
     lmdofs.push_back(ref_lmgids[ref_lid]);
   }
 
-  lmdofmap_ = Teuchos::make_rcp<Epetra_Map>(
+  lmdofmap_ = std::make_shared<Epetra_Map>(
       -1, static_cast<int>(lmdofs.size()), lmdofs.data(), 0, get_comm());
 }
 
@@ -7647,7 +7646,7 @@ void CONTACT::Interface::set_condition_specific_parameters()
  *----------------------------------------------------------------------------*/
 void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& outputParams) const
 {
-  using Teuchos::RCP;
+  using std::shared_ptr;
 
   // Check if the given parameter list contains all required data to be written to output
   {
@@ -7664,7 +7663,7 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   }
 
   // Get the discretization writer and get ready for writing
-  RCP<Core::IO::DiscretizationWriter> writer = idiscret_->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> writer = idiscret_->writer();
 
   // Get output for this time step started
   {
@@ -7685,9 +7684,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
    */
   {
     // Get full displacement vector and extract interface displacement
-    RCP<const Core::LinAlg::Vector<double>> disp =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("displacement");
-    RCP<Core::LinAlg::Vector<double>> iDisp =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("displacement");
+    std::shared_ptr<Core::LinAlg::Vector<double>> iDisp =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*disp, *iDisp);
 
@@ -7698,9 +7697,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write Lagrange multiplier field
   {
     // Get full Lagrange multiplier vector and extract values of this interface
-    RCP<const Core::LinAlg::Vector<double>> lagMult =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("interface traction");
-    RCP<Core::LinAlg::Vector<double>> iLagMult =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lagMult =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("interface traction");
+    std::shared_ptr<Core::LinAlg::Vector<double>> iLagMult =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*lagMult, *iLagMult);
 
@@ -7711,9 +7710,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write normal contact stress
   {
     // Get values from parameter list and export to interface dof_row_map
-    RCP<const Core::LinAlg::Vector<double>> normalStresses =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("norcontactstress");
-    RCP<Core::LinAlg::Vector<double>> iNormalStresses =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> normalStresses =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("norcontactstress");
+    std::shared_ptr<Core::LinAlg::Vector<double>> iNormalStresses =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*normalStresses, *iNormalStresses);
 
@@ -7724,9 +7723,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write tangential contact stress
   {
     // Get values from parameter list and export to interface dof_row_map
-    RCP<const Core::LinAlg::Vector<double>> tangentialStresses =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("tancontactstress");
-    RCP<Core::LinAlg::Vector<double>> iTangentialStresses =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> tangentialStresses =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("tancontactstress");
+    std::shared_ptr<Core::LinAlg::Vector<double>> iTangentialStresses =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*tangentialStresses, *iTangentialStresses);
 
@@ -7737,9 +7736,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write nodal forces of slave side
   {
     // Get nodal forces
-    RCP<const Core::LinAlg::Vector<double>> slaveforces =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("slave forces");
-    RCP<Core::LinAlg::Vector<double>> forces =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> slaveforces =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("slave forces");
+    std::shared_ptr<Core::LinAlg::Vector<double>> forces =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*slaveforces, *forces);
 
@@ -7750,9 +7749,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
   // Write nodal forces of master side
   {
     // Get nodal forces
-    RCP<const Core::LinAlg::Vector<double>> masterforces =
-        outputParams.get<RCP<const Core::LinAlg::Vector<double>>>("master forces");
-    RCP<Core::LinAlg::Vector<double>> forces =
+    std::shared_ptr<const Core::LinAlg::Vector<double>> masterforces =
+        outputParams.get<std::shared_ptr<const Core::LinAlg::Vector<double>>>("master forces");
+    std::shared_ptr<Core::LinAlg::Vector<double>> forces =
         Core::LinAlg::create_vector(*idiscret_->dof_row_map());
     Core::LinAlg::export_to(*masterforces, *forces);
 
@@ -7766,8 +7765,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     Core::LinAlg::Vector<double> masterVec(*mnoderowmap_);
     masterVec.PutScalar(1.0);
 
-    RCP<const Epetra_Map> nodeRowMap = Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
-    RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
+    std::shared_ptr<const Epetra_Map> nodeRowMap =
+        Core::LinAlg::merge_map(snoderowmap_, mnoderowmap_, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*nodeRowMap, true);
     Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
@@ -7790,8 +7790,8 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     }
 
     // export to interface node row map
-    RCP<Core::LinAlg::Vector<double>> activesetexp =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(idiscret_->node_row_map()));
+    std::shared_ptr<Core::LinAlg::Vector<double>> activesetexp =
+        std::make_shared<Core::LinAlg::Vector<double>>(*(idiscret_->node_row_map()));
     Core::LinAlg::export_to(activeset, *activesetexp);
 
     writer->write_vector("activeset", activesetexp, Core::IO::VectorType::nodevector);
@@ -7802,8 +7802,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
     Core::LinAlg::Vector<double> masterVec(*melerowmap_);
     masterVec.PutScalar(1.0);
 
-    RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Core::LinAlg::Vector<double>> masterSlaveVec =
+    std::shared_ptr<const Epetra_Map> eleRowMap =
+        Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> masterSlaveVec =
         Core::LinAlg::create_vector(*eleRowMap, true);
     Core::LinAlg::export_to(masterVec, *masterSlaveVec);
 
@@ -7813,8 +7814,9 @@ void CONTACT::Interface::postprocess_quantities(const Teuchos::ParameterList& ou
 
   // Write element owners
   {
-    RCP<const Epetra_Map> eleRowMap = Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
-    RCP<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
+    std::shared_ptr<const Epetra_Map> eleRowMap =
+        Core::LinAlg::merge_map(selerowmap_, melerowmap_, false);
+    std::shared_ptr<Core::LinAlg::Vector<double>> owner = Core::LinAlg::create_vector(*eleRowMap);
 
     for (int i = 0; i < idiscret_->element_row_map()->NumMyElements(); ++i)
       (*owner)[i] = idiscret_->l_row_element(i)->owner();

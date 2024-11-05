@@ -16,9 +16,8 @@
 #include "4C_mixture_constituent_remodelfiber_material.hpp"
 #include "4C_mixture_full_constrained_mixture_fiber.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <cmath>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

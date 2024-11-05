@@ -268,13 +268,13 @@ namespace Cut
     \brief return the integration rule for this volumecell when MomentFitting or DirectDivergence
     is used
      */
-    Teuchos::RCP<Core::FE::GaussPoints> get_gauss_rule() { return gp_; }
+    std::shared_ptr<Core::FE::GaussPoints> get_gauss_rule() { return gp_; }
 
     /*!
     \brief replace the integration rule for this volumecell when MomentFitting or DirectDivergence
     is used
      */
-    void set_gauss_rule(Teuchos::RCP<Core::FE::GaussPoints> gps) { gp_ = gps; }
+    void set_gauss_rule(std::shared_ptr<Core::FE::GaussPoints> gps) { gp_ = gps; }
 
     /*!
     \brief Set the volume of this cell
@@ -317,7 +317,7 @@ namespace Cut
     void integrate_specific_functions_tessellation();
 
     template <Core::FE::CellType distype>
-    Teuchos::RCP<Core::FE::GaussPoints> create_projected(Cut::IntegrationCell* ic);
+    std::shared_ptr<Core::FE::GaussPoints> create_projected(Cut::IntegrationCell* ic);
 
     /*!
     \brief Returns whether this volumecell is negligibly small (used only in DirectDIvergence
@@ -345,14 +345,14 @@ namespace Cut
     /*!
     \brief return the Gauss points computed using moment fitting equations
     */
-    Teuchos::RCP<Core::FE::GaussPoints> gauss_points_fitting();
+    std::shared_ptr<Core::FE::GaussPoints> gauss_points_fitting();
 
     /*!
     \brief Generate internal gauss rule for every integration point on the facet when
     DirectDivergence method is used
      */
-    Teuchos::RCP<Core::FE::GaussPoints> generate_internal_gauss_rule(
-        Teuchos::RCP<Core::FE::GaussPoints>& gp);
+    std::shared_ptr<Core::FE::GaussPoints> generate_internal_gauss_rule(
+        std::shared_ptr<Core::FE::GaussPoints>& gp);
 
     /// the element this is a part of
     Element* element_;
@@ -400,7 +400,7 @@ namespace Cut
 
     /// Gauss rule for this volumecell. In case of DirectDivergence method, this just stores main
     /// Gauss points
-    Teuchos::RCP<Core::FE::GaussPoints> gp_;
+    std::shared_ptr<Core::FE::GaussPoints> gp_;
   };
 
 }  // namespace Cut

@@ -27,17 +27,17 @@ Discret::Elements::Shell7pType Discret::Elements::Shell7pType::instance_;
 Discret::Elements::Shell7pType& Discret::Elements::Shell7pType::instance() { return instance_; }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "SHELL7P") return create(id, owner);
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Shell7pType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Shell7pType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Shell7p>(id, owner);
+  return std::make_shared<Discret::Elements::Shell7p>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::Elements::Shell7pType::create(
@@ -270,10 +270,9 @@ void Discret::Elements::Shell7p::unpack(Core::Communication::UnpackBuffer& buffe
 }
 
 
-Teuchos::RCP<Mat::So3Material> Discret::Elements::Shell7p::solid_material(int nummat) const
+std::shared_ptr<Mat::So3Material> Discret::Elements::Shell7p::solid_material(int nummat) const
 {
-  return Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 
@@ -281,12 +280,12 @@ void Discret::Elements::Shell7p::set_params_interface_ptr(const Teuchos::Paramet
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = Teuchos::rcp_dynamic_cast<Solid::Elements::ParamsInterface>(
-        p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface"));
+    interface_ptr_ = std::dynamic_pointer_cast<Solid::Elements::ParamsInterface>(
+        p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface"));
   }
   else
   {
-    interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
   }
 }
 
@@ -319,16 +318,16 @@ void Discret::Elements::Shell7p::print(std::ostream& os) const
 }
 
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Shell7p::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Shell7p::lines()
 {
   return Core::Communication::element_boundary_factory<Shell7pLine, Shell7p>(
       Core::Communication::buildLines, *this);
 }
 
 
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Shell7p::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Shell7p::surfaces()
 {
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 bool Discret::Elements::Shell7p::read_element(const std::string& eletype,

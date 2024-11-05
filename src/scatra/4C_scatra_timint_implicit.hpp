@@ -118,12 +118,12 @@ namespace ScaTra
     /*========================================================================*/
 
     //! Standard Constructor
-    ScaTraTimIntImpl(Teuchos::RCP<Core::FE::Discretization> actdis,  //!< discretization
-        Teuchos::RCP<Core::LinAlg::Solver> solver,                   //!< linear solver
-        Teuchos::RCP<Teuchos::ParameterList> params,                 //!< parameter list
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,     //!< supplementary parameter list
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output,  //!< output writer
-        const int probnum = 0                                 //!< global problem number
+    ScaTraTimIntImpl(std::shared_ptr<Core::FE::Discretization> actdis,  //!< discretization
+        std::shared_ptr<Core::LinAlg::Solver> solver,                   //!< linear solver
+        std::shared_ptr<Teuchos::ParameterList> params,                 //!< parameter list
+        std::shared_ptr<Teuchos::ParameterList> extraparams,     //!< supplementary parameter list
+        std::shared_ptr<Core::IO::DiscretizationWriter> output,  //!< output writer
+        const int probnum = 0                                    //!< global problem number
     );
 
     //! don't want copy constructor
@@ -188,7 +188,7 @@ namespace ScaTra
     void add_time_integration_specific_vectors(bool forcedincrementalsolver = false) override;
 
     //! initialize system matrix
-    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const;
+    std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const;
 
     //! prepare time loop
     virtual void prepare_time_loop();
@@ -245,32 +245,33 @@ namespace ScaTra
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void set_velocity_field(std::shared_ptr<const Core::LinAlg::Vector<double>>
                                         convvel,  //!< convective velocity/press. vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    //!< acceleration vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,    //!< velocity vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel,  //!< fine-scale velocity vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> acc,    //!< acceleration vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel,    //!< velocity vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fsvel,  //!< fine-scale velocity vector
         const bool setpressure =
             false  //!< flag whether the fluid pressure needs to be known for the scatra
     );
 
-    void set_wall_shear_stresses(Teuchos::RCP<const Core::LinAlg::Vector<double>> wss);
+    void set_wall_shear_stresses(std::shared_ptr<const Core::LinAlg::Vector<double>> wss);
 
-    void set_pressure_field(Teuchos::RCP<const Core::LinAlg::Vector<double>> pressure);
+    void set_pressure_field(std::shared_ptr<const Core::LinAlg::Vector<double>> pressure);
 
-    void set_membrane_concentration(Teuchos::RCP<const Core::LinAlg::Vector<double>> MembraneConc);
+    void set_membrane_concentration(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> MembraneConc);
 
-    void set_mean_concentration(Teuchos::RCP<const Core::LinAlg::Vector<double>> MeanConc);
+    void set_mean_concentration(std::shared_ptr<const Core::LinAlg::Vector<double>> MeanConc);
 
     void clear_external_concentrations()
     {
-      mean_conc_ = Teuchos::null;
-      membrane_conc_ = Teuchos::null;
+      mean_conc_ = nullptr;
+      membrane_conc_ = nullptr;
     };
 
     //! read restart data
     virtual void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null);
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr);
 
     //! setup natural convection
     virtual void setup_nat_conv();
@@ -349,13 +350,13 @@ namespace ScaTra
     }
 
     //! set the Nitsche contact strategy that contributes to the RHS
-    void set_nitsche_contact_strategy(Teuchos::RCP<CONTACT::NitscheStrategySsi> strategy_ptr)
+    void set_nitsche_contact_strategy(std::shared_ptr<CONTACT::NitscheStrategySsi> strategy_ptr)
     {
       contact_strategy_nitsche_ = strategy_ptr;
     }
 
     //! create result test for scalar transport field
-    virtual Teuchos::RCP<Core::Utils::ResultTest> create_scatra_field_test();
+    virtual std::shared_ptr<Core::Utils::ResultTest> create_scatra_field_test();
 
     //! Add tests to global problem and start tests
     virtual void test_results();
@@ -382,45 +383,46 @@ namespace ScaTra
      *
      * @param[in] dispnp  displacement vector
      */
-    void apply_mesh_movement(Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp);
+    void apply_mesh_movement(std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp);
 
     //! calculate fluxes inside domain and/or on boundary
     void calc_flux(const bool writetofile  //!< flag for writing flux info to file
     );
 
     //! calculate flux vector field inside computational domain
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> calc_flux_in_domain();
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> calc_flux_in_domain();
 
     //! calculate mass/heat normal flux at specified boundaries and write result to file if @p
     //! writetofile is true
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> calc_flux_at_boundary(const bool writetofile);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> calc_flux_at_boundary(
+        const bool writetofile);
 
     //! calculation of relative error with reference to analytical solution
     virtual void evaluate_error_compared_to_analytical_sol();
 
     //! Calculate the reconstructed nodal gradient of phi from L2-projection
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_l2_projection(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_l2_projection(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from super convergent patch recovery
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_patch_recon(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> phi, const int dimension = 3,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_patch_recon(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> phi, const int dimension = 3,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi from node mean averaging
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_mean_average(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phi,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> reconstruct_gradient_at_nodes_mean_average(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phi,
         bool scalenormal = false,  ///< Scale the smoothed normal field to 1
         bool returnnodal = false   ///< Return nodal based vector
     );
 
     //! Calculate the reconstructed nodal gradient of phi
-    void scale_gradients_to_one(Teuchos::RCP<Core::LinAlg::MultiVector<double>> state);
+    void scale_gradients_to_one(std::shared_ptr<Core::LinAlg::MultiVector<double>> state);
 
     //! finite difference check for scalar transport system matrix
     virtual void fd_check();
@@ -428,8 +430,8 @@ namespace ScaTra
     //! apply Neumann and Dirichlet BC to system
     void apply_bc_to_system();
 
-    void evaluate_initial_time_derivative(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs);
+    void evaluate_initial_time_derivative(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs);
 
     //! prepare time integrator specific things before calculation of initial time derivative
     virtual void pre_calc_initial_time_derivative(){};
@@ -471,38 +473,38 @@ namespace ScaTra
     virtual void print_time_step_info();
 
     //! convert dof-based result vector into node-based multi-vector for postprocessing
-    [[nodiscard]] Teuchos::RCP<Core::LinAlg::MultiVector<double>>
+    [[nodiscard]] std::shared_ptr<Core::LinAlg::MultiVector<double>>
     convert_dof_vector_to_componentwise_node_vector(
         const Core::LinAlg::Vector<double>& dof_vector,  ///< dof-based result vector
         const int nds                                    ///< number of dofset to convert
     ) const;
 
     //! return system matrix as sparse operator
-    Teuchos::RCP<Core::LinAlg::SparseOperator> system_matrix_operator() { return sysmat_; };
+    std::shared_ptr<Core::LinAlg::SparseOperator> system_matrix_operator() { return sysmat_; };
 
     //! return system matrix downcasted as sparse matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix();
 
     //! return system matrix downcasted as block sparse matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix();
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix();
 
     //! return map extractor associated with blocks of global system matrix
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> block_maps() const { return blockmaps_; }
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> block_maps() const { return blockmaps_; }
 
     //! return residual vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual() const { return residual_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual() const { return residual_; };
 
     //! return trueresidual vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> true_residual() { return trueresidual_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> true_residual() { return trueresidual_; }
 
     //! return increment vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment() const { return increment_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment() const { return increment_; };
 
     //! return flag indicating if an incremental solution approach is used
     bool is_incremental() { return incremental_; }
 
     //! return Krylov projector
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector() { return projector_; }
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector() { return projector_; }
 
     //! return number of dofset associated with displacement dofs
     int nds_disp() const override { return nds_disp_; }
@@ -532,45 +534,45 @@ namespace ScaTra
     int nds_wall_shear_stress() const { return nds_wss_; }
 
     //! return domain flux vector
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux_domain() const
+    std::shared_ptr<const Core::LinAlg::MultiVector<double>> flux_domain() const
     {
       return flux_domain_;
     };
 
     //! return boundary flux vector
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> flux_boundary() const
+    std::shared_ptr<const Core::LinAlg::MultiVector<double>> flux_boundary() const
     {
       return flux_boundary_;
     };
 
     //! return Dirichlet map
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
+    std::shared_ptr<const Core::LinAlg::MapExtractor> dirich_maps() { return dbcmaps_; }
 
     //! add dirichlet dofs to dbcmaps_
-    void add_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void add_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoadd);
 
     //! remove dirichlet dofs from dbcmaps_
-    void remove_dirich_cond(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void remove_dirich_cond(const std::shared_ptr<const Epetra_Map> maptoremove);
 
     //! return pointer to const dofrowmap
-    Teuchos::RCP<const Epetra_Map> dof_row_map();
+    std::shared_ptr<const Epetra_Map> dof_row_map();
 
     //! return pointer to const dofrowmap of specified dofset
-    Teuchos::RCP<const Epetra_Map> dof_row_map(int nds);
+    std::shared_ptr<const Epetra_Map> dof_row_map(int nds);
 
     //! return discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() const override { return discret_; }
+    std::shared_ptr<Core::FE::Discretization> discretization() const override { return discret_; }
 
     //! return the parameter lists
-    Teuchos::RCP<Teuchos::ParameterList> scatra_parameter_list() const { return params_; }
-    Teuchos::RCP<Teuchos::ParameterList> scatra_extra_parameter_list() { return extraparams_; }
-    virtual Teuchos::RCP<Teuchos::ParameterList> scatra_time_parameter_list() = 0;
+    std::shared_ptr<Teuchos::ParameterList> scatra_parameter_list() const { return params_; }
+    std::shared_ptr<Teuchos::ParameterList> scatra_extra_parameter_list() { return extraparams_; }
+    virtual std::shared_ptr<Teuchos::ParameterList> scatra_time_parameter_list() = 0;
 
     //! Access output object: CD-Rom and DVD only - no BlueRay support!!! ;)
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& disc_writer() const { return output_; }
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& disc_writer() const { return output_; }
 
     //! returns map extractor used for convergence check either in ELCH or LOMA case
-    Teuchos::RCP<Core::LinAlg::MapExtractor> splitter() const { return splitter_; }
+    std::shared_ptr<Core::LinAlg::MapExtractor> splitter() const { return splitter_; }
 
     //! Checks if output of results or restart information is required and writes data to disk
     virtual void check_and_write_output_and_restart();
@@ -591,7 +593,7 @@ namespace ScaTra
     bool convergence_check(int itnum, int itmax, const double ittol);
 
     //! return solver
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver() const { return solver_; }
+    const std::shared_ptr<Core::LinAlg::Solver>& solver() const { return solver_; }
 
     //! return parameters for finite difference check
     Inpar::ScaTra::FdCheck fd_check_type() const { return fdcheck_; };
@@ -599,7 +601,7 @@ namespace ScaTra
     double fd_check_tol() const { return fdchecktol_; };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& strategy() const override
+    const std::shared_ptr<ScaTra::MeshtyingStrategyBase>& strategy() const override
     {
       return strategy_;
     };
@@ -611,7 +613,7 @@ namespace ScaTra
     bool s2_i_meshtying() const { return s2imeshtying_; };
 
     //! return relative errors of scalar fields in L2 and H1 norms
-    const Teuchos::RCP<std::vector<double>>& rel_errors() const { return relerrors_; };
+    const std::shared_ptr<std::vector<double>>& rel_errors() const { return relerrors_; };
 
     //! output performance statistics associated with linear solver into *.csv file
     static void output_lin_solver_stats(const Core::LinAlg::Solver& solver,  //!< linear solver
@@ -699,13 +701,13 @@ namespace ScaTra
      * @param[out] blockmaps               empty vector for maps to be built
      */
     virtual void build_block_maps(
-        const std::vector<Teuchos::RCP<Core::Conditions::Condition>>& partitioningconditions,
-        std::vector<Teuchos::RCP<const Epetra_Map>>& blockmaps) const;
+        const std::vector<std::shared_ptr<Core::Conditions::Condition>>& partitioningconditions,
+        std::vector<std::shared_ptr<const Epetra_Map>>& blockmaps) const;
 
     //! build null spaces associated with blocks of global system matrix. Hand in solver to access
     //! parameter list and initial number of block (e.g. for coupled problems)
     virtual void build_block_null_spaces(
-        Teuchos::RCP<Core::LinAlg::Solver> solver, int init_block_number) const;
+        std::shared_ptr<Core::LinAlg::Solver> solver, int init_block_number) const;
 
     /*--- calculate and update -----------------------------------------------*/
 
@@ -761,47 +763,47 @@ namespace ScaTra
     const std::vector<double>& omega() const { return omega_; };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phin() override { return phin_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phin() override { return phin_; }
 
     //! return scalar field phi at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp() const { return phinp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp() const { return phinp_; }
 
     //! get mean concentration of micro discretization
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_micro() const { return phinp_micro_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_micro() const { return phinp_micro_; }
 
     //! return increment of scalar field phi at time n+1 for partitioned simulations
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp_inc() { return phinp_inc_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>>& phinp_inc() { return phinp_inc_; };
 
     //! return increment of scalar field phi at time n+1 for partitioned simulations
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp_inc() const { return phinp_inc_; };
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp_inc() const { return phinp_inc_; };
 
     //! return increment of scalar field phi at time n+1 from previous outer iteration step for
     //! partitioned simulations
-    Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp_inc_old() { return phinp_inc_old_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>>& phinp_inc_old() { return phinp_inc_old_; };
 
     //! return time derivative of scalar field phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtn() { return phidtn_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtn() { return phidtn_; }
 
     //! return time derivative of scalar field phi at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnp() { return phidtnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtnp() { return phidtnp_; }
 
     //! return scalar field history
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hist() { return hist_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> hist() { return hist_; }
 
     //! return scalar field phi at time n+alpha_F
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> phiaf() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> phiaf() = 0;
 
     //! return scalar field phi at time n+alpha_F (gen-alpha) or n+1 (otherwise)
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> phiafnp() { return phinp_; }
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> phiafnp() { return phinp_; }
 
     //! return scalar field phi at time n+alpha_M
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> phiam() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> phiam() = 0;
 
     //! return time derivative of scalar field phi at time n+alpha_M
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> phidtam() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> phidtam() = 0;
 
     //! return fine-scale scalar field fsphi at time n+1 or alpha_M
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> fs_phi() = 0;
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> fs_phi() = 0;
 
     //! output total and mean values of transported scalars
     virtual void output_total_and_mean_scalars(const int num = 0);
@@ -813,7 +815,7 @@ namespace ScaTra
     void output_integr_reac(const int num = 0);
 
     //! return density field at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection
-    Teuchos::RCP<Core::LinAlg::Vector<double>> densafnp() { return densafnp_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> densafnp() { return densafnp_; }
 
     //! problem-specific restart
     virtual void read_restart_problem_specific(
@@ -845,7 +847,7 @@ namespace ScaTra
     const std::vector<double>& dq_dphi() const { return dq_dphi_; };
 
     //! return rcp ptr to neumann loads vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() override
     {
       return neumann_loads_;
     };
@@ -873,9 +875,9 @@ namespace ScaTra
     /*========================================================================*/
 
     ///! get access to dynamic Smagorinsky class of fluid time integration
-    void access_dyn_smag_filter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag);
+    void access_dyn_smag_filter(std::shared_ptr<FLD::DynSmagFilter> dynSmag);
     ///! get access to dynamic Vreman class of fluid time integration
-    void access_vreman(Teuchos::RCP<FLD::Vreman> vrem);
+    void access_vreman(std::shared_ptr<FLD::Vreman> vrem);
 
     ///! calculate intermediate solution to determine forcing for homogeneous isotropic turbulence
     void calc_intermediate_solution();
@@ -885,13 +887,14 @@ namespace ScaTra
     /*========================================================================*/
 
     //! compute contribution of permeable surface/interface
-    void surface_permeability(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs                            //!< rhs vector
+    void surface_permeability(
+        std::shared_ptr<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs      //!< rhs vector
     );
 
     //! interface for fps3i problem
-    void kedem_katchalsky(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs                        //!< rhs vector
+    void kedem_katchalsky(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs                        //!< rhs vector
     );
 
     /*========================================================================*/
@@ -899,24 +902,24 @@ namespace ScaTra
     /*========================================================================*/
 
     //! return scatra structure growth vector
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> str_growth() const
+    std::shared_ptr<const Core::LinAlg::MultiVector<double>> str_growth() const
     {
       return scstrgrdisp_;
     };
 
     //! return scatra fluid growth vector
-    Teuchos::RCP<const Core::LinAlg::MultiVector<double>> fld_growth() const
+    std::shared_ptr<const Core::LinAlg::MultiVector<double>> fld_growth() const
     {
       return scfldgrdisp_;
     };
 
     //! set scatra fluid displacement vector due to biofilm growth
     void set_sc_fld_gr_disp(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> scatra_fluid_growth_disp);
 
     //! set scatra structure displacement vector due to biofilm growth
     void set_sc_str_gr_disp(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> scatra_struct_growth_disp);
 
     //! set ptr to wrapper of this time integrator
     void set_model_evaluatro_ptr(Adapter::AdapterScatraWrapper* adapter_scatra_wrapper)
@@ -998,25 +1001,26 @@ namespace ScaTra
 
     //! Apply Dirichlet boundary conditions on provided state vector
     virtual void apply_dirichlet_bc(const double time,  //!< evaluation time
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
-            phinp,                                        //!< transported scalar(s) (may be = null)
-        Teuchos::RCP<Core::LinAlg::Vector<double>> phidt  //!< first time derivative (may be = null)
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            phinp,  //!< transported scalar(s) (may be = null)
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            phidt  //!< first time derivative (may be = null)
     );
 
     //! compute outward pointing unit normal vectors at given bc's
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_normal_vectors(
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_normal_vectors(
         const std::vector<std::string>& condnames  //!< ?
     );
 
     //! evaluate Neumann inflow boundary condition
-    void compute_neumann_inflow(Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs                              //!< ?
+    void compute_neumann_inflow(std::shared_ptr<Core::LinAlg::SparseOperator> matrix,  //!< ?
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs                              //!< ?
     );
 
     //! evaluate boundary condition due to convective heat transfer
     void evaluate_convective_heat_transfer(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< ?
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs      //!< ?
+        std::shared_ptr<Core::LinAlg::SparseOperator> matrix,  //!< ?
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs      //!< ?
     );
 
     //! potential residual scaling and potential addition of Neumann terms
@@ -1027,7 +1031,7 @@ namespace ScaTra
 
     //! evaluate Neumann boundary conditions
     virtual void apply_neumann_bc(
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& neumann_loads  //!< Neumann loads
     );
 
     //! add parameters depending on the problem, i.e., loma, level-set, ...
@@ -1052,27 +1056,27 @@ namespace ScaTra
 
 
     //! Calculate the reconstructed nodal gradient of phi by means of SPR
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_superconvergent_patch_recovery(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state, const std::string& statename,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_superconvergent_patch_recovery(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state, const std::string& statename,
         const int numvec, Teuchos::ParameterList& params, const int dim);
 
     //! compute contributions of solution-depending boundary and interface conditions to global
     //! system of equations
     virtual void evaluate_solution_depending_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
     );
 
     //! compute contribution of Robin boundary condition to eq. system
     void evaluate_robin_boundary_conditions(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs      //!< rhs vector
+        std::shared_ptr<Core::LinAlg::SparseOperator> matrix,  //!< system matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs      //!< rhs vector
     );
 
     //! compute contributions of additional solution-depending models to global system of equations
     virtual void evaluate_additional_solution_depending_models(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
     );
 
     //! perform Aitken relaxation
@@ -1120,7 +1124,7 @@ namespace ScaTra
      * @param[in] fluxtype  flux type ("domain" or "boundary")
      */
     virtual void collect_output_flux_data(
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux, const std::string& fluxtype);
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> flux, const std::string& fluxtype);
 
     /*========================================================================*/
     //! @name Time, time-step and related methods
@@ -1203,7 +1207,7 @@ namespace ScaTra
      * be removed.
      * note: VM3 solver still needs an explicit toggle vector for construction
      */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dirichlet_toggle();
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dirichlet_toggle();
 
     /*========================================================================*/
 
@@ -1218,22 +1222,22 @@ namespace ScaTra
     const int probnum_;
 
     //! solver
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
 
     //! parameter list
-    const Teuchos::RCP<Teuchos::ParameterList> params_;
+    const std::shared_ptr<Teuchos::ParameterList> params_;
 
     //! parameter list containing extra parameters (application dependent)
-    const Teuchos::RCP<Teuchos::ParameterList> extraparams_;
+    const std::shared_ptr<Teuchos::ParameterList> extraparams_;
 
     //! processor id
     int myrank_;
 
     //! Extractor used for convergence check either in ELCH or LOMA case
-    Teuchos::RCP<Core::LinAlg::MapExtractor> splitter_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> splitter_;
 
     //! meshtying strategy (includes standard case without meshtying)
-    Teuchos::RCP<ScaTra::MeshtyingStrategyBase> strategy_;
+    std::shared_ptr<ScaTra::MeshtyingStrategyBase> strategy_;
 
     //! Ptr to time integration wrapper.
     //! That wrapper holds a ptr to this time integrator in turn.
@@ -1309,19 +1313,19 @@ namespace ScaTra
     const bool calcflux_boundary_lumped_;
 
     //! ids of scalars for which flux vectors are written (starting with 1)
-    Teuchos::RCP<std::vector<int>> writefluxids_;
+    std::shared_ptr<std::vector<int>> writefluxids_;
 
     //! flux vector field inside domain
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux_domain_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> flux_domain_;
 
     //! flux vector field on boundary
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> flux_boundary_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> flux_boundary_;
 
     //! map extractor associated with boundary segments for flux calculation
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> flux_boundary_maps_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> flux_boundary_maps_;
 
     //! vector for statistical evaluation of normal fluxes
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> sumnormfluxintegral_;
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> sumnormfluxintegral_;
 
     //! the last step number when fluxes have been computed
     int lastfluxoutputstep_;
@@ -1395,62 +1399,62 @@ namespace ScaTra
     int nsd_;
 
     //! scalar mangager
-    Teuchos::RCP<ScalarHandler> scalarhandler_;
+    std::shared_ptr<ScalarHandler> scalarhandler_;
 
     //! scalar mangager
-    Teuchos::RCP<OutputScalarsStrategyBase> outputscalarstrategy_;
+    std::shared_ptr<OutputScalarsStrategyBase> outputscalarstrategy_;
 
     //! domain integral manager
-    Teuchos::RCP<OutputDomainIntegralStrategy> outputdomainintegralstrategy_;
+    std::shared_ptr<OutputDomainIntegralStrategy> outputdomainintegralstrategy_;
 
     //! stores the components phi is composed of necessary for the output
     std::vector<std::optional<std::string>> phi_components_{};
 
     //! phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phin_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phin_;
     //! phi at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_;
     //! increment of phi at time n+1 for partitioned simulations
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_inc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_inc_;
     //! increment of phi at time n+1 from previous outer iteration step for partitioned simulations
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_inc_old_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_inc_old_;
     //! relaxation parameters
     std::vector<double> omega_;
 
     //! time derivative of phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtn_;
     //! time derivative of phi at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phidtnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phidtnp_;
 
     //! histvector --- a linear combination of phinm, phin (BDF)
     //!                or phin, phidtn (One-Step-Theta)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> hist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> hist_;
 
     //! density at time n+alpha_F (gen-alpha) or n+1 (otherwise) for natural convection algorithm
-    Teuchos::RCP<Core::LinAlg::Vector<double>> densafnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> densafnp_;
 
     //! relative errors of scalar fields in L2 and H1 norms
-    Teuchos::RCP<std::vector<double>> relerrors_;
+    std::shared_ptr<std::vector<double>> relerrors_;
 
     /*========================================================================*/
     //! @name velocity, pressure, and related
     /*========================================================================*/
 
     //! subgrid-scale velocity required for multifractal subgrid-scale modeling
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> fsvel_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> fsvel_;
 
     //! type of velocity field
     const Inpar::ScaTra::VelocityField velocity_field_type_;
 
     //! mean in time at the interface concentration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> mean_conc_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> mean_conc_;
 
     //! Membrane concentration in interface bewteen a scatracoupling (needed for instance for type
     //! fps3i)
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> membrane_conc_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> membrane_conc_;
 
     //! mean concentration of micro discretization  on macro dis
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_micro_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> phinp_micro_;
 
    private:
     //! number of dofset associated with displacement dofs
@@ -1485,7 +1489,7 @@ namespace ScaTra
     /*========================================================================*/
    protected:
     //! subgrid-diffusivity(-scaling) vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> subgrdiff_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> subgrdiff_;
 
     //! densification coefficients for natural convection
     std::vector<double> densific_;
@@ -1501,43 +1505,43 @@ namespace ScaTra
     /*========================================================================*/
 
     //! the scalar transport discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! the discretization writer
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output_;
+    std::shared_ptr<Core::IO::DiscretizationWriter> output_;
 
     //! form of convective term
     Inpar::ScaTra::ConvForm convform_;
 
     //! system matrix (either sparse matrix or block sparse matrix)
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat_;
 
     //! map extractor associated with blocks of global system matrix
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockmaps_;
 
     //! a vector of zeros to be used to enforce zero dirichlet boundary conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;
 
     //! function to set external force
     std::function<void()> set_external_force_;
 
     //! maps for extracting Dirichlet and free DOF sets
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;
 
     //! the vector containing body and surface forces
-    Teuchos::RCP<Core::LinAlg::Vector<double>> neumann_loads_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> neumann_loads_;
 
     //! unit outer normal vector field for flux output
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> normals_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> normals_;
 
     //! residual vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> residual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> residual_;
 
     //! true (rescaled) residual vector without zeros at Dirichlet conditions
-    Teuchos::RCP<Core::LinAlg::Vector<double>> trueresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> trueresidual_;
 
     //! nonlinear iteration increment vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> increment_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> increment_;
 
     //! options for meshtying
     Inpar::FLUID::MeshTying msht_;
@@ -1547,21 +1551,21 @@ namespace ScaTra
     /*========================================================================*/
 
     //! only necessary for AVM3: fine-scale subgrid-diffusivity matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_sd_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_sd_;
 
     //! only necessary for AVM3: scale-separation matrix ? rename small caps
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Sep_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Sep_;
 
     //! only necessary for AVM3: normalized fine-scale subgrid-viscosity matrix ? rename small caps
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Mnsv_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Mnsv_;
 
     /*========================================================================*/
     //! @name turbulent flow variables
     /*========================================================================*/
 
     //! one instance of the filter object
-    Teuchos::RCP<FLD::DynSmagFilter> DynSmag_;
-    Teuchos::RCP<FLD::Vreman> Vrem_;
+    std::shared_ptr<FLD::DynSmagFilter> DynSmag_;
+    std::shared_ptr<FLD::Vreman> Vrem_;
 
     //! parameters for sampling/dumping period
     int samstart_;
@@ -1579,17 +1583,17 @@ namespace ScaTra
 
     //! the vector containing source term externally computed
     //! forcing for homogeneous isotropic turbulence
-    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> forcing_;
 
     //! forcing for homogeneous isotropic turbulence
-    Teuchos::RCP<ScaTra::HomIsoTurbScalarForcing> homisoturb_forcing_;
+    std::shared_ptr<ScaTra::HomIsoTurbScalarForcing> homisoturb_forcing_;
 
     /*========================================================================*/
     //! @name variables for orthogonal space projection aka Krylov projection
     /*========================================================================*/
 
     bool updateprojection_;  //!< bool triggering update of Krylov projection
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;  //!< Krylov projector himself
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;  //!< Krylov projector himself
 
     /*========================================================================*/
     //! @name not classified variables - to be kept clean!!!
@@ -1625,10 +1629,10 @@ namespace ScaTra
 
     // TODO: SCATRA_ELE_CLEANING: BIOFILM
     //! scatra fluid displacement due to growth
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scfldgrdisp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> scfldgrdisp_;
 
     //! scatra structure displacement due to growth
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> scstrgrdisp_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> scstrgrdisp_;
 
     //! flag for printing out integral values of reaction
     const bool outintegrreac_;
@@ -1637,7 +1641,7 @@ namespace ScaTra
     //@{
 
     //! nitsche contact strategy
-    Teuchos::RCP<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
+    std::shared_ptr<CONTACT::NitscheStrategySsi> contact_strategy_nitsche_;
 
     //@}
 
@@ -1706,7 +1710,7 @@ namespace ScaTra
 
     //! return maximum number of transported scalars per node
     virtual int num_scal_in_condition(const Core::Conditions::Condition& condition,
-        const Teuchos::RCP<const Core::FE::Discretization>& discret) const
+        const std::shared_ptr<const Core::FE::Discretization>& discret) const
     {
       return num_dof_per_node_in_condition(condition, *discret);
     };

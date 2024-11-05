@@ -134,16 +134,16 @@ namespace Discret
       void unpack(Core::Communication::UnpackBuffer& buffer) override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       //! @name Access methods
 
@@ -670,13 +670,13 @@ namespace Discret
       std::vector<Core::LinAlg::SerialDenseVector> myknots_;
 
       //! corresponding fluid material
-      Teuchos::RCP<Mat::FluidPoro> fluid_mat_;
+      std::shared_ptr<Mat::FluidPoro> fluid_mat_;
 
       //! corresponding multiphase fluid material
-      Teuchos::RCP<Mat::FluidPoroMultiPhase> fluidmulti_mat_;
+      std::shared_ptr<Mat::FluidPoroMultiPhase> fluidmulti_mat_;
 
       //! own poro structure material
-      Teuchos::RCP<Mat::StructPoro> struct_mat_;
+      std::shared_ptr<Mat::StructPoro> struct_mat_;
 
       //! directions for anisotropic permeability
       std::vector<std::vector<double>> anisotropic_permeability_directions_;
@@ -688,7 +688,7 @@ namespace Discret
       Core::Nodes::Node** nodes() override;
 
       //! get material of element
-      Teuchos::RCP<Core::Mat::Material> material() const;
+      std::shared_ptr<Core::Mat::Material> material() const;
 
       //! get global id of element
       int id() const;

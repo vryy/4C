@@ -15,7 +15,7 @@
 #include "4C_linalg_vector.hpp"
 #include "4C_scatra_timint_meshtying_strategy_base.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -32,18 +32,18 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra);
+    explicit AdapterScatraWrapper(std::shared_ptr<ScatraInterface> scatra);
 
     /// compute contribution of mechanical state to eq. system
     virtual void evaluate_additional_solution_depending_models(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix,  //!< system matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs            //!< rhs vector
     );
 
 
    protected:
     //! return discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() const override
+    std::shared_ptr<Core::FE::Discretization> discretization() const override
     {
       return scatra_timint_->discretization();
     };
@@ -58,22 +58,22 @@ namespace Adapter
     virtual int nds_disp() { return scatra_timint_->nds_disp(); };
 
     /// return rcp ptr to neumann loads vector
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_neumann_loads_ptr() override
     {
       return scatra_timint_->get_neumann_loads_ptr();
     };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    const Teuchos::RCP<ScaTra::MeshtyingStrategyBase>& strategy() const override
+    const std::shared_ptr<ScaTra::MeshtyingStrategyBase>& strategy() const override
     {
       return scatra_timint_->strategy();
     };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phin() override { return scatra_timint_->phin(); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> phin() override { return scatra_timint_->phin(); }
 
    private:
-    Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration
+    std::shared_ptr<ScatraInterface> scatra_timint_;  ///< underlying structural time integration
 
   };  // class AdapterScatraWrapper
 }  // namespace Adapter

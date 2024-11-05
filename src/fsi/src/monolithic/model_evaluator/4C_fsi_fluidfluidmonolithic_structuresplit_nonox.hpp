@@ -59,7 +59,7 @@ namespace FSI
     void create_combined_dof_row_map() override;
 
     /// Extract initial guess from fields
-    void initial_guess(Teuchos::RCP<Core::LinAlg::Vector<double>> ig) override;
+    void initial_guess(std::shared_ptr<Core::LinAlg::Vector<double>> ig) override;
 
     /// apply infnorm scaling to linear block system
     virtual void scale_system(
@@ -70,7 +70,7 @@ namespace FSI
         Core::LinAlg::Vector<double>& x, Core::LinAlg::Vector<double>& b);
 
     /// create merged map with Dirichlet-constrained DOF from all fields
-    Teuchos::RCP<Epetra_Map> combined_dbc_map() override;
+    std::shared_ptr<Epetra_Map> combined_dbc_map() override;
 
     //! Extract the three field vectors from a given composed vector
     //!
@@ -85,10 +85,10 @@ namespace FSI
     //! \param sx (o) structural displacements
     //! \param fx (o) fluid velocities and pressure
     //! \param ax (o) ale displacements
-    void extract_field_vectors(Teuchos::RCP<const Core::LinAlg::Vector<double>> x,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& fx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>& ax) override;
+    void extract_field_vectors(std::shared_ptr<const Core::LinAlg::Vector<double>> x,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& fx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>>& ax) override;
 
     /// compute the Lagrange multiplier (FSI stresses) for the current time step
     void recover_lagrange_multiplier() override;
@@ -127,33 +127,33 @@ namespace FSI
         double fluidscale);
 
     /// access type-cast pointer to problem-specific fluid-wrapper
-    const Teuchos::RCP<Adapter::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }
+    const std::shared_ptr<Adapter::FluidFluidFSI>& fluid_field() { return MonolithicNoNOX::fluid_; }
 
     /// block system matrix
-    // Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
+    // std::shared_ptr<OverlappingBlockMatrix> systemmatrix_;
 
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> sggtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> sgitransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> sigtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> aigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> sggtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> sgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> sigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> aigtransform_;
 
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fmgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> fmiitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> fmgitransform_;
 
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fsaigtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> fsmgitransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> fsaigtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> fsmgitransform_;
 
     ///@}
 
     /// @name infnorm scaling
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> srowsum_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> scolsum_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> arowsum_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> acolsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> srowsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> scolsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> arowsum_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> acolsum_;
 
     //@}
 
@@ -162,34 +162,34 @@ namespace FSI
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the
     //! structure) evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     // lambda lives at the slave side (here at stucture)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lambda_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current iteration
     //! \f$i+1\f$
-    // Teuchos::RCP<const Core::LinAlg::Vector<double>> fgcur_;
+    // std::shared_ptr<const Core::LinAlg::Vector<double>> fgcur_;
 
     //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous iteration \f$i\f$
-    // Teuchos::RCP<const Core::LinAlg::Vector<double>> fgpre_;
+    // std::shared_ptr<const Core::LinAlg::Vector<double>> fgpre_;
 
     //! inner structural displacement increment \f$\Delta(\Delta d_{I,i+1}^{n+1})\f$ at current
     //! iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddiinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddiinc_;
 
     //! inner displacement solution of the structure at previous iteration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solipre_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solipre_;
 
     //! structural interface displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at
     //! current iteration \f$i+1\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> ddginc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> ddginc_;
 
     //! interface displacement solution of the structure at previous iteration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> solgpre_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> solgpre_;
 
     //! block \f$S_{\Gamma I,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> sgicur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> sgicur_;
 
     //! block \f$S_{\Gamma\Gamma,i+1}\f$ of structural matrix at current iteration \f$i+1\f$
-    Teuchos::RCP<const Core::LinAlg::SparseMatrix> sggcur_;
+    std::shared_ptr<const Core::LinAlg::SparseMatrix> sggcur_;
     //@}
   };
 }  // namespace FSI

@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surfac
  */
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
-    Surface>::get_pair_visualization(Teuchos::RCP<BeamToSolidVisualizationOutputWriterBase>
+    Surface>::get_pair_visualization(std::shared_ptr<BeamToSolidVisualizationOutputWriterBase>
                                          visualization_writer,
     Teuchos::ParameterList& visualization_params) const
 {
@@ -79,9 +79,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
   base_class::get_pair_visualization(visualization_writer, visualization_params);
 
   // Add segmentation and integration point data.
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization> visualization_segmentation =
-      visualization_writer->get_visualization_writer("btss-contact-segmentation");
-  if (visualization_segmentation != Teuchos::null)
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+      visualization_segmentation =
+          visualization_writer->get_visualization_writer("btss-contact-segmentation");
+  if (visualization_segmentation != nullptr)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>> points;
     for (const auto& segment : this->line_to_3D_segments_)
@@ -90,10 +91,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     add_visualization_integration_points(*visualization_segmentation, points, visualization_params);
   }
 
-  Teuchos::RCP<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
+  std::shared_ptr<BEAMINTERACTION::BeamToSolidOutputWriterVisualization>
       visualization_integration_points =
           visualization_writer->get_visualization_writer("btss-contact-integration-points");
-  if (visualization_integration_points != Teuchos::null)
+  if (visualization_integration_points != nullptr)
   {
     std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<ScalarType>> points;
     for (const auto& segment : this->line_to_3D_segments_)
@@ -132,8 +133,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surfac
   std::vector<double>& gap_data = visualization_data.get_point_data<double>("gap");
   std::vector<double>& force_data = visualization_data.get_point_data<double>("force");
 
-  const Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
-      visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams>>(
+  const std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>& output_params_ptr =
+      visualization_params.get<std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams>>(
           "btss-output_params_ptr");
   const bool write_unique_ids = output_params_ptr->get_write_unique_ids_flag();
   std::vector<int>* pair_beam_id = nullptr;
@@ -178,7 +179,7 @@ template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
     Surface>::create_geometry_pair(const Core::Elements::Element* element1,
     const Core::Elements::Element* element2,
-    const Teuchos::RCP<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
+    const std::shared_ptr<GEOMETRYPAIR::GeometryEvaluationDataBase>& geometry_evaluation_data_ptr)
 {
   this->geometry_pair_ =
       GEOMETRYPAIR::geometry_pair_line_to_surface_factory_fad<ScalarType, Beam, Surface>(
@@ -190,10 +191,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
  */
 template <typename ScalarType, typename Beam, typename Surface>
 void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
-    Surface>::set_face_element(Teuchos::RCP<GEOMETRYPAIR::FaceElement>& face_element)
+    Surface>::set_face_element(std::shared_ptr<GEOMETRYPAIR::FaceElement>& face_element)
 {
-  face_element_ = Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>>(
-      face_element, true);
+  face_element_ = std::dynamic_pointer_cast<GEOMETRYPAIR::FaceElementTemplate<Surface, ScalarType>>(
+      face_element);
 
   // Set the number of (centerline) degrees of freedom for the beam element in the face element
   face_element_->set_number_of_dof_other_element(
@@ -208,13 +209,12 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam,
  *
  */
 template <typename ScalarType, typename Beam, typename Surface>
-Teuchos::RCP<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
+std::shared_ptr<GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>
 BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<ScalarType, Beam, Surface>::cast_geometry_pair()
     const
 {
-  return Teuchos::rcp_dynamic_cast<
-      GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>(
-      this->geometry_pair_, true);
+  return std::dynamic_pointer_cast<
+      GEOMETRYPAIR::GeometryPairLineToSurface<ScalarType, Beam, Surface>>(this->geometry_pair_);
 }
 
 /**

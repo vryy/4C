@@ -13,7 +13,7 @@
 
 #include "4C_linalg_fixedsizematrix.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

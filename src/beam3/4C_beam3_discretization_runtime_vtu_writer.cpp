@@ -30,7 +30,7 @@ FOUR_C_NAMESPACE_OPEN
  *-----------------------------------------------------------------------------------------------*/
 BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
     Core::IO::VisualizationParameters parameters, const Epetra_Comm& comm)
-    : visualization_manager_(Teuchos::make_rcp<Core::IO::VisualizationManager>(
+    : visualization_manager_(std::make_shared<Core::IO::VisualizationManager>(
           std::move(parameters), comm, "structure-beams")),
       use_absolute_positions_(true)
 {
@@ -40,9 +40,9 @@ BeamDiscretizationRuntimeOutputWriter::BeamDiscretizationRuntimeOutputWriter(
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void BeamDiscretizationRuntimeOutputWriter::initialize(
-    Teuchos::RCP<Core::FE::Discretization> discretization,
+    std::shared_ptr<Core::FE::Discretization> discretization,
     bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-    Teuchos::RCP<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox)
+    std::shared_ptr<const Core::Geo::MeshFree::BoundingBox> const& periodic_boundingbox)
 {
   discretization_ = discretization;
   use_absolute_positions_ = use_absolute_positions_for_point_coordinates;
@@ -147,7 +147,7 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
     if (use_absolute_positions_)
     {
       // this is needed in case your input file contains shifted/cut elements
-      if (periodic_boundingbox_ != Teuchos::null)
+      if (periodic_boundingbox_ != nullptr)
       {
         BEAMINTERACTION::Utils::get_current_unshifted_element_dis(*discretization_, ele,
             displacement_state_vector, *periodic_boundingbox_, beamelement_displacement_vector);
@@ -176,14 +176,13 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
       else
         beamele->get_ref_pos_at_xi(interpolated_position, xi);
 
-      if (periodic_boundingbox_ != Teuchos::null)
-        periodic_boundingbox_->shift_3d(interpolated_position);
+      if (periodic_boundingbox_ != nullptr) periodic_boundingbox_->shift_3d(interpolated_position);
 
       Core::LinAlg::Matrix<3, 1> unshift_interpolated_position = interpolated_position;
 
       // check if an element is cut by a periodic boundary
       bool shift = false;
-      if (periodic_boundingbox_ != Teuchos::null)
+      if (periodic_boundingbox_ != nullptr)
         shift = periodic_boundingbox_->check_if_shift_between_points(
             unshift_interpolated_position, interpolated_position_priorpoint, dummy_shift_in_dim);
 
@@ -230,14 +229,14 @@ void BeamDiscretizationRuntimeOutputWriter::set_geometry_from_beam_discretizatio
         cell_types.size());
   }
 
-  if (periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->have_pbc() and
+  if (periodic_boundingbox_ != nullptr and !periodic_boundingbox_->have_pbc() and
       (point_coordinates.size() != num_spatial_dimensions * num_visualization_points))
   {
     FOUR_C_THROW("RuntimeVtuWriter expected %d coordinate values, but got %d",
         num_spatial_dimensions * num_visualization_points, point_coordinates.size());
   }
 
-  if (periodic_boundingbox_ != Teuchos::null and !periodic_boundingbox_->have_pbc() and
+  if (periodic_boundingbox_ != nullptr and !periodic_boundingbox_->have_pbc() and
       (cell_offsets.size() != num_beam_row_elements))
   {
     FOUR_C_THROW("RuntimeVtuWriter expected %d cell offset values, but got %d",
@@ -1462,7 +1461,7 @@ void BeamDiscretizationRuntimeOutputWriter::append_rve_crosssection_forces(
   // create pseudo planes through center of RVE (like this it also works if
   // your box is not periodic, i.e. you do not have cut element on the box edges)
   Core::LinAlg::Matrix<3, 2> box(true);
-  if (periodic_boundingbox_ != Teuchos::null)
+  if (periodic_boundingbox_ != nullptr)
   {
     for (unsigned dim = 0; dim < 3; ++dim)
     {

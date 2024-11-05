@@ -14,7 +14,7 @@
 #include "4C_comm_parobject.hpp"
 #include "4C_comm_parobjectfactory.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -211,7 +211,7 @@ namespace Core::Nodes
 
     \note Normally, This method would be called by the discretization to
           set references to a Condition in the nodes. As the Condition is
-          Teuchos::RCP, one can not say who actually owns the underlying object.
+          std::shared_ptr, one can not say who actually owns the underlying object.
           The node does not communicate any conditions through Pack/Unpack,
           Conditions are therefore more of a reference here that will be
           recreated after communications of nodes have been done.
@@ -220,10 +220,10 @@ namespace Core::Nodes
              NOT be overwritten but stored twice in the element
 
     */
-    void set_condition(const std::string& name, Teuchos::RCP<Core::Conditions::Condition> cond)
+    void set_condition(const std::string& name, std::shared_ptr<Core::Conditions::Condition> cond)
     {
       condition_.insert(
-          std::pair<std::string, Teuchos::RCP<Core::Conditions::Condition>>(name, cond));
+          std::pair<std::string, std::shared_ptr<Core::Conditions::Condition>>(name, cond));
     }
 
     /*!
@@ -337,7 +337,7 @@ namespace Core::Nodes
     //! pointers to adjacent elements
     std::vector<Core::Elements::Element*> element_;
     //! some conditions e.g. BCs
-    std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>> condition_;
+    std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>> condition_;
 
   };  // class Node
 }  // namespace Core::Nodes

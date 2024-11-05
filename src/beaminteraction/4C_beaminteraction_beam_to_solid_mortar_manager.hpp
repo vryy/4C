@@ -14,7 +14,8 @@
 #include "4C_inpar_beaminteraction.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -90,8 +91,8 @@ namespace BEAMINTERACTION
      * @params params (in) Beam-to-solid parameters.
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
-    BeamToSolidMortarManager(const Teuchos::RCP<const Core::FE::Discretization>& discret,
-        const Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+    BeamToSolidMortarManager(const std::shared_ptr<const Core::FE::Discretization>& discret,
+        const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
     /**
@@ -135,7 +136,7 @@ namespace BEAMINTERACTION
      * @param contact_pairs All contact pairs on this processor.
      */
     void set_local_maps(
-        const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Get vectors with GIDs of the positional and rotational Lagrange multipliers for the
@@ -154,27 +155,27 @@ namespace BEAMINTERACTION
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
     void evaluate_force_stiff_penalty_regularization(
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force);
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> stiff, std::shared_ptr<Epetra_FEVector> force);
 
     /**
      * \brief Get the global vector of Lagrange multipliers.
      * @return Global vector of Lagrange multipliers.
      */
-    [[nodiscard]] virtual Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda() const;
+    [[nodiscard]] virtual std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda() const;
 
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
      * the Lagrange GID. on the ranks where they are used.
      * @return Global vector of Lagrange multipliers.
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_global_lambda_col() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_global_lambda_col() const;
 
     /**
      * \brief Return a const reference to the contact pairs in this mortar manager.
      * @return Reference to the pair vector.
      */
-    const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs() const
+    const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs() const
     {
       return contact_pairs_;
     }
@@ -218,7 +219,7 @@ namespace BEAMINTERACTION
      * @param displacement_vector (in) global displacement vector.
      */
     void evaluate_and_assemble_global_coupling_contributions(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>>& displacement_vector);
+        const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector);
 
     /**
      * \brief Add the mortar penalty contributions to the global force vector and stiffness matrix.
@@ -227,8 +228,9 @@ namespace BEAMINTERACTION
      * @param force (out) Global force vector. Mortar terms are added to it.
      */
     virtual void add_global_force_stiffness_penalty_contributions(
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff, Teuchos::RCP<Epetra_FEVector> force) const;
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> stiff,
+        std::shared_ptr<Epetra_FEVector> force) const;
 
     /**
      * \brief Get the penalty regularization of the constraint vector
@@ -236,8 +238,9 @@ namespace BEAMINTERACTION
      * @return The regularized Lagrange multipliers and (optionally) their derivative w.r.t. the
      * constraint vector and the scaling vector
      */
-    [[nodiscard]] virtual std::tuple<Teuchos::RCP<Core::LinAlg::Vector<double>>,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>, Teuchos::RCP<Core::LinAlg::Vector<double>>>
+    [[nodiscard]] virtual std::tuple<std::shared_ptr<Core::LinAlg::Vector<double>>,
+        std::shared_ptr<Core::LinAlg::Vector<double>>,
+        std::shared_ptr<Core::LinAlg::Vector<double>>>
     get_penalty_regularization(const bool compute_linearization = false) const;
 
     /**
@@ -248,7 +251,7 @@ namespace BEAMINTERACTION
      *
      * @return Inverted kappa_ vector.
      */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> penalty_invert_kappa() const;
+    std::shared_ptr<Core::LinAlg::Vector<double>> penalty_invert_kappa() const;
 
    protected:
     //! Flag if setup was called.
@@ -282,40 +285,40 @@ namespace BEAMINTERACTION
     unsigned int n_lambda_element_rotational_;
 
     //! Pointer to the discretization containing the solid and beam elements.
-    Teuchos::RCP<const Core::FE::Discretization> discret_;
+    std::shared_ptr<const Core::FE::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
-    Teuchos::RCP<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
+    std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
 
     //! Row map of the additional Lagrange multiplier DOFs for translations.
-    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_translations_;
+    std::shared_ptr<Epetra_Map> lambda_dof_rowmap_translations_;
 
     //! Row map of the additional Lagrange multiplier DOFs for rotations.
-    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_rotations_;
+    std::shared_ptr<Epetra_Map> lambda_dof_rowmap_rotations_;
 
     //! Row map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> lambda_dof_rowmap_;
 
     //! Column map of the additional Lagrange multiplier DOFs.
-    Teuchos::RCP<Epetra_Map> lambda_dof_colmap_;
+    std::shared_ptr<Epetra_Map> lambda_dof_colmap_;
 
     //! Row map of the beam DOFs.
-    Teuchos::RCP<Epetra_Map> beam_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> beam_dof_rowmap_;
 
     //! Row map of the solid DOFs.
-    Teuchos::RCP<Epetra_Map> solid_dof_rowmap_;
+    std::shared_ptr<Epetra_Map> solid_dof_rowmap_;
 
     //! Multivector that connects the global node IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the node that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> node_gid_to_lambda_gid_;
 
     //! Multivector that connects the global element IDs with the Lagrange multiplier DOF IDs.
     //! The global row ID of the multi vector is the global ID of the element that a Lagrange
     //! multiplier is defined on. The columns hold the corresponding global IDs of the Lagrange
     //! multipliers.
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> element_gid_to_lambda_gid_;
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> element_gid_to_lambda_gid_;
 
     //! Standard map from global node ids to global Lagrange multiplier ids, for all
     //! nodes used on this rank.
@@ -326,39 +329,39 @@ namespace BEAMINTERACTION
     std::map<int, std::vector<int>> element_gid_to_lambda_gid_map_;
 
     //! Global constraint vector.
-    Teuchos::RCP<Epetra_FEVector> constraint_;
+    std::shared_ptr<Epetra_FEVector> constraint_;
 
     //! Derivative of constraint vector w.r.t the beam DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_lin_beam_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> constraint_lin_beam_;
 
     //! Derivative of constraint vector w.r.t the solid DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_lin_solid_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> constraint_lin_solid_;
 
     //! Derivative of the beam coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> force_beam_lin_lambda_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> force_beam_lin_lambda_;
 
     //! Derivative of the solid coupling forces w.r.t the Lagrange multipliers.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> force_solid_lin_lambda_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> force_solid_lin_lambda_;
 
     //! Global \f$\kappa\f$ vector. This vector is used to scale the mortar matrices. See Yang et
     //! al: Two dimensional mortar contact methods for large deformation frictional sliding (eq.
     //! 37). With this scaling correct units and pass patch tests are achieved (in the penalty
     //! case).
-    Teuchos::RCP<Epetra_FEVector> kappa_;
+    std::shared_ptr<Epetra_FEVector> kappa_;
 
     //! Derivative of the scaling vector w.r.t the beam DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_lin_beam_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kappa_lin_beam_;
 
     //! Derivative of the scaling vector w.r.t the solid DOF.
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_lin_solid_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kappa_lin_solid_;
 
     //! This vector keeps tack of all Lagrange multipliers that are active. This is needed when the
     //! kappa vector is inverted and some entries are zero, because no active contributions act on
     //! that Lagrange multiplier.
-    Teuchos::RCP<Epetra_FEVector> lambda_active_;
+    std::shared_ptr<Epetra_FEVector> lambda_active_;
 
     //! Vector with all contact pairs to be evaluated by this mortar manager.
-    std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
+    std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
   };
 }  // namespace BEAMINTERACTION
 

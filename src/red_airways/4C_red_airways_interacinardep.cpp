@@ -10,6 +10,7 @@
 #include "4C_io_linedefinition.hpp"
 #include "4C_red_airways_elementbase.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 FOUR_C_NAMESPACE_OPEN
 
 using namespace Core::FE;
@@ -36,27 +37,27 @@ Core::Communication::ParObject* Discret::Elements::RedInterAcinarDepType::create
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "RED_ACINAR_INTER_DEP")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::RedInterAcinarDep>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::RedInterAcinarDep>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
 /*----------------------------------------------------------------------*
  |  Create                                                              |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::RedInterAcinarDepType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::RedInterAcinarDep>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::RedInterAcinarDep>(id, owner);
   return ele;
 }
 
@@ -258,11 +259,11 @@ void Discret::Elements::RedInterAcinarDep::get_params(std::string name, int& var
 /*----------------------------------------------------------------------*
  |  Get vector of lines (public)                           ismail  02/13|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::RedInterAcinarDep::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::RedInterAcinarDep::lines()
 {
   FOUR_C_ASSERT(num_line() == 1, "RED_AIRWAY element must have one and only one line");
 
-  return {Teuchos::rcpFromRef(*this)};
+  return {Core::Utils::shared_ptr_from_ref(*this)};
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -13,8 +13,7 @@
 #include "4C_fbi_fluid_assembly_strategy.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -45,7 +44,7 @@ namespace FBI
        * \param[in] lmrowowner vector with owner procs of row gids
        * \param[in] lmcol vector with column gids
        */
-      void assemble_fluid_matrix(Teuchos::RCP<Core::LinAlg::SparseOperator> cff, int elegid,
+      void assemble_fluid_matrix(std::shared_ptr<Core::LinAlg::SparseOperator> cff, int elegid,
           const std::vector<int>& lmstride, const Core::LinAlg::SerialDenseMatrix& elemat,
           const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
           const std::vector<int>& lmcol) override;

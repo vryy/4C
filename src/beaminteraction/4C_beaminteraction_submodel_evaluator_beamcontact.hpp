@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
 
       //! derived
       void init_submodel_dependencies(
-          Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
+          std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void add_bins_to_bin_col_map(std::set<int>& colbins) override;
@@ -141,7 +141,7 @@ namespace BEAMINTERACTION
        * \brief Return the assembly managers in this submodel evaluator.
        */
       inline const std::vector<
-          Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
+          std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>&
       get_assembly_managers() const
       {
         return assembly_managers_;
@@ -150,8 +150,8 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the geometry pairs in this submodel evaluator.
        */
-      inline const std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs()
-          const
+      inline const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>&
+      get_contact_pairs() const
       {
         return contact_elepairs_;
       }
@@ -159,7 +159,8 @@ namespace BEAMINTERACTION
       /**
        * \brief Return the conditions in this submodel evaluator.
        */
-      inline Teuchos::RCP<const BEAMINTERACTION::BeamInteractionConditions> get_conditions() const
+      inline std::shared_ptr<const BEAMINTERACTION::BeamInteractionConditions> get_conditions()
+          const
       {
         return beam_interaction_conditions_ptr_;
       }
@@ -193,7 +194,7 @@ namespace BEAMINTERACTION
         return *beam_contact_params_ptr_;
       }
 
-      inline Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr() const
+      inline std::shared_ptr<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr() const
       {
         check_init();
         return beam_contact_params_ptr_;
@@ -250,47 +251,47 @@ namespace BEAMINTERACTION
       //! @}
 
       //! data container holding all beam contact related parameters
-      Teuchos::RCP<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
+      std::shared_ptr<BEAMINTERACTION::BeamContactParams> beam_contact_params_ptr_;
 
       //! data container holding all beam interaction related parameters
-      Teuchos::RCP<BEAMINTERACTION::BeamInteractionParams> beam_interaction_params_ptr_;
+      std::shared_ptr<BEAMINTERACTION::BeamInteractionParams> beam_interaction_params_ptr_;
 
       //! data container holding all beam interactions defined by conditions
-      Teuchos::RCP<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
+      std::shared_ptr<BEAMINTERACTION::BeamInteractionConditions> beam_interaction_conditions_ptr_;
 
       //! data container holding all geometric search related parameters
-      Teuchos::RCP<Core::GeometricSearch::GeometricSearchParams> geometric_search_params_ptr_;
+      std::shared_ptr<Core::GeometricSearch::GeometricSearchParams> geometric_search_params_ptr_;
 
       //! element types considered for beam to ? contact
       std::vector<Core::Binstrategy::Utils::BinContentType> contactelementtypes_;
 
       //! interacting pairs of beam elements that might exert forces on each other
-      std::vector<Teuchos::RCP<BEAMINTERACTION::BeamContactPair>> contact_elepairs_;
+      std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> contact_elepairs_;
 
       //! Objects to evaluate system contributions for stiffness and force terms.
-      std::vector<Teuchos::RCP<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>
+      std::vector<std::shared_ptr<BEAMINTERACTION::SUBMODELEVALUATOR::BeamContactAssemblyManager>>
           assembly_managers_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
       std::map<int, std::set<Core::Elements::Element*>> nearby_elements_map_;
 
       //! runtime visualization writer for visualization of contact forces
-      Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_ptr_;
+      std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVisualizationOutputWriter>
           beam_to_solid_volume_meshtying_visualization_output_writer_ptr_;
 
       //! This object handles all beam to solid surface mesh tying related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriter>
           beam_to_solid_surface_visualization_output_writer_ptr_;
 
       //! This object handles all beam to solid surface contact related visualization output.
-      Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>
+      std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputWriterContact>
           beam_to_solid_surface_visualization_output_writer_contact_ptr_;
 
       //! This object handles all geometric search related visualization output.
-      Teuchos::RCP<Core::GeometricSearch::GeometricSearchVisualization>
+      std::shared_ptr<Core::GeometricSearch::GeometricSearchVisualization>
           geometric_search_visualization_ptr_;
     };
 

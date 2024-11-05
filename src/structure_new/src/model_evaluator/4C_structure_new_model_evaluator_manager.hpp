@@ -12,7 +12,8 @@
 
 #include "4C_inpar_structure.hpp"  // necessary due to enums
 
-#include <Teuchos_RCP.hpp>
+#include <map>
+#include <memory>
 
 // forward declarations
 
@@ -76,9 +77,9 @@ namespace Solid
   class ModelEvaluatorManager
   {
    public:
-    typedef std::map<enum Inpar::Solid::ModelType, Teuchos::RCP<Solid::ModelEvaluator::Generic>>
+    typedef std::map<enum Inpar::Solid::ModelType, std::shared_ptr<Solid::ModelEvaluator::Generic>>
         Map;
-    typedef std::vector<Teuchos::RCP<Solid::ModelEvaluator::Generic>> Vector;
+    typedef std::vector<std::shared_ptr<Solid::ModelEvaluator::Generic>> Vector;
 
     //! constructor
     ModelEvaluatorManager();
@@ -97,12 +98,12 @@ namespace Solid
      * \param[in] int_ptr ??
      * \param[in] timint_ptr Pointer to the underlying time integrator (read-only)
      */
-    void init(const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-        const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
-        const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-        const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-        const Teuchos::RCP<Solid::Integrator>& int_ptr,
-        const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr);
+    void init(const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+        const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
+        const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+        const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+        const std::shared_ptr<Solid::Integrator>& int_ptr,
+        const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr);
 
     //! setup
     void setup();
@@ -281,7 +282,7 @@ namespace Solid
      * @param modjac ??
      */
     void assemble_jacobian_contributions_from_element_level_for_ptc(const Vector& me_vec,
-        const double timefac_np, Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac);
+        const double timefac_np, std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac);
 
     /** \brief Assembly of a sub-set of stiffness contributions
      *
@@ -338,10 +339,10 @@ namespace Solid
     const Solid::TimeInt::BaseDataGlobalState& get_global_state() const;
 
     //! return global state pointer (read and write access of the data)
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& global_state_ptr();
 
     //! return pointer to the underlying time integrator (read-only)
-    const Teuchos::RCP<const Solid::TimeInt::Base>& get_tim_int_ptr() const;
+    const std::shared_ptr<const Solid::TimeInt::Base>& get_tim_int_ptr() const;
 
     /*! \brief Access one specific model evaluator
      *
@@ -447,7 +448,7 @@ namespace Solid
 
     //! computes element based scaling contributions for PTC
     void compute_jacobian_contributions_from_element_level_for_ptc(
-        Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr);
+        std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr);
 
    protected:
     //! Returns the init flag.
@@ -463,7 +464,7 @@ namespace Solid
     void check_init() const;
 
    private:
-    Teuchos::RCP<Solid::ModelEvaluatorManager::Vector> transform_to_vector(
+    std::shared_ptr<Solid::ModelEvaluatorManager::Vector> transform_to_vector(
         const Solid::ModelEvaluatorManager::Map& model_map) const;
 
     /** \brief Assembly of all force contributions
@@ -522,25 +523,25 @@ namespace Solid
     //! Flag to indicate whether setup() has been called
     bool issetup_;
 
-    Teuchos::RCP<Solid::ModelEvaluatorManager::Map> me_map_ptr_;
+    std::shared_ptr<Solid::ModelEvaluatorManager::Map> me_map_ptr_;
 
-    Teuchos::RCP<Solid::ModelEvaluatorManager::Vector> me_vec_ptr_;
+    std::shared_ptr<Solid::ModelEvaluatorManager::Vector> me_vec_ptr_;
 
-    Teuchos::RCP<Solid::ModelEvaluator::Data> eval_data_ptr_;
+    std::shared_ptr<Solid::ModelEvaluator::Data> eval_data_ptr_;
 
     //! Pointer to the structural dynamic data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataSDyn> sdyn_ptr_;
 
     //! Pointer to the global state data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataGlobalState> gstate_ptr_;
 
     //! Pointer to the input/output data container
-    Teuchos::RCP<Solid::TimeInt::BaseDataIO> gio_ptr_;
+    std::shared_ptr<Solid::TimeInt::BaseDataIO> gio_ptr_;
 
-    Teuchos::RCP<Solid::Integrator> int_ptr_;
+    std::shared_ptr<Solid::Integrator> int_ptr_;
 
     //! Pointer to the underlying time integrator (read-only)
-    Teuchos::RCP<const Solid::TimeInt::Base> timint_ptr_;
+    std::shared_ptr<const Solid::TimeInt::Base> timint_ptr_;
 
   };  // class ModelEvaluatorManager
 }  // namespace Solid

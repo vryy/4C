@@ -13,7 +13,7 @@
 #include "4C_fem_general_utils_gausspoints.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -36,34 +36,36 @@ namespace Cut
         Core::FE::GaussPointsComposite& gin, Cut::VolumeCell* vc);
 
     // Core::FE::GaussIntegration get_compressed_quadrature(){ return *gout_; }
-    Teuchos::RCP<Core::FE::GaussPoints> get_compressed_quadrature() { return gout_; }
+    std::shared_ptr<Core::FE::GaussPoints> get_compressed_quadrature() { return gout_; }
 
    private:
     void form_matrix_system(Core::FE::GaussPointsComposite& gin,
         Core::LinAlg::SerialDenseMatrix& mat, Core::LinAlg::SerialDenseVector& rhs);
 
-    void teuchos_gels(Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs, Core::LinAlg::SerialDenseVector& sol);
+    void teuchos_gels(std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,
+        std::shared_ptr<Core::LinAlg::SerialDenseVector>& rhs,
+        Core::LinAlg::SerialDenseVector& sol);
 
     /*!
     \brief Solve the under/over determined system by performing QR decomposition, achived using
     Teuchos framework
      */
-    void qr_decomposition_teuchos(Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol);
+    void qr_decomposition_teuchos(std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,
+        std::shared_ptr<Core::LinAlg::SerialDenseVector>& rhs,
+        std::shared_ptr<Core::LinAlg::SerialDenseVector>& sol);
 
     /*!
     \brief Solve the under/over determined system by performing QR decomposition, achived using
     LAPACK
      */
-    void qr_decomposition_lapack(Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs, Core::LinAlg::SerialDenseVector& sol);
+    void qr_decomposition_lapack(std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,
+        std::shared_ptr<Core::LinAlg::SerialDenseVector>& rhs,
+        Core::LinAlg::SerialDenseVector& sol);
 
     bool compress_leja_points(Core::FE::GaussPointsComposite& gin,
-        Teuchos::RCP<Core::LinAlg::SerialDenseMatrix>& mat,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& rhs,
-        Teuchos::RCP<Core::LinAlg::SerialDenseVector>& sol);
+        std::shared_ptr<Core::LinAlg::SerialDenseMatrix>& mat,
+        std::shared_ptr<Core::LinAlg::SerialDenseVector>& rhs,
+        std::shared_ptr<Core::LinAlg::SerialDenseVector>& sol);
 
     void compute_and_print_error(Core::FE::GaussPointsComposite& gin,
         Core::LinAlg::SerialDenseVector& rhs, Core::LinAlg::SerialDenseVector& sol,
@@ -74,7 +76,7 @@ namespace Cut
     bool is_this_value_already_in_dense_vector(
         int& input, std::vector<int>& vec, int upper_range, int& index);
 
-    Teuchos::RCP<Core::FE::GaussPoints> form_new_quadrature_rule(
+    std::shared_ptr<Core::FE::GaussPoints> form_new_quadrature_rule(
         Core::FE::GaussPointsComposite& gin, Core::LinAlg::SerialDenseVector& sol,
         std::vector<int>& work, int& na);
     int get_correct_index(int& input, std::vector<int>& vec, int upper_range);
@@ -83,7 +85,7 @@ namespace Cut
 
     void integrate_predefined_polynomials(Core::FE::GaussPointsComposite& gin);
 
-    Teuchos::RCP<Core::FE::GaussPoints> gout_;
+    std::shared_ptr<Core::FE::GaussPoints> gout_;
   };
 
 }  // namespace Cut

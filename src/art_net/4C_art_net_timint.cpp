@@ -27,11 +27,11 @@ FOUR_C_NAMESPACE_OPEN
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const int linsolvernumber,
-    const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& artparams,
-    Core::IO::DiscretizationWriter& output)
+Arteries::TimInt::TimInt(std::shared_ptr<Core::FE::Discretization> actdis,
+    const int linsolvernumber, const Teuchos::ParameterList& probparams,
+    const Teuchos::ParameterList& artparams, Core::IO::DiscretizationWriter& output)
     : discret_(actdis),
-      solver_(Teuchos::null),
+      solver_(nullptr),
       params_(probparams),
       output_(output),
       dtele_(0.0),
@@ -72,7 +72,7 @@ Arteries::TimInt::TimInt(Teuchos::RCP<Core::FE::Discretization> actdis, const in
 void Arteries::TimInt::init(const Teuchos::ParameterList& globaltimeparams,
     const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname)
 {
-  solver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  solver_ = std::make_shared<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber_), discret_->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -94,7 +94,7 @@ void Arteries::TimInt::init(const Teuchos::ParameterList& globaltimeparams,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Arteries::TimInt::integrate(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == nullptr)
@@ -143,7 +143,7 @@ void Arteries::TimInt::prepare_time_loop()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void Arteries::TimInt::time_loop(
-    bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
+    bool CoupledTo3D, std::shared_ptr<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
   // time measurement: time loop

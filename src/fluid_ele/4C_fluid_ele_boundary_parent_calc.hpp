@@ -169,7 +169,7 @@ namespace Discret
           Core::LinAlg::SerialDenseMatrix::Base& elemat,
           Core::LinAlg::SerialDenseVector::Base& elevec);
 
-      void get_density_and_viscosity(Teuchos::RCP<const Core::Mat::Material> material,
+      void get_density_and_viscosity(std::shared_ptr<const Core::Mat::Material> material,
           const double pscaaf, const double thermpressaf, const double rateofstrain);
 
 

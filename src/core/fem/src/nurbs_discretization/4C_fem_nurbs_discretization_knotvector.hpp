@@ -15,7 +15,7 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -274,7 +274,7 @@ namespace Core::FE
       */
       void set_knots(const int& direction, const int& npatch, const int& degree,
           const int& numknots, const std::string& knotvectortype,
-          Teuchos::RCP<std::vector<double>> directions_knots);
+          std::shared_ptr<std::vector<double>> directions_knots);
 
       //! @}
 
@@ -501,7 +501,7 @@ namespace Core::FE
       std::vector<int> offsets_;
 
       //! the actual values
-      std::vector<std::vector<Teuchos::RCP<std::vector<double>>>> knot_values_;
+      std::vector<std::vector<std::shared_ptr<std::vector<double>>>> knot_values_;
 
       //! @}
     };

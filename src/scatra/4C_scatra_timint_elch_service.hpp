@@ -186,10 +186,10 @@ namespace ScaTra
     bool charging_;
 
     //! half cycle of charge
-    Teuchos::RCP<ScaTra::CCCVHalfCycleCondition> halfcycle_charge_;
+    std::shared_ptr<ScaTra::CCCVHalfCycleCondition> halfcycle_charge_;
 
     //! half cycle of discharge
-    Teuchos::RCP<ScaTra::CCCVHalfCycleCondition> halfcycle_discharge_;
+    std::shared_ptr<ScaTra::CCCVHalfCycleCondition> halfcycle_discharge_;
 
     //! number of current charge or discharge half-cycle
     int ihalfcycle_;

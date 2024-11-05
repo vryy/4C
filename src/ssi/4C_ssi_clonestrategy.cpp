@@ -76,8 +76,8 @@ void SSI::ScatraStructureCloneStrategy::check_material_type(const int matid)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategy::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool isnurbsdis)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbsdis)
 {
   // We need to set material and possibly other things to complete element setup.
   // This is again really ugly as we have to extract the actual
@@ -117,8 +117,8 @@ void SSI::ScatraStructureCloneStrategy::set_element_data(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void SSI::ScatraStructureCloneStrategyManifold::set_element_data(
-    Teuchos::RCP<Core::Elements::Element> newele, Core::Elements::Element* oldele, const int matid,
-    const bool isnurbsdis)
+    std::shared_ptr<Core::Elements::Element> newele, Core::Elements::Element* oldele,
+    const int matid, const bool isnurbsdis)
 {
   // determine impl type from manifold condition by identifying the condition for this element
   auto struct_dis = Global::Problem::instance()->get_dis("structure");

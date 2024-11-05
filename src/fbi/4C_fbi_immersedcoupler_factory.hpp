@@ -12,7 +12,7 @@
 
 #include "4C_utils_parameter_list.fwd.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -43,7 +43,7 @@ namespace FBI
      *
      * \return FBI geometry coupler strategy
      */
-    static Teuchos::RCP<FBI::FBIGeometryCoupler> create_geometry_coupler(
+    static std::shared_ptr<FBI::FBIGeometryCoupler> create_geometry_coupler(
         const Teuchos::ParameterList& fbidyn);
   };
 }  // namespace FBI

@@ -14,7 +14,7 @@
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -89,14 +89,14 @@ namespace FLD
     Inpar::FLUID::ForcingType forcing_type_;
 
     //! fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velaf_;
 
     //! threshold wave number for forcing
     //! i.e., forcing is applied to wave numbers <= threshold wave number
@@ -119,16 +119,16 @@ namespace FLD
     int nummodes_;
 
     //! vector of coordinates in one spatial direction (same for the other two directions)
-    Teuchos::RCP<std::vector<double>> coordinates_;
+    std::shared_ptr<std::vector<double>> coordinates_;
 
     //! vector of wave numbers
-    Teuchos::RCP<std::vector<double>> wavenumbers_;
+    std::shared_ptr<std::vector<double>> wavenumbers_;
 
     //! vector energy spectrum (sum over k=const) at time n
-    Teuchos::RCP<std::vector<double>> energyspectrum_n_;
+    std::shared_ptr<std::vector<double>> energyspectrum_n_;
 
     //! vector energy spectrum  (sum over k=const) at time n+1/n+af
-    Teuchos::RCP<std::vector<double>> energyspectrum_np_;
+    std::shared_ptr<std::vector<double>> energyspectrum_np_;
 
     //! time step length
     double dt_;
@@ -137,7 +137,7 @@ namespace FLD
     bool activate_;
 
     //! linear compensation factor
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> force_fac_;
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> force_fac_;
 
     //! fixed power input
     double Pin_;
@@ -146,7 +146,7 @@ namespace FLD
     double E_kf_;
 
     //! fixed power input factor
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> fixed_power_fac_;
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> fixed_power_fac_;
 
     //! interpolation function
     static double interpolate(
@@ -202,17 +202,17 @@ namespace FLD
 
    private:
     //! fluid discretization
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! state vector of volume force to be computed
-    Teuchos::RCP<Core::LinAlg::Vector<double>> forcing_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> forcing_;
 
     //! state vectors used to compute forcing
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velnp_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> velaf_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> velaf_;
 
     //! xwall object is required for evaluating inner element planes of channel
-    Teuchos::RCP<FLD::XWall> myxwall_;
+    std::shared_ptr<FLD::XWall> myxwall_;
 
     //! values of previous step
     double oldforce_;

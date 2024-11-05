@@ -148,11 +148,12 @@ void Discret::Elements::ScaTraEleCalcElchElectrode<distype,
     FOUR_C_THROW("Electrode state of charge can only be computed for one transported scalar!");
 
   // get global state vectors
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp = discretization.get_state("phinp");
-  if (phinp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phinp\"!");
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> phidtnp =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> phinp =
+      discretization.get_state("phinp");
+  if (phinp == nullptr) FOUR_C_THROW("Cannot get state vector \"phinp\"!");
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> phidtnp =
       discretization.get_state("phidtnp");
-  if (phidtnp == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
+  if (phidtnp == nullptr) FOUR_C_THROW("Cannot get state vector \"phidtnp\"!");
 
   // extract local nodal values from global state vectors
   Core::FE::extract_my_values(*phinp, my::ephinp_, la[0].lm_);
@@ -206,9 +207,9 @@ void Discret::Elements::ScaTraEleCalcElchElectrode<distype,
   {
     const int ndsvel = my::scatrapara_->nds_vel();
     // extract velocities
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vel =
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
         discretization.get_state(ndsvel, "velocity field");
-    if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
+    if (vel == nullptr) FOUR_C_THROW("Cannot get state vector \"velocity field\"!");
     Core::FE::extract_my_values(*vel, my::evelnp_, la[ndsvel].lm_);
 
     // initialize additional variables for integrals related to velocity divergence

@@ -14,8 +14,7 @@
 #include "4C_porofluidmultiphase_ele_action.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -177,7 +176,7 @@ namespace Discret
         virtual ~EvaluatorInterface() = default;
 
         //! factory method
-        static Teuchos::RCP<EvaluatorInterface<nsd, nen>> create_evaluator(
+        static std::shared_ptr<EvaluatorInterface<nsd, nen>> create_evaluator(
             const Discret::Elements::PoroFluidMultiPhaseEleParameter& para,
             const POROFLUIDMULTIPHASE::Action& action, int numdofpernode, int numfluidphases,
             const PoroFluidManager::PhaseManagerInterface& phasemanager);
@@ -276,7 +275,7 @@ namespace Discret
             ) override
         {
           // loop over the evaluators
-          typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
+          typename std::vector<std::shared_ptr<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
             (*it)->evaluate_matrix(elemat, funct, derxy, numdofpernode, phasemanager,
                 variablemanager, timefacfac, fac);
@@ -298,7 +297,7 @@ namespace Discret
             ) override
         {
           // loop over the evaluators
-          typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
+          typename std::vector<std::shared_ptr<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
             (*it)->evaluate_vector(elevec, funct, derxy, xyze, numdofpernode, phasemanager,
                 variablemanager, rhsfac, fac);
@@ -322,7 +321,7 @@ namespace Discret
             double det) override
         {
           // loop over the evaluators
-          typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
+          typename std::vector<std::shared_ptr<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
           {
             (*it)->evaluate_matrix_od_struct(elemat, funct, deriv, derxy, xjm, numdofpernode,
@@ -345,7 +344,7 @@ namespace Discret
             ) override
         {
           // loop over the evaluators
-          typename std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>>::iterator it;
+          typename std::vector<std::shared_ptr<EvaluatorInterface<nsd, nen>>>::iterator it;
           for (it = evaluators_.begin(); it != evaluators_.end(); it++)
           {
             (*it)->evaluate_matrix_od_scatra(elemat, funct, derxy, numdofpernode, phasemanager,
@@ -354,14 +353,14 @@ namespace Discret
         };
 
         //! add an evaluator to the list of evaluators
-        void add_evaluator(Teuchos::RCP<EvaluatorInterface<nsd, nen>> evaluator)
+        void add_evaluator(std::shared_ptr<EvaluatorInterface<nsd, nen>> evaluator)
         {
           evaluators_.push_back(evaluator);
         };
 
        private:
         //! list of all evaluators
-        std::vector<Teuchos::RCP<EvaluatorInterface<nsd, nen>>> evaluators_;
+        std::vector<std::shared_ptr<EvaluatorInterface<nsd, nen>>> evaluators_;
       };
 
 
@@ -383,7 +382,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorBase(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorBase(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : assembler_(assembler), myphase_(curphase){};
 
         //! evaluate matrixes (stiffness)
@@ -608,7 +607,7 @@ namespace Discret
 
        private:
         //! assemble strategy
-        Teuchos::RCP<AssembleInterface> assembler_;
+        std::shared_ptr<AssembleInterface> assembler_;
         //! phase the term is associated with
         const int myphase_;
       };
@@ -631,7 +630,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorConv(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorConv(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
         //! destructor
@@ -724,7 +723,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorDivVel(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -814,7 +813,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorSatDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorSatDivVel(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorDivVel<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -904,7 +903,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorBiotStab(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorBiotStab(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -995,7 +994,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorDiff(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1085,7 +1084,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorReac(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1175,7 +1174,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorMassPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorMassPressure(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1277,7 +1276,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorMassSolidPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorMassSolidPressure(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1381,7 +1380,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorMassSolidPressureSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorMassSolidPressureSat(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorMassSolidPressure<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1471,7 +1470,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorMassSaturation(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorMassSaturation(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1573,7 +1572,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorPressureAndSaturation(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorPressureAndSaturation(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1663,7 +1662,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorSolidPressure(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorSolidPressure(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1756,7 +1755,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorValidVolFracPressures(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorValidVolFracPressures(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1846,7 +1845,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorPorosity(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorPorosity(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -1936,7 +1935,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorDomainIntegrals(Teuchos::RCP<AssembleInterface> assembler, int curphase,
+        EvaluatorDomainIntegrals(std::shared_ptr<AssembleInterface> assembler, int curphase,
             std::vector<int> domainint_funct, int numscal)
             : EvaluatorBase<nsd, nen>(assembler, curphase),
               domainint_funct_(domainint_funct),
@@ -2039,7 +2038,7 @@ namespace Discret
       {
        public:
         //! constructor
-        ReconstructFluxLinearization(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        ReconstructFluxLinearization(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2130,7 +2129,7 @@ namespace Discret
       {
        public:
         //! constructor
-        ReconstructFluxRHS(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        ReconstructFluxRHS(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2214,7 +2213,7 @@ namespace Discret
        public:
         //! constructor
         EvaluatorPhaseVelocities(
-            Teuchos::RCP<AssembleInterface> assembler, int curphase, bool isAle)
+            std::shared_ptr<AssembleInterface> assembler, int curphase, bool isAle)
             : EvaluatorBase<nsd, nen>(assembler, curphase), is_ale_(isAle){};
 
        protected:
@@ -2310,7 +2309,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracAddInstatTerms(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracAddInstatTerms(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2413,7 +2412,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracAddDivVelTerm(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracAddDivVelTerm(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2506,7 +2505,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracAddDivVelTermSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracAddDivVelTermSat(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorVolFracAddDivVelTerm<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2599,7 +2598,8 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracAddInstatTermsSat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracAddInstatTermsSat(
+            std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorVolFracAddInstatTerms<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2690,7 +2690,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracInstat(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracInstat(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2781,7 +2781,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracDivVel(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracDivVel(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2871,7 +2871,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracDiff(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -2961,7 +2961,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracReac(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -3051,7 +3051,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracAddFlux(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracAddFlux(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -3141,7 +3141,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracPressureDiff(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracPressureDiff(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:
@@ -3232,7 +3232,7 @@ namespace Discret
       {
        public:
         //! constructor
-        EvaluatorVolFracPressureReac(Teuchos::RCP<AssembleInterface> assembler, int curphase)
+        EvaluatorVolFracPressureReac(std::shared_ptr<AssembleInterface> assembler, int curphase)
             : EvaluatorBase<nsd, nen>(assembler, curphase){};
 
        protected:

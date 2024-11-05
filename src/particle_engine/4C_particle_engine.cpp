@@ -90,8 +90,7 @@ void PARTICLEENGINE::ParticleEngine::setup(
 void PARTICLEENGINE::ParticleEngine::write_restart(const int step, const double time) const
 {
   // get bin discretization writer
-  std::shared_ptr<Core::IO::DiscretizationWriter> binwriter =
-      Teuchos::get_shared_ptr(binstrategy_->bin_discret()->writer());
+  std::shared_ptr<Core::IO::DiscretizationWriter> binwriter = binstrategy_->bin_discret()->writer();
 
   binwriter->new_step(step, time);
 
@@ -111,7 +110,7 @@ void PARTICLEENGINE::ParticleEngine::read_restart(
     std::vector<ParticleObjShrdPtr>& particlestoread) const
 {
   // read particle data
-  Teuchos::RCP<std::vector<char>> particledata = Teuchos::make_rcp<std::vector<char>>();
+  std::shared_ptr<std::vector<char>> particledata = std::make_shared<std::vector<char>>();
   reader->read_char_vector(particledata, "ParticleData");
 
   Core::Communication::UnpackBuffer buffer(*particledata);
@@ -691,7 +690,7 @@ PARTICLEENGINE::ParticleEngine::get_local_index_in_specific_container(int global
 std::shared_ptr<Core::IO::DiscretizationWriter>
 PARTICLEENGINE::ParticleEngine::get_bin_discretization_writer() const
 {
-  return Teuchos::get_shared_ptr(binstrategy_->bin_discret()->writer());
+  return binstrategy_->bin_discret()->writer();
 }
 
 void PARTICLEENGINE::ParticleEngine::relate_all_particles_to_all_procs(
@@ -936,8 +935,8 @@ void PARTICLEENGINE::ParticleEngine::setup_binning_strategy()
   binrowmap_ = binstrategy_->create_linear_map_for_numbin(comm_);
 
   // initialize vector for storage of bin center coordinates and bin weights
-  bincenters_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*binrowmap_, 3);
-  binweights_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*binrowmap_, 1);
+  bincenters_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*binrowmap_, 3);
+  binweights_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*binrowmap_, 1);
 
   // get all bin centers needed for repartitioning
   binstrategy_->get_all_bin_centers(*binrowmap_, *bincenters_);
@@ -1006,7 +1005,7 @@ void PARTICLEENGINE::ParticleEngine::setup_bin_ghosting()
 
   // copy bin gids to a vector and create bincolmap
   std::vector<int> bincolmapvec(bins.begin(), bins.end());
-  bincolmap_ = Teuchos::make_rcp<Epetra_Map>(
+  bincolmap_ = std::make_shared<Epetra_Map>(
       -1, static_cast<int>(bincolmapvec.size()), bincolmapvec.data(), 0, comm_);
 
   if (bincolmap_->NumGlobalElements() == 1 && comm_.NumProc() > 1)

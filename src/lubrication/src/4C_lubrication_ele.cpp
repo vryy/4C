@@ -32,24 +32,24 @@ Core::Communication::ParObject* Discret::Elements::LubricationType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::LubricationType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::LubricationType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "LUBRICATION")
   {
-    Teuchos::RCP<Core::Elements::Element> ele =
-        Teuchos::make_rcp<Discret::Elements::Lubrication>(id, owner);
+    std::shared_ptr<Core::Elements::Element> ele =
+        std::make_shared<Discret::Elements::Lubrication>(id, owner);
     return ele;
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::LubricationType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::LubricationType::create(
     const int id, const int owner)
 {
-  Teuchos::RCP<Core::Elements::Element> ele =
-      Teuchos::make_rcp<Discret::Elements::Lubrication>(id, owner);
+  std::shared_ptr<Core::Elements::Element> ele =
+      std::make_shared<Discret::Elements::Lubrication>(id, owner);
   return ele;
 }
 
@@ -106,11 +106,11 @@ Discret::Elements::LubricationBoundaryType& Discret::Elements::LubricationBounda
   return instance_;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::LubricationBoundaryType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::LubricationBoundaryType::create(
     const int id, const int owner)
 {
   // return Teuchos::rcp( new LubricationBoundary( id, owner ) );
-  return Teuchos::null;
+  return nullptr;
 }
 
 
@@ -237,7 +237,7 @@ void Discret::Elements::Lubrication::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                 wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Lubrication::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Lubrication::lines()
 {
   return Core::Communication::get_element_lines<LubricationBoundary, Lubrication>(*this);
 }
@@ -246,7 +246,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Lubricatio
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                         wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Lubrication::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Lubrication::surfaces()
 {
   return Core::Communication::get_element_surfaces<LubricationBoundary, Lubrication>(*this);
 }
@@ -369,7 +369,8 @@ int Discret::Elements::LubricationBoundary::num_surface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::LubricationBoundary::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>>
+Discret::Elements::LubricationBoundary::lines()
 {
   FOUR_C_THROW("Lines of LubricationBoundary not implemented");
 }
@@ -377,7 +378,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Lubricatio
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                            wirtz 10/15 |
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::LubricationBoundary::surfaces()
 {
   FOUR_C_THROW("Surfaces of LubricationBoundary not implemented");

@@ -30,12 +30,12 @@ LowMach::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
     const Teuchos::ParameterList& solverparams)
     : ScaTraFluidCouplingAlgorithm(comm, prbdyn, false, "scatra", solverparams),
       monolithic_(false),
-      lomadbcmap_(Teuchos::null),
-      lomaincrement_(Teuchos::null),
-      lomarhs_(Teuchos::null),
-      zeros_(Teuchos::null),
-      lomasystemmatrix_(Teuchos::null),
-      lomasolver_(Teuchos::null),
+      lomadbcmap_(nullptr),
+      lomaincrement_(nullptr),
+      lomarhs_(nullptr),
+      zeros_(nullptr),
+      lomasystemmatrix_(nullptr),
+      lomasolver_(nullptr),
       dt_(0.0),
       maxtime_(0.0),
       stepmax_(0),
@@ -136,7 +136,7 @@ void LowMach::Algorithm::setup()
           "solver, for the time being!");
 
     // generate proxy of scatra dof set to be used by fluid field
-    Teuchos::RCP<Core::DOFSets::DofSetInterface> scatradofset =
+    std::shared_ptr<Core::DOFSets::DofSetInterface> scatradofset =
         scatra_field()->discretization()->get_dof_set_proxy();
 
     // check number of dof sets in respective fields
@@ -144,20 +144,20 @@ void LowMach::Algorithm::setup()
       FOUR_C_THROW("Incorrect number of dof sets in fluid field!");
 
     // create combined map for loma problem
-    std::vector<Teuchos::RCP<const Epetra_Map>> dofrowmaps;
+    std::vector<std::shared_ptr<const Epetra_Map>> dofrowmaps;
 
     // insert actual (zeroth) map of the discretization: first fluid, then scatra
     {
       dofrowmaps.push_back(fluid_field()->dof_row_map(0));
       const Epetra_Map* dofrowmapscatra = (scatra_field()->discretization())->dof_row_map(0);
-      dofrowmaps.push_back(Teuchos::rcpFromRef(*dofrowmapscatra));
+      dofrowmaps.push_back(Core::Utils::shared_ptr_from_ref(*dofrowmapscatra));
     }
 
     // check existence of elements
     if (dofrowmaps[0]->NumGlobalElements() == 0) FOUR_C_THROW("No fluid elements!");
     if (dofrowmaps[1]->NumGlobalElements() == 0) FOUR_C_THROW("No scatra elements!");
 
-    Teuchos::RCP<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(dofrowmaps);
+    std::shared_ptr<Epetra_Map> fullmap = Core::LinAlg::MultiMapExtractor::merge_maps(dofrowmaps);
 
     // full loma block dofrowmap
     lomablockdofrowmap_.setup(*fullmap, dofrowmaps);
@@ -193,7 +193,7 @@ void LowMach::Algorithm::setup()
           linsolvernumber);
 
     // use loma solver object
-    lomasolver_ = Teuchos::make_rcp<Core::LinAlg::Solver>(lomasolverparams,
+    lomasolver_ = std::make_shared<Core::LinAlg::Solver>(lomasolverparams,
         fluid_field()->discretization()->get_comm(),
         Global::Problem::instance()->solver_params_callback(),
         Global::Problem::instance()->io_params().get<Core::IO::Verbositylevel>("VERBOSITY"));
@@ -233,25 +233,25 @@ void LowMach::Algorithm::setup()
         *scatra_field()->discretization(), lomasolver_->params().sublist("Inverse2"));
 
     // create loma block matrix
-    lomasystemmatrix_ = Teuchos::make_rcp<
-        Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
-        lomablockdofrowmap_, lomablockdofrowmap_, 135, false, true);
+    lomasystemmatrix_ =
+        std::make_shared<Core::LinAlg::BlockSparseMatrix<Core::LinAlg::DefaultBlockMatrixStrategy>>(
+            lomablockdofrowmap_, lomablockdofrowmap_, 135, false, true);
 
     // create loma rhs vector
     lomarhs_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
 
     // create loma increment vector
     lomaincrement_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
+        std::make_shared<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
 
     // create vector of zeros for enforcing zero Dirichlet boundary conditions
-    zeros_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
+    zeros_ = std::make_shared<Core::LinAlg::Vector<double>>(*lomablockdofrowmap_.full_map(), true);
 
     // create combined Dirichlet boundary condition map
-    const Teuchos::RCP<const Epetra_Map> fdbcmap =
+    const std::shared_ptr<const Epetra_Map> fdbcmap =
         fluid_field()->get_dbc_map_extractor()->cond_map();
-    const Teuchos::RCP<const Epetra_Map> sdbcmap = scatra_field()->dirich_maps()->cond_map();
+    const std::shared_ptr<const Epetra_Map> sdbcmap = scatra_field()->dirich_maps()->cond_map();
     lomadbcmap_ = Core::LinAlg::merge_map(fdbcmap, sdbcmap, false);
   }
 
@@ -276,8 +276,8 @@ void LowMach::Algorithm::time_loop()
     // set scalar field and thermodynamic pressure for evaluation of
     // Neumann boundary conditions in FLUID at beginning of first time step
     fluid_field()->set_scalar_fields(scatra_field()->phinp(),
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
-        Teuchos::null, scatra_field()->discretization());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
+        nullptr, scatra_field()->discretization());
 
   // time loop
   while (not_finished())
@@ -312,20 +312,20 @@ void LowMach::Algorithm::initial_calculations()
   // set initial velocity field for evaluation of initial scalar time
   // derivative in SCATRA
   scatra_field()->set_velocity_field(
-      fluid_field()->velnp(), Teuchos::null, Teuchos::null, fluid_field()->fs_vel());
+      fluid_field()->velnp(), nullptr, nullptr, fluid_field()->fs_vel());
 
   // set initial value of thermodynamic pressure in SCATRA
-  Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->set_initial_therm_pressure();
+  std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->set_initial_therm_pressure();
 
   // mass conservation: compute initial mass (initial time deriv. assumed zero)
   if (consthermpress_ == "No_mass")
-    Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->compute_initial_mass();
+    std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->compute_initial_mass();
 
   // set initial scalar field and thermodynamic pressure for evaluation of
   // Neumann boundary conditions in FLUID at beginning of first time step
   fluid_field()->set_scalar_fields(scatra_field()->phinp(),
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
-      Teuchos::null, scatra_field()->discretization());
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
+      nullptr, scatra_field()->discretization());
 
   // write initial fields
   // output();
@@ -348,7 +348,7 @@ void LowMach::Algorithm::prepare_time_step()
   // predict thermodynamic pressure and time derivative
   // (if not constant or based on mass conservation)
   if (consthermpress_ == "No_energy")
-    Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->predict_therm_pressure();
+    std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->predict_therm_pressure();
 
   // prepare fluid time step, among other things, predict velocity field
   fluid_field()->prepare_time_step();
@@ -437,9 +437,9 @@ void LowMach::Algorithm::outer_loop()
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_ == "No_energy")
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->compute_therm_pressure();
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->compute_therm_pressure();
     else if (consthermpress_ == "No_mass")
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
           ->compute_therm_pressure_from_mass_cons();
 
     // set scatra values required in fluid
@@ -504,9 +504,9 @@ void LowMach::Algorithm::mono_loop()
     // in case of non-constant thermodynamic pressure: compute
     // (either based on energy conservation or based on mass conservation)
     if (consthermpress_ == "No_energy")
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->compute_therm_pressure();
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->compute_therm_pressure();
     else if (consthermpress_ == "No_mass")
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
           ->compute_therm_pressure_from_mass_cons();
 
     // set scatra values required in fluid
@@ -544,15 +544,15 @@ void LowMach::Algorithm::set_fluid_values_in_scatra()
   {
     case Inpar::FLUID::timeint_afgenalpha:
     {
-      scatra_field()->set_velocity_field(fluid_field()->velaf(), fluid_field()->accam(),
-          Teuchos::null, fluid_field()->fs_vel(), true);
+      scatra_field()->set_velocity_field(
+          fluid_field()->velaf(), fluid_field()->accam(), nullptr, fluid_field()->fs_vel(), true);
     }
     break;
     case Inpar::FLUID::timeint_one_step_theta:
     case Inpar::FLUID::timeint_bdf2:
     {
-      scatra_field()->set_velocity_field(fluid_field()->velnp(), fluid_field()->hist(),
-          Teuchos::null, fluid_field()->fs_vel(), true);
+      scatra_field()->set_velocity_field(
+          fluid_field()->velnp(), fluid_field()->hist(), nullptr, fluid_field()->fs_vel(), true);
     }
     break;
     default:
@@ -579,11 +579,11 @@ void LowMach::Algorithm::set_scatra_values_in_fluid()
       else
         fluid_field()->set_loma_iter_scalar_fields(scatra_field()->phiaf(), scatra_field()->phiam(),
             scatra_field()->phidtam(), scatra_field()->fs_phi(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_af(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_am(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_af(),
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_am(),
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
                 ->therm_press_dt_af(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
                 ->therm_press_dt_am(),
             scatra_field()->discretization());
     }
@@ -596,11 +596,11 @@ void LowMach::Algorithm::set_scatra_values_in_fluid()
       else
         fluid_field()->set_loma_iter_scalar_fields(scatra_field()->phinp(), scatra_field()->phin(),
             scatra_field()->phidtnp(), scatra_field()->fs_phi(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_n(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_n(),
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
                 ->therm_press_dt_np(),
-            Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+            std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
                 ->therm_press_dt_np(),
             scatra_field()->discretization());
     }
@@ -624,7 +624,7 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
   // 1st diagonal block (upper left): fluid weighting - fluid solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_ff = fluid_field()->system_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat_ff = fluid_field()->system_matrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ff->un_complete();
@@ -636,7 +636,7 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
   // 2nd diagonal block (lower right): scatra weighting - scatra solution
   //----------------------------------------------------------------------
   // get matrix block
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_ss = scatra_field()->system_matrix();
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat_ss = scatra_field()->system_matrix();
 
   // uncomplete matrix block (appears to be required in certain cases)
   mat_ss->un_complete();
@@ -651,8 +651,8 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
   // 1st off-diagonal block (upper right): fluid weighting - scatra solution
   //----------------------------------------------------------------------
   // create matrix block
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_fs = Teuchos::null;
-  mat_fs = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat_fs = nullptr;
+  mat_fs = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(fluid_field()->discretization()->dof_row_map(0)), 27, true, true);
 
   // evaluate loma off-diagonal matrix block in fluid
@@ -668,8 +668,8 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
   // 2nd off-diagonal block (lower left): scatra weighting - fluid solution
   //----------------------------------------------------------------------
   // create matrix block
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_sf = Teuchos::null;
-  mat_sf = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  std::shared_ptr<Core::LinAlg::SparseMatrix> mat_sf = nullptr;
+  mat_sf = std::make_shared<Core::LinAlg::SparseMatrix>(
       *(scatra_field()->discretization()->dof_row_map(0)), 108, true, true);
 
   // evaluate loma off-diagonal matrix block in scatra
@@ -690,7 +690,7 @@ void LowMach::Algorithm::setup_mono_loma_matrix()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> mat_fs)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> mat_fs)
 {
   // create parameters for fluid discretization
   Teuchos::ParameterList fparams;
@@ -710,13 +710,13 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
   {
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_af());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_af());
     fparams.set("thermpress at n+alpha_M/n",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_am());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_am());
     fparams.set("thermpressderiv at n+alpha_F/n+1",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_af());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_af());
     fparams.set("thermpressderiv at n+alpha_M/n+1",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_am());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_am());
 
     // set velocity vector
     fluid_field()->discretization()->set_state(0, "velaf", fluid_field()->velaf());
@@ -725,13 +725,13 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
   {
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np());
     fparams.set("thermpress at n+alpha_M/n",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_n());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_n());
     fparams.set("thermpressderiv at n+alpha_F/n+1",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_np());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_np());
     fparams.set("thermpressderiv at n+alpha_M/n+1",
-        Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_np());
+        std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_dt_np());
 
     // set velocity vector
     fluid_field()->discretization()->set_state(0, "velaf", fluid_field()->velnp());
@@ -744,7 +744,7 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
   // fluid dof set = 0, scatra dof set = 1
   Core::FE::AssembleStrategy fluidstrategy(0,  // rows: fluid dof set
       1,                                       // columns: scatra dof set
-      mat_fs, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+      mat_fs, nullptr, nullptr, nullptr, nullptr);
 
   // evaluate off-diagonal matrix block entries for fluid element
   fluid_field()->discretization()->evaluate(fparams, fluidstrategy);
@@ -757,8 +757,8 @@ void LowMach::Algorithm::evaluate_loma_od_block_mat_fluid(
 void LowMach::Algorithm::setup_mono_loma_rhs()
 {
   // define fluid and scatra residual vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> fluidres = fluid_field()->rhs();
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> scatrares = scatra_field()->residual();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> fluidres = fluid_field()->rhs();
+  std::shared_ptr<const Core::LinAlg::Vector<double>> scatrares = scatra_field()->residual();
 
   // insert fluid and scatra residual vectors into loma residual vector
   lomablockdofrowmap_.insert_vector(*fluidres, 0, *lomarhs_);
@@ -793,8 +793,8 @@ void LowMach::Algorithm::mono_loma_system_solve()
 void LowMach::Algorithm::iter_update()
 {
   // define incremental fluid and scatra solution vectors
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> incfluid;
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> incscatra;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> incfluid;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> incscatra;
 
   // extract incremental fluid and scatra solution vectors
   // from incremental low-Mach-number solution vector
@@ -831,7 +831,7 @@ bool LowMach::Algorithm::convergence_check(int itnum)
   if (get_comm().MyPID() == 0)
     std::cout << "\n****************************************\n         SCALAR TRANSPORT "
                  "CHECK\n****************************************\n";
-  scatrastopnonliniter = Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
+  scatrastopnonliniter = std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())
                              ->convergence_check(itnum, itmax_, ittol_);
 
   if (fluidstopnonliniter == true and scatrastopnonliniter == true)
@@ -850,7 +850,7 @@ void LowMach::Algorithm::time_update()
 
   // in case of non-constant thermodynamic pressure: update
   if (consthermpress_ == "No_energy" or consthermpress_ == "No_mass")
-    Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->update_therm_pressure();
+    std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->update_therm_pressure();
 
   // update fluid
   fluid_field()->update();
@@ -867,7 +867,7 @@ void LowMach::Algorithm::output()
   // for statistical evaluation and evaluation of Neumann boundary
   // conditions at the beginning of the subsequent time step
   fluid_field()->set_scalar_fields(scatra_field()->phinp(),
-      Teuchos::rcp_dynamic_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
+      std::dynamic_pointer_cast<ScaTra::ScaTraTimIntLoma>(scatra_field())->therm_press_np(),
       scatra_field()->true_residual(), scatra_field()->discretization());
 
   // Note: The order is important here! Herein, control file entries are
@@ -894,7 +894,7 @@ void LowMach::Algorithm::read_inflow_restart(int restart)
   //          we have to set the temperature field here
   // set initial scalar field
   fluid_field()->set_scalar_fields(
-      scatra_field()->phinp(), 0.0, Teuchos::null, scatra_field()->discretization());
+      scatra_field()->phinp(), 0.0, nullptr, scatra_field()->discretization());
   fluid_field()->read_restart(restart);
   // as read_restart is only called for the fluid_field
   // time and step have not been set in the superior class and the ScaTraField

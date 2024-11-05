@@ -23,7 +23,7 @@ namespace Core::IO
  *----------------------------------------------------------------------*/
 Core::IO::Pstream::Pstream()
     : is_initialized_(false),
-      comm_(Teuchos::null),
+      comm_(nullptr),
       targetpid_(-2),
       writetoscreen_(false),
       writetofile_(false),
@@ -57,8 +57,9 @@ Core::IO::Pstream::~Pstream()
  * configure the output                                       wic 11/12 *
  *----------------------------------------------------------------------*/
 void Core::IO::Pstream::setup(const bool writetoscreen, const bool writetofile,
-    const bool prefixgroupID, const Core::IO::Verbositylevel level, Teuchos::RCP<Epetra_Comm> comm,
-    const int targetpid, const int groupID, const std::string fileprefix)
+    const bool prefixgroupID, const Core::IO::Verbositylevel level,
+    std::shared_ptr<Epetra_Comm> comm, const int targetpid, const int groupID,
+    const std::string fileprefix)
 {
   // make sure that setup is called only once or we get unpredictable behavior
   if (is_initialized_) FOUR_C_THROW("Thou shalt not call setup on the output twice!");
@@ -120,7 +121,7 @@ void Core::IO::Pstream::close()
   if (not is_initialized_) return;
 
   is_initialized_ = false;
-  comm_ = Teuchos::null;
+  comm_ = nullptr;
   targetpid_ = -2;
   writetoscreen_ = false;
   writetofile_ = false;

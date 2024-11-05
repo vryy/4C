@@ -7,13 +7,13 @@
 
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
 
 CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
-    const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container>
+    const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container>
         coconstlawdata  ///< read and validate contactconstitutivelaw data (of 'slow' access)
     )
     : offset_(coconstlawdata->get<double>("Offset")){};
@@ -21,7 +21,7 @@ CONTACT::CONSTITUTIVELAW::Parameter::Parameter(
 /*----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::Container::Container(
     const int id, const Inpar::CONTACT::ConstitutiveLawType type, const std::string name)
-    : Core::IO::InputParameterContainer(), id_(id), type_(type), name_(name), params_(Teuchos::null)
+    : Core::IO::InputParameterContainer(), id_(id), type_(type), name_(name), params_(nullptr)
 {
 }
 /*----------------------------------------------------------------------*/

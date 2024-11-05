@@ -573,12 +573,12 @@ void CONTACT::Integrator::initialize_gp(Core::FE::CellType eletype)
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia,
     double& sxib, Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
-  if (not mparams_ptr.is_null())
+  std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
+  if (mparams_ptr)
   {
-    cparams_ptr = Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr, true);
+    cparams_ptr = std::dynamic_pointer_cast<CONTACT::ParamsInterface>(mparams_ptr);
   }
   integrate_deriv_segment_2d(sele, sxia, sxib, mele, mxia, mxib, comm, cparams_ptr);
 }
@@ -594,7 +594,7 @@ void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, doub
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, double& sxia,
     double& sxib, Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // skip this segment, if too small
   if (sxib - sxia < 4. * MORTARINTLIM) return;
@@ -660,7 +660,7 @@ void CONTACT::Integrator::integrate_deriv_segment_2d(Mortar::Element& sele, doub
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
       (sele.shape() == Core::FE::CellType::line3 || sele.shape() == Core::FE::CellType::nurbs3 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null))
+          sele.mo_data().deriv_dual_shape() != nullptr))
     sele.deriv_shape_dual(dualmap);
 
   // create empty vectors for shape fct. evaluation
@@ -1419,12 +1419,12 @@ bool CONTACT::Integrator::boundary_segm_check_3d(
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
-  if (not mparams_ptr.is_null())
+  std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
+  if (mparams_ptr)
   {
-    cparams_ptr = Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr, true);
+    cparams_ptr = std::dynamic_pointer_cast<CONTACT::ParamsInterface>(mparams_ptr);
   }
   integrate_deriv_ele_3d(sele, meles, boundary_ele, proj_, comm, cparams_ptr);
 }
@@ -1434,7 +1434,7 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele, bool* proj_, const Epetra_Comm& comm,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -1476,8 +1476,7 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
       nrow * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrow, nrow));
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
-      (sele.shape() != Core::FE::CellType::tri3 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null) &&
+      (sele.shape() != Core::FE::CellType::tri3 || sele.mo_data().deriv_dual_shape() != nullptr) &&
       lag_mult_quad() != Inpar::Mortar::lagmult_const)
     sele.deriv_shape_dual(dualmap);
 
@@ -1670,13 +1669,13 @@ void CONTACT::Integrator::integrate_deriv_ele_3d(Mortar::Element& sele,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele,
-    Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm, const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
+    const Epetra_Comm& comm, const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
-  if (not mparams_ptr.is_null())
+  std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
+  if (mparams_ptr)
   {
-    cparams_ptr = Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr, true);
+    cparams_ptr = std::dynamic_pointer_cast<CONTACT::ParamsInterface>(mparams_ptr);
   }
   integrate_deriv_cell_3d_aux_plane(sele, mele, cell, auxn, comm, cparams_ptr);
 }
@@ -1691,8 +1690,8 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
  |  This is the auxiliary plane coupling version!!!                     |
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sele,
-    Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell, double* auxn,
+    const Epetra_Comm& comm, const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -1710,7 +1709,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
   if (((!sele.is_slave()) || (mele.is_slave())) and (!imortar_.get<bool>("Two_half_pass")))
     FOUR_C_THROW(
         "integrate_deriv_cell_3d_aux_plane called on a wrong type of Mortar::Element pair!");
-  if (cell == Teuchos::null)
+  if (cell == nullptr)
     FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane called without integration cell");
 
   // number of nodes (slave, master)
@@ -1765,8 +1764,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
       (nrow + ncol) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrow, nrow));
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
-      (sele.shape() != Core::FE::CellType::tri3 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null))
+      (sele.shape() != Core::FE::CellType::tri3 || sele.mo_data().deriv_dual_shape() != nullptr))
     sele.deriv_shape_dual(dualmap);
 
   // check if the cells are tri3
@@ -1929,8 +1927,8 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane(Mortar::Element& sel
  |  Integrate and linearize a 1D slave / master cell (2D)    farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element& mele,
-    Mortar::Element& lele, Mortar::Element& sele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm)
+    Mortar::Element& lele, Mortar::Element& sele, std::shared_ptr<Mortar::IntCell> cell,
+    double* auxn, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -1948,7 +1946,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element&
   if ((!sele.is_slave()) || (mele.is_slave()))
     FOUR_C_THROW(
         "integrate_deriv_cell_3d_aux_plane called on a wrong type of Mortar::Element pair!");
-  if (cell == Teuchos::null)
+  if (cell == nullptr)
     FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane called without integration cell");
 
   // number of nodes (slave, master)
@@ -1978,8 +1976,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element&
       (nrow + ncolL) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrow, nrow));
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
-      (lele.shape() != Core::FE::CellType::line2 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null))
+      (lele.shape() != Core::FE::CellType::line2 || sele.mo_data().deriv_dual_shape() != nullptr))
     sele.deriv_shape_dual(dualmap);
 
   // map iterator
@@ -2678,8 +2675,8 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_stl(Mortar::Element&
  |  Integrate and linearize a 1D slave / master cell (2D)    farah 07/16|
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element& sele,
-    Mortar::Element& lsele, Mortar::Element& mele, Teuchos::RCP<Mortar::IntCell> cell, double* auxn,
-    const Epetra_Comm& comm)
+    Mortar::Element& lsele, Mortar::Element& mele, std::shared_ptr<Mortar::IntCell> cell,
+    double* auxn, const Epetra_Comm& comm)
 {
   // explicitly defined shape function type needed
   if (shape_fcn() == Inpar::Mortar::shape_undefined)
@@ -2697,7 +2694,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element&
   //  if ((!sele.IsSlave()) || (mele.IsSlave()))
   //    FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane called on a wrong type of Mortar::Element
   //    pair!");
-  if (cell == Teuchos::null)
+  if (cell == nullptr)
     FOUR_C_THROW("integrate_deriv_cell_3d_aux_plane called without integration cell");
 
   // number of nodes (slave, master)
@@ -2726,8 +2723,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element&
       (nrowL + ncol) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrowL, nrowL));
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
-      (lsele.shape() != Core::FE::CellType::line2 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null))
+      (lsele.shape() != Core::FE::CellType::line2 || sele.mo_data().deriv_dual_shape() != nullptr))
     sele.deriv_shape_dual(dualmap);
 
   // map iterator
@@ -3705,7 +3701,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_lts(Mortar::Element&
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element& sele,
     Mortar::Element& mele, Mortar::IntElement& sintele, Mortar::IntElement& mintele,
-    Teuchos::RCP<Mortar::IntCell> cell, double* auxn)
+    std::shared_ptr<Mortar::IntCell> cell, double* auxn)
 {
   // get LMtype
   Inpar::Mortar::LagMultQuad lmtype = lag_mult_quad();
@@ -3733,7 +3729,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
   // check input data
   if (((!sele.is_slave()) || (mele.is_slave())) and (!imortar_.get<bool>("Two_half_pass")))
     FOUR_C_THROW("Function is called on a wrong type of Mortar::Element pair!");
-  if (cell == Teuchos::null) FOUR_C_THROW("Function is called without integration cell");
+  if (cell == nullptr) FOUR_C_THROW("Function is called without integration cell");
 
   // contact with wear
   bool wear = false;
@@ -3767,16 +3763,16 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
   mele.get_nodal_coords(mcoord);
 
   // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
 
   // get them in the case of wear
   if (wear or imortar_.get<bool>("GP_SLIP_INCR"))
   {
-    scoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
-    mcoordold = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, mele.num_node());
-    lagmult = Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
+    scoordold = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
+    mcoordold = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, mele.num_node());
+    lagmult = std::make_shared<Core::LinAlg::SerialDenseMatrix>(3, sele.num_node());
     sele.get_nodal_coords_old(*scoordold);
     mele.get_nodal_coords_old(*mcoordold);
     sele.get_nodal_lag_mult(*lagmult);
@@ -3798,8 +3794,7 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
       (nrow + ncol) * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrow, nrow));
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
-      (sele.shape() != Core::FE::CellType::tri3 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null) &&
+      (sele.shape() != Core::FE::CellType::tri3 || sele.mo_data().deriv_dual_shape() != nullptr) &&
       lag_mult_quad() != Inpar::Mortar::lagmult_const)
   {
     duallin = true;
@@ -4174,12 +4169,12 @@ void CONTACT::Integrator::integrate_deriv_cell_3d_aux_plane_quad(Mortar::Element
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele,
-    const Teuchos::RCP<Mortar::ParamsInterface>& mparams_ptr)
+    const std::shared_ptr<Mortar::ParamsInterface>& mparams_ptr)
 {
-  Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr = Teuchos::null;
-  if (not mparams_ptr.is_null())
+  std::shared_ptr<CONTACT::ParamsInterface> cparams_ptr = nullptr;
+  if (mparams_ptr)
   {
-    cparams_ptr = Teuchos::rcp_dynamic_cast<CONTACT::ParamsInterface>(mparams_ptr, true);
+    cparams_ptr = std::dynamic_pointer_cast<CONTACT::ParamsInterface>(mparams_ptr);
   }
   integrate_deriv_ele_2d(sele, meles, boundary_ele, cparams_ptr);
 }
@@ -4189,7 +4184,7 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
  *----------------------------------------------------------------------*/
 void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
     std::vector<Mortar::Element*> meles, bool* boundary_ele,
-    const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr)
+    const std::shared_ptr<CONTACT::ParamsInterface>& cparams_ptr)
 {
   // ********************************************************************
   // Check integrator input for non-reasonable quantities
@@ -4244,9 +4239,9 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
   sele.get_nodal_coords(scoord);
 
   // nodal coords from previous time step and lagrange mulitplier
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> scoordold;
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> mcoordold;
-  Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> lagmult;
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> scoordold;
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> mcoordold;
+  std::shared_ptr<Core::LinAlg::SerialDenseMatrix> lagmult;
 
   // map iterator
   typedef Core::Gen::Pairedvector<int, double>::const_iterator _CI;
@@ -4257,8 +4252,7 @@ void CONTACT::Integrator::integrate_deriv_ele_2d(Mortar::Element& sele,
       nrow * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrow, nrow));
   if ((shape_fcn() == Inpar::Mortar::shape_dual ||
           shape_fcn() == Inpar::Mortar::shape_petrovgalerkin) &&
-      (sele.shape() == Core::FE::CellType::line3 ||
-          sele.mo_data().deriv_dual_shape() != Teuchos::null ||
+      (sele.shape() == Core::FE::CellType::line3 || sele.mo_data().deriv_dual_shape() != nullptr ||
           sele.shape() == Core::FE::CellType::nurbs3))
     sele.deriv_shape_dual(dualmap);
 
@@ -4475,7 +4469,7 @@ void CONTACT::Integrator::integrate_d(Mortar::Element& sele, const Epetra_Comm& 
   Core::Gen::Pairedvector<int, Core::LinAlg::SerialDenseMatrix> dualmap(
       nrow * ndof, 0, Core::LinAlg::SerialDenseMatrix(nrow, nrow));
   if ((sele.shape() != Core::FE::CellType::tri3 and sele.shape() != Core::FE::CellType::line2) ||
-      sele.mo_data().deriv_dual_shape() != Teuchos::null)
+      sele.mo_data().deriv_dual_shape() != nullptr)
   {
     duallin = true;
     sele.deriv_shape_dual(dualmap);
@@ -12344,11 +12338,11 @@ void inline CONTACT::Integrator::gp_ncoup_deriv(Mortar::Element& sele, Mortar::E
     }
     Teuchos::ParameterList sparams;  // empty parameter list;
 
-    Teuchos::RCP<Mat::StructPoro> sstructmat =
-        Teuchos::rcp_dynamic_cast<Mat::StructPoro>(sele.parent_element()->material(0));
-    if (sstructmat == Teuchos::null)
-      sstructmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(sele.parent_element()->material(1));
-    if (sstructmat == Teuchos::null) FOUR_C_THROW("Cast to StructPoro failed!");
+    std::shared_ptr<Mat::StructPoro> sstructmat =
+        std::dynamic_pointer_cast<Mat::StructPoro>(sele.parent_element()->material(0));
+    if (sstructmat == nullptr)
+      sstructmat = std::dynamic_pointer_cast<Mat::StructPoro>(sele.parent_element()->material(1));
+    if (sstructmat == nullptr) FOUR_C_THROW("Cast to StructPoro failed!");
     sstructmat->compute_surf_porosity(sparams, sgpfpres, sJ, sele.face_parent_number(),
         1,  // finally check what to do here Todo:
         sporosity,
@@ -12383,11 +12377,11 @@ void inline CONTACT::Integrator::gp_ncoup_deriv(Mortar::Element& sele, Mortar::E
     }
     Teuchos::ParameterList mparams;  // empty parameter list;
 
-    Teuchos::RCP<Mat::StructPoro> mstructmat =
-        Teuchos::rcp_dynamic_cast<Mat::StructPoro>(mele.parent_element()->material(0));
-    if (mstructmat == Teuchos::null)
-      mstructmat = Teuchos::rcp_dynamic_cast<Mat::StructPoro>(mele.parent_element()->material(1));
-    if (mstructmat == Teuchos::null) FOUR_C_THROW("Cast to StructPoro failed!");
+    std::shared_ptr<Mat::StructPoro> mstructmat =
+        std::dynamic_pointer_cast<Mat::StructPoro>(mele.parent_element()->material(0));
+    if (mstructmat == nullptr)
+      mstructmat = std::dynamic_pointer_cast<Mat::StructPoro>(mele.parent_element()->material(1));
+    if (mstructmat == nullptr) FOUR_C_THROW("Cast to StructPoro failed!");
 
     mstructmat->compute_surf_porosity(mparams, mgpfpres, mJ,
         mele.face_parent_number(),  // may not work

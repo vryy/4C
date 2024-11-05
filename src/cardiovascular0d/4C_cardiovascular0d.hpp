@@ -19,7 +19,8 @@
 #include <Epetra_FECrsMatrix.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,7 +56,7 @@ namespace Utils
     takes care of the Cardiovascular0D IDs.
     */
 
-    Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
+    Cardiovascular0D(std::shared_ptr<Core::FE::Discretization>
                          discr,            ///< discretization where Cardiovascular0D lives on
         const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
         std::vector<int>& curID            ///< current ID
@@ -65,7 +66,7 @@ namespace Utils
     \brief Constructor of a Cardiovascular0D based on a conditions with a given name.
     */
 
-    Cardiovascular0D(Teuchos::RCP<Core::FE::Discretization>
+    Cardiovascular0D(std::shared_ptr<Core::FE::Discretization>
                          discr,  ///< discretization where Cardiovascular0D funtion lives on
         const std::string&
             CondName  ///< Name of condition to create Cardiovascular0D functions from
@@ -83,8 +84,8 @@ namespace Utils
     bool have_cardiovascular0_d() { return cardiovascular0dtype_ != none; };
 
     /// Set state of the underlying discretization
-    void set_state(const std::string& state,          ///< name of state to set
-        Teuchos::RCP<Core::LinAlg::Vector<double>> V  ///< values to set
+    void set_state(const std::string& state,             ///< name of state to set
+        std::shared_ptr<Core::LinAlg::Vector<double>> V  ///< values to set
     );
 
 
@@ -93,10 +94,10 @@ namespace Utils
     virtual void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             sysvec1,  ///< distributed vector that may be filled by
                       ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
     );
 
@@ -105,18 +106,18 @@ namespace Utils
     virtual void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             sysmat2,  ///< Cardiovascular0D offdiagonal matrix dV/dd
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             sysmat3,  ///< Cardiovascular0D offdiagonal matrix dfext/dp
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             sysvec1,  ///< distributed vectors that may be filled by
                       ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5);
+        std::shared_ptr<Core::LinAlg::Vector<double>> sysvec2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sysvec3,
+        const std::shared_ptr<Core::LinAlg::Vector<double>> sysvec4,
+        std::shared_ptr<Core::LinAlg::Vector<double>> sysvec5);
 
     /// Return type of Cardiovascular0D function
     Cardiovascular0DType type() { return cardiovascular0dtype_; }
@@ -143,7 +144,7 @@ namespace Utils
     );
 
    protected:
-    Teuchos::RCP<Core::FE::Discretization> actdisc_;  ///< standard discretization
+    std::shared_ptr<Core::FE::Discretization> actdisc_;  ///< standard discretization
     std::vector<Core::Conditions::Condition*>
         cardiovascular0dcond_;  ///< 0D cardiovascular conditions
     std::vector<Core::Conditions::Condition*>

@@ -33,7 +33,7 @@ namespace Mat
       StructPoro(const Core::Mat::PAR::Parameter::Data& matdata);
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! @name material parameters
       //!@{
@@ -161,7 +161,7 @@ namespace Mat
     void valid_kinematics(Inpar::Solid::KinemType kinem) override { mat_->valid_kinematics(kinem); }
 
     //! return material
-    Teuchos::RCP<Core::Mat::Material> get_material() const { return mat_; }
+    std::shared_ptr<Core::Mat::Material> get_material() const { return mat_; }
 
     //! return material ID
     int mat_id() const { return params_->matid_; }
@@ -222,9 +222,9 @@ namespace Mat
         bool save = true);
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<StructPoro>(*this);
+      return std::make_shared<StructPoro>(*this);
     }
 
     //! Initialize internal variables
@@ -364,13 +364,13 @@ namespace Mat
     Mat::PAR::StructPoro* params_;
 
     //! actual material
-    Teuchos::RCP<Mat::So3Material> mat_;
+    std::shared_ptr<Mat::So3Material> mat_;
 
     //! porosity at gauss points
-    Teuchos::RCP<std::vector<double>> porosity_;
+    std::shared_ptr<std::vector<double>> porosity_;
 
     //! porosity at gauss points of surface element
-    Teuchos::RCP<std::map<int, std::vector<double>>> surf_porosity_;
+    std::shared_ptr<std::map<int, std::vector<double>>> surf_porosity_;
 
     //! flag indicating initialization of attributes
     bool is_initialized_;

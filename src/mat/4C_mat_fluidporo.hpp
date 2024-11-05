@@ -81,7 +81,7 @@ namespace Mat
       double initial_porosity_;
 
       //! create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
     };
 
   }  // namespace PAR
@@ -159,9 +159,9 @@ namespace Mat
     }
 
     //! return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<FluidPoro>(*this);
+      return std::make_shared<FluidPoro>(*this);
     }
 
     //! compute reaction tensor - 2D
@@ -222,7 +222,7 @@ namespace Mat
     Mat::PAR::FluidPoro* params_;
 
     //! anisotropy strategy (isotropy, transverse isotropy, orthotropy, or nodal orthotropy)
-    Teuchos::RCP<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
+    std::shared_ptr<Mat::FLUIDPORO::PoroAnisotropyStrategyBase> anisotropy_strategy_;
   };
 
 }  // namespace Mat

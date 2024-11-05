@@ -38,7 +38,7 @@ namespace Mat
   inline void elast_hyper_evaluate_elastic_part(const Core::LinAlg::Matrix<3, 3>& F,
       const Core::LinAlg::Matrix<3, 3>& iFin, Core::LinAlg::Matrix<6, 1>& S_stress,
       Core::LinAlg::Matrix<6, 6>& cmat,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       Mat::SummandProperties summandProperties, const int gp, const int eleGID)
   {
     if (summandProperties.anisomod or summandProperties.anisoprinc)

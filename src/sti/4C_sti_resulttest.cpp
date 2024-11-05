@@ -16,7 +16,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |
  *----------------------------------------------------------------------*/
-STI::STIResultTest::STIResultTest(const Teuchos::RCP<STI::Algorithm>&
+STI::STIResultTest::STIResultTest(const std::shared_ptr<STI::Algorithm>&
         sti_algorithm  //!< time integrator for scatra-thermo interaction
     )
     // call base class constructor

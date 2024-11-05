@@ -39,23 +39,23 @@ namespace FLD
      protected:
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
           int hierarchical_order) const override;
 
       void read_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          double time, DbcInfo& info, const std::shared_ptr<std::set<int>>* dbcgids,
           int hierarchical_order) const;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
+          const std::shared_ptr<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::DiscretizationFaces& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle) const;
     };  // class DbcHDG_Fluid
   }     // namespace Utils

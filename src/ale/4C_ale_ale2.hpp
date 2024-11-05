@@ -18,7 +18,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_vector.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -46,10 +46,10 @@ namespace Discret
 
       Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+      std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
           const std::string eledistype, const int id, const int owner) override;
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
@@ -134,16 +134,16 @@ namespace Discret
       int num_volume() const override { return -1; }
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the lines of this element
+      \brief Get vector of std::shared_ptrs to the lines of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
       /*!
-      \brief Get vector of Teuchos::RCPs to the surfaces of this element
+      \brief Get vector of std::shared_ptrs to the surfaces of this element
 
       */
-      std::vector<Teuchos::RCP<Core::Elements::Element>> surfaces() override;
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -359,13 +359,13 @@ namespace Discret
       void evaluate_oddy(const Core::LinAlg::SerialDenseMatrix& xjm, double det, double& qm);
 
       void call_mat_geo_nonl(
-          const Core::LinAlg::SerialDenseVector& strain,     ///< Green-Lagrange strain vector
-          Core::LinAlg::SerialDenseMatrix& stress,           ///< stress vector
-          Core::LinAlg::SerialDenseMatrix& C,                ///< elasticity matrix
-          const int numeps,                                  ///< number of strains
-          Teuchos::RCP<const Core::Mat::Material> material,  ///< the material data
-          Teuchos::ParameterList& params,                    ///< element parameter list
-          int gp                                             ///< Integration point
+          const Core::LinAlg::SerialDenseVector& strain,        ///< Green-Lagrange strain vector
+          Core::LinAlg::SerialDenseMatrix& stress,              ///< stress vector
+          Core::LinAlg::SerialDenseMatrix& C,                   ///< elasticity matrix
+          const int numeps,                                     ///< number of strains
+          std::shared_ptr<const Core::Mat::Material> material,  ///< the material data
+          Teuchos::ParameterList& params,                       ///< element parameter list
+          int gp                                                ///< Integration point
       );
 
       void material_response3d_plane(
@@ -486,7 +486,7 @@ namespace Discret
 
       static Ale2LineType& instance();
 
-      Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+      std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
       void nodal_block_information(
           Core::Elements::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override

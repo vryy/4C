@@ -22,10 +22,10 @@ FOUR_C_NAMESPACE_OPEN
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::scalar_field_to_gmsh(Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield_row, std::ostream& s)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield_row, std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row);
 
   // loop all row elements on this processor
@@ -72,11 +72,11 @@ void Core::IO::Gmsh::scalar_field_to_gmsh(Core::FE::Discretization& discret,
  | write scalar field to Gmsh postprocessing file                                     henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::scalar_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield_row, const int nds,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield_row, const int nds,
     std::ostream& s)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> scalarfield =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> scalarfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, scalarfield_row, nds);
 
   // loop all row elements on this processor
@@ -193,11 +193,11 @@ void Core::IO::Gmsh::scalar_element_field_to_gmsh(const Core::FE::Discretization
  | write dof-based vector field to Gmsh postprocessing file                           henke 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::vector_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield_row, std::ostream& s,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield_row, std::ostream& s,
     const int nds, bool displacenodes)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor
@@ -317,12 +317,12 @@ void Core::IO::Gmsh::vector_field_multi_vector_dof_based_to_gmsh(
  | write dof-based vector field to Gmsh postprocessing file at current position      schott 12/09 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield_row,
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield_row,
     std::map<int, Core::LinAlg::Matrix<3, 1>>& currpos, std::ostream& s, const int nsd,
     const int numdofpernode)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row);
 
   // loop all row elements on this processor
@@ -378,11 +378,11 @@ void Core::IO::Gmsh::surface_vector_field_dof_based_to_gmsh(Core::FE::Discretiza
  | to Gmsh postprocessing file                                                         ehrl 05/11 |
  *------------------------------------------------------------------------------------------------*/
 void Core::IO::Gmsh::velocity_pressure_field_dof_based_to_gmsh(Core::FE::Discretization& discret,
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield_row, const std::string field,
-    std::ostream& s, const int nds)
+    const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield_row,
+    const std::string field, std::ostream& s, const int nds)
 {
   // tranform solution vector from dof_row_map to DofColMap
-  const Teuchos::RCP<const Core::LinAlg::Vector<double>> vectorfield =
+  const std::shared_ptr<const Core::LinAlg::Vector<double>> vectorfield =
       Core::Rebalance::get_col_version_of_row_vector(discret, vectorfield_row, nds);
 
   // loop all row elements on this processor

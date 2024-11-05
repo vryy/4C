@@ -24,7 +24,8 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit StructureWrapper(Teuchos::RCP<Structure> structure) : structure_(std::move(structure))
+    explicit StructureWrapper(std::shared_ptr<Structure> structure)
+        : structure_(std::move(structure))
     {
     }
 
@@ -57,52 +58,52 @@ namespace Adapter
     //@{
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override
     {
       return structure_->initial_guess();
     }
 
     /// right-hand-side of Newton's method
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override { return structure_->rhs(); }
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override { return structure_->rhs(); }
 
     /// unknown displacements at \f$t_{n+1}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp() const override
     {
       return structure_->dispnp();
     }
 
     /// known displacements at \f$t_{n}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> dispn() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> dispn() const override
     {
       return structure_->dispn();
     }
 
     /// unknown velocity at \f$t_{n+1}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> velnp() const override
     {
       return structure_->velnp();
     }
 
     /// known velocity at \f$t_{n}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> veln() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> veln() const override
     {
       return structure_->veln();
     }
 
     /// known velocity at \f$t_{n-1}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> velnm() const override
     {
       return structure_->velnm();
     }
 
     /// unknown acceleration at \f$t_{n+1}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> accnp() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> accnp() const override
     {
       return structure_->accnp();
     }
 
     /// known acceleration at \f$t_{n}\f$
-    [[nodiscard]] Teuchos::RCP<const Core::LinAlg::Vector<double>> accn() const override
+    [[nodiscard]] std::shared_ptr<const Core::LinAlg::Vector<double>> accn() const override
     {
       return structure_->accn();
     }
@@ -114,10 +115,10 @@ namespace Adapter
     //@{
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override { return structure_->dof_row_map(); }
+    std::shared_ptr<const Epetra_Map> dof_row_map() override { return structure_->dof_row_map(); }
 
     /// dof map of vector of unknowns for multiple dof sets
-    Teuchos::RCP<const Epetra_Map> dof_row_map(unsigned nds) override
+    std::shared_ptr<const Epetra_Map> dof_row_map(unsigned nds) override
     {
       return structure_->dof_row_map(nds);
     }
@@ -129,44 +130,44 @@ namespace Adapter
     [[nodiscard]] const Epetra_Map& domain_map() const override { return structure_->domain_map(); }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       return structure_->system_matrix();
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       return structure_->block_system_matrix();
     }
 
     /// switch structure field to block matrix
-    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override
+    void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps) override
     {
       structure_->use_block_matrix(domainmaps, rangemaps);
     }
 
     // access to contact/meshtying bridge
-    Teuchos::RCP<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
+    std::shared_ptr<CONTACT::MeshtyingContactBridge> meshtying_contact_bridge() override
     {
       return structure_->meshtying_contact_bridge();
     }
 
     // access to locsys manager
-    Teuchos::RCP<Core::Conditions::LocsysManager> locsys_manager() override
+    std::shared_ptr<Core::Conditions::LocsysManager> locsys_manager() override
     {
       return structure_->locsys_manager();
     }
 
     /// direct access to discretization
-    Teuchos::RCP<Core::FE::Discretization> discretization() override
+    std::shared_ptr<Core::FE::Discretization> discretization() override
     {
       return structure_->discretization();
     }
 
     /// read only access to discretization
-    [[nodiscard]] virtual Teuchos::RCP<const Core::FE::Discretization> get_discretization() const
+    [[nodiscard]] virtual std::shared_ptr<const Core::FE::Discretization> get_discretization() const
     {
       return structure_->discretization();
     }
@@ -178,13 +179,13 @@ namespace Adapter
     bool have_spring_dashpot() override { return structure_->have_spring_dashpot(); }
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::ConstrManager> get_constraint_manager() override
+    std::shared_ptr<CONSTRAINTS::ConstrManager> get_constraint_manager() override
     {
       return structure_->get_constraint_manager();
     }
 
     /// get constraint manager defined in the structure
-    Teuchos::RCP<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
+    std::shared_ptr<CONSTRAINTS::SpringDashpotManager> get_spring_dashpot_manager() override
     {
       return structure_->get_spring_dashpot_manager();
     }
@@ -193,25 +194,25 @@ namespace Adapter
     Inpar::Solid::StcScale get_stc_algo() override { return structure_->get_stc_algo(); }
 
     /// access to scaling matrix for STC
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override
     {
       return structure_->get_stc_mat();
     }
 
     /// Return MapExtractor for Dirichlet boundary conditions
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return structure_->get_dbc_map_extractor();
     }
 
     /// expand dirichlet bc map
-    void add_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override
+    void add_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoadd) override
     {
       structure_->add_dirich_dofs(maptoadd);
     };
 
     /// contract dirichlet bc map
-    void remove_dirich_dofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override
+    void remove_dirich_dofs(const std::shared_ptr<const Epetra_Map> maptoremove) override
     {
       structure_->remove_dirich_dofs(maptoremove);
     };
@@ -288,7 +289,7 @@ namespace Adapter
 
     /// update displacment
     void update_state_incrementally(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disi  ///< iterative solution increment
         ) override
     {
       structure_->update_state_incrementally(disi);
@@ -297,7 +298,7 @@ namespace Adapter
     void determine_stress_strain() override { structure_->determine_stress_strain(); }
 
     /// update displacement and evaluate elements (implicit only)
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override
     {
       structure_->evaluate(disiterinc);
     }
@@ -316,20 +317,20 @@ namespace Adapter
 
     /// update iteration; add residual increment to Lagrange multipliers stored in Constraint
     /// manager
-    void update_iter_incr_constr(Teuchos::RCP<Core::LinAlg::Vector<double>> lagrincr) override
+    void update_iter_incr_constr(std::shared_ptr<Core::LinAlg::Vector<double>> lagrincr) override
     {
       structure_->update_iter_incr_constr(lagrincr);
     }
 
     /// update iteration; add residual increment to pressures stored in 0D cardiovascular manager
     void update_iter_incr_cardiovascular0_d(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> presincr) override
+        std::shared_ptr<Core::LinAlg::Vector<double>> presincr) override
     {
       structure_->update_iter_incr_cardiovascular0_d(presincr);
     }
 
     /// access to output object
-    Teuchos::RCP<Core::IO::DiscretizationWriter> disc_writer() override
+    std::shared_ptr<Core::IO::DiscretizationWriter> disc_writer() override
     {
       return structure_->disc_writer();
     }
@@ -338,12 +339,12 @@ namespace Adapter
     void prepare_output(bool force_prepare) override { structure_->prepare_output(force_prepare); }
 
     /// Get restart data
-    void get_restart_data(Teuchos::RCP<int> step, Teuchos::RCP<double> time,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
-        Teuchos::RCP<std::vector<char>> elementdata,
-        Teuchos::RCP<std::vector<char>> nodedata) override
+    void get_restart_data(std::shared_ptr<int> step, std::shared_ptr<double> time,
+        std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+        std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+        std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+        std::shared_ptr<std::vector<char>> elementdata,
+        std::shared_ptr<std::vector<char>> nodedata) override
     {
       structure_->get_restart_data(step, time, disn, veln, accn, elementdata, nodedata);
     }
@@ -364,17 +365,17 @@ namespace Adapter
     void read_restart(const int step) override { structure_->read_restart(step); }
 
     /// set restart information for parameter continuation
-    void set_restart(int step, double time, Teuchos::RCP<Core::LinAlg::Vector<double>> disn,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> veln,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> accn,
-        Teuchos::RCP<std::vector<char>> elementdata,
-        Teuchos::RCP<std::vector<char>> nodedata) override
+    void set_restart(int step, double time, std::shared_ptr<Core::LinAlg::Vector<double>> disn,
+        std::shared_ptr<Core::LinAlg::Vector<double>> veln,
+        std::shared_ptr<Core::LinAlg::Vector<double>> accn,
+        std::shared_ptr<std::vector<char>> elementdata,
+        std::shared_ptr<std::vector<char>> nodedata) override
     {
       structure_->set_restart(step, time, disn, veln, accn, elementdata, nodedata);
     }
 
     /// set the state of the nox group and the global state data container (implicit only)
-    void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override
+    void set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x) override
     {
       structure_->set_state(x);
     }
@@ -413,13 +414,13 @@ namespace Adapter
     Inpar::Solid::ConvergenceStatus solve() override { return structure_->solve(); }
 
     //! linear structure solve with just an interface load
-    Teuchos::RCP<Core::LinAlg::Vector<double>> solve_relaxation_linear() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> solve_relaxation_linear() override
     {
       return structure_->solve_relaxation_linear();
     }
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<Core::LinAlg::Solver> linear_solver() override
+    std::shared_ptr<Core::LinAlg::Solver> linear_solver() override
     {
       return structure_->linear_solver();
     }
@@ -431,7 +432,7 @@ namespace Adapter
     //@{
 
     /// set forces due to interface with fluid, the force is expected external-force-like
-    void set_force_interface(Teuchos::RCP<Core::LinAlg::MultiVector<double>> iforce) override
+    void set_force_interface(std::shared_ptr<Core::LinAlg::MultiVector<double>> iforce) override
     {
       structure_->set_force_interface(iforce);
     }
@@ -447,25 +448,25 @@ namespace Adapter
     //@{
 
     /// write access to extract displacements at \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispnp() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispnp() override
     {
       return structure_->write_access_dispnp();
     }
 
     /// write access to extract velocities at \f$t^{n+1}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_velnp() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_velnp() override
     {
       return structure_->write_access_velnp();
     }
 
     /// write access to extract displacements at \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_dispn() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_dispn() override
     {
       return structure_->write_access_dispn();
     }
 
     /// write access to extract velocities at \f$t^{n}\f$
-    Teuchos::RCP<Core::LinAlg::Vector<double>> write_access_veln() override
+    std::shared_ptr<Core::LinAlg::Vector<double>> write_access_veln() override
     {
       return structure_->write_access_velnp();
     }
@@ -473,10 +474,10 @@ namespace Adapter
     //@}
 
     /// extract rhs (used to calculate reaction force for post-processing)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override { return structure_->freact(); }
+    std::shared_ptr<Core::LinAlg::Vector<double>> freact() override { return structure_->freact(); }
 
     /// create result test for encapsulated structure algorithm
-    Teuchos::RCP<Core::Utils::ResultTest> create_field_test() override
+    std::shared_ptr<Core::Utils::ResultTest> create_field_test() override
     {
       return structure_->create_field_test();
     }
@@ -484,7 +485,7 @@ namespace Adapter
     //! @name Biofilm specific methods
     //@{
 
-    void set_str_gr_disp(Teuchos::RCP<Core::LinAlg::Vector<double>> struct_growth_disp) override
+    void set_str_gr_disp(std::shared_ptr<Core::LinAlg::Vector<double>> struct_growth_disp) override
     {
       structure_->set_str_gr_disp(struct_growth_disp);
     }
@@ -509,7 +510,7 @@ namespace Adapter
     }
 
    protected:
-    Teuchos::RCP<Structure> structure_;  ///< underlying structural time integration
+    std::shared_ptr<Structure> structure_;  ///< underlying structural time integration
   };
 
 
@@ -517,7 +518,7 @@ namespace Adapter
   class StructureNOXCorrectionWrapper : public StructureWrapper
   {
    public:
-    explicit StructureNOXCorrectionWrapper(Teuchos::RCP<Structure> structure)
+    explicit StructureNOXCorrectionWrapper(std::shared_ptr<Structure> structure)
         : StructureWrapper(structure)
     {
     }
@@ -526,7 +527,7 @@ namespace Adapter
 
     //! evaluate() routine that can handle NOX step increments by computing the
     //! last iteration increment needed for structural evaluate() call
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disstepinc) override;
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disstepinc) override;
 
    private:
     /// sum of displacement increments already applied,
@@ -536,7 +537,7 @@ namespace Adapter
     /// x^n+1_i+1 = x^n+1_i + disiterinc  (also referred to as residual increment)
     ///
     /// x^n+1_i+1 = x^n     + disstepinc
-    Teuchos::RCP<Core::LinAlg::Vector<double>> disstepinc_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> disstepinc_;
   };
 }  // namespace Adapter
 

@@ -29,7 +29,7 @@ namespace CONSTRAINTS
     \brief Standard Constructor
     */
     MPConstraint(
-        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+        std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname,  ///< Name of condition to create constraint from
         int& minID,                        ///< minimum constraint or monitor ID so far
         int& maxID                         ///< maximum constraint or monitor ID so far
@@ -39,7 +39,7 @@ namespace CONSTRAINTS
         \brief Alternative Constructor
     */
     MPConstraint(
-        Teuchos::RCP<Core::FE::Discretization> discr,  ///< discretization constraint lives on
+        std::shared_ptr<Core::FE::Discretization> discr,  ///< discretization constraint lives on
         const std::string& conditionname  ///< Name of condition to create constraint from
     );
 
@@ -58,7 +58,7 @@ namespace CONSTRAINTS
     virtual void initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
         ) = 0;
@@ -72,19 +72,19 @@ namespace CONSTRAINTS
     virtual void evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
         ) = 0;
@@ -98,33 +98,33 @@ namespace CONSTRAINTS
 
 
     //! additional discretization consisting of constraint elements
-    std::map<int, Teuchos::RCP<Core::FE::Discretization>> constraintdis_;
+    std::map<int, std::shared_ptr<Core::FE::Discretization>> constraintdis_;
 
     //! Evaluate constraint discretization and assemble the results
     virtual void evaluate_constraint(
-        Teuchos::RCP<Core::FE::Discretization> disc,  ///< discretization to evaluate
+        std::shared_ptr<Core::FE::Discretization> disc,  ///< discretization to evaluate
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix1,  ///< sparse matrix that may be filled by assembly of element
                             ///< contributions
-        Teuchos::RCP<Core::LinAlg::SparseOperator>
+        std::shared_ptr<Core::LinAlg::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector1,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector2,  ///< distributed vector that may be filled by
                             ///< assembly of element contributions
-        Teuchos::RCP<Core::LinAlg::Vector<double>>
+        std::shared_ptr<Core::LinAlg::Vector<double>>
             systemvector3  ///< distributed vector that may be filled
                            ///< by assembly of element contributions
         ) = 0;
 
     //! creating a new discretization based on conditions containing constraint elements
-    virtual std::map<int, Teuchos::RCP<Core::FE::Discretization>>
-    create_discretization_from_condition(Teuchos::RCP<Core::FE::Discretization> actdisc,
+    virtual std::map<int, std::shared_ptr<Core::FE::Discretization>>
+    create_discretization_from_condition(std::shared_ptr<Core::FE::Discretization> actdisc,
         std::vector<Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization
@@ -133,10 +133,10 @@ namespace CONSTRAINTS
 
 
     //    /// find col node map so that we can evaluate the constraint elements
-    //    Teuchos::RCP<Epetra_Map> ComputeNodeColMap(
-    //             const Teuchos::RCP<Core::FE::Discretization> sourcedis,  ///< standard
+    //    std::shared_ptr<Epetra_Map> ComputeNodeColMap(
+    //             const std::shared_ptr<Core::FE::Discretization> sourcedis,  ///< standard
     //             discretization we want to redistribute const
-    //             Teuchos::RCP<Core::FE::Discretization> constraintdis
+    //             std::shared_ptr<Core::FE::Discretization> constraintdis
     //             ///< constraint discretization prescribing ghosting ) const;
 
   };  // class

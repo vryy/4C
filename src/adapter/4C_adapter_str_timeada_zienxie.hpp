@@ -35,7 +35,7 @@ namespace Adapter
   {
    public:
     /// constructor
-    explicit StructureTimeAdaZienXie(Teuchos::RCP<Structure> structure)
+    explicit StructureTimeAdaZienXie(std::shared_ptr<Structure> structure)
         : StructureTimeAda(structure)
     {
     }

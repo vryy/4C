@@ -66,13 +66,13 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::eva
     Core::LinAlg::SerialDenseVector& eslaveresidual)
 {
   // access primary and secondary materials of parent element
-  Teuchos::RCP<const Mat::Soret> matsoret =
-      Teuchos::rcp_dynamic_cast<const Mat::Soret>(ele->parent_element()->material());
-  Teuchos::RCP<const Mat::FourierIso> matfourier =
-      Teuchos::rcp_dynamic_cast<const Mat::FourierIso>(ele->parent_element()->material());
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material(1));
-  if ((matsoret == Teuchos::null and matfourier == Teuchos::null) or matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Soret> matsoret =
+      std::dynamic_pointer_cast<const Mat::Soret>(ele->parent_element()->material());
+  std::shared_ptr<const Mat::FourierIso> matfourier =
+      std::dynamic_pointer_cast<const Mat::FourierIso>(ele->parent_element()->material());
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material(1));
+  if ((matsoret == nullptr and matfourier == nullptr) or matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface
@@ -315,13 +315,13 @@ void Discret::Elements::ScaTraEleBoundaryCalcSTIElectrode<distype,
     Core::LinAlg::SerialDenseMatrix& emastermatrix)
 {
   // access primary and secondary materials of parent element
-  Teuchos::RCP<const Mat::Soret> matsoret =
-      Teuchos::rcp_dynamic_cast<const Mat::Soret>(ele->parent_element()->material());
-  Teuchos::RCP<const Mat::FourierIso> matfourier =
-      Teuchos::rcp_dynamic_cast<const Mat::FourierIso>(ele->parent_element()->material());
-  Teuchos::RCP<const Mat::Electrode> matelectrode =
-      Teuchos::rcp_dynamic_cast<const Mat::Electrode>(ele->parent_element()->material(1));
-  if ((matsoret == Teuchos::null and matfourier == Teuchos::null) or matelectrode == Teuchos::null)
+  std::shared_ptr<const Mat::Soret> matsoret =
+      std::dynamic_pointer_cast<const Mat::Soret>(ele->parent_element()->material());
+  std::shared_ptr<const Mat::FourierIso> matfourier =
+      std::dynamic_pointer_cast<const Mat::FourierIso>(ele->parent_element()->material());
+  std::shared_ptr<const Mat::Electrode> matelectrode =
+      std::dynamic_pointer_cast<const Mat::Electrode>(ele->parent_element()->material(1));
+  if ((matsoret == nullptr and matfourier == nullptr) or matelectrode == nullptr)
     FOUR_C_THROW("Invalid electrode material for scatra-scatra interface coupling!");
 
   // extract local nodal values on present and opposite side of scatra-scatra interface

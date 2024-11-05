@@ -61,18 +61,19 @@ namespace Mortar
     virtual void integrate_segment_2d(Mortar::Element& sele, double& sxia, double& sxib,
         Mortar::Element& mele, double& mxia, double& mxib, const Epetra_Comm& comm) = 0;
 
-    virtual Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> integrate_mmod_2d(Mortar::Element& sele,
-        double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib) = 0;
+    virtual std::shared_ptr<Core::LinAlg::SerialDenseMatrix> integrate_mmod_2d(
+        Mortar::Element& sele, double& sxia, double& sxib, Mortar::Element& mele, double& mxia,
+        double& mxib) = 0;
 
     virtual void integrate_ele_based_3d(Mortar::Element& sele, std::vector<Mortar::Element*> meles,
         bool* boundary_ele, const Epetra_Comm& comm) = 0;
 
     virtual void integrate_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) = 0;
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) = 0;
 
     virtual void integrate_cell_3d_aux_plane_quad(Mortar::Element& sele, Mortar::Element& mele,
         Mortar::IntElement& sintele, Mortar::IntElement& mintele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn) = 0;
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn) = 0;
 
     virtual int n_gp() const = 0;
 
@@ -146,7 +147,7 @@ namespace Mortar
     the interface is curved (but only for mesh tying)!
 
     */
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> integrate_mmod_2d(Mortar::Element& sele,
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> integrate_mmod_2d(Mortar::Element& sele,
         double& sxia, double& sxib, Mortar::Element& mele, double& mxia, double& mxib) override;
 
     /*!
@@ -164,7 +165,7 @@ namespace Mortar
 
     */
     void integrate_cell_3d_aux_plane(Mortar::Element& sele, Mortar::Element& mele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) override;
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn, const Epetra_Comm& comm) override;
 
     /*!
     \brief Build all integrals and linearizations on a 2D slave /
@@ -174,7 +175,7 @@ namespace Mortar
     */
     void integrate_cell_3d_aux_plane_quad(Mortar::Element& sele, Mortar::Element& mele,
         Mortar::IntElement& sintele, Mortar::IntElement& mintele,
-        Teuchos::RCP<Mortar::IntCell> cell, double* auxn) override;
+        std::shared_ptr<Mortar::IntCell> cell, double* auxn) override;
 
     // protected:
     /*!

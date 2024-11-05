@@ -25,20 +25,20 @@ namespace PoroMultiPhaseScaTra
   {
    public:
     //! create using a Epetra_Comm
-    PoroMultiPhaseScaTraArtCouplSurfBased(Teuchos::RCP<Core::FE::Discretization> arterydis,
-        Teuchos::RCP<Core::FE::Discretization> contdis,
+    PoroMultiPhaseScaTraArtCouplSurfBased(std::shared_ptr<Core::FE::Discretization> arterydis,
+        std::shared_ptr<Core::FE::Discretization> contdis,
         const Teuchos::ParameterList& couplingparams, const std::string& condname,
         const std::string& artcoupleddofname, const std::string& contcoupleddofname);
 
     //! set-up of global system of equations of coupled problem
-    void setup_system(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_cont,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat_art,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_cont,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_art,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_cont,
-        Teuchos::RCP<const Core::LinAlg::MapExtractor> dbcmap_art) override;
+    void setup_system(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_cont,
+        std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat_art,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_cont,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_art,
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_cont,
+        std::shared_ptr<const Core::LinAlg::MapExtractor> dbcmap_art) override;
 
     //! setup the strategy
     void setup() override;
@@ -47,11 +47,11 @@ namespace PoroMultiPhaseScaTra
     void apply_mesh_movement() override;
 
     //! access to blood vessel volume fraction
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() override;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction() override;
 
     //! Evaluate the 1D-3D coupling
-    void evaluate(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> rhs) override;
+    void evaluate(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> rhs) override;
 
    private:
     //! pre-evaluate the pairs

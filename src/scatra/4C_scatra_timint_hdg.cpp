@@ -27,17 +27,17 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |
  *----------------------------------------------------------------------*/
-ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver> &solver,
-    const Teuchos::RCP<Teuchos::ParameterList> &params,
-    const Teuchos::RCP<Teuchos::ParameterList> &extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::TimIntHDG::TimIntHDG(const std::shared_ptr<Core::FE::Discretization> &actdis,
+    const std::shared_ptr<Core::LinAlg::Solver> &solver,
+    const std::shared_ptr<Teuchos::ParameterList> &params,
+    const std::shared_ptr<Teuchos::ParameterList> &extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(actdis, solver, params, extraparams, output),
       TimIntGenAlpha(actdis, solver, params, extraparams, output),
       nds_intvar_(2),
-      intphinp_(Teuchos::null),
-      intphin_(Teuchos::null),
-      interpolatedPhinp_(Teuchos::null),
+      intphinp_(nullptr),
+      intphin_(nullptr),
+      interpolatedPhinp_(nullptr),
       timealgoset_(Inpar::ScaTra::timeint_gen_alpha),
       startalgo_(true),
       theta_(-1),
@@ -46,7 +46,7 @@ ScaTra::TimIntHDG::TimIntHDG(const Teuchos::RCP<Core::FE::Discretization> &actdi
       padapterrortol_(params->get<double>("PADAPTERRORTOL")),
       padapterrorbase_(params->get<double>("PADAPTERRORBASE")),
       padaptdegreemax_(params->get<int>("PADAPTDEGREEMAX")),
-      elementdegree_(Teuchos::null)
+      elementdegree_(nullptr)
 
 {
 }
@@ -61,8 +61,8 @@ void ScaTra::TimIntHDG::setup()
   if (hdgdis_ == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
-  const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*discret_->element_col_map());
+  const std::shared_ptr<Core::LinAlg::Vector<int>> eledofs =
+      std::make_shared<Core::LinAlg::Vector<int>>(*discret_->element_col_map());
 
   // loop over elements
   for (int iele = 0; iele < discret_->num_my_col_elements(); ++iele)
@@ -72,8 +72,8 @@ void ScaTra::TimIntHDG::setup()
   }
 
   // add proxy for interior degrees of freedom to scatra discretization
-  Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
   if (discret_->add_dof_set(dofsetaux) != 2)
     FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
   discret_->fill_complete();
@@ -286,17 +286,17 @@ namespace
 {
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization &dis,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> &interiorValues,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &phi,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &gradphi,
-      Teuchos::RCP<Core::LinAlg::Vector<double>> &tracephi, int nds_intvar_, int ndofs)
+      const std::shared_ptr<Core::LinAlg::Vector<double>> &interiorValues,
+      const std::shared_ptr<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
+      std::shared_ptr<Core::LinAlg::Vector<double>> &phi,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> &gradphi,
+      std::shared_ptr<Core::LinAlg::Vector<double>> &tracephi, int nds_intvar_, int ndofs)
   {
     dis.clear_state(true);
 
     // create dofsets for concentration at nodes
-    tracephi = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(phi->Map());
-    gradphi = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+    tracephi = std::make_shared<Core::LinAlg::Vector<double>>(phi->Map());
+    gradphi = std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
 
     // call element routine to interpolate HDG to elements
     Teuchos::ParameterList eleparams;
@@ -362,8 +362,8 @@ void ScaTra::TimIntHDG::write_restart() const
  -----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::collect_runtime_output_data()
 {
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> interpolatedGradPhi;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> interpolatedtracePhi;
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> interpolatedGradPhi;
+  std::shared_ptr<Core::LinAlg::Vector<double>> interpolatedtracePhi;
   // get (averaged) values at element nodes
   get_node_vectors_hdg(*discret_, intphinp_, phinp_, Global::Problem::instance()->n_dim(),
       interpolatedPhinp_, interpolatedGradPhi, interpolatedtracePhi, nds_intvar_,
@@ -391,7 +391,7 @@ void ScaTra::TimIntHDG::collect_runtime_output_data()
 /*----------------------------------------------------------------------*
  | read restart                                          hoermann 09/15 |
  -----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::InputControl> input)
+void ScaTra::TimIntHDG::read_restart(const int step, std::shared_ptr<Core::IO::InputControl> input)
 {
   Core::IO::DiscretizationReader reader(
       discret_, Global::Problem::instance()->input_control_file(), step);
@@ -408,14 +408,14 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
     if (discret_->get_comm().NumProc() > 1)
     {
       // create vector of discr.
-      std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+      std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
       dis.push_back(discret_);
 
       // binning strategy for parallel redistribution
-      Teuchos::RCP<Core::Binstrategy::BinningStrategy> binningstrategy;
+      std::shared_ptr<Core::Binstrategy::BinningStrategy> binningstrategy;
 
-      std::vector<Teuchos::RCP<Epetra_Map>> stdelecolmap;
-      std::vector<Teuchos::RCP<Epetra_Map>> stdnodecolmap;
+      std::vector<std::shared_ptr<Epetra_Map>> stdelecolmap;
+      std::vector<std::shared_ptr<Epetra_Map>> stdnodecolmap;
 
       // binning strategy is created and parallel redistribution is performed
       Teuchos::ParameterList binning_params =
@@ -423,7 +423,7 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
       Core::Utils::add_enum_class_to_parameter_list<Core::FE::ShapeFunctionType>(
           "spatial_approximation_type", Global::Problem::instance()->spatial_approximation_type(),
           binning_params);
-      binningstrategy = Teuchos::make_rcp<Core::Binstrategy::BinningStrategy>(binning_params,
+      binningstrategy = std::make_shared<Core::Binstrategy::BinningStrategy>(binning_params,
           Global::Problem::instance()->output_control_file(), discret_->get_comm(),
           discret_->get_comm().MyPID(), nullptr, nullptr, dis);
       binningstrategy
@@ -433,8 +433,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   }
 
   // vector to store the dofs per element
-  const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*discret_->element_col_map());
+  const std::shared_ptr<Core::LinAlg::Vector<int>> eledofs =
+      std::make_shared<Core::LinAlg::Vector<int>>(*discret_->element_col_map());
 
   // build new maps for face dofs with adapted element order
   hdgdis_->build_faces();
@@ -458,8 +458,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
-  Teuchos::RCP<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
   // replace old interior element dofs with the new created dofset
   discret_->replace_dof_set(nds_intvar_, eledofs_new, false);
 
@@ -470,19 +470,19 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   output_->clear_map_cache();
 
   // reset the residual, increment and sysmat to the size
-  residual_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  increment_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  neumann_loads_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
+  residual_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  increment_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  neumann_loads_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  sysmat_ = nullptr;
+  sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
 
   // reset the state vectors
   intphinp_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
   intphin_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
-  phinp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  phin_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
+  phinp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  phin_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
 
   // read state vectors that are needed for hdg
   reader.read_vector(phinp_, "phinp_trace");
@@ -492,8 +492,8 @@ void ScaTra::TimIntHDG::read_restart(const int step, Teuchos::RCP<Core::IO::Inpu
   phin_->Update(1.0, *phinp_, 0.0);
 
   // reset vector
-  interpolatedPhinp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()));
-  elementdegree_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->element_row_map()));
+  interpolatedPhinp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->node_row_map()));
+  elementdegree_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->element_row_map()));
 }
 
 /*----------------------------------------------------------------------*
@@ -641,7 +641,7 @@ void ScaTra::TimIntHDG::gen_alpha_compute_time_derivative()
  | update interior variables                             hoermann 09/15 |
  *----------------------------------------------------------------------*/
 void ScaTra::TimIntHDG::update_interior_variables(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> updatevector)
+    std::shared_ptr<Core::LinAlg::Vector<double>> updatevector)
 {
   discret_->clear_state(true);
   Teuchos::ParameterList eleparams;
@@ -695,11 +695,11 @@ void ScaTra::TimIntHDG::fd_check()
   const Epetra_Map *dofrowmap = discret_->dof_row_map(0);
   const Epetra_Map *intdofrowmap = discret_->dof_row_map(nds_intvar_);
 
-  Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
+  std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
+  std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
+  systemmatrix1 = std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
   systemvector1 = Core::LinAlg::create_vector(*dofrowmap, true);
   Core::FE::AssembleStrategy strategy(
       0, 0, systemmatrix1, systemmatrix2, systemvector1, systemvector2, systemvector3);
@@ -711,7 +711,7 @@ void ScaTra::TimIntHDG::fd_check()
   // vector for the calculation of the original residual the temporary vector is necessary because
   // afterwards we need to calculate also the interior vectors with the state vector with
   // perturbation without influence for this update
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intphitemp;
+  std::shared_ptr<Core::LinAlg::Vector<double>> intphitemp;
   intphitemp = Core::LinAlg::create_vector(*intdofrowmap, true);
 
   strategy.zero();
@@ -747,15 +747,16 @@ void ScaTra::TimIntHDG::fd_check()
   strategy.complete();
 
   // make a copy of system matrix as Epetra_CrsMatrix
-  Teuchos::RCP<Epetra_CrsMatrix> sysmatcopy = Teuchos::null;
+  std::shared_ptr<Epetra_CrsMatrix> sysmatcopy = nullptr;
   sysmatcopy = (new Core::LinAlg::SparseMatrix(
-                    *(Teuchos::rcp_static_cast<Core::LinAlg::SparseMatrix>(systemmatrix1))))
+                    *(std::static_pointer_cast<Core::LinAlg::SparseMatrix>(systemmatrix1))))
                    ->epetra_matrix();
   sysmatcopy->FillComplete();
 
   // make a copy of system right-hand side vector
   Core::LinAlg::Vector<double> residualVec(*systemvector1);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> fdvec = Core::LinAlg::create_vector(*dofrowmap, true);
+  std::shared_ptr<Core::LinAlg::Vector<double>> fdvec =
+      Core::LinAlg::create_vector(*dofrowmap, true);
 
   for (int k = 0; k < 16; ++k)
   {
@@ -881,8 +882,8 @@ void ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol()
     case Inpar::ScaTra::calcerror_byfunction:
     case Inpar::ScaTra::calcerror_spherediffusion:
     {
-      Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors = compute_error();
-      if (errors == Teuchos::null)
+      std::shared_ptr<Core::LinAlg::SerialDenseVector> errors = compute_error();
+      if (errors == nullptr)
         FOUR_C_THROW("It was not possible to compute error. Check the error function number.");
 
       if (std::abs((*errors)[1]) > 1e-14)
@@ -945,13 +946,13 @@ void ScaTra::TimIntHDG::evaluate_error_compared_to_analytical_sol()
 /*----------------------------------------------------------------------------------*
  | compute relative error with reference to analytical solution    berardocco 08/20 |
  *----------------------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error() const
+std::shared_ptr<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error() const
 {
   // If we are here it means that we either arrived at the end and we are checking the results or
   // that we specified that we want to compute the error. In any case, if the error function was not
   // specified, we just return a null pointer.
   const int errorfunctnumber = params_->get<int>("CALCERRORNO", -1);
-  if (errorfunctnumber < 1) return Teuchos::null;
+  if (errorfunctnumber < 1) return nullptr;
 
   // create the parameters for the error calculation
   Teuchos::ParameterList eleparams;
@@ -969,8 +970,8 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> ScaTra::TimIntHDG::compute_error()
   // The error is computed for the transported scalar and its gradient. Notice that so far only
   // the L2 error is computed, feel free to extend the calculations to any error measure needed
   unsigned int NumErrorEntries = 4;
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(NumErrorEntries);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(NumErrorEntries);
 
   discret_->evaluate_scalars(eleparams, errors);
   discret_->clear_state();
@@ -1011,13 +1012,12 @@ void ScaTra::TimIntHDG::calc_mat_initial()
   discret_->set_state(nds_intvar_, "intphin", intphin_);
   discret_->set_state(nds_intvar_, "intphinp", intphinp_);
 
-  Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
-  Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
+  std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1, systemmatrix2;
+  std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1, systemvector2, systemvector3;
 
   // create matrix and vector for calculation of sysmat and assemble
-  systemmatrix1 = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
-  Core::FE::AssembleStrategy strategy(
-      0, 0, sysmat_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  systemmatrix1 = std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
+  Core::FE::AssembleStrategy strategy(0, 0, sysmat_, nullptr, nullptr, nullptr, nullptr);
 
   strategy.zero();
   Core::Elements::LocationArray la(discret_->num_dof_sets());
@@ -1079,8 +1079,8 @@ void ScaTra::TimIntHDG::adapt_degree()
   if (hdgdis == nullptr) FOUR_C_THROW("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element
-  const Teuchos::RCP<Core::LinAlg::Vector<int>> eledofs =
-      Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*discret_->element_col_map());
+  const std::shared_ptr<Core::LinAlg::Vector<int>> eledofs =
+      std::make_shared<Core::LinAlg::Vector<int>>(*discret_->element_col_map());
 
   // vector to store the location array of the dofsets before the adaption with the new order
   std::vector<Core::Elements::LocationArray> la_old;
@@ -1196,8 +1196,8 @@ void ScaTra::TimIntHDG::adapt_degree()
   }
 
   // create new local dofset for the new interior element dofs with adapted element order
-  Teuchos::RCP<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
-      Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
+  std::shared_ptr<Core::DOFSets::DofSetPredefinedDoFNumber> eledofs_new =
+      std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(0, eledofs, 0, false);
   // replace old interior element dofs with the new created dofset
   discret_->replace_dof_set(nds_intvar_, eledofs_new, false);
 
@@ -1209,28 +1209,28 @@ void ScaTra::TimIntHDG::adapt_degree()
 
   // copy old values of the state vectors phi and intphi into vectors, which are then used for the
   // projection
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp_old =
+  std::shared_ptr<Core::LinAlg::Vector<double>> phinp_old =
       Core::LinAlg::create_vector(facedofs_old, true);
   Core::LinAlg::export_to(*phinp_, *phinp_old);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intphinp_old =
+  std::shared_ptr<Core::LinAlg::Vector<double>> intphinp_old =
       Core::LinAlg::create_vector(eledofs_old, true);
   Core::LinAlg::export_to(*intphinp_, *intphinp_old);
 
   // reset the residual, increment and sysmat to the size of the adapted new dofset
-  residual_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  increment_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  neumann_loads_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  sysmat_ = Teuchos::null;
-  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
+  residual_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  increment_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  neumann_loads_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  sysmat_ = nullptr;
+  sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*(discret_->dof_row_map()), 27);
 
   // reset the state vectors
   intphinp_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
   intphin_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
-  phinp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
-  phin_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(nds_intvar_)), true);
+  phinp_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
+  phin_ = std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map()));
 
   //  // end time measurement for element
   //  double dtfillcomplete=Teuchos::Time::wallTime()-tcfillcomplete;
@@ -1277,10 +1277,10 @@ void ScaTra::TimIntHDG::adapt_degree()
  | adapt trace vector and interior variables when adapting element      |
  | degrees                                                hoermann 07/16|
  *----------------------------------------------------------------------*/
-void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector<double>> phi_new,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> phi_old,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intphi_new,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> intphi_old, int nds_var_old, int nds_intvar_old,
+void ScaTra::TimIntHDG::adapt_variable_vector(std::shared_ptr<Core::LinAlg::Vector<double>> phi_new,
+    std::shared_ptr<Core::LinAlg::Vector<double>> phi_old,
+    std::shared_ptr<Core::LinAlg::Vector<double>> intphi_new,
+    std::shared_ptr<Core::LinAlg::Vector<double>> intphi_old, int nds_var_old, int nds_intvar_old,
     std::vector<Core::Elements::LocationArray> la_old)
 {
   // set action
@@ -1299,8 +1299,8 @@ void ScaTra::TimIntHDG::adapt_variable_vector(Teuchos::RCP<Core::LinAlg::Vector<
 
 
   // set old state vector on parameter list
-  eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("phi", phi_old);
-  eleparams.set<Teuchos::RCP<Core::LinAlg::Vector<double>>>("intphi", intphi_old);
+  eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("phi", phi_old);
+  eleparams.set<std::shared_ptr<Core::LinAlg::Vector<double>>>("intphi", intphi_old);
 
   Core::LinAlg::SerialDenseMatrix dummyMat;
   Core::LinAlg::SerialDenseVector intphi_ele, phi_ele, dummyVec;
@@ -1409,8 +1409,7 @@ void ScaTra::TimIntHDG::assemble_rhs()
   // add problem specific time-integration parameters
   add_problem_specific_parameters_and_vectors(eleparams);
 
-  Core::FE::AssembleStrategy strategy(
-      0, 0, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
+  Core::FE::AssembleStrategy strategy(0, 0, nullptr, nullptr, residual_, nullptr, nullptr);
 
   strategy.zero();
 
@@ -1447,9 +1446,9 @@ void ScaTra::TimIntHDG::assemble_rhs()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
+std::shared_ptr<Core::Utils::ResultTest> ScaTra::TimIntHDG::create_scatra_field_test()
 {
-  return Teuchos::make_rcp<ScaTra::HDGResultTest>(Teuchos::rcpFromRef(*this));
+  return std::make_shared<ScaTra::HDGResultTest>(Core::Utils::shared_ptr_from_ref(*this));
 }
 
 FOUR_C_NAMESPACE_CLOSE

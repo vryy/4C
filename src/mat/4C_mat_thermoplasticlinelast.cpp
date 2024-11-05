@@ -39,9 +39,9 @@ Mat::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from read_materials()       dano 08/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::ThermoPlasticLinElast::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::ThermoPlasticLinElast::create_material()
 {
-  return Teuchos::make_rcp<Mat::ThermoPlasticLinElast>(this);
+  return std::make_shared<Mat::ThermoPlasticLinElast>(this);
 }
 
 
@@ -63,7 +63,7 @@ Core::Communication::ParObject* Mat::ThermoPlasticLinElastType::create(
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 08/11 |
  *----------------------------------------------------------------------*/
-Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(Teuchos::null) {}
+Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -71,14 +71,14 @@ Mat::ThermoPlasticLinElast::ThermoPlasticLinElast() : params_(nullptr), thermo_(
  | called in read_materials --> create_material                           |
  *----------------------------------------------------------------------*/
 Mat::ThermoPlasticLinElast::ThermoPlasticLinElast(Mat::PAR::ThermoPlasticLinElast* params)
-    : params_(params), thermo_(Teuchos::null), plastic_step_(false)
+    : params_(params), thermo_(nullptr), plastic_step_(false)
 {
   const int thermoMatId = this->params_->thermomat_;
   if (thermoMatId != -1)
   {
     auto mat = Mat::factory(thermoMatId);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
-    thermo_ = Teuchos::rcp_dynamic_cast<Mat::Trait::Thermo>(mat);
+    if (mat == nullptr) FOUR_C_THROW("Failed to create thermo material, id=%d", thermoMatId);
+    thermo_ = std::dynamic_pointer_cast<Mat::Trait::Thermo>(mat);
   }
 }
 
@@ -149,7 +149,7 @@ void Mat::ThermoPlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffe
   int matid;
   extract_from_pack(buffer, matid);
   params_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();
@@ -170,22 +170,22 @@ void Mat::ThermoPlasticLinElast::unpack(Core::Communication::UnpackBuffer& buffe
   if (histsize == 0) isinit_ = false;
 
   // unpack plastic history vectors
-  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainpllast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   // unpack back stress vectors (for kinematic hardening)
-  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  strainbarpllast_ = Teuchos::make_rcp<std::vector<double>>();
-  strainbarplcurr_ = Teuchos::make_rcp<std::vector<double>>();
+  strainbarpllast_ = std::make_shared<std::vector<double>>();
+  strainbarplcurr_ = std::make_shared<std::vector<double>>();
 
   // unpack dissipation stuff
-  dmech_ = Teuchos::make_rcp<std::vector<double>>();
-  dmech_d_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  dmech_ = std::make_shared<std::vector<double>>();
+  dmech_d_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  incstrainpl_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  strainelrate_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  incstrainpl_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainelrate_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   for (int var = 0; var < histsize; ++var)
   {
@@ -235,20 +235,20 @@ void Mat::ThermoPlasticLinElast::setup(
     int numgp, const Core::IO::InputParameterContainer& container)
 {
   // initialise history variables
-  strainpllast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainpllast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  backstresslast_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresslast_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  strainbarpllast_ = Teuchos::make_rcp<std::vector<double>>();
-  strainbarplcurr_ = Teuchos::make_rcp<std::vector<double>>();
+  strainbarpllast_ = std::make_shared<std::vector<double>>();
+  strainbarplcurr_ = std::make_shared<std::vector<double>>();
 
-  dmech_ = Teuchos::make_rcp<std::vector<double>>();
-  dmech_d_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  dmech_ = std::make_shared<std::vector<double>>();
+  dmech_d_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  incstrainpl_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  strainelrate_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  incstrainpl_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainelrate_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
   Core::LinAlg::Matrix<NUM_STRESS_3D, 1> emptymat_vect(true);
   strainpllast_->resize(numgp);
@@ -303,10 +303,10 @@ void Mat::ThermoPlasticLinElast::update()
   strainbarpllast_ = strainbarplcurr_;
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
-  backstresscurr_ = Teuchos::make_rcp<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  strainplcurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
+  backstresscurr_ = std::make_shared<std::vector<Core::LinAlg::Matrix<NUM_STRESS_3D, 1>>>();
 
-  strainbarplcurr_ = Teuchos::make_rcp<std::vector<double>>();
+  strainbarplcurr_ = std::make_shared<std::vector<double>>();
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -1644,16 +1644,16 @@ double Mat::ThermoPlasticLinElast::capacity_deriv_t() const { return thermo_->ca
 void Mat::ThermoPlasticLinElast::reinit(double temperature, unsigned gp)
 {
   current_temperature_ = temperature;
-  if (thermo_ != Teuchos::null) thermo_->reinit(temperature, gp);
+  if (thermo_ != nullptr) thermo_->reinit(temperature, gp);
 }
 void Mat::ThermoPlasticLinElast::reset_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->reset_current_state();
+  if (thermo_ != nullptr) thermo_->reset_current_state();
 }
 
 void Mat::ThermoPlasticLinElast::commit_current_state()
 {
-  if (thermo_ != Teuchos::null) thermo_->commit_current_state();
+  if (thermo_ != nullptr) thermo_->commit_current_state();
 }
 
 /*----------------------------------------------------------------------*/

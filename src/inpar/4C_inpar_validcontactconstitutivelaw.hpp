@@ -11,9 +11,8 @@
 /*----------------------------------------------------------------------*/
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <iostream>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -29,7 +28,7 @@ namespace CONTACT
 namespace Input
 {
   /// construct list with all contact constitutive laws and documentation
-  Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
+  std::shared_ptr<std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>>
   valid_contact_constitutive_laws();
 
   /** \brief print all known contact constitutive law sections without contents
@@ -37,7 +36,7 @@ namespace Input
    * \param[in] contactconstitutivlawlist list of contact constitutive law definitions
    */
   void print_empty_contact_constitutive_law_definitions(std::ostream& stream,
-      std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
+      std::vector<std::shared_ptr<CONTACT::CONSTITUTIVELAW::LawDefinition>>&
           contactconstitutivlawlist);
 
 }  // namespace Input

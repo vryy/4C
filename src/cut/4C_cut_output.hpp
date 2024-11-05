@@ -386,40 +386,40 @@ namespace Cut
       if (section != "") gmsh_end_section(file, close_file);
     }
 
-    // for std::vector<Teuchos::RCP<T> >
+    // for std::vector<std::shared_ptr<T> >
     template <class T>
     void gmsh_write_section(std::ofstream& file, const std::string& section,
-        std::vector<Teuchos::RCP<T>> container, bool close_file = false, bool to_local = false,
+        std::vector<std::shared_ptr<T>> container, bool close_file = false, bool to_local = false,
         Element* ele = nullptr)
     {
       if (section != "") gmsh_new_section(file, section);
-      for (typename std::vector<Teuchos::RCP<T>>::iterator t = container.begin();
+      for (typename std::vector<std::shared_ptr<T>>::iterator t = container.begin();
            t != container.end(); ++t)
         gmsh_object_dump<T>(file, &(*(*t)), to_local, ele);
       if (section != "") gmsh_end_section(file, close_file);
     }
 
-    // for std::map<int, Teuchos::RCP<T> >
+    // for std::map<int, std::shared_ptr<T> >
     template <class T>
     void gmsh_write_section(std::ofstream& file, const std::string& section,
-        std::map<int, Teuchos::RCP<T>> container, bool close_file = false, bool to_local = false,
+        std::map<int, std::shared_ptr<T>> container, bool close_file = false, bool to_local = false,
         Element* ele = nullptr)
     {
       if (section != "") gmsh_new_section(file, section);
-      for (typename std::map<int, Teuchos::RCP<T>>::iterator t = container.begin();
+      for (typename std::map<int, std::shared_ptr<T>>::iterator t = container.begin();
            t != container.end(); ++t)
         gmsh_object_dump<T>(file, &(*(t->second)), to_local, ele);
       if (section != "") gmsh_end_section(file, close_file);
     }
 
-    // for std::map<plain_int_set, Teuchos::RCP<T> >
+    // for std::map<plain_int_set, std::shared_ptr<T> >
     template <class T>
     void gmsh_write_section(std::ofstream& file, const std::string& section,
-        std::map<plain_int_set, Teuchos::RCP<T>> container, bool close_file = false,
+        std::map<plain_int_set, std::shared_ptr<T>> container, bool close_file = false,
         bool to_local = false, Element* ele = nullptr)
     {
       if (section != "") gmsh_new_section(file, section);
-      for (typename std::map<plain_int_set, Teuchos::RCP<T>>::iterator t = container.begin();
+      for (typename std::map<plain_int_set, std::shared_ptr<T>>::iterator t = container.begin();
            t != container.end(); ++t)
       {
         gmsh_object_dump<T>(file, &(*(t->second)), to_local, ele);

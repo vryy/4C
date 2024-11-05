@@ -63,7 +63,7 @@ namespace ScaTra
 
     //! constructor
     explicit MeshtyingStrategyBase(ScaTra::ScaTraTimIntImpl* scatratimint)
-        : convcheckstrategy_(Teuchos::null), scatratimint_(scatratimint)
+        : convcheckstrategy_(nullptr), scatratimint_(scatratimint)
     {
     }
 
@@ -76,7 +76,7 @@ namespace ScaTra
      */
     bool abort_nonlin_iter(const ScaTraTimIntImpl& scatratimint, double& actresidual) const
     {
-      if (convcheckstrategy_ == Teuchos::null)
+      if (convcheckstrategy_ == nullptr)
         FOUR_C_THROW("Strategy for Newton-Raphson convergence check has not been instantiated!");
 
       return convcheckstrategy_->abort_nonlin_iter(scatratimint, actresidual);
@@ -90,7 +90,7 @@ namespace ScaTra
      */
     bool abort_outer_iter(const ScaTraTimIntImpl& scatratimint) const
     {
-      if (convcheckstrategy_ == Teuchos::null)
+      if (convcheckstrategy_ == nullptr)
         FOUR_C_THROW("Strategy for outer convergence check has not been instantiated!");
 
       return convcheckstrategy_->abort_outer_iter(scatratimint);
@@ -121,8 +121,8 @@ namespace ScaTra
      * @param calcinittimederiv   flag for calculation of initial time derivative
      */
     virtual void condense_mat_and_rhs(
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,
         const bool calcinittimederiv = false) const {};
 
     //! return global map of degrees of freedom
@@ -136,11 +136,11 @@ namespace ScaTra
     \param params (in):         List of parameters for use at element level
     \param systemmatrix1 (out): Sparse matrix that may be changed by
                                 assembly of boundary element contributions.
-                                May not be Teuchos::null.
+                                May not be nullptr.
                                 Matrix must be systemmatrix->Filled()==false on input.
     \param systemmatrix2 (out): Sparse matrix that may be changed by
                                 assembly of boundary element contributions.
-                                May not be Teuchos::null.
+                                May not be nullptr.
                                 Matrix must be systemmatrix->Filled()==false on input.
     \param systemvector1 (out): Vector to assemble BCs to.
                                 The vector is NOT initialized to zero by this method.
@@ -156,11 +156,11 @@ namespace ScaTra
     \author rauch
     */
     virtual void evaluate_condition(Teuchos::ParameterList& params,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector1,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector2,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector1,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector2,
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector3, const std::string& condstring,
         const int condid)
     {
       FOUR_C_THROW("evaluate_condition(...) is not implemented in MeshtyingStrategyBase.");
@@ -186,10 +186,10 @@ namespace ScaTra
     virtual bool system_matrix_initialization_needed() const = 0;
 
     //! initialize system matrix
-    virtual Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const = 0;
+    virtual std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const = 0;
 
     //! return interface map extractor
-    virtual Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const = 0;
+    virtual std::shared_ptr<Core::LinAlg::MultiMapExtractor> interface_maps() const = 0;
 
     //! collect data that shall be written to output
     virtual void collect_output_data() const {};
@@ -207,7 +207,7 @@ namespace ScaTra
      * @param input control file manager
      */
     virtual void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) const {};
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) const {};
 
     //! set general parameters for element evaluation
     virtual void set_element_general_parameters(Teuchos::ParameterList& parameters) const
@@ -234,7 +234,7 @@ namespace ScaTra
     \author rauch
     */
     virtual void set_state(unsigned nds, const std::string& name,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> state)
+        std::shared_ptr<const Core::LinAlg::Vector<double>> state)
     {
       FOUR_C_THROW(
           "set_state(...) is not implemented in MeshtyingStrategyBase.\n"
@@ -257,11 +257,11 @@ namespace ScaTra
      * @param iteration     number of current Newton-Raphson iteration
      * @param projector     Krylov projector
      */
-    virtual void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp, const int iteration,
+    virtual void solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const = 0;
 
     //! return linear solver for global system of linear equations
@@ -275,7 +275,7 @@ namespace ScaTra
     virtual void init_conv_check_strategy() = 0;
 
     //! strategy for Newton-Raphson convergence check called by scalar transport time integrator
-    Teuchos::RCP<ScaTra::ConvCheckStrategyBase> convcheckstrategy_;
+    std::shared_ptr<ScaTra::ConvCheckStrategyBase> convcheckstrategy_;
 
     //! scalar transport time integrator
     ScaTra::ScaTraTimIntImpl* scatratimint_;

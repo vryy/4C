@@ -119,9 +119,10 @@ Mat::PAR::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastH
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MultiplicativeSplitDefgradElastHyper::create_material()
+std::shared_ptr<Core::Mat::Material>
+Mat::PAR::MultiplicativeSplitDefgradElastHyper::create_material()
 {
-  return Teuchos::make_rcp<Mat::MultiplicativeSplitDefgradElastHyper>(this);
+  return std::make_shared<Mat::MultiplicativeSplitDefgradElastHyper>(this);
 }
 
 Mat::MultiplicativeSplitDefgradElastHyperType
@@ -139,8 +140,8 @@ Core::Communication::ParObject* Mat::MultiplicativeSplitDefgradElastHyperType::c
 /*--------------------------------------------------------------------*
  *--------------------------------------------------------------------*/
 Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper()
-    : anisotropy_(Teuchos::make_rcp<Mat::Anisotropy>()),
-      inelastic_(Teuchos::make_rcp<Mat::InelasticFactorsHandler>()),
+    : anisotropy_(std::make_shared<Mat::Anisotropy>()),
+      inelastic_(std::make_shared<Mat::InelasticFactorsHandler>()),
       params_(nullptr),
       potsumel_(0)
 {
@@ -150,8 +151,8 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
  *--------------------------------------------------------------------*/
 Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
     Mat::PAR::MultiplicativeSplitDefgradElastHyper* params)
-    : anisotropy_(Teuchos::make_rcp<Mat::Anisotropy>()),
-      inelastic_(Teuchos::make_rcp<Mat::InelasticFactorsHandler>()),
+    : anisotropy_(std::make_shared<Mat::Anisotropy>()),
+      inelastic_(std::make_shared<Mat::InelasticFactorsHandler>()),
       params_(params),
       potsumel_(0)
 {
@@ -159,7 +160,7 @@ Mat::MultiplicativeSplitDefgradElastHyper::MultiplicativeSplitDefgradElastHyper(
   for (int matid_elastic : params_->matids_elast_)
   {
     auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
-    if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+    if (elastic_summand == nullptr) FOUR_C_THROW("Failed to allocate");
     potsumel_.push_back(elastic_summand);
     elastic_summand->register_anisotropy_extensions(*anisotropy_);
   }
@@ -205,7 +206,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
   // matid and recover params_
   int matid;
   extract_from_pack(buffer, matid);
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
   {
     if (Global::Problem::instance()->materials()->num() != 0)
     {
@@ -227,7 +228,7 @@ void Mat::MultiplicativeSplitDefgradElastHyper::unpack(Core::Communication::Unpa
     for (const auto& matid_elastic : params_->matids_elast_)
     {
       auto elastic_summand = Mat::Elastic::Summand::factory(matid_elastic);
-      if (elastic_summand == Teuchos::null) FOUR_C_THROW("Failed to allocate");
+      if (elastic_summand == nullptr) FOUR_C_THROW("Failed to allocate");
       potsumel_.push_back(elastic_summand);
     }
     // loop map of associated potential summands
@@ -890,8 +891,8 @@ void Mat::InelasticFactorsHandler::setup(Mat::PAR::MultiplicativeSplitDefgradEla
   for (int inelastic_matnum : params->inel_defgradfacids_)
   {
     auto inelastic_factor = Mat::InelasticDefgradFactors::factory(inelastic_matnum);
-    if (inelastic_factor == Teuchos::null) FOUR_C_THROW("Failed to allocate!");
-    std::pair<PAR::InelasticSource, Teuchos::RCP<Mat::InelasticDefgradFactors>> temppair(
+    if (inelastic_factor == nullptr) FOUR_C_THROW("Failed to allocate!");
+    std::pair<PAR::InelasticSource, std::shared_ptr<Mat::InelasticDefgradFactors>> temppair(
         inelastic_factor->get_inelastic_source(), inelastic_factor);
     facdefgradin_.push_back(temppair);
   }

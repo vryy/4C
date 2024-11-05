@@ -229,7 +229,7 @@ void Core::LinAlg::apply_dirichlet_to_system(Core::LinAlg::SparseMatrix& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(
+std::shared_ptr<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_vector_to_maps(
     const Core::LinAlg::Vector<double>& dbctoggle)
 {
   const Epetra_BlockMap& fullblockmap = dbctoggle.Map();
@@ -255,7 +255,7 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_
       FOUR_C_THROW("Unexpected component %f. It is neither 1.0 nor 0.0.", (dbctoggle)[i]);
   }
   // build map of Dirichlet DOFs
-  Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> dbcmap = nullptr;
   {
     int nummyelements = 0;
     int* myglobalelements = nullptr;
@@ -264,11 +264,11 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_
       nummyelements = dbcgids.size();
       myglobalelements = dbcgids.data();
     }
-    dbcmap = Teuchos::make_rcp<Epetra_Map>(
+    dbcmap = std::make_shared<Epetra_Map>(
         -1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm());
   }
   // build map of free DOFs
-  Teuchos::RCP<Epetra_Map> freemap = Teuchos::null;
+  std::shared_ptr<Epetra_Map> freemap = nullptr;
   {
     int nummyelements = 0;
     int* myglobalelements = nullptr;
@@ -277,12 +277,12 @@ Teuchos::RCP<Core::LinAlg::MapExtractor> Core::LinAlg::convert_dirichlet_toggle_
       nummyelements = freegids.size();
       myglobalelements = freegids.data();
     }
-    freemap = Teuchos::make_rcp<Epetra_Map>(
+    freemap = std::make_shared<Epetra_Map>(
         -1, nummyelements, myglobalelements, fullmap.IndexBase(), fullmap.Comm());
   }
 
   // build and return the map extractor of Dirichlet-conditioned and free DOFs
-  return Teuchos::make_rcp<Core::LinAlg::MapExtractor>(fullmap, dbcmap, freemap);
+  return std::make_shared<Core::LinAlg::MapExtractor>(fullmap, dbcmap, freemap);
 }
 
 FOUR_C_NAMESPACE_CLOSE

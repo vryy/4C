@@ -32,10 +32,10 @@ namespace FLD
   {
    public:
     /// Standard Constructor
-    TimIntGenAlpha(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-        const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Teuchos::ParameterList>& params,
-        const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
+    TimIntGenAlpha(const std::shared_ptr<Core::FE::Discretization>& actdis,
+        const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Teuchos::ParameterList>& params,
+        const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid = false);
 
 
     /*!
@@ -100,11 +100,11 @@ namespace FLD
            for incompressible and low-Mach-number flow
     */
     void calculate_acceleration(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnp,  ///< velocity at n+1
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> veln,   ///< velocity at     n
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> velnm,  ///< velocity at     n-1
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> accn,   ///< acceleration at n-1
-        const Teuchos::RCP<Core::LinAlg::Vector<double>> accnp         ///< acceleration at n+1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnp,  ///< velocity at n+1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> veln,   ///< velocity at     n
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> velnm,  ///< velocity at     n-1
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> accn,   ///< acceleration at n-1
+        const std::shared_ptr<Core::LinAlg::Vector<double>> accnp         ///< acceleration at n+1
         ) override;
 
     /*!
@@ -113,8 +113,8 @@ namespace FLD
            Helper method which can be called from outside fluid (e.g. for coupled problems)
 
     */
-    void gen_alpha_intermediate_values(Teuchos::RCP<Core::LinAlg::Vector<double>>& vecnp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>>& vecn) override;
+    void gen_alpha_intermediate_values(std::shared_ptr<Core::LinAlg::Vector<double>>& vecnp,
+        std::shared_ptr<Core::LinAlg::Vector<double>>& vecn) override;
 
     /*!
     \brief Set gamma to a value
@@ -138,8 +138,8 @@ namespace FLD
     \brief Output of filtered velocity
 
     */
-    void outputof_filtered_vel(Teuchos::RCP<Core::LinAlg::Vector<double>> outvec,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fsoutvec) override;
+    void outputof_filtered_vel(std::shared_ptr<Core::LinAlg::Vector<double>> outvec,
+        std::shared_ptr<Core::LinAlg::Vector<double>> fsoutvec) override;
 
     /*!
 
@@ -160,9 +160,9 @@ namespace FLD
 
     //! @name methods for fsi
     /// Extrapolation of vectors from mid-point to end-point t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extrapolate_end_point(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vecn,  ///< vector at time level t_n
-        Teuchos::RCP<Core::LinAlg::Vector<double>> vecm   ///< vector at time level of equilibrium
+    std::shared_ptr<Core::LinAlg::Vector<double>> extrapolate_end_point(
+        std::shared_ptr<Core::LinAlg::Vector<double>> vecn,  ///< vector at time level t_n
+        std::shared_ptr<Core::LinAlg::Vector<double>> vecm  ///< vector at time level of equilibrium
         ) override;
 
     /*!
@@ -235,7 +235,10 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> evaluation_vel() override { return velaf_; };
+    std::shared_ptr<const Core::LinAlg::Vector<double>> evaluation_vel() override
+    {
+      return velaf_;
+    };
 
     /// time factors for generalized-alpha time integration
     double alphaM_;

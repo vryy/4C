@@ -39,15 +39,15 @@ namespace Solid
       void prepare_time_step() override;
 
       void update_state_incrementally(
-          Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
+          std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override;
 
       void determine_stress_strain() override;
 
       void evaluate() override;
 
-      void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> disiterinc) override;
+      void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> disiterinc) override;
 
-      void set_state(const Teuchos::RCP<Core::LinAlg::Vector<double>>& x) override;
+      void set_state(const std::shared_ptr<Core::LinAlg::Vector<double>>& x) override;
 
       void reset_step() override;
 
@@ -61,20 +61,20 @@ namespace Solid
 
       Inpar::Solid::StcScale get_stc_algo() override;
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> get_stc_mat() override;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> get_stc_mat() override;
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> initial_guess() override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> initial_guess() override;
 
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_f() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_f() const override;
 
-      Teuchos::RCP<Core::LinAlg::Vector<double>> freact() override;
+      std::shared_ptr<Core::LinAlg::Vector<double>> freact() override;
 
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override;
 
-      Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
+      std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override;
 
-      void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-          Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
+      void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+          std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps) override;
 
       ///@}
 
@@ -114,10 +114,10 @@ namespace Solid
 
      private:
       //! ptr to the explicit time integrator object
-      Teuchos::RCP<Solid::EXPLICIT::Generic> explint_ptr_;
+      std::shared_ptr<Solid::EXPLICIT::Generic> explint_ptr_;
 
       //! ptr to the non-linear solver object
-      Teuchos::RCP<Solid::Nln::SOLVER::Generic> nlnsolver_ptr_;
+      std::shared_ptr<Solid::Nln::SOLVER::Generic> nlnsolver_ptr_;
     };
   }  // namespace TimeInt
 }  // namespace Solid

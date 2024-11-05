@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
 Core::LinAlg::Solver::Solver(const Teuchos::ParameterList &inparams, const Epetra_Comm &comm,
     const std::function<const Teuchos::ParameterList &(int)> &get_solver_params,
     Core::IO::Verbositylevel verbosity, const bool translate_params_to_belos)
-    : comm_(comm), params_(Teuchos::make_rcp<Teuchos::ParameterList>())
+    : comm_(comm), params_(std::make_shared<Teuchos::ParameterList>())
 {
   if (translate_params_to_belos)
     *params_ = translate_solver_parameters(inparams, get_solver_params, verbosity);
@@ -42,7 +42,7 @@ Core::LinAlg::Solver::~Solver() { reset(); }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::reset() { solver_ = Teuchos::null; }
+void Core::LinAlg::Solver::reset() { solver_ = nullptr; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -145,9 +145,9 @@ void Core::LinAlg::Solver::reset_tolerance()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const SolverParams &params)
+void Core::LinAlg::Solver::setup(std::shared_ptr<Epetra_Operator> matrix,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const SolverParams &params)
 {
   TEUCHOS_FUNC_TIME_MONITOR("Core::LinAlg::Solver:  1)   Setup");
 
@@ -172,20 +172,20 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
     refactor = true;
   }
 
-  if (solver_ == Teuchos::null)
+  if (solver_ == nullptr)
   {
     // decide what solver to use
     std::string solvertype = Solver::params().get("solver", "none");
 
     if ("belos" == solvertype)
     {
-      solver_ = Teuchos::make_rcp<
+      solver_ = std::make_shared<
           Core::LinearSolver::IterativeSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>>(
           comm_, Solver::params());
     }
     else if ("umfpack" == solvertype or "superlu" == solvertype)
     {
-      solver_ = Teuchos::make_rcp<
+      solver_ = std::make_shared<
           Core::LinearSolver::DirectSolver<Epetra_Operator, Core::LinAlg::MultiVector<double>>>(
           solvertype);
     }
@@ -199,9 +199,9 @@ void Core::LinAlg::Solver::setup(Teuchos::RCP<Epetra_Operator> matrix,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 
-int Core::LinAlg::Solver::solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> x,
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> b, const Core::LinAlg::SolverParams &params)
+int Core::LinAlg::Solver::solve_with_multi_vector(std::shared_ptr<Epetra_Operator> matrix,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> x,
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> b, const Core::LinAlg::SolverParams &params)
 {
   setup(matrix, x, b, params);
 
@@ -214,9 +214,9 @@ int Core::LinAlg::Solver::solve_with_multi_vector(Teuchos::RCP<Epetra_Operator> 
   return error_value;
 }
 
-int Core::LinAlg::Solver::solve(Teuchos::RCP<Epetra_Operator> matrix,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> x, Teuchos::RCP<Core::LinAlg::Vector<double>> b,
-    const SolverParams &params)
+int Core::LinAlg::Solver::solve(std::shared_ptr<Epetra_Operator> matrix,
+    std::shared_ptr<Core::LinAlg::Vector<double>> x,
+    std::shared_ptr<Core::LinAlg::Vector<double>> b, const SolverParams &params)
 {
   setup(matrix, x->get_ptr_of_MultiVector(), b->get_ptr_of_MultiVector(), params);
 

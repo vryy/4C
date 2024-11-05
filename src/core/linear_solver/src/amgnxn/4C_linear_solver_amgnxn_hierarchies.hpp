@@ -33,7 +33,7 @@ namespace Core::LinearSolver::AMGNxN
     Hierarchies(Teuchos::RCP<AMGNxN::BlockedMatrix> A,
         std::vector<Teuchos::ParameterList> muelu_params, std::vector<int> num_pdes,
         std::vector<int> null_spaces_dim,
-        std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data, int NumLevelAMG,
+        std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data, int NumLevelAMG,
         std::string verbosity = "off");
 
     int get_num_level_min();
@@ -57,14 +57,14 @@ namespace Core::LinearSolver::AMGNxN
 
     int get_num_pd_es(int block);
     int get_null_space_dim(int block);
-    Teuchos::RCP<std::vector<double>> get_null_space_data(int block);
+    std::shared_ptr<std::vector<double>> get_null_space_data(int block);
 
    private:
     Teuchos::RCP<AMGNxN::BlockedMatrix> a_;
     std::vector<Teuchos::ParameterList> muelu_params_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data_;
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data_;
     int num_blocks_;
     int num_level_max_;
     int num_level_min_;
@@ -81,7 +81,7 @@ namespace Core::LinearSolver::AMGNxN
 
     Teuchos::RCP<MueLu::Hierarchy<Scalar, LocalOrdinal, GlobalOrdinal, Node>>
     build_mue_lu_hierarchy(Teuchos::ParameterList paramListFromXml, int numdf, int dimns,
-        Teuchos::RCP<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
+        std::shared_ptr<std::vector<double>> nsdata, Teuchos::RCP<Epetra_Operator> A_eop, int block,
         int NumBlocks, std::vector<int>& offsets, int offsetFineLevel);
 
     std::string convert_int(int number)

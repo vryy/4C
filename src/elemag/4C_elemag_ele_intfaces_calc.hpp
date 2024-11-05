@@ -18,7 +18,7 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -63,8 +63,8 @@ namespace Discret
           std::vector<int>& nds_slave,                    ///< nodal dofset w.r.t. slave element
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::DiscretizationFaces& discretization,  ///< faces discretization
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+          std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
           ) = 0;
 
       //! Evaluate internal faces
@@ -132,8 +132,8 @@ namespace Discret
           std::vector<int>& nds_slave,                    ///< nodal dofset w.r.t. slave element
           Teuchos::ParameterList& params,                 ///< parameter list
           Core::FE::DiscretizationFaces& discretization,  ///< faces discretization
-          Teuchos::RCP<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
-          Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
+          std::shared_ptr<Core::LinAlg::SparseMatrix> systemmatrix,   ///< systemmatrix
+          std::shared_ptr<Core::LinAlg::Vector<double>> systemvector  ///< systemvector
           ) override;
 
       //! Evaluate internal faces

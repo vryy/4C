@@ -65,7 +65,7 @@ void SSI::SSIPart2WC::init(const Epetra_Comm& comm, const Teuchos::ParameterList
     if (convform == Inpar::ScaTra::convform_convective)
     {
       // get scatra discretization
-      Teuchos::RCP<Core::FE::Discretization> scatradis =
+      std::shared_ptr<Core::FE::Discretization> scatradis =
           Global::Problem::instance()->get_dis(scatra_disname);
 
       // loop over all elements of scatra discretization to check if impltype is correct or not
@@ -433,12 +433,12 @@ bool SSI::SSIPart2WC::convergence_check(int itnum)
 /*----------------------------------------------------------------------*
  | calculate velocities by a FD approximation                Thon 14/11 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> SSI::SSIPart2WC::calc_velocity(
+std::shared_ptr<Core::LinAlg::Vector<double>> SSI::SSIPart2WC::calc_velocity(
     const Core::LinAlg::Vector<double>& dispnp)
 {
-  Teuchos::RCP<Core::LinAlg::Vector<double>> vel = Teuchos::null;
+  std::shared_ptr<Core::LinAlg::Vector<double>> vel = nullptr;
   // copy D_n onto V_n+1
-  vel = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
+  vel = std::make_shared<Core::LinAlg::Vector<double>>(*(structure_field()->dispn()));
   // calculate velocity with timestep Dt()
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
   vel->Update(1. / dt(), dispnp, -1. / dt());
@@ -494,9 +494,9 @@ void SSI::SSIPart2WCSolidToScatraRelax::outer_loop()
   }
 
   // these are the relaxed inputs
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> dispnp =
       Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> velnp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> velnp =
       Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
 
   while (!stopnonliniter)
@@ -612,7 +612,7 @@ void SSI::SSIPart2WCSolidToScatraRelaxAitken::calc_omega(double& omega, const in
 
   // calculate difference of current (i+1) and old (i) residual vector
   // dispincnpdiff = ( r^{i+1}_{n+1} - r^i_{n+1} )
-  Teuchos::RCP<Core::LinAlg::Vector<double>> dispincnpdiff =
+  std::shared_ptr<Core::LinAlg::Vector<double>> dispincnpdiff =
       Core::LinAlg::create_vector(*(structure_field()->dof_row_map(0)), true);
   dispincnpdiff->Update(
       1.0, *dispincnp_, (-1.0), *dispincnpold_, 0.0);  // update r^{i+1}_{n+1} - r^i_{n+1}
@@ -730,7 +730,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::outer_loop()
   }
 
   // this is the relaxed input
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phinp =
+  std::shared_ptr<Core::LinAlg::Vector<double>> phinp =
       Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
 
   while (!stopnonliniter)
@@ -830,7 +830,7 @@ void SSI::SSIPart2WCScatraToSolidRelaxAitken::calc_omega(double& omega, const in
   const double minomega = ssicontrolpart.get<double>("MINOMEGA");
 
   // scaincnpdiff =  r^{i+1}_{n+1} - r^i_{n+1}
-  Teuchos::RCP<Core::LinAlg::Vector<double>> scaincnpdiff =
+  std::shared_ptr<Core::LinAlg::Vector<double>> scaincnpdiff =
       Core::LinAlg::create_vector(*scatra_field()->discretization()->dof_row_map(0), true);
   scaincnpdiff->Update(1.0, *scaincnp_, (-1.0), *scaincnpold_, 0.0);
 

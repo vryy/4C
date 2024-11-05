@@ -27,7 +27,7 @@ namespace Mat
 
 
       //! create instance of Soret material
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       //! return Soret coefficient
       double soret_coefficient() const { return soretcoefficient_; };
@@ -113,9 +113,9 @@ namespace Mat
     };
 
     //! clone Soret material
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<Soret>(*this);
+      return std::make_shared<Soret>(*this);
     };
 
     //! return Soret coefficient

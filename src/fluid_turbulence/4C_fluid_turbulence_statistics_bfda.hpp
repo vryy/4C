@@ -17,7 +17,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -34,7 +35,7 @@ namespace FLD
       columns are evaluation planes corresponding to the positions in "posEvaluation_"
 
     */
-    TurbulenceStatisticsBfda(Teuchos::RCP<Core::FE::Discretization> actdis,
+    TurbulenceStatisticsBfda(std::shared_ptr<Core::FE::Discretization> actdis,
         Teuchos::ParameterList& params, const std::string& statistics_outfilename);
 
     /*!
@@ -87,7 +88,7 @@ namespace FLD
     int numrstatlocations_;
 
     //! The discretisation (required for nodes, dofs etc;)
-    Teuchos::RCP<Core::FE::Discretization> discret_;
+    std::shared_ptr<Core::FE::Discretization> discret_;
 
     //! parameter list
     Teuchos::ParameterList& params_;
@@ -102,21 +103,21 @@ namespace FLD
     std::vector<double> act_pos_evaluation_;
 
     //! Toggle vectors
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglew_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>> togglep_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglew_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> togglep_;
 
     //! vector for z-coordinates
-    Teuchos::RCP<std::vector<double>> zcoordinates_;
+    std::shared_ptr<std::vector<double>> zcoordinates_;
     //! matrix for r-coordinates (columns are evaluation planes
     Core::LinAlg::SerialDenseMatrix rcoordinates_;
 
     //! matrices for mean values along z-axis
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> zsumw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> zsump_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> zsumw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> zsump_;
 
     //! matrices for mean values of evaluation planes
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> rsumw_;
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> rsump_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> rsumw_;
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> rsump_;
   };
 
 }  // namespace FLD

@@ -62,19 +62,19 @@ namespace POROFLUIDMULTIPHASE
     virtual void output() = 0;
 
     //! Initialize the linear solver
-    virtual void initialize_linear_solver(Teuchos::RCP<Core::LinAlg::Solver> solver) = 0;
+    virtual void initialize_linear_solver(std::shared_ptr<Core::LinAlg::Solver> solver) = 0;
 
     //! solve linear system of equations
-    virtual void linear_solve(Teuchos::RCP<Core::LinAlg::Solver> solver,
-        Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> increment,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> residual,
+    virtual void linear_solve(std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Core::LinAlg::SparseOperator> sysmat,
+        std::shared_ptr<Core::LinAlg::Vector<double>> increment,
+        std::shared_ptr<Core::LinAlg::Vector<double>> residual,
         Core::LinAlg::SolverParams& solver_params) = 0;
 
     //! calculate norms for convergence checks
     virtual void calculate_norms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
         std::vector<double>& prenorm,
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> increment) = 0;
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> increment) = 0;
 
     //! create the field test
     virtual void create_field_test() = 0;
@@ -86,45 +86,45 @@ namespace POROFLUIDMULTIPHASE
     virtual void evaluate() = 0;
 
     //! extract increments and update mesh tying
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> extract_and_update_iter(
-        const Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> extract_and_update_iter(
+        const std::shared_ptr<const Core::LinAlg::Vector<double>> inc) = 0;
 
     // return arterial network time integrator
-    virtual Teuchos::RCP<Adapter::ArtNet> art_net_tim_int()
+    virtual std::shared_ptr<Adapter::ArtNet> art_net_tim_int()
     {
       FOUR_C_THROW("ArtNetTimInt() not implemented in base class, wrong mesh tying object?");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! access dof row map
-    virtual Teuchos::RCP<const Epetra_Map> artery_dof_row_map() const
+    virtual std::shared_ptr<const Epetra_Map> artery_dof_row_map() const
     {
       FOUR_C_THROW("ArteryDofRowMap() not implemented in base class, wrong mesh tying object?");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! access to block system matrix of artery poro problem
-    virtual Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const
+    virtual std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> artery_porofluid_sysmat() const
     {
       FOUR_C_THROW(
           "artery_porofluid_sysmat() not implemented in base class, wrong mesh tying object?");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! right-hand side alias the dynamic force residual for coupled system
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> artery_porofluid_rhs() const
     {
       FOUR_C_THROW("ArteryPorofluidRHS() not implemented in base class, wrong mesh tying object?");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! access to global (combined) increment of coupled problem
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> combined_increment(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> inc) const = 0;
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> combined_increment(
+        std::shared_ptr<const Core::LinAlg::Vector<double>> inc) const = 0;
 
     //! check if initial fields on coupled DOFs are equal (only for node-based coupling)
     virtual void check_initial_fields(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vec_cont) const = 0;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vec_cont) const = 0;
 
     //! set the element pairs that are close as found by search algorithm
     virtual void set_nearby_ele_pairs(const std::map<int, std::set<int>>* nearbyelepairs) = 0;
@@ -136,11 +136,11 @@ namespace POROFLUIDMULTIPHASE
     virtual void apply_mesh_movement() const = 0;
 
     //! return blood vessel volume fraction
-    virtual Teuchos::RCP<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction()
+    virtual std::shared_ptr<const Core::LinAlg::Vector<double>> blood_vessel_volume_fraction()
     {
       FOUR_C_THROW(
           "blood_vessel_volume_fraction() not implemented in base class, wrong mesh tying object?");
-      return Teuchos::null;
+      return nullptr;
     }
 
    protected:

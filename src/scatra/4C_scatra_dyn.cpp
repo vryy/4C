@@ -117,7 +117,7 @@ void scatra_dyn(int restart)
           scatradyn, scatradyn, Global::Problem::instance()->solver_params(linsolvernumber));
 
       // add proxy of velocity related degrees of freedom to scatra discretization
-      auto dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+      auto dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
           Global::Problem::instance()->n_dim() + 1, 0, 0, true);
       if (scatradis->add_dof_set(dofsetaux) != 1)
         FOUR_C_THROW("Scatra discretization has illegal number of dofsets!");
@@ -147,7 +147,7 @@ void scatra_dyn(int restart)
       if (scatradis->get_condition("ScatraHeteroReactionSlave") != nullptr)
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+        std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
         dis.push_back(scatradis);
 
         Teuchos::ParameterList binning_params =
@@ -254,12 +254,12 @@ void scatra_dyn(int restart)
         const int ndofperelement_fluid = 0;
 
         // add proxy of velocity related degrees of freedom to scatra discretization
-        Teuchos::RCP<Core::DOFSets::DofSetInterface> dofsetaux;
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        std::shared_ptr<Core::DOFSets::DofSetInterface> dofsetaux;
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_scatra, ndofperelement_scatra, 0, true);
         if (fluiddis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in fluid field");
-        dofsetaux = Teuchos::make_rcp<Core::DOFSets::DofSetPredefinedDoFNumber>(
+        dofsetaux = std::make_shared<Core::DOFSets::DofSetPredefinedDoFNumber>(
             ndofpernode_fluid, ndofperelement_fluid, 0, true);
         if (scatradis->add_dof_set(dofsetaux) != 1)
           FOUR_C_THROW("unexpected dof sets in scatra field");
@@ -283,7 +283,7 @@ void scatra_dyn(int restart)
       if (fieldcoupling == Inpar::ScaTra::coupling_volmortar)
       {
         // create vector of discr.
-        std::vector<Teuchos::RCP<Core::FE::Discretization>> dis;
+        std::vector<std::shared_ptr<Core::FE::Discretization>> dis;
         dis.push_back(fluiddis);
         dis.push_back(scatradis);
 

@@ -12,7 +12,8 @@
 
 #include "4C_inpar_scatra.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <map>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -71,7 +72,7 @@ namespace SSI
     //! \param oldele    current element on source discretization
     //! \param matid     material of cloned element
     //! \param isnurbs   nurbs flag
-    virtual void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+    virtual void set_element_data(std::shared_ptr<Core::Elements::Element> newele,
         Core::Elements::Element* oldele, const int matid, const bool isnurbs);
   };
 
@@ -80,7 +81,7 @@ namespace SSI
    public:
     std::map<std::string, std::string> conditions_to_copy() const override;
 
-    void set_element_data(Teuchos::RCP<Core::Elements::Element> newele,
+    void set_element_data(std::shared_ptr<Core::Elements::Element> newele,
         Core::Elements::Element* oldele, const int matid, const bool isnurbs) override;
   };
 

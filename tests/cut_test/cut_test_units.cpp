@@ -70,7 +70,7 @@ void test_unit_intersection_touch()
     }
 
 
-    Teuchos::RCP<Cut::IntersectionBase> intersection =
+    std::shared_ptr<Cut::IntersectionBase> intersection =
         Cut::IntersectionBase::create(Core::FE::CellType::line2, Core::FE::CellType::quad4);
     intersection->init(&mesh, e, s1, false, false, false);
 

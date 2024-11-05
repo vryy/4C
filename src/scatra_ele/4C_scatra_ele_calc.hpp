@@ -336,25 +336,25 @@ namespace Discret
       );
 
       //! evaluate material
-      virtual void materials(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      virtual void materials(const std::shared_ptr<const Core::Mat::Material>
+                                 material,  //!< pointer to current material
+          const int k,                      //!< id of current scalar
+          double& densn,                    //!< density at t_(n)
+          double& densnp,                   //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                   //!< density at t_(n+alpha_M)
+          double& visc,                     //!< fluid viscosity
+          const int iquad = -1              //!< id of current gauss point (default = -1)
       );
 
       //! material ScaTra
-      virtual void mat_scatra(
-          const Teuchos::RCP<const Core::Mat::Material> material,  //!< pointer to current material
-          const int k,                                             //!< id of current scalar
-          double& densn,                                           //!< density at t_(n)
-          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
-          double& densam,       //!< density at t_(n+alpha_M)
-          double& visc,         //!< fluid viscosity
-          const int iquad = -1  //!< id of current gauss point (default = -1)
+      virtual void mat_scatra(const std::shared_ptr<const Core::Mat::Material>
+                                  material,  //!< pointer to current material
+          const int k,                       //!< id of current scalar
+          double& densn,                     //!< density at t_(n)
+          double& densnp,                    //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,                    //!< density at t_(n+alpha_M)
+          double& visc,                      //!< fluid viscosity
+          const int iquad = -1               //!< id of current gauss point (default = -1)
       );
 
       /*!
@@ -365,12 +365,12 @@ namespace Discret
        * @param densnp   density at time t_(n+1) or t_(n+alpha_f)
        * @param densam   density at time t_(n+alpha_m)
        */
-      virtual void mat_scatra_multi_scale(const Teuchos::RCP<const Core::Mat::Material> material,
+      virtual void mat_scatra_multi_scale(const std::shared_ptr<const Core::Mat::Material> material,
           double& densn, double& densnp, double& densam) const;
 
       //! evaluate electrode material
       void mat_electrode(
-          const Teuchos::RCP<const Core::Mat::Material> material  //!< electrode material
+          const std::shared_ptr<const Core::Mat::Material> material  //!< electrode material
       );
 
       /*========================================================================*/
@@ -557,7 +557,7 @@ namespace Discret
 
       //! get density at integration point
       virtual double get_density(const Core::Elements::Element* ele,
-          Teuchos::RCP<const Core::Mat::Material> material, Teuchos::ParameterList& params,
+          std::shared_ptr<const Core::Mat::Material> material, Teuchos::ParameterList& params,
           const double tempnp);
 
       //! calculate viscous part of subgrid-scale velocity
@@ -1094,9 +1094,9 @@ namespace Discret
       /*========================================================================*/
 
       //! manager for diffusion
-      Teuchos::RCP<ScaTraEleDiffManager> diffmanager_;
+      std::shared_ptr<ScaTraEleDiffManager> diffmanager_;
       //! manager for reaction
-      Teuchos::RCP<ScaTraEleReaManager> reamanager_;
+      std::shared_ptr<ScaTraEleReaManager> reamanager_;
 
       /*========================================================================*/
       //! @name scalar degrees of freedom and related
@@ -1116,7 +1116,7 @@ namespace Discret
       /*========================================================================*/
 
       //! for the handling of rotationally symmetric periodic boundary conditions
-      Teuchos::RCP<
+      std::shared_ptr<
           FLD::RotationallySymmetricPeriodicBC<distype, nsd_ + 1, Discret::Elements::Fluid::none>>
           rotsymmpbc_;
       //! nodal velocity values at t_(n+1) or t_(n+alpha_F)
@@ -1187,7 +1187,7 @@ namespace Discret
       Core::Elements::Element* ele_;
 
       //! variable manager for Gauss point values
-      Teuchos::RCP<ScaTraEleInternalVariableManager<nsd_, nen_>> scatravarmanager_;
+      std::shared_ptr<ScaTraEleInternalVariableManager<nsd_, nen_>> scatravarmanager_;
     };
 
 

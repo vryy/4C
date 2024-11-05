@@ -18,8 +18,8 @@
 #include "4C_mortar_element.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <unordered_map>
 
 FOUR_C_NAMESPACE_OPEN
@@ -39,10 +39,10 @@ namespace Mortar
     virtual void clear() = 0;
 
     virtual void assemble_rhs(Mortar::Element* mele, CONTACT::VecBlockType row,
-        Teuchos::RCP<Epetra_FEVector> fc) const = 0;
+        std::shared_ptr<Epetra_FEVector> fc) const = 0;
 
     virtual void assemble_matrix(Mortar::Element* mele, CONTACT::MatBlockType block,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const = 0;
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kc) const = 0;
 
     virtual double* rhs(int dof) = 0;
     virtual double* rhs() = 0;
@@ -198,21 +198,21 @@ namespace Mortar
     double* kde(int col) override { return ssi_elch_data_.k_de_[col].data(); }
 
     void assemble_rhs(Mortar::Element* mele, CONTACT::VecBlockType row,
-        Teuchos::RCP<Epetra_FEVector> fc) const override;
+        std::shared_ptr<Epetra_FEVector> fc) const override;
 
     void assemble_matrix(Mortar::Element* mele, CONTACT::MatBlockType block,
-        Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const override;
+        std::shared_ptr<Core::LinAlg::SparseMatrix> kc) const override;
 
     template <int num_dof_per_node>
     void assemble_rhs(Mortar::Element* mele,
         const Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>& rhs,
-        std::vector<int>& dofs, Teuchos::RCP<Epetra_FEVector> fc) const;
+        std::vector<int>& dofs, std::shared_ptr<Epetra_FEVector> fc) const;
 
     template <int num_dof_per_node>
     void assemble_matrix(Mortar::Element* mele,
         const std::unordered_map<int,
             Core::LinAlg::Matrix<Core::FE::num_nodes<parent_distype> * num_dof_per_node, 1>>& k,
-        std::vector<int>& dofs, Teuchos::RCP<Core::LinAlg::SparseMatrix> kc) const;
+        std::vector<int>& dofs, std::shared_ptr<Core::LinAlg::SparseMatrix> kc) const;
 
 
     void clear() override

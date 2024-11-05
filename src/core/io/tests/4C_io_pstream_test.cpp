@@ -28,9 +28,9 @@ namespace
   TEST(PstreamTest, DoubleInitializeThrows)
   {
     Core::IO::Pstream ps;
-    ps.setup(true, false, true, Core::IO::undef, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 4, "");
+    ps.setup(true, false, true, Core::IO::undef, std::make_shared<Epetra_SerialComm>(), 0, 4, "");
     EXPECT_THROW(ps.setup(false, false, false, Core::IO::standard,
-                     Teuchos::make_rcp<Epetra_SerialComm>(), 0, 2, ""),
+                     std::make_shared<Epetra_SerialComm>(), 0, 2, ""),
         Core::Exception);
   }
 
@@ -39,7 +39,7 @@ namespace
     using namespace FourC;
     Core::IO::Pstream ps;
     EXPECT_THROW(ps.setup(false, false, false, Core::IO::standard,
-                     Teuchos::make_rcp<Epetra_SerialComm>(), 4, 2, ""),
+                     std::make_shared<Epetra_SerialComm>(), 4, 2, ""),
         Core::Exception);
   }
 
@@ -47,7 +47,7 @@ namespace
   {
     using namespace FourC;
     Core::IO::Pstream ps;
-    ps.setup(true, false, false, Core::IO::undef, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 0, "");
+    ps.setup(true, false, false, Core::IO::undef, std::make_shared<Epetra_SerialComm>(), 0, 0, "");
     EXPECT_NO_THROW(ps.flush());
     EXPECT_NO_THROW(ps << "blub");
     EXPECT_NO_THROW(ps.close());
@@ -58,7 +58,7 @@ namespace
     using namespace FourC;
     Core::IO::Pstream ps;
     ps.setup(
-        true, false, false, Core::IO::minimal, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 0, "");
+        true, false, false, Core::IO::minimal, std::make_shared<Epetra_SerialComm>(), 0, 0, "");
     EXPECT_EQ(ps.requested_output_level(), Core::IO::minimal);
     Core::IO::Level &lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl << 4);
@@ -68,7 +68,7 @@ namespace
   {
     using namespace FourC;
     Core::IO::Pstream ps;
-    ps.setup(false, false, true, Core::IO::debug, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 0, "");
+    ps.setup(false, false, true, Core::IO::debug, std::make_shared<Epetra_SerialComm>(), 0, 0, "");
     EXPECT_NO_THROW(ps << 4UL << -5LL << 1337.0 << 42.0f << "blub" << std::string("blah") << "\n");
     EXPECT_NO_THROW(ps.flush());
     EXPECT_NO_THROW(ps.close());
@@ -78,7 +78,7 @@ namespace
   {
     using namespace FourC;
     Core::IO::Pstream ps;
-    ps.setup(false, false, true, Core::IO::debug, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 0, "");
+    ps.setup(false, false, true, Core::IO::debug, std::make_shared<Epetra_SerialComm>(), 0, 0, "");
     EXPECT_NO_THROW(ps << "blub" << Core::IO::flush);
     EXPECT_NO_THROW(ps << "blah" << Core::IO::endl);
   }
@@ -87,7 +87,7 @@ namespace
   {
     using namespace FourC;
     Core::IO::Pstream ps;
-    ps.setup(true, false, true, Core::IO::undef, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 0, "");
+    ps.setup(true, false, true, Core::IO::undef, std::make_shared<Epetra_SerialComm>(), 0, 0, "");
     Core::IO::Level &lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl.stream(1.2));
     EXPECT_NO_THROW(lvl << 4);
@@ -99,7 +99,7 @@ namespace
     using namespace FourC;
     Core::IO::Pstream ps;
     ps.setup(
-        true, false, true, Core::IO::standard, Teuchos::make_rcp<Epetra_SerialComm>(), 0, 0, "");
+        true, false, true, Core::IO::standard, std::make_shared<Epetra_SerialComm>(), 0, 0, "");
     Core::IO::Level &lvl = ps(Core::IO::debug);
     EXPECT_NO_THROW(lvl << 1.2 << Core::IO::flush);
     EXPECT_NO_THROW(lvl << 23 << Core::IO::endl);

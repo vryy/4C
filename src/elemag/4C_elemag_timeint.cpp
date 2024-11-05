@@ -30,10 +30,10 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                               gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::DiscretizationHDG> &actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver> &solver,
-    const Teuchos::RCP<Teuchos::ParameterList> &params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter> &output)
+EleMag::ElemagTimeInt::ElemagTimeInt(const std::shared_ptr<Core::FE::DiscretizationHDG> &actdis,
+    const std::shared_ptr<Core::LinAlg::Solver> &solver,
+    const std::shared_ptr<Teuchos::ParameterList> &params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter> &output)
     : discret_(actdis),
       solver_(solver),
       params_(params),
@@ -71,22 +71,23 @@ EleMag::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<Core::FE::Discretization
 void EleMag::ElemagTimeInt::init()
 {
   // get dof row map
-  Teuchos::RCP<const Epetra_Map> dofrowmap = Teuchos::rcpFromRef(*discret_->dof_row_map());
+  std::shared_ptr<const Epetra_Map> dofrowmap =
+      Core::Utils::shared_ptr_from_ref(*discret_->dof_row_map());
 
   // check time-step length
   if (dtp_ <= 0.0) FOUR_C_THROW("Zero or negative time-step length!");
 
   // Nodevectors for the output
   electric =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
   electric_post =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
   magnetic =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
-  trace = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
-  conductivity = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
-  permittivity = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
-  permeability = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  trace = std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  conductivity = std::make_shared<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
+  permittivity = std::make_shared<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
+  permeability = std::make_shared<Core::LinAlg::Vector<double>>(*discret_->element_row_map());
 
   // create vector of zeros to be used for enforcing zero Dirichlet boundary conditions
   zeros_ = Core::LinAlg::create_vector(*dofrowmap, true);
@@ -94,7 +95,7 @@ void EleMag::ElemagTimeInt::init()
   trace_ = Core::LinAlg::create_vector(*dofrowmap, true);
 
   // Map of the dirichlet conditions
-  dbcmaps_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  dbcmaps_ = std::make_shared<Core::LinAlg::MapExtractor>();
   // Why is this in a new scope?
   {
     Teuchos::ParameterList eleparams;
@@ -106,8 +107,7 @@ void EleMag::ElemagTimeInt::init()
     eleparams.set<const Core::ProblemType *>("problem_type", &problem_type);
 
     // Evaluation of the dirichlet conditions (why is it here and also later?)
-    discret_->evaluate_dirichlet(
-        eleparams, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, dbcmaps_);
+    discret_->evaluate_dirichlet(eleparams, zeros_, nullptr, nullptr, nullptr, dbcmaps_);
     zeros_->PutScalar(0.0);
 
     // Initialize elements
@@ -116,7 +116,7 @@ void EleMag::ElemagTimeInt::init()
 
   // create system matrix and set to zero
   // the 108 comes from line 282 of /fluid/fluidimplicitintegration.cpp
-  sysmat_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
+  sysmat_ = std::make_shared<Core::LinAlg::SparseMatrix>(*dofrowmap, 108, false, true);
   // Is it possible to avoid this passage? It is a sparse matrix so it should
   // only contain non-zero entries that have to be initialized
   sysmat_->zero();
@@ -126,7 +126,7 @@ void EleMag::ElemagTimeInt::init()
 
   // instantiate equilibration class
   equilibration_ =
-      Teuchos::make_rcp<Core::LinAlg::EquilibrationSparse>(equilibration_method_, dofrowmap);
+      std::make_shared<Core::LinAlg::EquilibrationSparse>(equilibration_method_, dofrowmap);
 
   // write mesh
   output_->write_mesh(0, 0.0);
@@ -355,7 +355,7 @@ void EleMag::ElemagTimeInt::set_initial_field(
  |  Set initial field by scatra solution (public)      berardocco 05/20 |
  *----------------------------------------------------------------------*/
 void EleMag::ElemagTimeInt::set_initial_electric_field(
-    Core::LinAlg::Vector<double> &phi, Teuchos::RCP<Core::FE::Discretization> &scatradis)
+    Core::LinAlg::Vector<double> &phi, std::shared_ptr<Core::FE::Discretization> &scatradis)
 {
   // we have to call an init for the elements first!
   Teuchos::ParameterList initParams;
@@ -367,16 +367,16 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
   initParams.set<EleMag::Action>("action", EleMag::project_electric_from_scatra_field);
   initParams.set<Inpar::EleMag::DynamicType>("dyna", elemagdyna_);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> phicol;
+  std::shared_ptr<Core::LinAlg::Vector<double>> phicol;
   bool ishdg = false;
-  if (Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationHDG>(scatradis) != Teuchos::null)
+  if (std::dynamic_pointer_cast<Core::FE::DiscretizationHDG>(scatradis) != nullptr)
   {
-    phicol = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatradis->dof_col_map(2)));
+    phicol = std::make_shared<Core::LinAlg::Vector<double>>(*(scatradis->dof_col_map(2)));
     ishdg = true;
     initParams.set<bool>("ishdg", ishdg);
   }
   else
-    phicol = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatradis->dof_col_map()));
+    phicol = std::make_shared<Core::LinAlg::Vector<double>>(*(scatradis->dof_col_map()));
 
   Core::LinAlg::export_to(phi, *phicol);
 
@@ -393,8 +393,8 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
     if (elevec2.numRows() != discret_->num_dof(1, elemagele))
       elevec2.size(discret_->num_dof(1, elemagele));
 
-    Teuchos::RCP<Core::LinAlg::SerialDenseVector> nodevals_phi =
-        Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>();
+    std::shared_ptr<Core::LinAlg::SerialDenseVector> nodevals_phi =
+        std::make_shared<Core::LinAlg::SerialDenseVector>();
 
     if (ishdg)
     {
@@ -421,7 +421,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
       }
     }
 
-    initParams.set<Teuchos::RCP<Core::LinAlg::SerialDenseVector>>("nodevals_phi", nodevals_phi);
+    initParams.set<std::shared_ptr<Core::LinAlg::SerialDenseVector>>("nodevals_phi", nodevals_phi);
 
     // evaluate the element
     elemagele->evaluate(
@@ -437,7 +437,7 @@ void EleMag::ElemagTimeInt::set_initial_electric_field(
 /*----------------------------------------------------------------------*
  |  Compute error routine (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_error()
+std::shared_ptr<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_error()
 {
   // Initializing siome vectors and parameters
   Core::LinAlg::SerialDenseVector elevec1, elevec2, elevec3;
@@ -450,8 +450,8 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_err
   params.set<bool>("postprocess", postprocess_);
 
   const int numberOfErrorMeasures = 11;
-  Teuchos::RCP<Core::LinAlg::SerialDenseVector> errors =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(numberOfErrorMeasures);
+  std::shared_ptr<Core::LinAlg::SerialDenseVector> errors =
+      std::make_shared<Core::LinAlg::SerialDenseVector>(numberOfErrorMeasures);
 
   // call loop over elements (assemble nothing)
   discret_->evaluate_scalars(params, errors);
@@ -460,7 +460,7 @@ Teuchos::RCP<Core::LinAlg::SerialDenseVector> EleMag::ElemagTimeInt::compute_err
   return errors;
 }
 
-void EleMag::ElemagTimeInt::print_errors(Teuchos::RCP<Core::LinAlg::SerialDenseVector> &errors)
+void EleMag::ElemagTimeInt::print_errors(std::shared_ptr<Core::LinAlg::SerialDenseVector> &errors)
 {
   if (myrank_ == 0)
   {
@@ -689,7 +689,7 @@ void EleMag::ElemagTimeInt::assemble_mat_and_rhs()
 
   // The evaluation of the discretization have to happen before Complete() is
   // called or after an UnComplete() call has been made.
-  discret_->evaluate(eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, sysmat_, nullptr, residual_, nullptr, nullptr);
   discret_->clear_state(true);
   sysmat_->complete();
 
@@ -725,8 +725,7 @@ void EleMag::ElemagTimeInt::update_interior_variables_and_assemble_rhs()
   residual_->PutScalar(0.0);
   discret_->set_state("trace", trace_);
 
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, residual_, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, residual_, nullptr, nullptr);
 
   discret_->clear_state(true);
 
@@ -746,8 +745,7 @@ void EleMag::ElemagTimeInt::apply_dirichlet_to_system(bool resonly)
       "function_manager", &Global::Problem::instance()->function_manager());
   const Core::ProblemType problem_type = Core::ProblemType::elemag;
   params.set<const Core::ProblemType *>("problem_type", &problem_type);
-  discret_->evaluate_dirichlet(
-      params, zeros_, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate_dirichlet(params, zeros_, nullptr, nullptr, nullptr, nullptr);
   if (resonly)
     Core::LinAlg::apply_dirichlet_to_system(*residual_, *zeros_, *(dbcmaps_->cond_map()));
   else
@@ -781,7 +779,7 @@ void EleMag::ElemagTimeInt::compute_silver_mueller(bool do_rhs)
       discret_->evaluate_condition(eleparams, residual_, condname);
     else
       discret_->evaluate_condition(
-          eleparams, sysmat_, Teuchos::null, residual_, Teuchos::null, Teuchos::null, condname);
+          eleparams, sysmat_, nullptr, residual_, nullptr, nullptr, condname);
   }
 
   return;
@@ -831,11 +829,11 @@ namespace
   *----------------------------------------------------------------------*/
   // internal helper function for output
   void get_node_vectors_hdg(Core::FE::Discretization &dis,
-      const Teuchos::RCP<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &electric,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &electric_post,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &magnetic,
-      Teuchos::RCP<Core::LinAlg::MultiVector<double>> &trace,
+      const std::shared_ptr<Core::LinAlg::Vector<double>> &traceValues, const int ndim,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> &electric,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> &electric_post,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> &magnetic,
+      std::shared_ptr<Core::LinAlg::MultiVector<double>> &trace,
       Core::LinAlg::Vector<double> &conductivity, Core::LinAlg::Vector<double> &permittivity,
       Core::LinAlg::Vector<double> &permeability)
   {
@@ -847,14 +845,14 @@ namespace
       // The electric is a multivector because it is a vectorial field.
       // The multivector is based on the map of the node
       // owned by the processor. The vectors are zeroed.
-      electric = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+      electric = std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
       electric_post =
-          Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
-      magnetic = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+          std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+      magnetic = std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
     }
 
     // Same for the trace and cell pressure.
-    trace = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
+    trace = std::make_shared<Core::LinAlg::MultiVector<double>>(*dis.node_row_map(), ndim);
     // call element routine for interpolate HDG to elements
     // Here it is used the function that acts in the elements, evaluate().
     Teuchos::ParameterList params;
@@ -965,12 +963,12 @@ void EleMag::ElemagTimeInt::output()
   TEUCHOS_FUNC_TIME_MONITOR("EleMag::ElemagTimeInt::Output");
   // Preparing the vectors that are going to be written in the output file
   electric =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
   electric_post =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
   magnetic =
-      Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
-  trace = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+      std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
+  trace = std::make_shared<Core::LinAlg::MultiVector<double>>(*discret_->node_row_map(), numdim_);
 
   // Get the results from the discretization vectors to the output ones
   get_node_vectors_hdg(*discret_, trace_, numdim_, electric, electric_post, magnetic, trace,
@@ -1019,10 +1017,10 @@ void EleMag::ElemagTimeInt::write_restart()
 
   // write internal field for which we need to create and fill the corresponding vectors
   // since this requires some effort, the write_restart method should not be used excessively!
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intVar =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intVarnm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
+  std::shared_ptr<Core::LinAlg::Vector<double>> intVar =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
+  std::shared_ptr<Core::LinAlg::Vector<double>> intVarnm =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
   discret_->set_state(1, "intVar", intVar);
   discret_->set_state(1, "intVarnm", intVarnm);
 
@@ -1032,7 +1030,8 @@ void EleMag::ElemagTimeInt::write_restart()
 
   discret_->evaluate(eleparams);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> matrix_state = discret_->get_state(1, "intVar");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> matrix_state =
+      discret_->get_state(1, "intVar");
   Core::LinAlg::export_to(*matrix_state, *intVar);
 
   matrix_state = discret_->get_state(1, "intVarnm");
@@ -1056,8 +1055,8 @@ void EleMag::ElemagTimeInt::read_restart(int step)
       discret_, Global::Problem::instance()->input_control_file(), step);
   time_ = reader.read_double("time");
   step_ = reader.read_int("step");
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intVar =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
+  std::shared_ptr<Core::LinAlg::Vector<double>> intVar =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
   try
   {
     reader.read_vector(intVar, "intVar");
@@ -1073,8 +1072,8 @@ void EleMag::ElemagTimeInt::read_restart(int step)
   eleparams.set<EleMag::Action>("action", EleMag::ele_init_from_restart);
   eleparams.set<Inpar::EleMag::DynamicType>("dynamic type", elemagdyna_);
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> intVarnm =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
+  std::shared_ptr<Core::LinAlg::Vector<double>> intVarnm =
+      std::make_shared<Core::LinAlg::Vector<double>>(*(discret_->dof_row_map(1)));
   try
   {
     reader.read_vector(intVarnm, "intVarnm");
@@ -1088,8 +1087,7 @@ void EleMag::ElemagTimeInt::read_restart(int step)
   discret_->set_state(1, "intVarnm", intVarnm);
   reader.read_multi_vector(trace, "traceRestart");
 
-  discret_->evaluate(
-      eleparams, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null);
+  discret_->evaluate(eleparams, nullptr, nullptr, nullptr, nullptr, nullptr);
   discret_->clear_state(true);
 
   if (myrank_ == 0)
@@ -1103,14 +1101,14 @@ void EleMag::ElemagTimeInt::read_restart(int step)
 
 void EleMag::ElemagTimeInt::spy_sysmat(std::ostream &out)
 {
-  Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_, true)->epetra_matrix()->Print(out);
+  std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_)->epetra_matrix()->Print(out);
   std::cout << "Routine has to be implemented. In the meanwhile the print() method from the "
                "Epetra_CsrMatrix is used."
             << std::endl;
   /*
   //Dynamic casting of the sysmat
   Epetra_CrsMatrix *matrix =
-  Teuchos::rcp_dynamic_cast<Core::LinAlg::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
+  std::dynamic_pointer_cast<Core::LinAlg::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
   matrix->NumMyRows(); int c = matrix->NumMyCols(); int numentries;
   //double*& values = nullptr;
   double* values;
@@ -1135,7 +1133,7 @@ void EleMag::ElemagTimeInt::spy_sysmat(std::ostream &out)
 /*----------------------------------------------------------------------*
  |  Return discretization (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::FE::Discretization> EleMag::ElemagTimeInt::discretization()
+std::shared_ptr<Core::FE::Discretization> EleMag::ElemagTimeInt::discretization()
 {
   return discret_;
 }  // discretization
@@ -1143,9 +1141,9 @@ Teuchos::RCP<Core::FE::Discretization> EleMag::ElemagTimeInt::discretization()
 /*----------------------------------------------------------------------*
  |  Create test field (public)                         berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Utils::ResultTest> EleMag::ElemagTimeInt::create_field_test()
+std::shared_ptr<Core::Utils::ResultTest> EleMag::ElemagTimeInt::create_field_test()
 {
-  return Teuchos::make_rcp<ElemagResultTest>(*this);
+  return std::make_shared<ElemagResultTest>(*this);
 }  // CreateFieldTest
 
 FOUR_C_NAMESPACE_CLOSE

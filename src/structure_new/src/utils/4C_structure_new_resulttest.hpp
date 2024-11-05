@@ -216,24 +216,24 @@ namespace Solid
 
    private:
     //! our discretisation
-    Teuchos::RCP<const Core::FE::Discretization> strudisc_;
+    std::shared_ptr<const Core::FE::Discretization> strudisc_;
     // our solution
     //! global displacement DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> disn_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> disn_;
     //! global velocity DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> veln_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> veln_;
     //! global acceleration DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accn_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accn_;
     //! global reaction DOFs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> reactn_;
+    std::shared_ptr<const Core::LinAlg::Vector<double>> reactn_;
     /* NOTE: these have to be present explicitly
      * as they are not part of the problem instance like in fluid3
      */
 
     //! pointer to the global state object of the structural time integration
-    Teuchos::RCP<const Solid::TimeInt::BaseDataGlobalState> gstate_;
+    std::shared_ptr<const Solid::TimeInt::BaseDataGlobalState> gstate_;
     //! pointer to the data container of the structural time integration
-    Teuchos::RCP<const Solid::ModelEvaluator::Data> data_;
+    std::shared_ptr<const Solid::ModelEvaluator::Data> data_;
   };  // class ResultTest
 
   /*----------------------------------------------------------------------------*/

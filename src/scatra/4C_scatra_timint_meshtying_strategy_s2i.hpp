@@ -106,12 +106,12 @@ namespace ScaTra
     //! compute time derivatives of discrete state variables
     void compute_time_derivative() const override;
 
-    void condense_mat_and_rhs(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
+    void condense_mat_and_rhs(const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,
         const bool calcinittimederiv = false) const override;
 
     //! return interface coupling adapter
-    Teuchos::RCP<const Coupling::Adapter::Coupling> coupling_adapter() const { return icoup_; };
+    std::shared_ptr<const Coupling::Adapter::Coupling> coupling_adapter() const { return icoup_; };
 
     //! return flag for meshtying method
     const Inpar::S2I::CouplingType& coupling_type() const { return couplingtype_; }
@@ -152,28 +152,31 @@ namespace ScaTra
         Core::LinAlg::Vector<double>& extendedresidual) const;
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& growth_var_n() const { return growthn_; };
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& growth_var_n() const { return growthn_; };
 
     //! return state vector of discrete scatra-scatra interface layer thicknesses at time n+1
-    const Teuchos::RCP<Core::LinAlg::Vector<double>>& growth_var_np() const { return growthnp_; };
+    const std::shared_ptr<Core::LinAlg::Vector<double>>& growth_var_np() const
+    {
+      return growthnp_;
+    };
 
     //! perform initialization of scatra-scatra interface coupling
     void init_meshtying() override;
 
     bool system_matrix_initialization_needed() const override { return false; }
 
-    Teuchos::RCP<Core::LinAlg::SparseOperator> init_system_matrix() const override
+    std::shared_ptr<Core::LinAlg::SparseOperator> init_system_matrix() const override
     {
       FOUR_C_THROW(
           "This meshtying strategy does not need to initialize the system matrix, but relies "
           "instead on the initialization of the field. If this changes, you also need to change "
           "'system_matrix_initialization_needed()' to return true");
       // dummy return
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! return interface map extractor
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interface_maps() const override
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> interface_maps() const override
     {
       return interfacemaps_;
     }
@@ -200,16 +203,19 @@ namespace ScaTra
     }
 
     //! return vector of Lagrange multiplier dofs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm() const { return lm_; };
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lm() const { return lm_; };
 
     //! return constraint residual vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_residual() const { return lmresidual_; };
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lm_residual() const { return lmresidual_; };
 
     //! return constraint increment vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> lm_increment() const { return lmincrement_; };
+    std::shared_ptr<const Core::LinAlg::Vector<double>> lm_increment() const
+    {
+      return lmincrement_;
+    };
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& master_matrix() const
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& master_matrix() const
     {
       return imastermatrix_;
     };
@@ -228,10 +234,10 @@ namespace ScaTra
     void write_restart() const override;
 
     //! return mortar projector P
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& p() const { return P_; };
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& p() const { return P_; };
 
     void read_restart(
-        const int step, Teuchos::RCP<Core::IO::InputControl> input = Teuchos::null) const override;
+        const int step, std::shared_ptr<Core::IO::InputControl> input = nullptr) const override;
 
     //! set general parameters for element evaluation
     void set_element_general_parameters(Teuchos::ParameterList& parameters) const override;
@@ -269,13 +275,16 @@ namespace ScaTra
 
     //! return auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs
     //! (non-mortar case) or slave and master dofs (mortar case)
-    const Teuchos::RCP<Core::LinAlg::SparseMatrix>& slave_matrix() const { return islavematrix_; };
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& slave_matrix() const
+    {
+      return islavematrix_;
+    };
 
-    void solve(const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& increment,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& residual,
-        const Teuchos::RCP<Core::LinAlg::Vector<double>>& phinp, const int iteration,
+    void solve(const std::shared_ptr<Core::LinAlg::Solver>& solver,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& increment,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& residual,
+        const std::shared_ptr<Core::LinAlg::Vector<double>>& phinp, const int iteration,
         Core::LinAlg::SolverParams& solver_params) const override;
 
     //! return linear solver for global system of linear equations
@@ -294,105 +303,105 @@ namespace ScaTra
     void init_conv_check_strategy() override;
 
     //! interface map extractor (0: other, 1: slave, 2: master)
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> interfacemaps_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> interfacemaps_;
 
     //! map extractor associated with scatra-scatra interface slave-side blocks of global system
     //! matrix
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_slave_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockmaps_slave_;
     //! map extractor associated with scatra-scatra interface master-side blocks of global system
     //! matrix
-    Teuchos::RCP<Core::LinAlg::MultiMapExtractor> blockmaps_master_;
+    std::shared_ptr<Core::LinAlg::MultiMapExtractor> blockmaps_master_;
 
     //! non-mortar interface coupling adapter
-    Teuchos::RCP<Coupling::Adapter::Coupling> icoup_;
+    std::shared_ptr<Coupling::Adapter::Coupling> icoup_;
 
     //! mortar interface coupling adapters
-    std::map<int, Teuchos::RCP<Coupling::Adapter::CouplingMortar>> icoupmortar_;
+    std::map<int, std::shared_ptr<Coupling::Adapter::CouplingMortar>> icoupmortar_;
 
     //! mortar integration cells
-    std::map<int, std::vector<std::pair<Teuchos::RCP<Mortar::IntCell>, Inpar::ScaTra::ImplType>>>
+    std::map<int, std::vector<std::pair<std::shared_ptr<Mortar::IntCell>, Inpar::ScaTra::ImplType>>>
         imortarcells_;
 
     //! flag for parallel redistribution of mortar interfaces
     const bool imortarredistribution_;
 
     //! map of all slave-side degrees of freedom before parallel redistribution
-    Teuchos::RCP<Epetra_Map> islavemap_;
+    std::shared_ptr<Epetra_Map> islavemap_;
 
     //! map of all master-side degrees of freedom before parallel redistribution
-    Teuchos::RCP<Epetra_Map> imastermap_;
+    std::shared_ptr<Epetra_Map> imastermap_;
 
     //! vectors for node-to-segment connectivity, i.e., for pairings between slave nodes and master
     //! elements
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<int>>> islavenodestomasterelements_;
+    std::map<int, std::shared_ptr<Core::LinAlg::Vector<int>>> islavenodestomasterelements_;
 
     //! vectors for physical implementation types of slave-side nodes
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<int>>> islavenodesimpltypes_;
+    std::map<int, std::shared_ptr<Core::LinAlg::Vector<int>>> islavenodesimpltypes_;
 
     //! vectors for lumped interface area fractions associated with slave-side nodes
-    std::map<int, Teuchos::RCP<Core::LinAlg::Vector<double>>> islavenodeslumpedareas_;
+    std::map<int, std::shared_ptr<Core::LinAlg::Vector<double>>> islavenodeslumpedareas_;
 
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. slave dofs (non-mortar
     //! case) or for linearizations of slave fluxes w.r.t. slave and master dofs (mortar case)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> islavematrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> islavematrix_;
 
     //! auxiliary system matrix for linearizations of slave fluxes w.r.t. master dofs (non-mortar
     //! case) or for linearizations of master fluxes w.r.t. slave and master dofs (mortar case)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> imastermatrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> imastermatrix_;
 
     //! auxiliary system matrix for linearizations of master fluxes w.r.t. slave dofs
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> imasterslavematrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> imasterslavematrix_;
 
     //! flag for meshtying method
     const Inpar::S2I::CouplingType couplingtype_;
 
     //! mortar matrix D
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> D_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> D_;
 
     //! mortar matrix M
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> M_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> M_;
 
     //! mortar matrix E
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> E_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> E_;
 
     //! mortar projector P
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> P_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> P_;
 
     //! mortar projector Q
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> Q_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> Q_;
 
     //! vector of Lagrange multiplier dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lm_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lm_;
 
     //! extended map extractor (0: standard dofs, 1: Lagrange multiplier dofs or scatra-scatra
     //! interface layer thickness variables)
-    Teuchos::RCP<Core::LinAlg::MapExtractor> extendedmaps_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> extendedmaps_;
 
     //! constraint residual vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lmresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lmresidual_;
 
     //! constraint increment vector associated with Lagrange multiplier dofs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> lmincrement_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> lmincrement_;
 
     //! transformation operators for auxiliary system matrices
-    Teuchos::RCP<Coupling::Adapter::MatrixColTransform> islavetomastercoltransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowTransform> islavetomasterrowtransform_;
-    Teuchos::RCP<Coupling::Adapter::MatrixRowColTransform> islavetomasterrowcoltransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixColTransform> islavetomastercoltransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowTransform> islavetomasterrowtransform_;
+    std::shared_ptr<Coupling::Adapter::MatrixRowColTransform> islavetomasterrowcoltransform_;
 
     //! auxiliary residual vector for slave residuals
-    Teuchos::RCP<Core::LinAlg::Vector<double>> islaveresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> islaveresidual_;
 
     //! auxiliary residual vector for master residuals
-    Teuchos::RCP<Epetra_FEVector> imasterresidual_;
+    std::shared_ptr<Epetra_FEVector> imasterresidual_;
 
     //! time derivative of slave dofs of scatra-scatra interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> islavephidtnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> islavephidtnp_;
 
     //! time derivative of master dofs transformed to slave side of scatra-scatra interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphidt_on_slave_side_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> imasterphidt_on_slave_side_np_;
 
     //! master dofs transformed to slave side of scatra-scatra interface
-    Teuchos::RCP<Core::LinAlg::Vector<double>> imasterphi_on_slave_side_np_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> imasterphi_on_slave_side_np_;
 
     //! flag for interface side underlying Lagrange multiplier definition
     const Inpar::S2I::InterfaceSides lmside_;
@@ -420,60 +429,60 @@ namespace ScaTra
 
     //! map extractor associated with all degrees of freedom for scatra-scatra interface layer
     //! growth
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> blockmapgrowth_;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> blockmapgrowth_;
 
     //! extended map extractor associated with blocks of global system matrix for scatra-scatra
     //! interface coupling involving interface layer growth
-    Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extendedblockmaps_;
+    std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extendedblockmaps_;
 
     //! extended system matrix including rows and columns associated with scatra-scatra interface
     //! layer thickness variables
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> extendedsystemmatrix_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> extendedsystemmatrix_;
 
     //! linear solver for monolithic scatra-scatra interface coupling involving interface layer
     //! growth
-    Teuchos::RCP<Core::LinAlg::Solver> extendedsolver_;
+    std::shared_ptr<Core::LinAlg::Solver> extendedsolver_;
 
     //! state vector of discrete scatra-scatra interface layer thicknesses at time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthn_;
 
     //! state vector of discrete scatra-scatra interface layer thicknesses at time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthnp_;
 
     //! state vector of time derivatives of discrete scatra-scatra interface layer thicknesses at
     //! time n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthdtn_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthdtn_;
 
     //! state vector of time derivatives of discrete scatra-scatra interface layer thicknesses at
     //! time n+1
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthdtnp_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthdtnp_;
 
     //! state vector of history values associated with discrete scatra-scatra interface layer
     //! thicknesses
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthhist_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthhist_;
 
     //! state vector of residual values associated with discrete scatra-scatra interface layer
     //! thicknesses
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthresidual_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthresidual_;
 
     //! state vector of Newton-Raphson increment values associated with discrete scatra-scatra
     //! interface layer thicknesses
-    Teuchos::RCP<Core::LinAlg::Vector<double>> growthincrement_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> growthincrement_;
 
     //! scatra-growth block of extended global system matrix (derivatives of discrete scatra
     //! residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
-    Teuchos::RCP<Core::LinAlg::SparseOperator> scatragrowthblock_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> scatragrowthblock_;
 
     //! growth-scatra block of extended global system matrix (derivatives of discrete scatra-scatra
     //! interface layer growth residuals w.r.t. discrete scatra degrees of freedom)
-    Teuchos::RCP<Core::LinAlg::SparseOperator> growthscatrablock_;
+    std::shared_ptr<Core::LinAlg::SparseOperator> growthscatrablock_;
 
     //! growth-growth block of extended global system matrix (derivatives of discrete scatra-scatra
     //! interface layer growth residuals w.r.t. discrete scatra-scatra interface layer thicknesses)
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> growthgrowthblock_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> growthgrowthblock_;
 
     //! all equilibration of global system matrix and RHS is done in here
-    Teuchos::RCP<Core::LinAlg::Equilibration> equilibration_;
+    std::shared_ptr<Core::LinAlg::Equilibration> equilibration_;
 
     //! output csv writer for interface flux for each slave side s2i condition
     std::optional<Core::IO::RuntimeCsvWriter> runtime_csvwriter_;
@@ -594,21 +603,21 @@ namespace ScaTra
      */
     void evaluate_mortar_cells(const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
         const Inpar::S2I::InterfaceSides matrix1_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix2,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix2,
         const Inpar::S2I::InterfaceSides matrix2_side_rows,
         const Inpar::S2I::InterfaceSides matrix2_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix3,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix3,
         const Inpar::S2I::InterfaceSides matrix3_side_rows,
         const Inpar::S2I::InterfaceSides matrix3_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix4,
         const Inpar::S2I::InterfaceSides matrix4_side_rows,
         const Inpar::S2I::InterfaceSides matrix4_side_cols,
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& systemvector1,
         const Inpar::S2I::InterfaceSides vector1_side,
-        const Teuchos::RCP<Epetra_FEVector>& systemvector2,
+        const std::shared_ptr<Epetra_FEVector>& systemvector2,
         const Inpar::S2I::InterfaceSides vector2_side) const;
 
     /*!
@@ -642,21 +651,21 @@ namespace ScaTra
         const Core::LinAlg::Vector<double>& islavenodeslumpedareas,
         const Core::LinAlg::Vector<int>& islavenodesimpltypes,
         const Core::FE::Discretization& idiscret, const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
         const Inpar::S2I::InterfaceSides matrix1_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix2,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix2,
         const Inpar::S2I::InterfaceSides matrix2_side_rows,
         const Inpar::S2I::InterfaceSides matrix2_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix3,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix3,
         const Inpar::S2I::InterfaceSides matrix3_side_rows,
         const Inpar::S2I::InterfaceSides matrix3_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix4,
         const Inpar::S2I::InterfaceSides matrix4_side_rows,
         const Inpar::S2I::InterfaceSides matrix4_side_cols,
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& systemvector1,
         const Inpar::S2I::InterfaceSides vector1_side,
-        const Teuchos::RCP<Epetra_FEVector>& systemvector2,
+        const std::shared_ptr<Epetra_FEVector>& systemvector2,
         const Inpar::S2I::InterfaceSides vector2_side) const;
 
     /*!
@@ -686,21 +695,21 @@ namespace ScaTra
     void evaluate_mortar_elements(const Epetra_Map& ielecolmap,
         const Core::LinAlg::Vector<int>& ieleimpltypes, const Core::FE::Discretization& idiscret,
         const Teuchos::ParameterList& params,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix1,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix1,
         const Inpar::S2I::InterfaceSides matrix1_side_rows,
         const Inpar::S2I::InterfaceSides matrix1_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix2,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix2,
         const Inpar::S2I::InterfaceSides matrix2_side_rows,
         const Inpar::S2I::InterfaceSides matrix2_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix3,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix3,
         const Inpar::S2I::InterfaceSides matrix3_side_rows,
         const Inpar::S2I::InterfaceSides matrix3_side_cols,
-        const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix4,
+        const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix4,
         const Inpar::S2I::InterfaceSides matrix4_side_rows,
         const Inpar::S2I::InterfaceSides matrix4_side_cols,
-        const Teuchos::RCP<Core::LinAlg::MultiVector<double>>& systemvector1,
+        const std::shared_ptr<Core::LinAlg::MultiVector<double>>& systemvector1,
         const Inpar::S2I::InterfaceSides vector1_side,
-        const Teuchos::RCP<Epetra_FEVector>& systemvector2,
+        const std::shared_ptr<Epetra_FEVector>& systemvector2,
         const Inpar::S2I::InterfaceSides vector2_side) const;
 
     //! flag indicating if we have capacitive interface flux contributions
@@ -1090,30 +1099,30 @@ namespace ScaTra
    public:
     //! constructor
     MortarCellAssemblyStrategy(
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1,  //!< system matrix 1
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1,  //!< system matrix 1
         const Inpar::S2I::InterfaceSides
             matrix1_side_rows,  //!< interface side associated with rows of system matrix 1
         const Inpar::S2I::InterfaceSides
             matrix1_side_cols,  //!< interface side associated with columns of system matrix 1
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2,  //!< system matrix 2
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2,  //!< system matrix 2
         const Inpar::S2I::InterfaceSides
             matrix2_side_rows,  //!< interface side associated with rows of system matrix 2
         const Inpar::S2I::InterfaceSides
             matrix2_side_cols,  //!< interface side associated with columns of system matrix 2
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix3,  //!< system matrix 3
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix3,  //!< system matrix 3
         const Inpar::S2I::InterfaceSides
             matrix3_side_rows,  //!< interface side associated with rows of system matrix 3
         const Inpar::S2I::InterfaceSides
             matrix3_side_cols,  //!< interface side associated with columns of system matrix 3
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix4,  //!< system matrix 4
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix4,  //!< system matrix 4
         const Inpar::S2I::InterfaceSides
             matrix4_side_rows,  //!< interface side associated with rows of system matrix 4
         const Inpar::S2I::InterfaceSides
             matrix4_side_cols,  //!< interface side associated with columns of system matrix 4
-        Teuchos::RCP<Core::LinAlg::MultiVector<double>> systemvector1,  //!< system vector 1
+        std::shared_ptr<Core::LinAlg::MultiVector<double>> systemvector1,  //!< system vector 1
         const Inpar::S2I::InterfaceSides
             vector1_side,  //!< interface side associated with system vector 1
-        Teuchos::RCP<Epetra_FEVector> systemvector2,
+        std::shared_ptr<Epetra_FEVector> systemvector2,
         const Inpar::S2I::InterfaceSides
             vector2_side,        //!< interface side associated with system vector 2
         const int nds_rows = 0,  //!< number of dofset associated with matrix rows
@@ -1132,22 +1141,22 @@ namespace ScaTra
         Core::Elements::LocationArray& la_master, const int assembler_pid_master) const;
 
     //! bool flag for assembly of system matrix 1
-    bool assemble_matrix1() const { return systemmatrix1_ != Teuchos::null; };
+    bool assemble_matrix1() const { return systemmatrix1_ != nullptr; };
 
     //! bool flag for assembly of system matrix 2
-    bool assemble_matrix2() const { return systemmatrix2_ != Teuchos::null; };
+    bool assemble_matrix2() const { return systemmatrix2_ != nullptr; };
 
     //! bool flag for assembly of system matrix 3
-    bool assemble_matrix3() const { return systemmatrix3_ != Teuchos::null; };
+    bool assemble_matrix3() const { return systemmatrix3_ != nullptr; };
 
     //! bool flag for assembly of system matrix 4
-    bool assemble_matrix4() const { return systemmatrix4_ != Teuchos::null; };
+    bool assemble_matrix4() const { return systemmatrix4_ != nullptr; };
 
     //! bool flag for assembly of system vector 1
-    bool assemble_vector1() const { return systemvector1_ != Teuchos::null; };
+    bool assemble_vector1() const { return systemvector1_ != nullptr; };
 
     //! bool flag for assembly of system vector 2
-    bool assemble_vector2() const { return systemvector2_ != Teuchos::null; };
+    bool assemble_vector2() const { return systemvector2_ != nullptr; };
 
     //! return cell matrix 1
     Core::LinAlg::SerialDenseMatrix& cell_matrix1() { return cellmatrix1_; };
@@ -1185,7 +1194,7 @@ namespace ScaTra
      * @param la_master      master-side location array
      * @param assembler_pid_master   ID of processor performing master-side matrix assembly
      */
-    void assemble_cell_matrix(const Teuchos::RCP<Core::LinAlg::SparseOperator>& systemmatrix,
+    void assemble_cell_matrix(const std::shared_ptr<Core::LinAlg::SparseOperator>& systemmatrix,
         const Core::LinAlg::SerialDenseMatrix& cellmatrix,
         const Inpar::S2I::InterfaceSides side_rows, const Inpar::S2I::InterfaceSides side_cols,
         Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
@@ -1206,7 +1215,7 @@ namespace ScaTra
         Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
         const int assembler_pid_master) const;
 
-    void assemble_cell_vector(const Teuchos::RCP<Epetra_FEVector>& systemvector,
+    void assemble_cell_vector(const std::shared_ptr<Epetra_FEVector>& systemvector,
         const Core::LinAlg::SerialDenseVector& cellvector, const Inpar::S2I::InterfaceSides side,
         Core::Elements::LocationArray& la_slave, Core::Elements::LocationArray& la_master,
         const int assembler_pid_master) const;
@@ -1279,22 +1288,22 @@ namespace ScaTra
     const Inpar::S2I::InterfaceSides matrix4_side_cols_;
 
     //! system matrix 1
-    const Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix1_;
+    const std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix1_;
 
     //! system matrix 2
-    const Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix2_;
+    const std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix2_;
 
     //! system matrix 3
-    const Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix3_;
+    const std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix3_;
 
     //! system matrix 4
-    const Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix4_;
+    const std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix4_;
 
     //! system vector 1
-    const Teuchos::RCP<Core::LinAlg::MultiVector<double>> systemvector1_;
+    const std::shared_ptr<Core::LinAlg::MultiVector<double>> systemvector1_;
 
     //! system vector 2
-    const Teuchos::RCP<Epetra_FEVector> systemvector2_;
+    const std::shared_ptr<Epetra_FEVector> systemvector2_;
 
     //! interface side associated with system vector 1
     const Inpar::S2I::InterfaceSides vector1_side_;

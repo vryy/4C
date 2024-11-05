@@ -36,9 +36,9 @@ namespace Core::LinearSolver
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<Core::LinAlg::KrylovProjector> projector = Teuchos::null) override;
+    void setup(std::shared_ptr<MatrixType> matrix, std::shared_ptr<VectorType> x,
+        std::shared_ptr<VectorType> b, const bool refactor, const bool reset,
+        std::shared_ptr<Core::LinAlg::KrylovProjector> projector = nullptr) override;
 
     //! Actual call to the underlying amesos solver
     int solve() override;
@@ -53,22 +53,22 @@ namespace Core::LinearSolver
     bool factored_;
 
     //! a linear problem wrapper class used by Trilinos and for scaling of the system
-    Teuchos::RCP<Epetra_LinearProblem> linear_problem_;
+    std::shared_ptr<Epetra_LinearProblem> linear_problem_;
 
     //! initial guess and solution
-    Teuchos::RCP<VectorType> x_;
+    std::shared_ptr<VectorType> x_;
 
     //! right hand side vector
-    Teuchos::RCP<VectorType> b_;
+    std::shared_ptr<VectorType> b_;
 
     //! system of equations
-    Teuchos::RCP<MatrixType> a_;
+    std::shared_ptr<MatrixType> a_;
 
     //! an abstract amesos solver that can be any of the amesos concrete implementations
-    Teuchos::RCP<Amesos_BaseSolver> solver_;
+    std::shared_ptr<Amesos_BaseSolver> solver_;
 
     //! reindex linear problem for amesos
-    Teuchos::RCP<EpetraExt::LinearProblem_Reindex2> reindexer_;
+    std::shared_ptr<EpetraExt::LinearProblem_Reindex2> reindexer_;
 
     /*! \brief Krylov projector for solving near singular linear systems
      *
@@ -79,7 +79,7 @@ namespace Core::LinearSolver
      * SIAM Review, 47(1):50-66, 2005, http://dx.doi.org/10.1137/S0036144503426074
      *
      */
-    Teuchos::RCP<Core::LinAlg::KrylovProjector> projector_;
+    std::shared_ptr<Core::LinAlg::KrylovProjector> projector_;
   };
 }  // namespace Core::LinearSolver
 

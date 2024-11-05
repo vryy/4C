@@ -23,20 +23,20 @@ namespace
   using TypeErasedFunctionCreator = std::function<std::any(const LineDefinitionVector&)>;
 
   template <typename T>
-  using FunctionCreator = Teuchos::RCP<T> (*)(const LineDefinitionVector&);
+  using FunctionCreator = std::shared_ptr<T> (*)(const LineDefinitionVector&);
 
   /**
-   * Utility function that takes a function object returning a Teuchos::RCP<T> and erases its return
-   * type via std::any. In addition, if the returned object would be Teuchos::null, discard it and
-   * return an empty std::any instead.
+   * Utility function that takes a function object returning a std::shared_ptr<T> and erases its
+   * return type via std::any. In addition, if the returned object would be nullptr, discard
+   * it and return an empty std::any instead.
    */
   template <typename T>
   TypeErasedFunctionCreator wrap_function(FunctionCreator<T> fun)
   {
     return [fun](const LineDefinitionVector& linedefs) -> std::any
     {
-      Teuchos::RCP<T> created = fun(linedefs);
-      if (created == Teuchos::null)
+      std::shared_ptr<T> created = fun(linedefs);
+      if (created == nullptr)
         return {};
       else
         return created;

@@ -15,7 +15,7 @@
 FOUR_C_NAMESPACE_OPEN
 
 void Discret::Elements::assemble_gauss_point_values(
-    std::vector<Teuchos::RCP<Core::LinAlg::MultiVector<double>>>& global_data,
+    std::vector<std::shared_ptr<Core::LinAlg::MultiVector<double>>>& global_data,
     const Core::LinAlg::SerialDenseMatrix& gp_data, const Core::Elements::Element& ele)
 {
   for (int gp = 0; gp < gp_data.numRows(); ++gp)

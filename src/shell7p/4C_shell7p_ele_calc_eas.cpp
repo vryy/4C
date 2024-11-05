@@ -203,8 +203,9 @@ double Discret::Elements::Shell7pEleCalcEas<distype>::calculate_internal_energy(
 {
   double intenergy = 0.0;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> res =
       discretization.get_state("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::extract_my_values(*disp, displacement, dof_index_array);
@@ -338,8 +339,9 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::calculate_stresses_strains(
   Core::LinAlg::SerialDenseMatrix strain_data(
       intpoints_midsurface_.num_points(), Mat::NUM_STRESS_3D);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> res =
       discretization.get_state("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::extract_my_values(*disp, displacement, dof_index_array);
@@ -471,8 +473,9 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::evaluate_nonlinear_force_sti
     Teuchos::ParameterList& params, Core::LinAlg::SerialDenseVector* force_vector,
     Core::LinAlg::SerialDenseMatrix* stiffness_matrix, Core::LinAlg::SerialDenseMatrix* mass_matrix)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> res =
       discretization.get_state("residual displacement");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::extract_my_values(*disp, displacement, dof_index_array);
@@ -715,9 +718,9 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::recover(Core::Elements::Elem
     const Core::FE::Discretization& discretization, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params, Solid::Elements::ParamsInterface& interface_ptr)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> res =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> res =
       discretization.get_state("residual displacement");
-  if (res == Teuchos::null) FOUR_C_THROW("Cannot get residual displacement state vector");
+  if (res == nullptr) FOUR_C_THROW("Cannot get residual displacement state vector");
   std::vector<double> residual(dof_index_array.size());
   Core::FE::extract_my_values(*res, residual, dof_index_array);
 
@@ -772,8 +775,9 @@ void Discret::Elements::Shell7pEleCalcEas<distype>::update(Core::Elements::Eleme
     const Core::LinAlg::SerialDenseMatrix& nodal_directors, const std::vector<int>& dof_index_array,
     Teuchos::ParameterList& params)
 {
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> disp = discretization.get_state("displacement");
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
+  std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
+      discretization.get_state("displacement");
+  if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement' ");
   std::vector<double> displacement(dof_index_array.size());
   Core::FE::extract_my_values(*disp, displacement, dof_index_array);
 

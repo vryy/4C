@@ -56,10 +56,10 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-Teuchos::RCP<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum)
+std::shared_ptr<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum)
 {
   // for the sake of safety
-  if (Global::Problem::instance()->materials() == Teuchos::null)
+  if (Global::Problem::instance()->materials() == nullptr)
     FOUR_C_THROW("List of materials cannot be accessed in the global problem instance.");
 
   // yet another safety check
@@ -94,233 +94,233 @@ Teuchos::RCP<Mat::Elastic::Summand> Mat::Elastic::Summand::factory(int matnum)
     case Core::Materials::mes_anisoactivestress_evolution:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::AnisoActiveStressEvolution*>(curmat);
-      return Teuchos::make_rcp<AnisoActiveStressEvolution>(params);
+      return std::make_shared<AnisoActiveStressEvolution>(params);
     }
     case Core::Materials::mes_coupanisoexpoactive:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoExpoActive*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoExpoActive>(params);
+      return std::make_shared<CoupAnisoExpoActive>(params);
     }
     case Core::Materials::mes_coupanisoexpo:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoExpo*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoExpo>(params);
+      return std::make_shared<CoupAnisoExpo>(params);
     }
     case Core::Materials::mes_coupanisoexposhear:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoExpoShear*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoExpoShear>(params);
+      return std::make_shared<CoupAnisoExpoShear>(params);
     }
     case Core::Materials::mes_coupanisoexpotwocoup:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoExpoTwoCoup*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoExpoTwoCoup>(params);
+      return std::make_shared<CoupAnisoExpoTwoCoup>(params);
     }
     case Core::Materials::mes_coupanisoneohooke:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoNeoHooke*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoNeoHooke>(params);
+      return std::make_shared<CoupAnisoNeoHooke>(params);
     }
     case Core::Materials::mes_coupanisoneohooke_varprop:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoNeoHookeVarProp*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoNeoHookeVarProp>(params);
+      return std::make_shared<CoupAnisoNeoHookeVarProp>(params);
     }
     case Core::Materials::mes_coupanisopow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupAnisoPow*>(curmat);
-      return Teuchos::make_rcp<CoupAnisoPow>(params);
+      return std::make_shared<CoupAnisoPow>(params);
     }
     case Core::Materials::mes_coupblatzko:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupBlatzKo*>(curmat);
-      return Teuchos::make_rcp<CoupBlatzKo>(params);
+      return std::make_shared<CoupBlatzKo>(params);
     }
     case Core::Materials::mes_coupexppol:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupExpPol*>(curmat);
-      return Teuchos::make_rcp<CoupExpPol>(params);
+      return std::make_shared<CoupExpPol>(params);
     }
     case Core::Materials::mes_couplogneohooke:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupLogNeoHooke*>(curmat);
-      return Teuchos::make_rcp<CoupLogNeoHooke>(params);
+      return std::make_shared<CoupLogNeoHooke>(params);
     }
     case Core::Materials::mes_couplogmixneohooke:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupLogMixNeoHooke*>(curmat);
-      return Teuchos::make_rcp<CoupLogMixNeoHooke>(params);
+      return std::make_shared<CoupLogMixNeoHooke>(params);
     }
     case Core::Materials::mes_coupmooneyrivlin:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupMooneyRivlin*>(curmat);
-      return Teuchos::make_rcp<CoupMooneyRivlin>(params);
+      return std::make_shared<CoupMooneyRivlin>(params);
     }
     case Core::Materials::mes_coupmyocard:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupMyocard*>(curmat);
-      return Teuchos::make_rcp<CoupMyocard>(params);
+      return std::make_shared<CoupMyocard>(params);
     }
     case Core::Materials::mes_coupneohooke:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupNeoHooke*>(curmat);
-      return Teuchos::make_rcp<CoupNeoHooke>(params);
+      return std::make_shared<CoupNeoHooke>(params);
     }
     case Core::Materials::mes_coup1pow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Coup1Pow*>(curmat);
-      return Teuchos::make_rcp<Coup1Pow>(params);
+      return std::make_shared<Coup1Pow>(params);
     }
     case Core::Materials::mes_coup2pow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Coup2Pow*>(curmat);
-      return Teuchos::make_rcp<Coup2Pow>(params);
+      return std::make_shared<Coup2Pow>(params);
     }
     case Core::Materials::mes_coup3pow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Coup3Pow*>(curmat);
-      return Teuchos::make_rcp<Coup3Pow>(params);
+      return std::make_shared<Coup3Pow>(params);
     }
     case Core::Materials::mes_coup13apow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Coup13aPow*>(curmat);
-      return Teuchos::make_rcp<Coup13aPow>(params);
+      return std::make_shared<Coup13aPow>(params);
     }
     case Core::Materials::mes_coupsimopister:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupSimoPister*>(curmat);
-      return Teuchos::make_rcp<CoupSimoPister>(params);
+      return std::make_shared<CoupSimoPister>(params);
     }
     case Core::Materials::mes_coupSVK:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupSVK*>(curmat);
-      return Teuchos::make_rcp<CoupSVK>(params);
+      return std::make_shared<CoupSVK>(params);
     }
     case Core::Materials::mes_couptransverselyisotropic:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupTransverselyIsotropic*>(curmat);
-      return Teuchos::make_rcp<CoupTransverselyIsotropic>(params);
+      return std::make_shared<CoupTransverselyIsotropic>(params);
     }
     case Core::Materials::mes_coupvarga:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::CoupVarga*>(curmat);
-      return Teuchos::make_rcp<CoupVarga>(params);
+      return std::make_shared<CoupVarga>(params);
     }
     case Core::Materials::mes_fract:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Fract*>(curmat);
-      return Teuchos::make_rcp<Fract>(params);
+      return std::make_shared<Fract>(params);
     }
     case Core::Materials::mes_genmax:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::GenMax*>(curmat);
-      return Teuchos::make_rcp<GenMax>(params);
+      return std::make_shared<GenMax>(params);
     }
     case Core::Materials::mes_generalizedgenmax:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::GeneralizedGenMax*>(curmat);
-      return Teuchos::make_rcp<GeneralizedGenMax>(params);
+      return std::make_shared<GeneralizedGenMax>(params);
     }
     case Core::Materials::mes_isoanisoexpo:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoAnisoExpo*>(curmat);
-      return Teuchos::make_rcp<IsoAnisoExpo>(params);
+      return std::make_shared<IsoAnisoExpo>(params);
     }
     case Core::Materials::mes_isoexpopow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoExpoPow*>(curmat);
-      return Teuchos::make_rcp<IsoExpoPow>(params);
+      return std::make_shared<IsoExpoPow>(params);
     }
     case Core::Materials::mes_isomooneyrivlin:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoMooneyRivlin*>(curmat);
-      return Teuchos::make_rcp<IsoMooneyRivlin>(params);
+      return std::make_shared<IsoMooneyRivlin>(params);
     }
     case Core::Materials::mes_isomuscleblemker:
     {
       Mat::Elastic::PAR::IsoMuscleBlemker* params =
           static_cast<Mat::Elastic::PAR::IsoMuscleBlemker*>(curmat);
-      return Teuchos::make_rcp<IsoMuscleBlemker>(params);
+      return std::make_shared<IsoMuscleBlemker>(params);
     }
     case Core::Materials::mes_isoneohooke:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoNeoHooke*>(curmat);
-      return Teuchos::make_rcp<IsoNeoHooke>(params);
+      return std::make_shared<IsoNeoHooke>(params);
     }
     case Core::Materials::mes_isoogden:
     {
       auto* params = static_cast<Mat::Elastic::PAR::IsoOgden*>(curmat);
-      return Teuchos::make_rcp<IsoOgden>(params);
+      return std::make_shared<IsoOgden>(params);
     }
     case Core::Materials::mes_iso1pow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Iso1Pow*>(curmat);
-      return Teuchos::make_rcp<Iso1Pow>(params);
+      return std::make_shared<Iso1Pow>(params);
     }
     case Core::Materials::mes_iso2pow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::Iso2Pow*>(curmat);
-      return Teuchos::make_rcp<Iso2Pow>(params);
+      return std::make_shared<Iso2Pow>(params);
     }
     case Core::Materials::mes_isoratedep:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoRateDep*>(curmat);
-      return Teuchos::make_rcp<IsoRateDep>(params);
+      return std::make_shared<IsoRateDep>(params);
     }
     case Core::Materials::mes_isotestmaterial:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoTestMaterial*>(curmat);
-      return Teuchos::make_rcp<IsoTestMaterial>(params);
+      return std::make_shared<IsoTestMaterial>(params);
     }
     case Core::Materials::mes_isovarga:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoVarga*>(curmat);
-      return Teuchos::make_rcp<IsoVarga>(params);
+      return std::make_shared<IsoVarga>(params);
     }
     case Core::Materials::mes_isoyeoh:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::IsoYeoh*>(curmat);
-      return Teuchos::make_rcp<IsoYeoh>(params);
+      return std::make_shared<IsoYeoh>(params);
     }
     case Core::Materials::mes_remodelfiber:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::RemodelFiber*>(curmat);
-      return Teuchos::make_rcp<RemodelFiber>(params);
+      return std::make_shared<RemodelFiber>(params);
     }
     case Core::Materials::mes_vologden:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::VolOgden*>(curmat);
-      return Teuchos::make_rcp<VolOgden>(params);
+      return std::make_shared<VolOgden>(params);
     }
     case Core::Materials::mes_volpenalty:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::VolPenalty*>(curmat);
-      return Teuchos::make_rcp<VolPenalty>(params);
+      return std::make_shared<VolPenalty>(params);
     }
     case Core::Materials::mes_volpow:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::VolPow*>(curmat);
-      return Teuchos::make_rcp<VolPow>(params);
+      return std::make_shared<VolPow>(params);
     }
     case Core::Materials::mes_volsussmanbathe:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::VolSussmanBathe*>(curmat);
-      return Teuchos::make_rcp<VolSussmanBathe>(params);
+      return std::make_shared<VolSussmanBathe>(params);
     }
     case Core::Materials::mes_viscobranch:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::ViscoBranch*>(curmat);
-      return Teuchos::make_rcp<ViscoBranch>(params);
+      return std::make_shared<ViscoBranch>(params);
     }
     case Core::Materials::mes_viscopart:
     {
       auto* params = dynamic_cast<Mat::Elastic::PAR::ViscoPart*>(curmat);
-      return Teuchos::make_rcp<ViscoPart>(params);
+      return std::make_shared<ViscoPart>(params);
     }
     default:
       FOUR_C_THROW("cannot deal with type %d", curmat->type());
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 void Mat::Elastic::Summand::add_shear_mod(bool& haveshearmod, double& shearmod) const

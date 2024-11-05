@@ -71,8 +71,8 @@ namespace Discret::Elements
     Core::FE::IntPointsAndWeights<Core::FE::dim<celltype>> intpoints(rule);
 
     // format as Discret::Utils::GaussIntegration
-    Teuchos::RCP<Core::FE::CollectedGaussPoints> gp =
-        Teuchos::make_rcp<Core::FE::CollectedGaussPoints>();
+    std::shared_ptr<Core::FE::CollectedGaussPoints> gp =
+        std::make_shared<Core::FE::CollectedGaussPoints>();
 
     std::array<double, 3> xi = {0., 0., 0.};
     for (int i = 0; i < intpoints.ip().nquad; ++i)

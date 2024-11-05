@@ -22,11 +22,11 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | constructor                                          rasthofer 09/13 |
  *----------------------------------------------------------------------*/
-ScaTra::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretization> dis,
-    Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-    Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-    Teuchos::RCP<Teuchos::ParameterList> extraparams,
-    Teuchos::RCP<Core::IO::DiscretizationWriter> output)
+ScaTra::LevelSetAlgorithm::LevelSetAlgorithm(std::shared_ptr<Core::FE::Discretization> dis,
+    std::shared_ptr<Core::LinAlg::Solver> solver, std::shared_ptr<Teuchos::ParameterList> params,
+    std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+    std::shared_ptr<Teuchos::ParameterList> extraparams,
+    std::shared_ptr<Core::IO::DiscretizationWriter> output)
     : ScaTraTimIntImpl(dis, solver, sctratimintparams, extraparams, output),
       levelsetparams_(params),
       reinitaction_(Inpar::ScaTra::reinitaction_none),
@@ -36,8 +36,8 @@ ScaTra::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretizati
       dtau_(0.0),
       thetareinit_(0.0),
       initvolminus_(0.0),
-      initialphireinit_(Teuchos::null),
-      nb_grad_val_(Teuchos::null),
+      initialphireinit_(nullptr),
+      nb_grad_val_(nullptr),
       reinitinterval_(-1),
       reinitband_(false),
       reinitbandwidth_(-1.0),
@@ -47,7 +47,7 @@ ScaTra::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<Core::FE::Discretizati
       projection_(true),
       reinit_tol_(-1.0),
       reinitvolcorrection_(false),
-      interface_eleq_(Teuchos::null),
+      interface_eleq_(nullptr),
       extract_interface_vel_(false),
       convel_layers_(-1),
       cpbc_(false)
@@ -149,7 +149,7 @@ void ScaTra::LevelSetAlgorithm::setup()
         // velocities (always three velocity components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->node_row_map();
-        nb_grad_val_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
+        nb_grad_val_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
       }
 
       // get dimension
@@ -177,7 +177,7 @@ void ScaTra::LevelSetAlgorithm::setup()
         // gradients (always three gradient components per node)
         // (get noderowmap of discretization for creating this multivector)
         const Epetra_Map* noderowmap = discret_->node_row_map();
-        nb_grad_val_ = Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
+        nb_grad_val_ = std::make_shared<Core::LinAlg::MultiVector<double>>(*noderowmap, 3, true);
       }
     }
 
@@ -228,8 +228,9 @@ void ScaTra::LevelSetAlgorithm::setup()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::get_initial_volume_of_minus_domain(
-    const Teuchos::RCP<const Core::LinAlg::Vector<double>>& phinp,
-    const Teuchos::RCP<const Core::FE::Discretization>& scatradis, double& volumedomainminus) const
+    const std::shared_ptr<const Core::LinAlg::Vector<double>>& phinp,
+    const std::shared_ptr<const Core::FE::Discretization>& scatradis,
+    double& volumedomainminus) const
 {
   double volplus = 0.0;
   double surf = 0.0;
@@ -440,7 +441,8 @@ void ScaTra::LevelSetAlgorithm::output_of_level_set_specific_values()
  *----------------------------------------------------------------------*/
 void ScaTra::LevelSetAlgorithm::test_results()
 {
-  problem_->add_field_test(Teuchos::make_rcp<ScaTra::ScaTraResultTest>(Teuchos::rcpFromRef(*this)));
+  problem_->add_field_test(
+      std::make_shared<ScaTra::ScaTraResultTest>(Core::Utils::shared_ptr_from_ref(*this)));
   problem_->test_all(discret_->get_comm());
 }
 

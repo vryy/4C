@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 Thermo::BaseAlgorithm::BaseAlgorithm(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, std::shared_ptr<Core::FE::Discretization> actdis)
 {
   setup_thermo(prbdyn, actdis);
 }
@@ -37,7 +37,7 @@ Thermo::BaseAlgorithm::BaseAlgorithm(
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 void Thermo::BaseAlgorithm::setup_thermo(
-    const Teuchos::ParameterList& prbdyn, Teuchos::RCP<Core::FE::Discretization> actdis)
+    const Teuchos::ParameterList& prbdyn, std::shared_ptr<Core::FE::Discretization> actdis)
 {
   const Teuchos::ParameterList& tdyn = Global::Problem::instance()->thermal_dynamic_params();
 
@@ -63,11 +63,10 @@ void Thermo::BaseAlgorithm::setup_thermo(
  | setup of thermal time integration                        bborn 08/09 |
  *----------------------------------------------------------------------*/
 void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
-    Inpar::Thermo::DynamicType timinttype, Teuchos::RCP<Core::FE::Discretization> actdis)
+    Inpar::Thermo::DynamicType timinttype, std::shared_ptr<Core::FE::Discretization> actdis)
 {
   // this is not exactly a one hundred meter race, but we need timing
-  Teuchos::RCP<Teuchos::Time> t =
-      Teuchos::TimeMonitor::getNewTimer("Thermo::BaseAlgorithm::setup_thermo");
+  auto t = Teuchos::TimeMonitor::getNewTimer("Thermo::BaseAlgorithm::setup_thermo");
   Teuchos::TimeMonitor monitor(*t);
 
   // set degrees of freedom in the discretization
@@ -76,12 +75,12 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
   // -------------------------------------------------------------------
   // context for output and restart
   // -------------------------------------------------------------------
-  Teuchos::RCP<Core::IO::DiscretizationWriter> output = actdis->writer();
+  std::shared_ptr<Core::IO::DiscretizationWriter> output = actdis->writer();
   output->write_mesh(0, 0.0);
 
   //  // get input parameter lists and copy them, because a few parameters are overwritten
   Teuchos::ParameterList ioflags(Global::Problem::instance()->io_params());
-  const Teuchos::RCP<Teuchos::ParameterList> tdyn = Teuchos::make_rcp<Teuchos::ParameterList>(
+  const std::shared_ptr<Teuchos::ParameterList> tdyn = std::make_shared<Teuchos::ParameterList>(
       Global::Problem::instance()->thermal_dynamic_params());
   //  //const Teuchos::ParameterList& size
   //  //  = Global::Problem::instance()->ProblemSizeParams();
@@ -114,7 +113,7 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
 
   // create a linear solver
   Teuchos::ParameterList solveparams;
-  Teuchos::RCP<Core::LinAlg::Solver> solver = Teuchos::make_rcp<Core::LinAlg::Solver>(
+  std::shared_ptr<Core::LinAlg::Solver> solver = std::make_shared<Core::LinAlg::Solver>(
       Global::Problem::instance()->solver_params(linsolvernumber), actdis->get_comm(),
       Global::Problem::instance()->solver_params_callback(),
       Teuchos::getIntegralValue<Core::IO::Verbositylevel>(
@@ -122,30 +121,30 @@ void Thermo::BaseAlgorithm::setup_tim_int(const Teuchos::ParameterList& prbdyn,
   actdis->compute_null_space_if_necessary(solver->params());
 
   // create marching time integrator
-  Teuchos::RCP<Adapter> tmpthr;
+  std::shared_ptr<Adapter> tmpthr;
   switch (timinttype)
   {
     case Inpar::Thermo::dyna_statics:
     {
       tmpthr =
-          Teuchos::make_rcp<Thermo::TimIntStatics>(ioflags, *tdyn, xparams, actdis, solver, output);
+          std::make_shared<Thermo::TimIntStatics>(ioflags, *tdyn, xparams, actdis, solver, output);
       break;
     }
     case Inpar::Thermo::dyna_onesteptheta:
     {
-      tmpthr = Teuchos::make_rcp<Thermo::TimIntOneStepTheta>(
+      tmpthr = std::make_shared<Thermo::TimIntOneStepTheta>(
           ioflags, *tdyn, xparams, actdis, solver, output);
       break;
     }
     case Inpar::Thermo::dyna_genalpha:
     {
-      tmpthr = Teuchos::make_rcp<Thermo::TimIntGenAlpha>(
-          ioflags, *tdyn, xparams, actdis, solver, output);
+      tmpthr =
+          std::make_shared<Thermo::TimIntGenAlpha>(ioflags, *tdyn, xparams, actdis, solver, output);
       break;
     }
     case Inpar::Thermo::dyna_expleuler:
     {
-      tmpthr = Teuchos::make_rcp<Thermo::TimIntExplEuler>(
+      tmpthr = std::make_shared<Thermo::TimIntExplEuler>(
           ioflags, *tdyn, xparams, actdis, solver, output);
       break;
     }

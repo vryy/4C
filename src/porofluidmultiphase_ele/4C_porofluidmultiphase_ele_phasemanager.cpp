@@ -29,16 +29,16 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
 Discret::Elements::PoroFluidManager::PhaseManagerInterface::create_phase_manager(
     const Discret::Elements::PoroFluidMultiPhaseEleParameter& para, int nsd,
     Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
     int totalnumdofpernode, int numfluidphases)
 {
-  Teuchos::RCP<PhaseManagerInterface> phasemanager = Teuchos::null;
+  std::shared_ptr<PhaseManagerInterface> phasemanager = nullptr;
 
   // build the standard phase manager
-  phasemanager = Teuchos::make_rcp<PhaseManagerCore>(totalnumdofpernode, numfluidphases);
+  phasemanager = std::make_shared<PhaseManagerCore>(totalnumdofpernode, numfluidphases);
 
   return wrap_phase_manager(para, nsd, mattype, action, phasemanager);
 }
@@ -46,13 +46,13 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::create_phase_manager
 /*----------------------------------------------------------------------*
  | factory method                                           vuong 08/16 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
+std::shared_ptr<Discret::Elements::PoroFluidManager::PhaseManagerInterface>
 Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     const Discret::Elements::PoroFluidMultiPhaseEleParameter& para, int nsd,
     Core::Materials::MaterialType mattype, const POROFLUIDMULTIPHASE::Action& action,
-    Teuchos::RCP<PhaseManagerInterface> corephasemanager)
+    std::shared_ptr<PhaseManagerInterface> corephasemanager)
 {
-  Teuchos::RCP<PhaseManagerInterface> phasemanager = Teuchos::null;
+  std::shared_ptr<PhaseManagerInterface> phasemanager = nullptr;
 
   // determine action
   switch (action)
@@ -74,7 +74,7 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
           corephasemanager->num_fluid_phases() > 0)
       {
         // porosity (includes derivatves) needed
-        phasemanager = Teuchos::make_rcp<PhaseManagerDerivAndPorosity>(corephasemanager);
+        phasemanager = std::make_shared<PhaseManagerDerivAndPorosity>(corephasemanager);
       }
       else
       {
@@ -87,20 +87,20 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     {
       // derivatives needed
       if (corephasemanager->num_fluid_phases() > 0)
-        phasemanager = Teuchos::make_rcp<PhaseManagerDerivAndPorosity>(corephasemanager);
+        phasemanager = std::make_shared<PhaseManagerDerivAndPorosity>(corephasemanager);
       else
         phasemanager = corephasemanager;
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<1>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<1>>(phasemanager);
           break;
         case 2:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<2>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<2>>(phasemanager);
           break;
         case 3:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<3>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<3>>(phasemanager);
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -111,20 +111,20 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     {
       // derivatives needed
       if (corephasemanager->num_fluid_phases() > 0)
-        phasemanager = Teuchos::make_rcp<PhaseManagerDeriv>(corephasemanager);
+        phasemanager = std::make_shared<PhaseManagerDeriv>(corephasemanager);
       else
         phasemanager = corephasemanager;
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<1>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<1>>(phasemanager);
           break;
         case 2:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<2>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<2>>(phasemanager);
           break;
         case 3:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<3>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<3>>(phasemanager);
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -139,19 +139,19 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
       // porosity (includes derivatves) needed
-      phasemanager = Teuchos::make_rcp<PhaseManagerDerivAndPorosity>(corephasemanager);
+      phasemanager = std::make_shared<PhaseManagerDerivAndPorosity>(corephasemanager);
 
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<1>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<1>>(phasemanager);
           break;
         case 2:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<2>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<2>>(phasemanager);
           break;
         case 3:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<3>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<3>>(phasemanager);
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -159,20 +159,20 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
 
       if (mattype == Core::Materials::m_fluidporo_multiphase_reactions)
         // enhance by scalar handling capability
-        phasemanager = Teuchos::make_rcp<PhaseManagerReaction>(phasemanager);
+        phasemanager = std::make_shared<PhaseManagerReaction>(phasemanager);
 
       if (corephasemanager->total_num_dof() > corephasemanager->num_fluid_phases())
       {
         switch (nsd)
         {
           case 1:
-            phasemanager = Teuchos::make_rcp<PhaseManagerVolFrac<1>>(phasemanager);
+            phasemanager = std::make_shared<PhaseManagerVolFrac<1>>(phasemanager);
             break;
           case 2:
-            phasemanager = Teuchos::make_rcp<PhaseManagerVolFrac<2>>(phasemanager);
+            phasemanager = std::make_shared<PhaseManagerVolFrac<2>>(phasemanager);
             break;
           case 3:
-            phasemanager = Teuchos::make_rcp<PhaseManagerVolFrac<3>>(phasemanager);
+            phasemanager = std::make_shared<PhaseManagerVolFrac<3>>(phasemanager);
             break;
           default:
             FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -184,19 +184,19 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     case POROFLUIDMULTIPHASE::get_access_from_scatra:
     {
       // porosity (includes derivatives) needed
-      phasemanager = Teuchos::make_rcp<PhaseManagerDerivAndPorosity>(corephasemanager);
+      phasemanager = std::make_shared<PhaseManagerDerivAndPorosity>(corephasemanager);
 
       // enhance by diffusion tensor
       switch (nsd)
       {
         case 1:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<1>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<1>>(phasemanager);
           break;
         case 2:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<2>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<2>>(phasemanager);
           break;
         case 3:
-          phasemanager = Teuchos::make_rcp<PhaseManagerDiffusion<3>>(phasemanager);
+          phasemanager = std::make_shared<PhaseManagerDiffusion<3>>(phasemanager);
           break;
         default:
           FOUR_C_THROW("invalid dimension for creating phase manager!");
@@ -208,7 +208,7 @@ Discret::Elements::PoroFluidManager::PhaseManagerInterface::wrap_phase_manager(
     case POROFLUIDMULTIPHASE::get_access_from_artcoupling:
     {
       // porosity (includes derivatves) needed
-      phasemanager = Teuchos::make_rcp<PhaseManagerDerivAndPorosity>(corephasemanager);
+      phasemanager = std::make_shared<PhaseManagerDerivAndPorosity>(corephasemanager);
       break;
     }
     default:
@@ -314,8 +314,8 @@ void Discret::Elements::PoroFluidManager::PhaseManagerCore::setup(
       "invalid structure material for poroelasticity");
 
   // cast second material to poro material
-  Teuchos::RCP<Mat::StructPoro> structmat =
-      Teuchos::rcp_static_cast<Mat::StructPoro>(ele_->material(1));
+  std::shared_ptr<Mat::StructPoro> structmat =
+      std::static_pointer_cast<Mat::StructPoro>(ele_->material(1));
 
   invbulkmodulussolid_ = structmat->inv_bulk_modulus();
   soliddensity_ = structmat->density_solid_phase();
@@ -357,7 +357,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerCore::evaluate_gp_state(
   if (isevaluated_ == true) FOUR_C_THROW("state has already been set!");
 
   // get material
-  FOUR_C_ASSERT(ele_->material(matnum) != Teuchos::null, "Material of element is null pointer!");
+  FOUR_C_ASSERT(ele_->material(matnum) != nullptr, "Material of element is null pointer!");
   const Core::Mat::Material& material = *(ele_->material(matnum));
 
   // access state vector
@@ -642,25 +642,25 @@ double Discret::Elements::PoroFluidManager::PhaseManagerCore::solid_density() co
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 Discret::Elements::PoroFluidManager::PhaseManagerDeriv::PhaseManagerDeriv(
-    Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
+    std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager),
-      pressurederiv_(Teuchos::null),
-      saturationderiv_(Teuchos::null),
-      saturationderivderiv_(Teuchos::null),
-      solidpressurederiv_(Teuchos::null),
-      solidpressurederivderiv_(Teuchos::null)
+      pressurederiv_(nullptr),
+      saturationderiv_(nullptr),
+      saturationderivderiv_(nullptr),
+      solidpressurederiv_(nullptr),
+      solidpressurederivderiv_(nullptr)
 {
   const int numfluidphases = phasemanager_->num_fluid_phases();
   // initialize matrixes and vectors
   pressurederiv_ =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(numfluidphases, numfluidphases);
+      std::make_shared<Core::LinAlg::SerialDenseMatrix>(numfluidphases, numfluidphases);
   saturationderiv_ =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(numfluidphases, numfluidphases);
-  saturationderivderiv_ = Teuchos::make_rcp<std::vector<Core::LinAlg::SerialDenseMatrix>>(
+      std::make_shared<Core::LinAlg::SerialDenseMatrix>(numfluidphases, numfluidphases);
+  saturationderivderiv_ = std::make_shared<std::vector<Core::LinAlg::SerialDenseMatrix>>(
       numfluidphases, Core::LinAlg::SerialDenseMatrix(numfluidphases, numfluidphases));
-  solidpressurederiv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(numfluidphases);
+  solidpressurederiv_ = std::make_shared<Core::LinAlg::SerialDenseVector>(numfluidphases);
   solidpressurederivderiv_ =
-      Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>(numfluidphases, numfluidphases);
+      std::make_shared<Core::LinAlg::SerialDenseMatrix>(numfluidphases, numfluidphases);
 
   return;
 }
@@ -680,7 +680,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
   if (numfluidphases == 0) return;
 
   // get material
-  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != nullptr,
       "Material of element is null pointer!");
   const Core::Mat::Material& material = *(phasemanager_->element()->material(matnum));
 
@@ -714,7 +714,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerDeriv::evaluate_gp_state(
     using ordinalType = Core::LinAlg::SerialDenseMatrix::ordinalType;
     using scalarType = Core::LinAlg::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
-    inverse.setMatrix(pressurederiv_);
+    inverse.setMatrix(Teuchos::rcpFromRef(*pressurederiv_));
     int err = inverse.invert();
     if (err != 0)
       FOUR_C_THROW("Inversion of matrix for pressure derivative failed with error code %d.", err);
@@ -847,17 +847,17 @@ double Discret::Elements::PoroFluidManager::PhaseManagerDeriv::solid_pressure_de
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::PhaseManagerDerivAndPorosity(
-    Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
+    std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDeriv(phasemanager),
       porosity_(0.0),
       j_(0.0),
       dporosity_dj_(0.0),
       dporosity_dp_(0.0),
-      porosityderiv_(Teuchos::null)
+      porosityderiv_(nullptr)
 {
   const int totalnumdof = phasemanager_->total_num_dof();
   // initialize matrixes and vectors
-  porosityderiv_ = Teuchos::make_rcp<Core::LinAlg::SerialDenseVector>(totalnumdof);
+  porosityderiv_ = std::make_shared<Core::LinAlg::SerialDenseVector>(totalnumdof);
 
   return;
 }
@@ -879,8 +879,8 @@ void Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::evaluate
       "invalid structure material for poroelasticity");
 
   // cast second material to poro material
-  Teuchos::RCP<Mat::StructPoro> structmat =
-      Teuchos::rcp_static_cast<Mat::StructPoro>(phasemanager_->element()->material(1));
+  std::shared_ptr<Mat::StructPoro> structmat =
+      std::static_pointer_cast<Mat::StructPoro>(phasemanager_->element()->material(1));
 
   // empty parameter list
   Teuchos::ParameterList params;
@@ -1012,7 +1012,7 @@ bool Discret::Elements::PoroFluidManager::PhaseManagerDerivAndPorosity::porosity
  | constructor                                              vuong 08/16 |
  *----------------------------------------------------------------------*/
 Discret::Elements::PoroFluidManager::PhaseManagerReaction::PhaseManagerReaction(
-    Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
+    std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager), numscal_(0)
 {
   return;
@@ -1047,8 +1047,8 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
   // when
   //       access from outside is requested with matnum =! 0, however, in that case we will not need
   //       the PhaseManagerReaction
-  Teuchos::RCP<Mat::MatList> scatramat =
-      Teuchos::rcp_static_cast<Mat::MatList>(phasemanager_->element()->material(2));
+  std::shared_ptr<Mat::MatList> scatramat =
+      std::static_pointer_cast<Mat::MatList>(phasemanager_->element()->material(2));
 
   // get number of scalars
   numscal_ = scatramat->num_mat();
@@ -1061,18 +1061,18 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
     for (int k = 0; k < numscal_; ++k)
     {
       int matid = scatramat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = scatramat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = scatramat->material_by_id(matid);
       if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_fluid)
       {
-        const Teuchos::RCP<const Mat::ScatraMatMultiPoroFluid>& poromat =
-            Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroFluid>(singlemat);
+        const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
+            std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(singlemat);
         scalartophasemap_[k].phaseID = poromat->phase_id();
         scalartophasemap_[k].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid;
       }
       else if (singlemat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
       {
-        const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
-            Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
+        const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
+            std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(singlemat);
         scalartophasemap_[k].phaseID = poromat->phase_id();
         scalartophasemap_[k].species_type =
             Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac;
@@ -1096,15 +1096,15 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::setup(
   }
   else if (scatramat->material_type() == Core::Materials::m_scatra_multiporo_fluid)
   {
-    const Teuchos::RCP<const Mat::ScatraMatMultiPoroFluid>& poromat =
-        Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroFluid>(scatramat);
+    const std::shared_ptr<const Mat::ScatraMatMultiPoroFluid>& poromat =
+        std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroFluid>(scatramat);
     scalartophasemap_[0].phaseID = poromat->phase_id();
     scalartophasemap_[0].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_fluid;
   }
   else if (scatramat->material_type() == Core::Materials::m_scatra_multiporo_volfrac)
   {
-    const Teuchos::RCP<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
-        Teuchos::rcp_dynamic_cast<const Mat::ScatraMatMultiPoroVolFrac>(scatramat);
+    const std::shared_ptr<const Mat::ScatraMatMultiPoroVolFrac>& poromat =
+        std::dynamic_pointer_cast<const Mat::ScatraMatMultiPoroVolFrac>(scatramat);
     scalartophasemap_[0].phaseID = poromat->phase_id();
     scalartophasemap_[0].species_type = Mat::ScaTraMatMultiPoro::SpeciesType::species_in_volfrac;
   }
@@ -1151,7 +1151,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerReaction::evaluate_gp_stat
   phasemanager_->evaluate_gp_state(J, varmanager, matnum);
 
   // get material
-  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != nullptr,
       "Material of element is null pointer!");
   const Core::Mat::Material& material = *(phasemanager_->element()->material(matnum));
 
@@ -1335,7 +1335,7 @@ Discret::Elements::PoroFluidManager::PhaseManagerReaction::scalar_to_phase(int i
  *----------------------------------------------------------------------*/
 template <int nsd>
 Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::PhaseManagerDiffusion(
-    Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
+    std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager)
 {
   return;
@@ -1418,7 +1418,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<nsd>::evaluate_g
   phasemanager_->evaluate_gp_state(J, varmanager, matnum);
 
   // get material
-  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != nullptr,
       "Material of element is null pointer!");
   const Core::Mat::Material& material = *(phasemanager_->element()->material(matnum));
 
@@ -1670,7 +1670,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerDiffusion<
  *----------------------------------------------------------------------*/
 template <int nsd>
 Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::PhaseManagerVolFrac(
-    Teuchos::RCP<PoroFluidManager::PhaseManagerInterface> phasemanager)
+    std::shared_ptr<PoroFluidManager::PhaseManagerInterface> phasemanager)
     : PhaseManagerDecorator(phasemanager)
 {
   return;
@@ -1754,7 +1754,7 @@ void Discret::Elements::PoroFluidManager::PhaseManagerVolFrac<nsd>::evaluate_gp_
   scalardiffs_.resize(numvolfrac);
 
   // get material
-  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != Teuchos::null,
+  FOUR_C_ASSERT(phasemanager_->element()->material(matnum) != nullptr,
       "Material of element is null pointer!");
   const Core::Mat::Material& material = *(phasemanager_->element()->material(matnum));
 

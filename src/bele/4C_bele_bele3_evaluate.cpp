@@ -53,10 +53,10 @@ int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
       break;
     case calc_struct_stress:
     {
-      Teuchos::RCP<std::vector<char>> stressdata =
-          params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
-      Teuchos::RCP<std::vector<char>> straindata =
-          params.get<Teuchos::RCP<std::vector<char>>>("strain", Teuchos::null);
+      std::shared_ptr<std::vector<char>> stressdata =
+          params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
+      std::shared_ptr<std::vector<char>> straindata =
+          params.get<std::shared_ptr<std::vector<char>>>("strain", nullptr);
 
       // dummy size for stress/strain. size does not matter. just write something that can be
       // extracted later
@@ -86,9 +86,9 @@ int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
       if (Comm.MyPID() == owner())
       {
         // element geometry update
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
             discretization.get_state("displacement");
-        if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+        if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
         std::vector<double> mydisp(lm.size());
         Core::FE::extract_my_values(*disp, mydisp, lm);
         const int numdim = 3;
@@ -103,9 +103,9 @@ int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
     case calc_struct_volconstrstiff:
     {
       // element geometry update
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vector 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
       const int numdim = 3;
@@ -115,12 +115,12 @@ int Discret::Elements::Bele3::evaluate(Teuchos::ParameterList& params,
       // first partial derivatives
       Core::LinAlg::SerialDenseVector Vdiff1;
       // second partial derivatives
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
-          Teuchos::make_rcp<Core::LinAlg::SerialDenseMatrix>();
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Vdiff2 =
+          std::make_shared<Core::LinAlg::SerialDenseMatrix>();
 
       // get projection method
-      Teuchos::RCP<Core::Conditions::Condition> condition =
-          params.get<Teuchos::RCP<Core::Conditions::Condition>>("condition");
+      std::shared_ptr<Core::Conditions::Condition> condition =
+          params.get<std::shared_ptr<Core::Conditions::Condition>>("condition");
       const std::string* projtype = condition->parameters().get_if<std::string>("projection");
 
       if (projtype != nullptr)
@@ -245,7 +245,7 @@ double Discret::Elements::Bele3::compute_constr_vols(
  * ---------------------------------------------------------------------*/
 void Discret::Elements::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDenseMatrix& xc,
     const int numnode, const int ndof, double& V, Core::LinAlg::SerialDenseVector& Vdiff1,
-    Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
+    std::shared_ptr<Core::LinAlg::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
 {
   // necessary constants
   const int numdim = 3;
@@ -254,7 +254,7 @@ void Discret::Elements::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDense
   // initialize
   V = 0.0;
   Vdiff1.size(ndof);
-  if (Vdiff2 != Teuchos::null) Vdiff2->shape(ndof, ndof);
+  if (Vdiff2 != nullptr) Vdiff2->shape(ndof, ndof);
 
   // Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
@@ -321,7 +321,7 @@ void Discret::Elements::Bele3::compute_vol_deriv(const Core::LinAlg::SerialDense
       }
 
       //-------- compute second derivative
-      if (Vdiff2 != Teuchos::null)
+      if (Vdiff2 != nullptr)
       {
         for (int i = 0; i < numnode; i++)
         {

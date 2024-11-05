@@ -47,27 +47,27 @@ namespace Adapter
     //@{
 
     //! constructor
-    explicit AleFsiWrapper(Teuchos::RCP<Ale> ale);
+    explicit AleFsiWrapper(std::shared_ptr<Ale> ale);
 
     //@}
 
     //! communicate object at the interface
-    Teuchos::RCP<const ALE::Utils::MapExtractor> interface() const;
+    std::shared_ptr<const ALE::Utils::MapExtractor> interface() const;
 
     //! apply interface displacements
-    void apply_interface_displacements(Teuchos::RCP<const Core::LinAlg::Vector<double>> idisp)
+    void apply_interface_displacements(std::shared_ptr<const Core::LinAlg::Vector<double>> idisp)
     {
       interface_->insert_fsi_cond_vector(*idisp, *write_access_dispnp());
     }
 
     //! get Dirichlet map extractor
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
+    std::shared_ptr<const Core::LinAlg::MapExtractor> get_dbc_map_extractor() override
     {
       return AleWrapper::get_dbc_map_extractor();
     }
 
    private:
-    Teuchos::RCP<ALE::Utils::MapExtractor> interface_;
+    std::shared_ptr<ALE::Utils::MapExtractor> interface_;
 
   };  // class AleFsiWrapper
 }  // namespace Adapter

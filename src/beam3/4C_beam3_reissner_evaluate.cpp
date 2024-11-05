@@ -24,10 +24,9 @@
 #include "4C_utils_fad.hpp"
 #include "4C_utils_function.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <iomanip>
 #include <iostream>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -145,9 +144,9 @@ int Discret::Elements::Beam3r::evaluate(Teuchos::ParameterList& params,
       // values for each degree of freedom
 
       // get element displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
@@ -401,15 +400,16 @@ int Discret::Elements::Beam3r::evaluate(Teuchos::ParameterList& params,
     case Core::Elements::struct_calc_brownianstiff:
     {
       // get element displacements
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disp =
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disp =
           discretization.get_state("displacement");
-      if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+      if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       Core::FE::extract_my_values(*disp, mydisp, lm);
 
       // get element velocity
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> vel = discretization.get_state("velocity");
-      if (vel == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'velocity'");
+      std::shared_ptr<const Core::LinAlg::Vector<double>> vel =
+          discretization.get_state("velocity");
+      if (vel == nullptr) FOUR_C_THROW("Cannot get state vectors 'velocity'");
       std::vector<double> myvel(lm.size());
       Core::FE::extract_my_values(*vel, myvel, lm);
 
@@ -711,7 +711,7 @@ void Discret::Elements::Beam3r::calc_internal_and_inertia_forces_and_stiff(
   //************ periodic boundary conditions **********************
   /* unshift node positions, i.e. manipulate element displacement vector
    * as if there where no periodic boundary conditions */
-  if (brownian_dyn_params_interface_ptr() != Teuchos::null)
+  if (brownian_dyn_params_interface_ptr() != nullptr)
     un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
   /* current nodal DOFs relevant for centerline interpolation in total Lagrangian
@@ -896,9 +896,9 @@ void Discret::Elements::Beam3r::calc_internal_force_and_stiff(
   get_templated_beam_material<T>().compute_constitutive_parameter(CN, CM);
 
   // create object of triad interpolation scheme
-  Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
-      triad_interpolation_scheme_ptr = Teuchos::make_rcp<
-          LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
+  std::shared_ptr<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>
+      triad_interpolation_scheme_ptr =
+          std::make_shared<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, T>>();
 
   // reset triad interpolation scheme based on nodal quaternions
   triad_interpolation_scheme_ptr->reset(Qnode);
@@ -1227,9 +1227,9 @@ void Discret::Elements::Beam3r::calc_inertia_force_and_mass_matrix(
     calc_r<nnodecl, vpernode, double>(disp_totlag_centerline, H_i[gp], rnew_gp_mass_[gp]);
 
   // create object of triad interpolation scheme
-  Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
-      triad_interpolation_scheme_ptr = Teuchos::RCP(
-          new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
+  std::shared_ptr<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
+      triad_interpolation_scheme_ptr = std::make_shared<
+          LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>();
 
   // reset triad interpolation scheme with nodal quaternions
   triad_interpolation_scheme_ptr->reset(Qnode);
@@ -2092,7 +2092,7 @@ void Discret::Elements::Beam3r::calc_brownian_forces_and_stiff(Teuchos::Paramete
 
   // unshift node positions, i.e. manipulate element displacement vector
   // as if there where no periodic boundary conditions
-  if (brownian_dyn_params_interface_ptr() != Teuchos::null)
+  if (brownian_dyn_params_interface_ptr() != nullptr)
     un_shift_node_position(disp, *brownian_dyn_params_interface().get_periodic_bounding_box());
 
   /****** update/compute key variables describing displacement and velocity state of this element
@@ -2291,9 +2291,9 @@ void Discret::Elements::Beam3r::evaluate_rotational_damping(
 
 
   // create an object of the triad interpolation scheme
-  Teuchos::RCP<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
-      triad_interpolation_scheme_ptr = Teuchos::RCP(
-          new LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>());
+  std::shared_ptr<LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>
+      triad_interpolation_scheme_ptr = std::make_shared<
+          LargeRotations::TriadInterpolationLocalRotationVectors<nnodetriad, double>>();
 
   // reset the scheme with nodal quaternions
   triad_interpolation_scheme_ptr->reset(Qnode);
@@ -2689,7 +2689,7 @@ void Discret::Elements::Beam3r::evaluate_stochastic_forces(Teuchos::ParameterLis
 
   /* get pointer at Epetra multivector in parameter list linking to random numbers for stochastic
    * forces with zero mean and standard deviation (2*kT / dt)^0.5 */
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> randomforces =
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> randomforces =
       brownian_dyn_params_interface().get_random_forces();
 
   // my random number vector at current GP

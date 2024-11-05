@@ -321,7 +321,7 @@ bool Cut::IntegrationCellCreator::create_tet4_cell(
   bot->corner_coordinates(bot_xyze.data());
   top_point->coordinates(top_xyz.data());
 
-  Teuchos::RCP<Cut::Position> bot_distance =
+  std::shared_ptr<Cut::Position> bot_distance =
       Cut::Position::create(bot_xyze, top_xyz, Core::FE::CellType::tri3);
 
   bot_distance->compute(true);
@@ -512,7 +512,7 @@ bool Cut::IntegrationCellCreator::create_hex8_cell(
     for (int i = 0; i < 4; ++i)
     {
       Core::LinAlg::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
-      Teuchos::RCP<Cut::Position> bot_distance =
+      std::shared_ptr<Cut::Position> bot_distance =
           Cut::Position::create(bot_xyze, top_xyz, Core::FE::CellType::quad4);
 
       bot_distance->compute(true);
@@ -702,7 +702,7 @@ bool Cut::IntegrationCellCreator::create_wedge6_cell(
     for (int i = 0; i < 3; ++i)
     {
       Core::LinAlg::Matrix<3, 1> top_xyz(&top_xyze(0, i), true);
-      Teuchos::RCP<Cut::Position> bot_distance =
+      std::shared_ptr<Cut::Position> bot_distance =
           Cut::Position::create(bot_xyze, top_xyz, Core::FE::CellType::tri3);
 
       bot_distance->compute(true);
@@ -883,7 +883,7 @@ bool Cut::IntegrationCellCreator::create_pyramid5_cell(
     bot->corner_coordinates(bot_xyze.data());
     top_point->coordinates(top_xyze.data());
 
-    Teuchos::RCP<Position> bot_distance =
+    std::shared_ptr<Position> bot_distance =
         Cut::Position::create(bot_xyze, top_xyze, Core::FE::CellType::quad4);
     bot_distance->compute(true);
 

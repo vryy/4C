@@ -29,7 +29,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     : AlgorithmBase(comm, Global::Problem::instance()->fsi_dynamic_params()),
-      adapterbase_ptr_(Teuchos::null),
+      adapterbase_ptr_(nullptr),
       use_old_structure_(false)
 {
   // empty constructor
@@ -42,7 +42,7 @@ FSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 void FSI::Algorithm::setup()
 {
   // access the structural discretization
-  Teuchos::RCP<Core::FE::Discretization> structdis =
+  std::shared_ptr<Core::FE::Discretization> structdis =
       Global::Problem::instance()->get_dis("structure");
 
   // access structural dynamic params list which will be possibly modified while creating the time
@@ -54,8 +54,8 @@ void FSI::Algorithm::setup()
       const_cast<Teuchos::ParameterList&>(Global::Problem::instance()->fsi_dynamic_params());
 
   // build and register fsi model evaluator
-  Teuchos::RCP<Solid::ModelEvaluator::Generic> fsi_model_ptr =
-      Teuchos::make_rcp<Solid::ModelEvaluator::PartitionedFSI>();
+  std::shared_ptr<Solid::ModelEvaluator::Generic> fsi_model_ptr =
+      std::make_shared<Solid::ModelEvaluator::PartitionedFSI>();
 
   // todo FIX THIS !!!!
   // Decide whether to use old structural time integration or new structural time integration.
@@ -73,14 +73,14 @@ void FSI::Algorithm::setup()
     adapterbase_ptr_->init(fsidyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     adapterbase_ptr_->register_model_evaluator("Partitioned Coupling Model", fsi_model_ptr);
     adapterbase_ptr_->setup();
-    structure_ = Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(
+    structure_ = std::dynamic_pointer_cast<Adapter::FSIStructureWrapper>(
         adapterbase_ptr_->structure_field());
 
     // set pointer in FSIStructureWrapper
     structure_->set_model_evaluator_ptr(
-        Teuchos::rcp_dynamic_cast<Solid::ModelEvaluator::PartitionedFSI>(fsi_model_ptr));
+        std::dynamic_pointer_cast<Solid::ModelEvaluator::PartitionedFSI>(fsi_model_ptr));
 
-    if (structure_ == Teuchos::null)
+    if (structure_ == nullptr)
       FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");
   }
   else if (Teuchos::getIntegralValue<Inpar::Solid::IntegrationStrategy>(sdyn, "INT_STRATEGY") ==
@@ -97,10 +97,10 @@ void FSI::Algorithm::setup()
     Adapter::StructureBaseAlgorithm structure(Global::Problem::instance()->fsi_dynamic_params(),
         const_cast<Teuchos::ParameterList&>(sdyn), structdis);
     structure_ =
-        Teuchos::rcp_dynamic_cast<Adapter::FSIStructureWrapper>(structure.structure_field());
+        std::dynamic_pointer_cast<Adapter::FSIStructureWrapper>(structure.structure_field());
     structure_->setup();
 
-    if (structure_ == Teuchos::null)
+    if (structure_ == nullptr)
       FOUR_C_THROW("cast from Adapter::Structure to Adapter::FSIStructureWrapper failed");
 
     use_old_structure_ = true;
@@ -116,7 +116,7 @@ void FSI::Algorithm::setup()
       Global::Problem::instance()->fsi_dynamic_params(), "FSICoupling");
   fluid_ = MBFluidbase.mb_fluid_field();
 
-  coupsf_ = Teuchos::make_rcp<Coupling::Adapter::Coupling>();
+  coupsf_ = std::make_shared<Coupling::Adapter::Coupling>();
 }
 
 
@@ -175,8 +175,8 @@ void FSI::Algorithm::output()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv)
 {
   return coupsf_->master_to_slave(*iv);
 }
@@ -184,8 +184,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::fluid_to_struct(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> iv)
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Algorithm::fluid_to_struct(
+    std::shared_ptr<Core::LinAlg::Vector<double>> iv)
 {
   return coupsf_->slave_to_master(*iv);
 }
@@ -206,8 +206,8 @@ const Coupling::Adapter::Coupling& FSI::Algorithm::structure_fluid_coupling() co
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_->master_to_slave(*iv);
 }
@@ -215,8 +215,8 @@ Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::struct_to_fluid(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Core::LinAlg::Vector<double>> FSI::Algorithm::fluid_to_struct(
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> iv) const
+std::shared_ptr<Core::LinAlg::Vector<double>> FSI::Algorithm::fluid_to_struct(
+    std::shared_ptr<const Core::LinAlg::Vector<double>> iv) const
 {
   return coupsf_->slave_to_master(*iv);
 }

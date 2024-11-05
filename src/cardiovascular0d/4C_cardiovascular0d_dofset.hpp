@@ -15,9 +15,9 @@
 #include "4C_fem_dofset.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
 #include <list>
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -75,9 +75,9 @@ namespace Utils
     //! @name Construction
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int assign_degrees_of_freedom(const Teuchos::RCP<Core::FE::Discretization> dis,
+    virtual int assign_degrees_of_freedom(const std::shared_ptr<Core::FE::Discretization> dis,
         const int ndofs, const int start,
-        const Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor);
+        const std::shared_ptr<FourC::Cardiovascular0D::ProperOrthogonalDecomposition> mor);
 
     /// reset all internal variables
     void reset() override;

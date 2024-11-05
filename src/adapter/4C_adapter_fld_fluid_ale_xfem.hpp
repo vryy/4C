@@ -29,10 +29,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// return the boundary discretization that matches the structure discretization
-    Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
+    std::shared_ptr<Core::FE::Discretization> boundary_discretization();
 
     /// communication object at the struct interface
-    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& struct_interface();
+    virtual std::shared_ptr<FLD::Utils::MapExtractor> const& struct_interface();
 
     //@}
 
@@ -41,12 +41,12 @@ namespace Adapter
     /*========================================================================*/
 
     /// nonlinear solve
-    void nonlinear_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> idisp,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> ivel) override;
+    void nonlinear_solve(std::shared_ptr<Core::LinAlg::Vector<double>> idisp,
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel) override;
 
     /// relaxation solve
-    Teuchos::RCP<Core::LinAlg::Vector<double>> relaxation_solve(
-        Teuchos::RCP<Core::LinAlg::Vector<double>> idisp, double dt) override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> relaxation_solve(
+        std::shared_ptr<Core::LinAlg::Vector<double>> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -54,7 +54,7 @@ namespace Adapter
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_forces() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_forces() override;
     //@}
 
     /*========================================================================*/
@@ -62,10 +62,10 @@ namespace Adapter
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_velnp() override;
 
     /// extract the interface velocity at time t^n
-    Teuchos::RCP<Core::LinAlg::Vector<double>> extract_interface_veln() override;
+    std::shared_ptr<Core::LinAlg::Vector<double>> extract_interface_veln() override;
     //@}
     //@}
   };

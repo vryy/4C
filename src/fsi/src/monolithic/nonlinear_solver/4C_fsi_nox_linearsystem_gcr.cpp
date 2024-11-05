@@ -10,6 +10,7 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_vector.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
@@ -39,7 +40,7 @@ NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,
       timeApplyJacbianInverse(0.0)
 {
   // Allocate solver
-  tmpVectorPtr = Teuchos::make_rcp<::NOX::Epetra::Vector>(cloneVector);
+  tmpVectorPtr = std::make_shared<::NOX::Epetra::Vector>(cloneVector);
 
   // Jacobian operator is supplied
   jacType = get_operator_type(*jacPtr);
@@ -102,7 +103,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
       jacPtr.get(), &(result.getEpetraVector()), &(nonConstInput.getEpetraVector()));
 
   // ************* Begin linear system scaling *******************
-  if (!Teuchos::is_null(scaling))
+  if (!!(scaling))
   {
     if (!manualScaling) scaling->computeScaling(Problem);
 
@@ -135,7 +136,7 @@ bool NOX::FSI::LinearSystemGCR::applyJacobianInverse(
   }
 
   // Unscale the linear system
-  if (!Teuchos::is_null(scaling)) scaling->unscaleLinearSystem(Problem);
+  if (!!(scaling)) scaling->unscaleLinearSystem(Problem);
 
   // Set the output parameters in the "Output" sublist
   if (outputSolveDetails)
@@ -178,8 +179,8 @@ int NOX::FSI::LinearSystemGCR::solve_gcr(
   double normb = b.norm();
   double error0 = r.norm() / normb;
 
-  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>>& u = u_;
-  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>>& c = c_;
+  std::vector<std::shared_ptr<::NOX::Epetra::Vector>>& u = u_;
+  std::vector<std::shared_ptr<::NOX::Epetra::Vector>>& c = c_;
 
   // reset krylov space
   u.clear();
@@ -200,9 +201,9 @@ int NOX::FSI::LinearSystemGCR::solve_gcr(
   while (error / normb >= tol)
   {
     // this is GCR, not GMRESR
-    u.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(r));
+    u.push_back(std::make_shared<::NOX::Epetra::Vector>(r));
     if (not applyJacobian(r, tmp)) throw_error("SolveGCR", "applyJacobian failed");
-    c.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(tmp));
+    c.push_back(std::make_shared<::NOX::Epetra::Vector>(tmp));
 
     for (int i = 0; i < k; ++i)
     {
@@ -268,14 +269,14 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
     return 0;
   }
 
-  std::vector<Teuchos::RCP<::NOX::Epetra::Vector>> v;
+  std::vector<std::shared_ptr<::NOX::Epetra::Vector>> v;
   v.reserve(m + 1);
 
   int j = 1;
   while (j <= max_iter)
   {
     v.clear();
-    v.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(r, ::NOX::ShapeCopy));
+    v.push_back(std::make_shared<::NOX::Epetra::Vector>(r, ::NOX::ShapeCopy));
     v[0]->update(1. / beta, r, 0.);
     s.putScalar(0.0);
     s(0) = beta;
@@ -291,7 +292,7 @@ int NOX::FSI::LinearSystemGCR::solve_gmres(
         w.update(H(k, i), *v[k], -1.);
       }
       H(i + 1, i) = w.norm();
-      v.push_back(Teuchos::make_rcp<::NOX::Epetra::Vector>(w));
+      v.push_back(std::make_shared<::NOX::Epetra::Vector>(w));
       v.back()->scale(1.0 / H(i + 1, i));
 
       for (int k = 0; k < i; k++) apply_plane_rotation(H(k, i), H(k + 1, i), cs(k), sn(k));
@@ -442,11 +443,14 @@ bool NOX::FSI::LinearSystemGCR::hasPreconditioner() const { return false; }
 
 Teuchos::RCP<const Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator() const
 {
-  return jacPtr;
+  return Teuchos::rcpFromRef(*jacPtr);
 }
 
 
-Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator() { return jacPtr; }
+Teuchos::RCP<Epetra_Operator> NOX::FSI::LinearSystemGCR::getJacobianOperator()
+{
+  return Teuchos::rcpFromRef(*jacPtr);
+}
 
 
 Teuchos::RCP<const Epetra_Operator> NOX::FSI::LinearSystemGCR::getGeneratedPrecOperator() const

@@ -50,7 +50,7 @@ namespace Core::FE
       \param n_dim: number of space dimensions of this discretization
       */
       NurbsDiscretization(
-          const std::string name, Teuchos::RCP<Epetra_Comm> comm, unsigned int n_dim);
+          const std::string name, std::shared_ptr<Epetra_Comm> comm, unsigned int n_dim);
 
       /*!
       \brief Set a knot vector
@@ -67,7 +67,7 @@ namespace Core::FE
       \author gammi
 
       */
-      virtual void set_knot_vector(Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots);
+      virtual void set_knot_vector(std::shared_ptr<Core::FE::Nurbs::Knotvector> knots);
 
       /*!
       \brief get a pointer to the knotvector from the discretization
@@ -77,8 +77,8 @@ namespace Core::FE
       \author gammi
 
       */
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> get_knot_vector();
-      Teuchos::RCP<const Core::FE::Nurbs::Knotvector> get_knot_vector() const;
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> get_knot_vector();
+      std::shared_ptr<const Core::FE::Nurbs::Knotvector> get_knot_vector() const;
 
       /*!
       \brief return number of knots in each direction
@@ -152,7 +152,7 @@ namespace Core::FE
       dimensions u,v   : nurbs surface (n x m)
       dimensions u,v,w : nurbs volume  (n x m x l)
       */
-      Teuchos::RCP<Core::FE::Nurbs::Knotvector> knots_;
+      std::shared_ptr<Core::FE::Nurbs::Knotvector> knots_;
 
     };  // class NurbsDiscretization
   }     // namespace Nurbs
@@ -170,14 +170,14 @@ namespace Core::FE
 
      protected:
       void evaluate(const Teuchos::ParameterList& params, const Core::FE::Discretization& discret,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
-          DbcInfo& info, Teuchos::RCP<std::set<int>>* dbcgids) const override;
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
+          DbcInfo& info, std::shared_ptr<std::set<int>>* dbcgids) const override;
 
       void do_dirichlet_condition(const Teuchos::ParameterList& params,
           const Core::FE::Discretization& discret, const Core::Conditions::Condition& cond,
-          double time, const Teuchos::RCP<Core::LinAlg::Vector<double>>* systemvectors,
+          double time, const std::shared_ptr<Core::LinAlg::Vector<double>>* systemvectors,
           const Core::LinAlg::Vector<int>& toggle,
-          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
+          const std::shared_ptr<std::set<int>>* dbcgids) const override;
 
      private:
       /*!

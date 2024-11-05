@@ -24,14 +24,14 @@ FOUR_C_NAMESPACE_OPEN
 Solid::ModelEvaluatorManager::ModelEvaluatorManager()
     : isinit_(false),
       issetup_(false),
-      me_map_ptr_(Teuchos::null),
-      me_vec_ptr_(Teuchos::null),
-      eval_data_ptr_(Teuchos::null),
-      sdyn_ptr_(Teuchos::null),
-      gstate_ptr_(Teuchos::null),
-      gio_ptr_(Teuchos::null),
-      int_ptr_(Teuchos::null),
-      timint_ptr_(Teuchos::null)
+      me_map_ptr_(nullptr),
+      me_vec_ptr_(nullptr),
+      eval_data_ptr_(nullptr),
+      sdyn_ptr_(nullptr),
+      gstate_ptr_(nullptr),
+      gio_ptr_(nullptr),
+      int_ptr_(nullptr),
+      timint_ptr_(nullptr)
 {
   // empty constructor
 }
@@ -53,12 +53,12 @@ void Solid::ModelEvaluatorManager::check_init() const
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::init(
-    const Teuchos::RCP<Solid::ModelEvaluator::Data>& eval_data_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
-    const Teuchos::RCP<Solid::TimeInt::BaseDataIO>& gio_ptr,
-    const Teuchos::RCP<Solid::Integrator>& int_ptr,
-    const Teuchos::RCP<const Solid::TimeInt::Base>& timint_ptr)
+    const std::shared_ptr<Solid::ModelEvaluator::Data>& eval_data_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataSDyn>& sdyn_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr,
+    const std::shared_ptr<Solid::TimeInt::BaseDataIO>& gio_ptr,
+    const std::shared_ptr<Solid::Integrator>& int_ptr,
+    const std::shared_ptr<const Solid::TimeInt::Base>& timint_ptr)
 {
   issetup_ = false;
 
@@ -182,7 +182,8 @@ void Solid::ModelEvaluatorManager::assemble_jacobian(bool& ok, const Vector& me_
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::assemble_jacobian_contributions_from_element_level_for_ptc(
-    const Vector& me_vec, const double timefac_np, Teuchos::RCP<Core::LinAlg::SparseMatrix>& modjac)
+    const Vector& me_vec, const double timefac_np,
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& modjac)
 {
   for (const auto& cit : me_vec)
     cit->assemble_jacobian_contributions_from_element_level_for_ptc(modjac, timefac_np);
@@ -381,7 +382,7 @@ bool Solid::ModelEvaluatorManager::apply_stiff(const Inpar::Solid::ModelType& mt
 {
   check_init_setup();
   bool ok = true;
-  Teuchos::RCP<Solid::ModelEvaluator::Generic> model_ptr = me_map_ptr_->at(mt);
+  std::shared_ptr<Solid::ModelEvaluator::Generic> model_ptr = me_map_ptr_->at(mt);
   const Vector me_vec(1, model_ptr);
 
   // initialize stiffness matrix to zero
@@ -635,7 +636,7 @@ const Solid::TimeInt::BaseDataGlobalState& Solid::ModelEvaluatorManager::get_glo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>&
+const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>&
 Solid::ModelEvaluatorManager::global_state_ptr()
 {
   check_init_setup();
@@ -644,7 +645,7 @@ Solid::ModelEvaluatorManager::global_state_ptr()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const Teuchos::RCP<const Solid::TimeInt::Base>& Solid::ModelEvaluatorManager::get_tim_int_ptr()
+const std::shared_ptr<const Solid::TimeInt::Base>& Solid::ModelEvaluatorManager::get_tim_int_ptr()
     const
 {
   check_init_setup();
@@ -696,7 +697,7 @@ void Solid::ModelEvaluatorManager::update_step_state(const double& timefac_n)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluatorManager::compute_jacobian_contributions_from_element_level_for_ptc(
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
+    std::shared_ptr<Core::LinAlg::SparseMatrix>& scalingMatrixOpPtr)
 {
   // evaluate ptc contributions at t^n+1
   double timefac_np = 1.0;
@@ -806,12 +807,12 @@ void Solid::ModelEvaluatorManager::post_time_loop()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<Solid::ModelEvaluatorManager::Vector>
+std::shared_ptr<Solid::ModelEvaluatorManager::Vector>
 Solid::ModelEvaluatorManager::transform_to_vector(
     const Solid::ModelEvaluatorManager::Map& model_map) const
 {
-  Teuchos::RCP<Solid::ModelEvaluatorManager::Vector> me_vec_ptr =
-      Teuchos::make_rcp<Solid::ModelEvaluatorManager::Vector>(0);
+  std::shared_ptr<Solid::ModelEvaluatorManager::Vector> me_vec_ptr =
+      std::make_shared<Solid::ModelEvaluatorManager::Vector>(0);
   me_vec_ptr->reserve(model_map.size());
 
   // --------------------------------------------------------------------------

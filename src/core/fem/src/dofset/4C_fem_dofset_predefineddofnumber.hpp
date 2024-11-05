@@ -45,11 +45,11 @@ namespace Core::DOFSets
         int numdofpernode, int numdofperelement, int numdofperface, bool uniqueGIDs)
         : DofSet(),
           numdofpernode_(numdofpernode),
-          numdofpernodenodewise_(Teuchos::null),
+          numdofpernodenodewise_(nullptr),
           numdofperelement_(numdofperelement),
-          numdofperelementelewise_(Teuchos::null),
+          numdofperelementelewise_(nullptr),
           numdofperface_(numdofperface),
-          numdofperfacefacewise_(Teuchos::null),
+          numdofperfacefacewise_(nullptr),
           unique_gids_(uniqueGIDs)
     {
       return;
@@ -57,24 +57,25 @@ namespace Core::DOFSets
 
     /// Constructor
     DofSetPredefinedDoFNumber(int numdofpernode,
-        const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperelement, int numdofperface,
+        const std::shared_ptr<Core::LinAlg::Vector<int>> numdofperelement, int numdofperface,
         bool uniqueGIDs)
         : DofSet(),
           numdofpernode_(numdofpernode),
-          numdofpernodenodewise_(Teuchos::null),
+          numdofpernodenodewise_(nullptr),
           numdofperelement_(0),
           numdofperelementelewise_(numdofperelement),
           numdofperface_(numdofperface),
-          numdofperfacefacewise_(Teuchos::null),
+          numdofperfacefacewise_(nullptr),
           unique_gids_(uniqueGIDs)
     {
       return;
     }
 
     /// Constructor
-    explicit DofSetPredefinedDoFNumber(const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernode,
-        const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperelement,
-        const Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperface, bool uniqueGIDs)
+    explicit DofSetPredefinedDoFNumber(
+        const std::shared_ptr<Core::LinAlg::Vector<int>> numdofpernode,
+        const std::shared_ptr<Core::LinAlg::Vector<int>> numdofperelement,
+        const std::shared_ptr<Core::LinAlg::Vector<int>> numdofperface, bool uniqueGIDs)
         : DofSet(),
           numdofpernode_(0),
           numdofpernodenodewise_(numdofpernode),
@@ -88,9 +89,9 @@ namespace Core::DOFSets
     }
 
     /// create a copy of this object
-    Teuchos::RCP<DofSet> clone() override
+    std::shared_ptr<DofSet> clone() override
     {
-      return Teuchos::make_rcp<DofSetPredefinedDoFNumber>(*this);
+      return std::make_shared<DofSetPredefinedDoFNumber>(*this);
     }
 
     /// Add Dof Set to list #static_dofsets_
@@ -109,25 +110,24 @@ namespace Core::DOFSets
         const Core::FE::Discretization& dis, const unsigned dspos, const int start) override
     {
       // redistribute internal vectors if necessary
-      if (numdofpernodenodewise_ != Teuchos::null and
+      if (numdofpernodenodewise_ != nullptr and
           not numdofpernodenodewise_->Map().SameAs(*dis.node_col_map()))
       {
         Core::LinAlg::Vector<int> numdofpernodenodewise_rowmap(*dis.node_row_map());
         Core::LinAlg::export_to(*numdofpernodenodewise_, numdofpernodenodewise_rowmap);
-        numdofpernodenodewise_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+        numdofpernodenodewise_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
         Core::LinAlg::export_to(numdofpernodenodewise_rowmap, *numdofpernodenodewise_);
       }
-      if (numdofperelementelewise_ != Teuchos::null and
+      if (numdofperelementelewise_ != nullptr and
           not numdofperelementelewise_->Map().SameAs(*dis.element_col_map()))
       {
         Core::LinAlg::Vector<int> numdofperelementelewise_rowmap(*dis.element_row_map());
         Core::LinAlg::export_to(*numdofperelementelewise_, numdofperelementelewise_rowmap);
         numdofperelementelewise_ =
-            Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.element_col_map());
+            std::make_shared<Core::LinAlg::Vector<int>>(*dis.element_col_map());
         Core::LinAlg::export_to(numdofperelementelewise_rowmap, *numdofperelementelewise_);
       }
-      if (numdofperfacefacewise_ != Teuchos::null)
-        FOUR_C_THROW("Redistribution not yet implemented!");
+      if (numdofperfacefacewise_ != nullptr) FOUR_C_THROW("Redistribution not yet implemented!");
 
       // call base class routine
       return Core::DOFSets::DofSet::assign_degrees_of_freedom(dis, dspos, start);
@@ -137,7 +137,7 @@ namespace Core::DOFSets
     /// get number of nodal dofs
     int num_dof_per_node(const Core::Nodes::Node& node) const override
     {
-      if (numdofpernodenodewise_ == Teuchos::null)
+      if (numdofpernodenodewise_ == nullptr)
         return numdofpernode_;
       else
         return (*numdofpernodenodewise_)[node.lid()];
@@ -146,7 +146,7 @@ namespace Core::DOFSets
     /// get number of element dofs for this element
     int num_dof_per_element(const Core::Elements::Element& element) const override
     {
-      if (numdofperelementelewise_ == Teuchos::null)
+      if (numdofperelementelewise_ == nullptr)
         return numdofperelement_;
       else
         return (*numdofperelementelewise_)[element.lid()];
@@ -155,7 +155,7 @@ namespace Core::DOFSets
     /// get number of element dofs for this element
     int num_dof_per_face(const Core::Elements::Element& element, int face) const override
     {
-      if (numdofperfacefacewise_ == Teuchos::null)
+      if (numdofperfacefacewise_ == nullptr)
         return numdofperface_;
       else
       {
@@ -169,19 +169,19 @@ namespace Core::DOFSets
     const int numdofpernode_;
 
     /// another member
-    Teuchos::RCP<Core::LinAlg::Vector<int>> numdofpernodenodewise_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> numdofpernodenodewise_;
 
     /// number of dofs per element of dofset
     const int numdofperelement_;
 
     /// another member
-    Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperelementelewise_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> numdofperelementelewise_;
 
     /// number of dofs per element of dofset
     const int numdofperface_;
 
     /// another member
-    Teuchos::RCP<Core::LinAlg::Vector<int>> numdofperfacefacewise_;
+    std::shared_ptr<Core::LinAlg::Vector<int>> numdofperfacefacewise_;
 
     /// bool indicating if the dofs should get unique global IDs
     /// can be set to false, if the dofs never appear in a global map)

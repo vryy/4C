@@ -82,15 +82,15 @@ namespace SSTI
 
     //! return coupling
     //@{
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_scatra() const
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_scatra() const
     {
       return meshtying_strategy_scatra_;
     }
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_thermo() const
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_thermo() const
     {
       return meshtying_strategy_thermo_;
     }
-    Teuchos::RCP<const SSI::Utils::SSIMeshTying> ssti_structure_mesh_tying() const
+    std::shared_ptr<const SSI::Utils::SSIMeshTying> ssti_structure_mesh_tying() const
     {
       return ssti_structure_meshtying_;
     }
@@ -98,11 +98,11 @@ namespace SSTI
 
     //! return subproblems
     //@{
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure_field() const { return structure_; };
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> scatra_field() const;
-    Teuchos::RCP<ScaTra::ScaTraTimIntImpl> thermo_field() const;
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_field_base() { return scatra_; };
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_field_base() { return thermo_; };
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure_field() const { return structure_; };
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> scatra_field() const;
+    std::shared_ptr<ScaTra::ScaTraTimIntImpl> thermo_field() const;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_field_base() { return scatra_; };
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> thermo_field_base() { return thermo_; };
     //@}
 
     //! get bool indicating if we have at least one ssi interface meshtying condition
@@ -147,17 +147,17 @@ namespace SSTI
 
     //! Pointers to subproblems
     //@{
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> scatra_;
-    Teuchos::RCP<Adapter::SSIStructureWrapper> structure_;
-    Teuchos::RCP<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
-    Teuchos::RCP<Adapter::ScaTraBaseAlgorithm> thermo_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> scatra_;
+    std::shared_ptr<Adapter::SSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::StructureBaseAlgorithmNew> struct_adapterbase_ptr_;
+    std::shared_ptr<Adapter::ScaTraBaseAlgorithm> thermo_;
     //@}
 
     //! Pointers to coupling strategies
     //@{
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
-    Teuchos::RCP<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
-    Teuchos::RCP<SSI::Utils::SSIMeshTying> ssti_structure_meshtying_;
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_scatra_;
+    std::shared_ptr<const ScaTra::MeshtyingStrategyS2I> meshtying_strategy_thermo_;
+    std::shared_ptr<SSI::Utils::SSIMeshTying> ssti_structure_meshtying_;
     //@}
 
     //! bool indicating if we have at least one ssi interface meshtying condition
@@ -171,7 +171,7 @@ namespace SSTI
   };  // SSTI_Algorithm
 
   //! Construct specific SSTI algorithm
-  Teuchos::RCP<SSTI::SSTIAlgorithm> build_ssti(Inpar::SSTI::SolutionScheme coupling,
+  std::shared_ptr<SSTI::SSTIAlgorithm> build_ssti(Inpar::SSTI::SolutionScheme coupling,
       const Epetra_Comm& comm, const Teuchos::ParameterList& sstiparams);
 }  // namespace SSTI
 FOUR_C_NAMESPACE_CLOSE

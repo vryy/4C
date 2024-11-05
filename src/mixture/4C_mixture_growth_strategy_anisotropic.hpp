@@ -32,7 +32,7 @@ namespace Mixture
       const int fiber_id_;
 
       /// structural tensor strategy
-      Teuchos::RCP<Mat::Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_;
+      std::shared_ptr<Mat::Elastic::StructuralTensorStrategyBase> structural_tensor_strategy_;
     };
   }  // namespace PAR
 

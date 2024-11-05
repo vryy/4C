@@ -12,9 +12,8 @@
 /*header inclusions */
 #include "4C_config.hpp"
 
-#include <Teuchos_RCP.hpp>
-
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -59,7 +58,7 @@ namespace ALE
        *  setup. This is again really ugly as we have to extract the actual
        *  element type in order to access the material property.
        */
-      void set_element_data(Teuchos::RCP<Core::Elements::Element>
+      void set_element_data(std::shared_ptr<Core::Elements::Element>
                                 newele,     ///< newly created element where data has to be set
           Core::Elements::Element* oldele,  ///< existing element, that has been cloned
           const int matid,                  ///< ID of material law

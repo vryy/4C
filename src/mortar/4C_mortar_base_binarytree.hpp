@@ -12,8 +12,7 @@
 
 #include "4C_mortar_abstract_binarytree.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN

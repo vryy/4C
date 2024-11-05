@@ -17,14 +17,14 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::FE
 {
-  Teuchos::RCP<Core::LinAlg::MultiVector<double>> compute_null_space(
+  std::shared_ptr<Core::LinAlg::MultiVector<double>> compute_null_space(
       const Core::FE::Discretization& dis, const int numdf, const int dimns,
       const Epetra_Map& dofmap)
   {
     if (dimns > 10) FOUR_C_THROW("Nullspace size only up to 10 supported!");
 
-    Teuchos::RCP<Core::LinAlg::MultiVector<double>> nullspace =
-        Teuchos::make_rcp<Core::LinAlg::MultiVector<double>>(dofmap, dimns, true);
+    std::shared_ptr<Core::LinAlg::MultiVector<double>> nullspace =
+        std::make_shared<Core::LinAlg::MultiVector<double>>(dofmap, dimns, true);
 
     if (dimns == 1 && numdf == 1)
     {

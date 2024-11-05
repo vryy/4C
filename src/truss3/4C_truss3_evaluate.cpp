@@ -476,7 +476,7 @@ void Discret::Elements::Truss3::calc_gp_stresses(
   if (material()->material_type() != Core::Materials::m_linelast1D)
     FOUR_C_THROW("only linear elastic material supported for truss element");
 
-  Teuchos::RCP<std::vector<char>> stressdata = Teuchos::null;
+  std::shared_ptr<std::vector<char>> stressdata = nullptr;
   Inpar::Solid::StressType iostress;
   if (is_params_interface())
   {
@@ -485,7 +485,7 @@ void Discret::Elements::Truss3::calc_gp_stresses(
   }
   else
   {
-    stressdata = params.get<Teuchos::RCP<std::vector<char>>>("stress", Teuchos::null);
+    stressdata = params.get<std::shared_ptr<std::vector<char>>>("stress", nullptr);
     iostress = params.get<Inpar::Solid::StressType>("iostress", Inpar::Solid::stress_none);
   }
 
@@ -568,7 +568,7 @@ void Discret::Elements::Truss3::extract_elemental_variables(Core::Elements::Loca
   std::vector<double> disp_ele(la[0].lm_.size());
 
   auto disp = discretization.get_state("displacement");
-  if (disp == Teuchos::null) FOUR_C_THROW("Cannot get state vectors 'displacement'");
+  if (disp == nullptr) FOUR_C_THROW("Cannot get state vectors 'displacement'");
   Core::FE::extract_my_values(*disp, disp_ele, la[0].lm_);
 
   if (ele_state.find("disp") == ele_state.end())

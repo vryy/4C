@@ -22,7 +22,8 @@
 #include <MueLu_Level.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_Utilities.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -37,15 +38,15 @@ namespace Core::LinearSolver
     void setup(bool create, Epetra_Operator *matrix, Core::LinAlg::MultiVector<double> *x,
         Core::LinAlg::MultiVector<double> *b) override;
 
-    virtual void setup(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A);
+    virtual void setup(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A);
 
     /// linear operator used for preconditioning
-    Teuchos::RCP<Epetra_Operator> prec_operator() const override;
+    std::shared_ptr<Epetra_Operator> prec_operator() const override;
 
    private:
     // Private variables
-    Teuchos::RCP<Epetra_Operator> p_;                      // The underlying preconditioner object
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a_;  // A own copy of the system matrix
+    std::shared_ptr<Epetra_Operator> p_;  // The underlying preconditioner object
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a_;  // A own copy of the system matrix
     Teuchos::ParameterList &params_;
 
   };  // AMGnxn_Preconditioner
@@ -58,7 +59,7 @@ namespace Core::LinearSolver
     std::vector<std::string> get_mue_lu_xml_files() { return xml_files_; }
     std::vector<int> get_num_pdes() { return num_pdes_; }
     std::vector<int> get_null_spaces_dim() { return null_spaces_dim_; }
-    std::vector<Teuchos::RCP<std::vector<double>>> get_null_spaces_data()
+    std::vector<std::shared_ptr<std::vector<double>>> get_null_spaces_data()
     {
       return null_spaces_data_;
     }
@@ -71,7 +72,7 @@ namespace Core::LinearSolver
     std::vector<std::string> xml_files_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data_;
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data_;
     // int NumLevelAMG_;
     Teuchos::ParameterList prec_params_;
     Teuchos::ParameterList smoo_params_;
@@ -89,9 +90,9 @@ namespace Core::LinearSolver
   class AmGnxnOperator : virtual public Epetra_Operator
   {
    public:
-    AmGnxnOperator(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A, std::vector<int> num_pdes,
-        std::vector<int> null_spaces_dim,
-        std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
+    AmGnxnOperator(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A,
+        std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
+        std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
         const Teuchos::ParameterList &amgnxn_params, const Teuchos::ParameterList &smoothers_params,
         const Teuchos::ParameterList &muelu_params);
 
@@ -142,27 +143,27 @@ namespace Core::LinearSolver
     void setup();
 
    private:
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a_;
     std::vector<Teuchos::ParameterList> muelu_lists_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data_;
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data_;
     Teuchos::ParameterList amgnxn_params_;
     Teuchos::ParameterList smoothers_params_;
     Teuchos::ParameterList muelu_params_;
 
     bool is_setup_flag_;
 
-    Teuchos::RCP<AMGNxN::CoupledAmg> v_;
+    std::shared_ptr<AMGNxN::CoupledAmg> v_;
 
   };  // class AMGnxn_Operator
 
   class BlockSmootherOperator : virtual public Epetra_Operator
   {
    public:
-    BlockSmootherOperator(Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> A,
+    BlockSmootherOperator(std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> A,
         std::vector<int> num_pdes, std::vector<int> null_spaces_dim,
-        std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data,
+        std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data,
         const Teuchos::ParameterList &amgnxn_params,
         const Teuchos::ParameterList &smoothers_params);
 
@@ -213,10 +214,10 @@ namespace Core::LinearSolver
     void setup();  // TODO
 
    private:
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> a_;
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> a_;
     std::vector<int> num_pdes_;
     std::vector<int> null_spaces_dim_;
-    std::vector<Teuchos::RCP<std::vector<double>>> null_spaces_data_;
+    std::vector<std::shared_ptr<std::vector<double>>> null_spaces_data_;
     Teuchos::ParameterList amgnxn_params_;
     Teuchos::ParameterList smoothers_params_;
 

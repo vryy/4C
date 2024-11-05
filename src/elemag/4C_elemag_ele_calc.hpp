@@ -61,7 +61,8 @@ namespace Discret
       /// Generic virtual interface function.Called via base pointer.
       int evaluate(Discret::Elements::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -70,7 +71,8 @@ namespace Discret
       /// Evaluate the element at specified gauss points.
       virtual int evaluate(Discret::Elements::Elemag* ele, Core::FE::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<Core::Mat::Material>& mat, Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
+          std::shared_ptr<Core::Mat::Material>& mat,
+          Core::LinAlg::SerialDenseMatrix& elemat1_epetra,
           Core::LinAlg::SerialDenseMatrix& elemat2_epetra,
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
@@ -102,7 +104,7 @@ namespace Discret
         /// Init function for the struct members
         LocalSolver(const Discret::Elements::Elemag* ele,
             Core::FE::ShapeValues<distype>& shapeValues,
-            Teuchos::RCP<Core::FE::ShapeValuesFace<distype>>& shapeValuesFace,
+            std::shared_ptr<Core::FE::ShapeValuesFace<distype>>& shapeValuesFace,
             Inpar::EleMag::DynamicType& dyna);
 
         /// Compute the residual
@@ -117,7 +119,7 @@ namespace Discret
         /// Add terms corresponding to the absorbing boundary condition.
         void compute_absorbing_bc(Core::FE::Discretization& discretization,
             Discret::Elements::Elemag* ele, Teuchos::ParameterList& params,
-            Teuchos::RCP<Core::Mat::Material>& mat, int face,
+            std::shared_ptr<Core::Mat::Material>& mat, int face,
             Core::LinAlg::SerialDenseMatrix& elemat, int indexstart,
             Core::LinAlg::SerialDenseVector& elevec1);
 
@@ -127,8 +129,8 @@ namespace Discret
 
         /// Calls local solver to compute matrices: internal and face
         void compute_matrices(Core::FE::Discretization& discretization,
-            const Teuchos::RCP<Core::Mat::Material>& mat, Discret::Elements::Elemag& ele, double dt,
-            Inpar::EleMag::DynamicType dyna, const double tau);
+            const std::shared_ptr<Core::Mat::Material>& mat, Discret::Elements::Elemag& ele,
+            double dt, Inpar::EleMag::DynamicType dyna, const double tau);
 
         /// Set up interior matrices
         void compute_interior_matrices(double dt, double sigma, double mu, double epsilon);
@@ -175,7 +177,7 @@ namespace Discret
         /// evaluated shape values
         Core::FE::ShapeValues<distype>& shapes_;
         /// evaluated shape values
-        Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> shapesface_;
+        std::shared_ptr<Core::FE::ShapeValuesFace<distype>> shapesface_;
 
         // System matrices
         /// magnetic evolution matrix
@@ -233,12 +235,12 @@ namespace Discret
       double estimate_error(Discret::Elements::Elemag& ele, Core::LinAlg::SerialDenseVector& p);
 
       /// Local data object for element.
-      Teuchos::RCP<Core::FE::ShapeValues<distype>> shapes_;
+      std::shared_ptr<Core::FE::ShapeValues<distype>> shapes_;
       /// Local data object for face element.
-      Teuchos::RCP<Core::FE::ShapeValuesFace<distype>> shapesface_;
+      std::shared_ptr<Core::FE::ShapeValuesFace<distype>> shapesface_;
 
       /// Local solver object.
-      Teuchos::RCP<LocalSolver> local_solver_;
+      std::shared_ptr<LocalSolver> local_solver_;
 
       std::vector<double> localtrace_;  /// extracted values from trace solution vector
 

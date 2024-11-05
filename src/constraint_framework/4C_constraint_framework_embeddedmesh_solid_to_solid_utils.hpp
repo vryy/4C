@@ -14,8 +14,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_utils_gausspoints.hpp"
 
-#include <Teuchos_RCP.hpp>
-
+#include <memory>
 #include <vector>
 
 class Epetra_FEVector;
@@ -62,8 +61,8 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param cutwizard (in) object of the cut library that performs the cut operation.
    * @param discret (in) Discretization
    */
-  void prepare_and_perform_cut(Teuchos::RCP<Cut::CutWizard> cutwizard,
-      Teuchos::RCP<Core::FE::Discretization>& discret,
+  void prepare_and_perform_cut(std::shared_ptr<Cut::CutWizard> cutwizard,
+      std::shared_ptr<Core::FE::Discretization>& discret,
       CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& embedded_mesh_coupling_params);
 
   /**
@@ -74,9 +73,9 @@ namespace CONSTRAINTS::EMBEDDEDMESH
    * @param embedded_mesh_solid_interaction_pairs (out) embedded mesh coupling pairs
    * @param cut_elements_vector (out) vector of cut elements
    */
-  void get_coupling_pairs_and_background_elements(Teuchos::RCP<Cut::CutWizard>& cutwizard,
+  void get_coupling_pairs_and_background_elements(std::shared_ptr<Cut::CutWizard>& cutwizard,
       CONSTRAINTS::EMBEDDEDMESH::EmbeddedMeshParams& params_ptr, Core::FE::Discretization& discret,
-      std::vector<Teuchos::RCP<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
+      std::vector<std::shared_ptr<CONSTRAINTS::EMBEDDEDMESH::SolidInteractionPair>>&
           embeddedmesh_coupling_pairs,
       std::vector<Core::Elements::Element*>& cut_elements_vector);
 

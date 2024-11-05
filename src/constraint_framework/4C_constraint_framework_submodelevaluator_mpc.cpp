@@ -28,7 +28,7 @@
  *----------------------------------------------------------------------------*/
 FOUR_C_NAMESPACE_OPEN
 CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::RveMultiPointConstraintManager(
-    Teuchos::RCP<const Core::FE::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr)
+    std::shared_ptr<const Core::FE::Discretization> disc_ptr, Core::LinAlg::SparseMatrix* st_ptr)
 {
   discret_ptr_ = disc_ptr;
   stiff_ptr_ = st_ptr;
@@ -535,7 +535,7 @@ void CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_perio
         Core::IO::cout(Core::IO::debug) << dof << ", ";
       }
       Core::IO::cout(Core::IO::debug) << Core::IO::endl;
-      listMPCs_.emplace_back(Teuchos::make_rcp<LinearCoupledEquation>(mpcId++, pbcDofs, pbcCoefs));
+      listMPCs_.emplace_back(std::make_shared<LinearCoupledEquation>(mpcId++, pbcDofs, pbcCoefs));
     }
     Core::IO::cout(Core::IO::debug) << "\n";
   }
@@ -624,7 +624,7 @@ int CONSTRAINTS::SUBMODELEVALUATOR::RveMultiPointConstraintManager::build_linear
   for (; i < constraintRowIds.size(); ++i)
   {
     listMPCs_.emplace_back(
-        Teuchos::make_rcp<LinearCoupledEquation>(nMPC++, constraintColIds[i], constraintCoeffs[i]));
+        std::make_shared<LinearCoupledEquation>(nMPC++, constraintColIds[i], constraintCoeffs[i]));
 
     Core::IO::cout(Core::IO::verbose) << "Linear MPC #" << i << "  Created: 0 = ";
     for (unsigned int o = 0; o < constraintColIds[i].size(); ++o)

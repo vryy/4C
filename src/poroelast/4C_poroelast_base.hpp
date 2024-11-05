@@ -53,7 +53,7 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     explicit PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
-        Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter);
+        std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter);
 
     //! read restart data
     void read_restart(const int step) override;
@@ -78,63 +78,63 @@ namespace PoroElast
     //! @name access methods
 
     //! access to structural field
-    const Teuchos::RCP<Adapter::FPSIStructureWrapper>& structure_field() { return structure_; }
+    const std::shared_ptr<Adapter::FPSIStructureWrapper>& structure_field() { return structure_; }
 
     //! access to fluid field
-    const Teuchos::RCP<Adapter::FluidPoro>& fluid_field() { return fluid_; }
+    const std::shared_ptr<Adapter::FluidPoro>& fluid_field() { return fluid_; }
 
     //! composed system matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> system_matrix() override
+    std::shared_ptr<Core::LinAlg::SparseMatrix> system_matrix() override
     {
       FOUR_C_THROW("system_matrix() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! block system matrix
-    Teuchos::RCP<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
+    std::shared_ptr<Core::LinAlg::BlockSparseMatrixBase> block_system_matrix() override
     {
       FOUR_C_THROW("block_system_matrix() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! full monolithic dof row map
-    Teuchos::RCP<const Epetra_Map> dof_row_map() override
+    std::shared_ptr<const Epetra_Map> dof_row_map() override
     {
       FOUR_C_THROW("dof_row_map() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! dof row map of Structure field
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map_structure() = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map_structure() = 0;
 
     //! dof row map of Fluid field
-    virtual Teuchos::RCP<const Epetra_Map> dof_row_map_fluid() = 0;
+    virtual std::shared_ptr<const Epetra_Map> dof_row_map_fluid() = 0;
 
     //! extractor to communicate between full monolithic map and block maps
-    virtual Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> extractor() const
+    virtual std::shared_ptr<const Core::LinAlg::MultiMapExtractor> extractor() const
     {
       FOUR_C_THROW("ExtractorPointer only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! unique map of all dofs that should be constrained with DBC
-    virtual Teuchos::RCP<const Epetra_Map> combined_dbc_map() const
+    virtual std::shared_ptr<const Epetra_Map> combined_dbc_map() const
     {
       FOUR_C_THROW("combined_dbc_map() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //! return rhs of poro problem
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs() override
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs() override
     {
       FOUR_C_THROW("RHS() only available for monolithic schemes!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     //!@}
 
     //! update all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void update_state_incrementally(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void update_state_incrementally(std::shared_ptr<const Core::LinAlg::Vector<double>>
             iterinc  //!< increment between iteration i and i+1
         ) override
     {
@@ -142,7 +142,7 @@ namespace PoroElast
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
             iterinc  //!< increment between iteration i and i+1
         ) override
     {
@@ -150,14 +150,14 @@ namespace PoroElast
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fx)
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fx)
     {
       FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>>
                       iterinc,  //!< increment between iteration i and i+1
         bool firstiter) override
     {
@@ -165,8 +165,8 @@ namespace PoroElast
     }
 
     //! evaluate all fields at x^n+1_i+1 with x^n+1_i+1 = x_n+1_i + iterinc
-    virtual void evaluate(Teuchos::RCP<const Core::LinAlg::Vector<double>> sx,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fx, bool firstiter)
+    virtual void evaluate(std::shared_ptr<const Core::LinAlg::Vector<double>> sx,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fx, bool firstiter)
     {
       FOUR_C_THROW("evaluate(sx,fx) only available for monolithic schemes!");
     }
@@ -212,7 +212,7 @@ namespace PoroElast
     //! @name Transfer helpers
 
     //! field transform
-    Teuchos::RCP<Core::LinAlg::Vector<double>> structure_to_fluid_field(
+    std::shared_ptr<Core::LinAlg::Vector<double>> structure_to_fluid_field(
         const Core::LinAlg::Vector<double>& iv);
 
     //!@}
@@ -228,16 +228,16 @@ namespace PoroElast
     //!@}
 
     //! Extractor used for constraint structure
-    Teuchos::RCP<Core::LinAlg::MapExtractor> cond_splitter_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> cond_splitter_;
 
     //! true if the poroelast problem is only part of a larger problem (like e.g. in FPSI)
     bool is_part_of_multifield_problem_;
 
     //! Extractor used for poro structure interaction
-    Teuchos::RCP<Core::LinAlg::MapExtractor> psi_extractor_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> psi_extractor_;
 
     //! helper class for no penetration condition
-    Teuchos::RCP<NoPenetrationConditionHandle> nopen_handle_;
+    std::shared_ptr<NoPenetrationConditionHandle> nopen_handle_;
 
     //! flag for partial integration condition of porous fluid continuity equation
     bool part_int_cond_;
@@ -248,7 +248,7 @@ namespace PoroElast
     //! flag for additional porosity degree of freedom
     bool porosity_dof_;
 
-    Teuchos::RCP<Core::LinAlg::MapExtractor> porosity_splitter_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> porosity_splitter_;
 
 
 
@@ -258,7 +258,7 @@ namespace PoroElast
     const bool matchinggrid_;
 
     //! volume coupling (using mortar) adapter
-    Teuchos::RCP<Coupling::Adapter::MortarVolCoupl> volcoupl_;
+    std::shared_ptr<Coupling::Adapter::MortarVolCoupl> volcoupl_;
     //!@}
 
     //! flag for old time integration
@@ -281,15 +281,15 @@ namespace PoroElast
     bool submeshes_;
 
     //! coupling of fluid and structure (whole field)
-    Teuchos::RCP<Coupling::Adapter::Coupling> coupling_fluid_structure_;
+    std::shared_ptr<Coupling::Adapter::Coupling> coupling_fluid_structure_;
 
     //! @name Underlying fields
 
     //! underlying structure of the poro problem
-    Teuchos::RCP<Adapter::FPSIStructureWrapper> structure_;
+    std::shared_ptr<Adapter::FPSIStructureWrapper> structure_;
 
     //! underlying fluid of the poro problem
-    Teuchos::RCP<Adapter::FluidPoro> fluid_;
+    std::shared_ptr<Adapter::FluidPoro> fluid_;
 
     //!@}
   };
@@ -300,43 +300,44 @@ namespace PoroElast
    public:
     //! create using a Epetra_Comm
     explicit NoPenetrationConditionHandle(std::vector<Core::Conditions::Condition*> nopencond)
-        : cond_ids_(Teuchos::null),
-          cond_dofs_(Teuchos::null),
-          cond_rhs_(Teuchos::null),
+        : cond_ids_(nullptr),
+          cond_dofs_(nullptr),
+          cond_rhs_(nullptr),
           nopencond_(std::move(nopencond)),
-          nopenetration_(Teuchos::null),
+          nopenetration_(nullptr),
           has_cond_(false),
-          fluid_fluid_constraint_matrix_(Teuchos::null),
-          fluid_structure_constraint_matrix_(Teuchos::null),
-          structure_vel_constraint_matrix_(Teuchos::null)
+          fluid_fluid_constraint_matrix_(nullptr),
+          fluid_structure_constraint_matrix_(nullptr),
+          structure_vel_constraint_matrix_(nullptr)
     {
       if (nopencond_.size())
       {
         has_cond_ = true;
-        cond_ids_ = Teuchos::make_rcp<std::set<int>>();
+        cond_ids_ = std::make_shared<std::set<int>>();
       }
     }
 
     //! build map containing dofs with no penetration condition (fluid)
-    void buid_no_penetration_map(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
+    void buid_no_penetration_map(
+        const Epetra_Comm& comm, std::shared_ptr<const Epetra_Map> dofRowMap);
 
     //! apply rhs terms of no penetration condition to global rhs vector
     void apply_cond_rhs(Core::LinAlg::Vector<double>& iterinc, Core::LinAlg::Vector<double>& rhs);
 
     //! return no penetration map extractor
-    Teuchos::RCP<const Core::LinAlg::MapExtractor> extractor() { return nopenetration_; }
+    std::shared_ptr<const Core::LinAlg::MapExtractor> extractor() { return nopenetration_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<std::set<int>> cond_i_ds() { return cond_ids_; }
+    std::shared_ptr<std::set<int>> cond_i_ds() { return cond_ids_; }
 
     //! return vector containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cond_vector() { return cond_dofs_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> cond_vector() { return cond_dofs_; }
 
     //! check if a no penetration condition exists
     bool has_cond() { return has_cond_; }
 
     //! return condrhs
-    Teuchos::RCP<Core::LinAlg::Vector<double>> rhs() { return cond_rhs_; }
+    std::shared_ptr<Core::LinAlg::Vector<double>> rhs() { return cond_rhs_; }
 
     //! clear everything that is needed for coupling
     void clear(PoroElast::Coupltype coupltype = PoroElast::undefined);
@@ -345,35 +346,35 @@ namespace PoroElast
     void setup(const Epetra_Map& dofRowMap, const Epetra_Map* dofRowMapFluid);
 
     //! return constraint matrix, that fits to coupling type
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> constraint_matrix(PoroElast::Coupltype coupltype);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> constraint_matrix(PoroElast::Coupltype coupltype);
 
     //! return constraint matrix for structure velocity coupling
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix(
+    std::shared_ptr<Core::LinAlg::SparseMatrix> struct_vel_constraint_matrix(
         PoroElast::Coupltype coupltype);
 
    private:
     //! set containing global IDs of dofs with no penetration condition
-    Teuchos::RCP<std::set<int>> cond_ids_;
+    std::shared_ptr<std::set<int>> cond_ids_;
 
     //! vector marking dofs with no penetration condition
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cond_dofs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cond_dofs_;
 
     //! vector containing rhs terms from no penetration condition
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cond_rhs_;
+    std::shared_ptr<Core::LinAlg::Vector<double>> cond_rhs_;
 
     //! vector containing no penetration - conditions
     std::vector<Core::Conditions::Condition*> nopencond_;
 
     //! Extractor used for no penetration condition
-    Teuchos::RCP<Core::LinAlg::MapExtractor> nopenetration_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> nopenetration_;
 
     //! flag indicating if a no penetration condition exists
     bool has_cond_;
 
     //! @name coupling matrices
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> fluid_fluid_constraint_matrix_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> fluid_structure_constraint_matrix_;
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> structure_vel_constraint_matrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> fluid_fluid_constraint_matrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> fluid_structure_constraint_matrix_;
+    std::shared_ptr<Core::LinAlg::SparseMatrix> structure_vel_constraint_matrix_;
     //!@}
   };
 }  // namespace PoroElast

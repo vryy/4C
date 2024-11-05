@@ -56,7 +56,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       int scatra_evaluate(Artery* ele, Teuchos::ParameterList& params,
           Core::FE::Discretization& discretization, std::vector<int>& lm,
@@ -65,7 +65,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
       int evaluate_service(Artery* ele, const Arteries::Action action,
           Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
@@ -74,7 +74,7 @@ namespace Discret
           Core::LinAlg::SerialDenseVector& elevec1_epetra,
           Core::LinAlg::SerialDenseVector& elevec2_epetra,
           Core::LinAlg::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<Core::Mat::Material> mat) override;
+          std::shared_ptr<Core::Mat::Material> mat) override;
 
 
      protected:
@@ -90,7 +90,8 @@ namespace Discret
         */
       void sysmat(Artery* ele, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::Matrix<my::iel_, my::iel_>& sysmat,
-          Core::LinAlg::Matrix<my::iel_, 1>& rhs, Teuchos::RCP<const Core::Mat::Material> material);
+          Core::LinAlg::Matrix<my::iel_, 1>& rhs,
+          std::shared_ptr<const Core::Mat::Material> material);
 
       /*!
         \brief Evaluate volumetric flow inside the element (for post-processing)
@@ -105,7 +106,7 @@ namespace Discret
         */
       void evaluate_flow(Artery* ele, Core::FE::Discretization& discretization,
           Core::Elements::LocationArray& la, Core::LinAlg::SerialDenseVector& flowVec,
-          Teuchos::RCP<const Core::Mat::Material> material);
+          std::shared_ptr<const Core::Mat::Material> material);
 
       /*!
         \brief Calculate element length (either in current or deformed configuration)

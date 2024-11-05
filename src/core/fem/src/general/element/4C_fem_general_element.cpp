@@ -124,7 +124,7 @@ Core::FE::CellType Core::Elements::shards_key_to_dis_type(const unsigned& key)
  |  ctor (public)                                            mwgee 11/06|
  *----------------------------------------------------------------------*/
 Core::Elements::Element::Element(int id, int owner)
-    : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, Teuchos::null)
+    : ParObject(), id_(id), lid_(-1), owner_(owner), mat_(1, nullptr)
 {
 }
 
@@ -139,11 +139,11 @@ Core::Elements::Element::Element(const Element& old)
       nodeid_(old.nodeid_),
       node_(old.node_),
       face_(old.face_),
-      mat_(1, Teuchos::null)
+      mat_(1, nullptr)
 {
   // we do NOT want a deep copy of the condition_ as the condition
   // is only a reference in the elements anyway
-  std::map<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator fool;
+  std::map<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator fool;
   for (fool = old.condition_.begin(); fool != old.condition_.end(); ++fool)
     set_condition(fool->first, fool->second);
 
@@ -151,10 +151,10 @@ Core::Elements::Element::Element(const Element& old)
   {
     mat_.resize(old.mat_.size());
     for (unsigned iter = 0; iter < old.mat_.size(); ++iter)
-      if (old.mat_[iter] != Teuchos::null) mat_[iter] = (old.mat_[iter]->clone());
+      if (old.mat_[iter] != nullptr) mat_[iter] = (old.mat_[iter]->clone());
   }
   else
-    mat_[0] = Teuchos::null;
+    mat_[0] = nullptr;
 }
 
 
@@ -215,9 +215,10 @@ void Core::Elements::Element::set_node_ids(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Core::Elements::Element::set_material(const int index, Teuchos::RCP<Core::Mat::Material> mat)
+void Core::Elements::Element::set_material(
+    const int index, std::shared_ptr<Core::Mat::Material> mat)
 {
-  FOUR_C_THROW_UNLESS(mat != Teuchos::null,
+  FOUR_C_THROW_UNLESS(mat != nullptr,
       "Invalid material given to the element. \n"
       "Invalid are Summands of the Elasthyper-Toolbox and single Growth-Materials. \n"
       "If you like to use a Summand of the Elasthyper-Material define it via MAT_ElastHyper. \n"
@@ -236,7 +237,7 @@ void Core::Elements::Element::set_material(const int index, Teuchos::RCP<Core::M
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int Core::Elements::Element::add_material(Teuchos::RCP<Core::Mat::Material> mat)
+int Core::Elements::Element::add_material(std::shared_ptr<Core::Mat::Material> mat)
 {
   mat_.push_back(mat);
 
@@ -262,7 +263,7 @@ void Core::Elements::Element::pack(Core::Communication::PackBuffer& data) const
   // add vector nodeid_
   add_to_pack(data, nodeid_);
   // add material
-  if (mat_[0] != Teuchos::null)
+  if (mat_[0] != nullptr)
   {
     // pack only first material
     mat_[0]->pack(data);
@@ -299,18 +300,18 @@ void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
     auto* mat = dynamic_cast<Core::Mat::Material*>(o);
     if (mat == nullptr) FOUR_C_THROW("failed to unpack material");
     // unpack only first material
-    mat_[0] = Teuchos::RCP(mat);
+    mat_[0] = std::shared_ptr<Core::Mat::Material>(mat);
   }
   else
   {
-    mat_[0] = Teuchos::null;
+    mat_[0] = nullptr;
   }
 
   // node_, face_, parent_master_, parent_slave_ are NOT communicated
   node_.resize(0);
   if (!face_.empty())
   {
-    std::vector<Teuchos::RCP<Core::Elements::FaceElement>> empty;
+    std::vector<std::shared_ptr<Core::Elements::FaceElement>> empty;
     std::swap(face_, empty);
   }
 
@@ -323,14 +324,14 @@ void Core::Elements::Element::unpack(Core::Communication::UnpackBuffer& buffer)
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
 bool Core::Elements::Element::build_nodal_pointers(
-    std::map<int, Teuchos::RCP<Core::Nodes::Node>>& nodes)
+    std::map<int, std::shared_ptr<Core::Nodes::Node>>& nodes)
 {
   int nnode = num_node();
   const int* nodeids = node_ids();
   node_.resize(nnode);
   for (int i = 0; i < nnode; ++i)
   {
-    std::map<int, Teuchos::RCP<Core::Nodes::Node>>::const_iterator curr = nodes.find(nodeids[i]);
+    std::map<int, std::shared_ptr<Core::Nodes::Node>>::const_iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr == nodes.end())
       FOUR_C_THROW("Element %d cannot find node %d", id(), nodeids[i]);
@@ -416,7 +417,7 @@ void Core::Elements::Element::get_condition(
   auto startit = condition_.lower_bound(name);
   auto endit = condition_.upper_bound(name);
   int count = 0;
-  std::multimap<std::string, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
+  std::multimap<std::string, std::shared_ptr<Core::Conditions::Condition>>::const_iterator curr;
   for (curr = startit; curr != endit; ++curr) out[count++] = curr->second.get();
   if (count != num) FOUR_C_THROW("Mismatch in number of conditions found");
 }
@@ -517,7 +518,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
       for (int i = 0; i < num_face(); ++i)
       {
         const int owner = face_[i]->owner();
-        std::vector<int> dof = dis.dof(dofset, face_[i].getRawPtr());
+        std::vector<int> dof = dis.dof(dofset, face_[i].get());
         if (!dof.empty()) lmstride.push_back(dof.size());
         for (int j : dof)
         {
@@ -636,7 +637,7 @@ void Core::Elements::Element::location_vector(
       for (int i = 0; i < num_face(); ++i)
       {
         const int owner = face_[i]->owner();
-        std::vector<int> dof = dis.dof(dofset, face_[i].getRawPtr());
+        std::vector<int> dof = dis.dof(dofset, face_[i].get());
         if (!dof.empty()) lmstride.push_back(dof.size());
         for (int j : dof)
         {
@@ -813,7 +814,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
     for (int i = 0; i < num_face(); ++i)
     {
       const int owner = face_[i]->owner();
-      std::vector<int> dof = dis.dof(0, face_[i].getRawPtr());
+      std::vector<int> dof = dis.dof(0, face_[i].get());
       if (!dof.empty()) lmstride.push_back(dof.size());
       for (int j : dof)
       {
@@ -891,7 +892,7 @@ void Core::Elements::Element::location_vector(const Core::FE::Discretization& di
     for (int i = 0; i < num_face(); ++i)
     {
       const int owner = face_[i]->owner();
-      std::vector<int> dof = dis.dof(0, face_[i].getRawPtr());
+      std::vector<int> dof = dis.dof(0, face_[i].get());
       if (!dof.empty()) lmstride.push_back(dof.size());
       for (int j : dof)
       {
@@ -927,7 +928,7 @@ Core::Elements::Element* Core::Elements::Element::neighbor(const int face) const
 {
   if (face_.empty()) return nullptr;
   FOUR_C_ASSERT(face < num_face(), "there is no face with the given index");
-  Core::Elements::FaceElement* faceelement = face_[face].getRawPtr();
+  Core::Elements::FaceElement* faceelement = face_[face].get();
   if (faceelement->parent_master_element() == this)
     return faceelement->parent_slave_element();
   else if (faceelement->parent_slave_element() == this)
@@ -942,19 +943,19 @@ void Core::Elements::Element::set_face(
     const int faceindex, Core::Elements::FaceElement* faceelement)
 {
   const int nface = num_face();
-  if (face_.empty()) face_.resize(nface, Teuchos::null);
+  if (face_.empty()) face_.resize(nface, nullptr);
   FOUR_C_ASSERT(faceindex < num_face(), "there is no face with the given index");
-  face_[faceindex] = Teuchos::rcpFromRef<Core::Elements::FaceElement>(*faceelement);
+  face_[faceindex] = Core::Utils::shared_ptr_from_ref<Core::Elements::FaceElement>(*faceelement);
 }
 
 /*----------------------------------------------------------------------*
  |  set faces (public)                                       seitz 12/16|
  *----------------------------------------------------------------------*/
 void Core::Elements::Element::set_face(
-    const int faceindex, Teuchos::RCP<Core::Elements::FaceElement> faceelement)
+    const int faceindex, std::shared_ptr<Core::Elements::FaceElement> faceelement)
 {
   const int nface = num_face();
-  if (face_.empty()) face_.resize(nface, Teuchos::null);
+  if (face_.empty()) face_.resize(nface, nullptr);
   FOUR_C_ASSERT(faceindex < num_face(), "there is no face with the given index");
   face_[faceindex] = std::move(faceelement);
 }

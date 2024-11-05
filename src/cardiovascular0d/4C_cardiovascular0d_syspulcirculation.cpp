@@ -28,7 +28,7 @@ FOUR_C_NAMESPACE_OPEN
  |  ctor (public)                                              mhv 10/13|
  *----------------------------------------------------------------------*/
 Utils::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
-    Teuchos::RCP<Core::FE::Discretization> discr, const std::string& conditionname,
+    std::shared_ptr<Core::FE::Discretization> discr, const std::string& conditionname,
     std::vector<int>& curID)
     : Cardiovascular0D(discr, conditionname, curID)
 {
@@ -107,28 +107,28 @@ Utils::Cardiovascular0DSysPulCirculation::Cardiovascular0DSysPulCirculation(
  |mechanics", IJNMBE, 2016)                                              |
  *-----------------------------------------------------------------------*/
 void Utils::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> sysmat1,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat2,
-    Teuchos::RCP<Core::LinAlg::SparseOperator> sysmat3,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec3,
-    const Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec4,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec5)
+    std::shared_ptr<Core::LinAlg::SparseMatrix> sysmat1,
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat2,
+    std::shared_ptr<Core::LinAlg::SparseOperator> sysmat3,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec2,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec3,
+    const std::shared_ptr<Core::LinAlg::Vector<double>> sysvec4,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec5)
 {
   if (!actdisc_->filled()) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
 
   params.set("action", "calc_struct_volconstrstiff");
 
-  const bool assmat1 = sysmat1 != Teuchos::null;
-  const bool assmat2 = sysmat2 != Teuchos::null;
-  const bool assmat3 = sysmat3 != Teuchos::null;
-  const bool assvec1 = sysvec1 != Teuchos::null;
-  const bool assvec2 = sysvec2 != Teuchos::null;
-  const bool assvec3 = sysvec3 != Teuchos::null;
-  const bool assvec4 = sysvec4 != Teuchos::null;
-  const bool assvec5 = sysvec5 != Teuchos::null;
+  const bool assmat1 = sysmat1 != nullptr;
+  const bool assmat2 = sysmat2 != nullptr;
+  const bool assmat3 = sysmat3 != nullptr;
+  const bool assvec1 = sysvec1 != nullptr;
+  const bool assvec2 = sysvec2 != nullptr;
+  const bool assvec3 = sysvec3 != nullptr;
+  const bool assvec4 = sysvec4 != nullptr;
+  const bool assvec5 = sysvec5 != nullptr;
 
   // get time-integrator dependent values
   double theta = params.get("scale_theta", 1.0);
@@ -612,7 +612,8 @@ void Utils::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
     Core::Conditions::Condition& cond = *(cardiovascular0dcond_[i]);
 
     // elements might need condition
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(cond));
+    params.set<std::shared_ptr<Core::Conditions::Condition>>(
+        "condition", Core::Utils::shared_ptr_from_ref(cond));
 
     const std::string* conditiontype =
         &cardiovascular0dcond_[i]->parameters().get<std::string>("TYPE");
@@ -624,12 +625,12 @@ void Utils::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
     Core::LinAlg::SerialDenseVector elevector2;
     Core::LinAlg::SerialDenseVector elevector3;
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond.geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond.geometry();
     // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -697,8 +698,8 @@ void Utils::Cardiovascular0DSysPulCirculation::evaluate(Teuchos::ParameterList& 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void Utils::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList& params,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec1,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> sysvec2)
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec1,
+    std::shared_ptr<Core::LinAlg::Vector<double>> sysvec2)
 {
   if (!(actdisc_->filled())) FOUR_C_THROW("fill_complete() was not called");
   if (!actdisc_->have_dofs()) FOUR_C_THROW("assign_degrees_of_freedom() was not called");
@@ -707,7 +708,7 @@ void Utils::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList
 
   params.set("action", "calc_struct_constrvol");
 
-  const bool assvec1 = sysvec1 != Teuchos::null;
+  const bool assvec1 = sysvec1 != nullptr;
 
   // global and local ID of this bc in the redundant vectors
   const int offsetID = params.get<int>("OffsetID");
@@ -766,7 +767,8 @@ void Utils::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList
     int condID = cond->parameters().get<int>("id");
     params.set("id", condID);
 
-    params.set<Teuchos::RCP<Core::Conditions::Condition>>("condition", Teuchos::rcpFromRef(*cond));
+    params.set<std::shared_ptr<Core::Conditions::Condition>>(
+        "condition", Core::Utils::shared_ptr_from_ref(*cond));
 
     // define element matrices and vectors
     Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -777,11 +779,11 @@ void Utils::Cardiovascular0DSysPulCirculation::initialize(Teuchos::ParameterList
 
     const std::string conditiontype = cond->parameters().get<std::string>("TYPE");
 
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>& geom = cond->geometry();
+    std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond->geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    std::map<int, Teuchos::RCP<Core::Elements::Element>>::iterator curr;
+    std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
     for (curr = geom.begin(); curr != geom.end(); ++curr)
     {
       // get element location vector and ownerships

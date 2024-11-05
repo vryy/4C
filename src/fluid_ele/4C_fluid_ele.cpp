@@ -30,25 +30,25 @@ Core::Communication::ParObject* Discret::Elements::FluidType::create(
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidType::create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
   if (eletype == "FLUID")
   {
-    return Teuchos::make_rcp<Discret::Elements::Fluid>(id, owner);
+    return std::make_shared<Discret::Elements::Fluid>(id, owner);
   }
   else if (eletype == "FLUID2" || eletype == "FLUID3")
   {
     FOUR_C_THROW("Fluid element types FLUID2 and FLUID3 are no longer in use. Switch to FLUID.");
   }
-  return Teuchos::null;
+  return nullptr;
 }
 
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::FluidType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::FluidType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::Fluid>(id, owner);
+  return std::make_shared<Discret::Elements::Fluid>(id, owner);
 }
 
 
@@ -187,7 +187,7 @@ Discret::Elements::Fluid::Fluid(int id, int owner)
     : Core::Elements::Element(id, owner), is_ale_(false)
 {
   distype_ = Core::FE::CellType::dis_none;
-  tds_ = Teuchos::null;
+  tds_ = nullptr;
   return;
 }
 
@@ -197,8 +197,8 @@ Discret::Elements::Fluid::Fluid(int id, int owner)
 Discret::Elements::Fluid::Fluid(const Discret::Elements::Fluid& old)
     : Core::Elements::Element(old), distype_(old.distype_), is_ale_(old.is_ale_)
 {
-  tds_ = Teuchos::null;
-  if (old.tds_ != Teuchos::null)
+  tds_ = nullptr;
+  if (old.tds_ != nullptr)
     FOUR_C_THROW("clone() method for deep copying tds_ not yet implemented!");
   return;
 }
@@ -233,7 +233,7 @@ void Discret::Elements::Fluid::pack(Core::Communication::PackBuffer& data) const
 
   // time-dependent subgrid scales
   bool is_tds(false);
-  if (tds_ != Teuchos::null)
+  if (tds_ != nullptr)
   {
     is_tds = true;
     add_to_pack(data, is_tds);
@@ -270,7 +270,7 @@ void Discret::Elements::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
   bool is_tds = extract_int(buffer);
   if (is_tds)
   {
-    tds_ = Teuchos::make_rcp<FLD::TDSEleData>();
+    tds_ = std::make_shared<FLD::TDSEleData>();
     std::vector<char> pbtest;
     extract_from_pack(buffer, pbtest);
     if (pbtest.size() == 0) FOUR_C_THROW("Seems no TDS data available");
@@ -278,7 +278,7 @@ void Discret::Elements::Fluid::unpack(Core::Communication::UnpackBuffer& buffer)
     tds_->unpack(pbtest_buffer);
   }
   else
-    tds_ = Teuchos::null;
+    tds_ = nullptr;
 
   FOUR_C_THROW_UNLESS(buffer.at_end(), "Buffer not fully consumed.");
   return;
@@ -301,7 +301,7 @@ void Discret::Elements::Fluid::print(std::ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Fluid::lines()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Fluid::lines()
 {
   return Core::Communication::get_element_lines<FluidBoundary, Fluid>(*this);
 }
@@ -310,7 +310,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Fluid::lin
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Fluid::surfaces()
+std::vector<std::shared_ptr<Core::Elements::Element>> Discret::Elements::Fluid::surfaces()
 {
   return Core::Communication::get_element_surfaces<FluidBoundary, Fluid>(*this);
 }
@@ -319,7 +319,7 @@ std::vector<Teuchos::RCP<Core::Elements::Element>> Discret::Elements::Fluid::sur
 /*----------------------------------------------------------------------*
  |  get face element (public)                               schott 03/12|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::Fluid::create_face_element(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::Fluid::create_face_element(
     Core::Elements::Element* parent_slave,  //!< parent slave fluid3 element
     int nnode,                              //!< number of surface nodes
     const int* nodeids,                     //!< node ids of surface element
@@ -355,7 +355,7 @@ Teuchos::RCP<Core::Elements::Element> Discret::Elements::Fluid::create_face_elem
 void Discret::Elements::Fluid::activate_tds(
     int nquad, int nsd, double** saccn, double** sveln, double** svelnp)
 {
-  if (tds_ == Teuchos::null) tds_ = Teuchos::make_rcp<FLD::TDSEleData>();
+  if (tds_ == nullptr) tds_ = std::make_shared<FLD::TDSEleData>();
 
   tds_->activate_tds(nquad, nsd, saccn, sveln, svelnp);
 }

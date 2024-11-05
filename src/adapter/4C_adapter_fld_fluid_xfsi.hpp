@@ -18,7 +18,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -55,25 +56,29 @@ namespace Adapter
   {
    public:
     /// Constructor
-    XFluidFSI(Teuchos::RCP<Fluid> fluid,
+    XFluidFSI(std::shared_ptr<Fluid> fluid,
         const std::string coupling_name,  // name of the FSI coupling condition
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     /// initialize algorithm
     void init() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::Utils::MapExtractor> const& struct_interface() const
+    virtual std::shared_ptr<FLD::Utils::MapExtractor> const& struct_interface() const
     {
       return structinterface_;
     }
 
     /// communication object at the interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& interface() const override { return interface_; }
+    std::shared_ptr<FLD::Utils::MapExtractor> const& interface() const override
+    {
+      return interface_;
+    }
 
     /// communication object at the interface without pressure dofs for FPSI problems
-    Teuchos::RCP<FLD::Utils::MapExtractor> const& fpsi_interface() const override
+    std::shared_ptr<FLD::Utils::MapExtractor> const& fpsi_interface() const override
     {
       return fpsiinterface_;
     }
@@ -82,56 +87,57 @@ namespace Adapter
     double time_scaling() const override;
 
     /// Return interface forces
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_struct_interface_forces();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_struct_interface_forces();
 
     /// Return interface velocity at old time level n
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_struct_interface_veln();
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_struct_interface_veln();
 
     /// Return interface velocity at new time level n+1
-    virtual Teuchos::RCP<Core::LinAlg::Vector<double>> extract_struct_interface_velnp()
+    virtual std::shared_ptr<Core::LinAlg::Vector<double>> extract_struct_interface_velnp()
     {
       FOUR_C_THROW("Not implemented, yet!");
-      return Teuchos::null;
+      return nullptr;
     }
 
     /// apply the interface velocities to the fluid
-    virtual void apply_struct_interface_velocities(Teuchos::RCP<Core::LinAlg::Vector<double>> ivel);
+    virtual void apply_struct_interface_velocities(
+        std::shared_ptr<Core::LinAlg::Vector<double>> ivel);
 
     /// apply the interface displacements to the fluid
     virtual void apply_struct_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> interface_disp);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> interface_disp);
 
     /// convert increment of displacement to increment in velocity
-    void displacement_to_velocity(Teuchos::RCP<Core::LinAlg::Vector<double>> fcx) override;
+    void displacement_to_velocity(std::shared_ptr<Core::LinAlg::Vector<double>> fcx) override;
 
     /// Apply initial mesh displacement
     void apply_initial_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> initfluiddisp) override
+        std::shared_ptr<const Core::LinAlg::Vector<double>> initfluiddisp) override
     {
       FOUR_C_THROW("Not implemented, yet!");
     }
 
     /// apply the interface displacements to the fluid
     void apply_mesh_displacement(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fluiddisp) override;
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fluiddisp) override;
 
-    void set_mesh_map(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override;
+    void set_mesh_map(std::shared_ptr<const Epetra_Map> mm, const int nds_master = 0) override;
 
     /// return coupling matrix between fluid and structure as sparse matrices
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_fluid_matrix();
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_fluid_struct_matrix();
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> c_struct_struct_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> c_struct_fluid_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> c_fluid_struct_matrix();
+    std::shared_ptr<Core::LinAlg::SparseMatrix> c_struct_struct_matrix();
 
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> rhs_struct_vec();
+    std::shared_ptr<const Core::LinAlg::Vector<double>> rhs_struct_vec();
 
-    Teuchos::RCP<FLD::XFluid> my_fluid() { return xfluid_; }
+    std::shared_ptr<FLD::XFluid> my_fluid() { return xfluid_; }
 
     /// return boundary discretization
-    Teuchos::RCP<Core::FE::Discretization> boundary_discretization();
+    std::shared_ptr<Core::FE::Discretization> boundary_discretization();
 
     bool newton_restart_monolithic() { return xfluid_->newton_restart_monolithic(); }
 
-    Teuchos::RCP<std::map<int, int>> get_permutation_map()
+    std::shared_ptr<std::map<int, int>> get_permutation_map()
     {
       return xfluid_->get_permutation_map();
     }
@@ -141,33 +147,33 @@ namespace Adapter
         const int step,                        ///< step number
         const int count,                       ///< counter for iterations within a global time step
         Core::LinAlg::Vector<double>& vel,     ///< vector holding velocity and pressure dofs
-        Teuchos::RCP<Core::LinAlg::Vector<double>> acc =
-            Teuchos::null  ///< vector holding accelerations
+        std::shared_ptr<Core::LinAlg::Vector<double>> acc =
+            nullptr  ///< vector holding accelerations
     );
 
    protected:
     /// A casted pointer to the fluid itself
-    Teuchos::RCP<FLD::XFluid> xfluid_;
+    std::shared_ptr<FLD::XFluid> xfluid_;
 
     /// the interface map setup for fsi interface, interior translation
-    Teuchos::RCP<FLD::Utils::MapExtractor> interface_;
+    std::shared_ptr<FLD::Utils::MapExtractor> interface_;
 
     /// the interface map setup for fsi interface, interior translation
-    Teuchos::RCP<FLD::Utils::MapExtractor> structinterface_;
+    std::shared_ptr<FLD::Utils::MapExtractor> structinterface_;
 
     /// the interface map setup for fpsi interface
-    Teuchos::RCP<FLD::Utils::MapExtractor> fpsiinterface_;
+    std::shared_ptr<FLD::Utils::MapExtractor> fpsiinterface_;
 
     /// ALE dof map
-    Teuchos::RCP<Core::LinAlg::MapExtractor> meshmap_;
-    Teuchos::RCP<Epetra_Map> permfluidmap_;
-    Teuchos::RCP<Epetra_Map> fullfluidmap_;
+    std::shared_ptr<Core::LinAlg::MapExtractor> meshmap_;
+    std::shared_ptr<Epetra_Map> permfluidmap_;
+    std::shared_ptr<Epetra_Map> fullfluidmap_;
 
     //! @name local copies of input parameters
     std::string coupling_name_;  /// the name of the XFEM::MeshCoupling object
-    Teuchos::RCP<XFEM::MeshCouplingFSI> mesh_coupling_fsi_;
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;
-    Teuchos::RCP<Teuchos::ParameterList> params_;
+    std::shared_ptr<XFEM::MeshCouplingFSI> mesh_coupling_fsi_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;
+    std::shared_ptr<Teuchos::ParameterList> params_;
     //@}
   };
 }  // namespace Adapter

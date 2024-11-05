@@ -12,7 +12,7 @@
 
 #include "4C_legacy_enum_definitions_element_actions.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 

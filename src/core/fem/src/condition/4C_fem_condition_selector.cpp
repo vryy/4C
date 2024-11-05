@@ -105,7 +105,7 @@ void Core::Conditions::MultiConditionSelector::setup_extractor(const Core::FE::D
   // Setup all maps. The "other" map goes first so it becomes the zeroth map
   // of the MultiMapExtractor.
 
-  std::vector<Teuchos::RCP<const Epetra_Map>> maps;
+  std::vector<std::shared_ptr<const Epetra_Map>> maps;
   maps.reserve(conddofset_.size() + 1);
 
   maps.emplace_back(Core::LinAlg::create_map(otherdofset, dis.get_comm()));

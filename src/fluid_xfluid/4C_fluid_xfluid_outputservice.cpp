@@ -30,14 +30,15 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-FLD::XFluidOutputService::XFluidOutputService(const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
-    const Teuchos::RCP<XFEM::ConditionManager>& cond_manager)
+FLD::XFluidOutputService::XFluidOutputService(
+    const std::shared_ptr<XFEM::DiscretizationXFEM>& discret,
+    const std::shared_ptr<XFEM::ConditionManager>& cond_manager)
     : discret_(discret), cond_manager_(cond_manager), firstoutputofrun_(true), restart_count_(0)
 {
   // Vector & map extractor for paraview output,
   // mapped to initial fluid dofmap
-  dofset_out_ = Teuchos::make_rcp<Core::DOFSets::IndependentDofSet>();
-  velpressplitter_out_ = Teuchos::make_rcp<Core::LinAlg::MapExtractor>();
+  dofset_out_ = std::make_shared<Core::DOFSets::IndependentDofSet>();
+  velpressplitter_out_ = std::make_shared<Core::LinAlg::MapExtractor>();
   prepare_output();
 }
 
@@ -55,8 +56,8 @@ void FLD::XFluidOutputService::prepare_output()
 }
 
 void FLD::XFluidOutputService::output(int step, double time, bool write_restart_data,
-    const FLD::XFluidState& state, Teuchos::RCP<Core::LinAlg::Vector<double>> dispnp,
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnp)
+    const FLD::XFluidState& state, std::shared_ptr<Core::LinAlg::Vector<double>> dispnp,
+    std::shared_ptr<Core::LinAlg::Vector<double>> gridvnp)
 {
   discret_->writer()->new_step(step, time);
 
@@ -119,13 +120,13 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
       // if there are multiple dofsets we write output for the standard dofset
       Cut::Node* node = state.wizard()->get_node(xfemnode->id());
 
-      const std::vector<Teuchos::RCP<Cut::NodalDofSet>>& dofcellsets = node->nodal_dof_sets();
+      const std::vector<std::shared_ptr<Cut::NodalDofSet>>& dofcellsets = node->nodal_dof_sets();
 
       int nds = 0;
       bool is_std_set = false;
 
       // find the standard dofset
-      for (std::vector<Teuchos::RCP<Cut::NodalDofSet>>::const_iterator cellsets =
+      for (std::vector<std::shared_ptr<Cut::NodalDofSet>>::const_iterator cellsets =
                dofcellsets.begin();
            cellsets != dofcellsets.end(); cellsets++)
       {
@@ -162,31 +163,31 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 
   // output (hydrodynamic) pressure for visualization
 
-  Teuchos::RCP<Core::LinAlg::Vector<double>> pressure =
+  std::shared_ptr<Core::LinAlg::Vector<double>> pressure =
       velpressplitter_out_->extract_cond_vector(*outvec_fluid_);
 
   discret_->writer()->write_vector("velnp", outvec_fluid_);
   discret_->writer()->write_vector("pressure", pressure);
 
-  if (dispnp != Teuchos::null)
+  if (dispnp != nullptr)
   {
-    if (gridvnp == Teuchos::null) FOUR_C_THROW("Missing grid velocities for ALE-xfluid!");
+    if (gridvnp == nullptr) FOUR_C_THROW("Missing grid velocities for ALE-xfluid!");
 
     // write ale displacement for t^{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dispnprm =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*dispnp);
+    std::shared_ptr<Core::LinAlg::Vector<double>> dispnprm =
+        std::make_shared<Core::LinAlg::Vector<double>>(*dispnp);
     dispnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
     discret_->writer()->write_vector("dispnp", dispnprm);
 
     // write grid velocity for t^{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> gridvnprm =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*gridvnp);
+    std::shared_ptr<Core::LinAlg::Vector<double>> gridvnprm =
+        std::make_shared<Core::LinAlg::Vector<double>>(*gridvnp);
     gridvnprm->ReplaceMap(outvec_fluid_->Map());  // to get dofs starting by 0 ...
     discret_->writer()->write_vector("gridv", gridvnprm);
 
     // write convective velocity for t^{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> convvel =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(outvec_fluid_->Map(), true);
+    std::shared_ptr<Core::LinAlg::Vector<double>> convvel =
+        std::make_shared<Core::LinAlg::Vector<double>>(outvec_fluid_->Map(), true);
     convvel->Update(1.0, *outvec_fluid_, -1.0, *gridvnprm, 0.0);
     discret_->writer()->write_vector("convel", convvel);
   }
@@ -211,7 +212,7 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
     discret_->writer()->write_vector("veln_res", state.veln_);
     discret_->writer()->write_vector("velnm_res", state.velnm_);
 
-    if (dispnp != Teuchos::null)
+    if (dispnp != nullptr)
     {
       // write ale displacement for t^{n+1} on full background
       discret_->writer()->write_vector("full_dispnp_res", dispnp);
@@ -250,8 +251,8 @@ void FLD::XFluidOutputService::output(int step, double time, bool write_restart_
 }
 
 FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& params_xfem,
-    const Teuchos::RCP<XFEM::DiscretizationXFEM>& discret,
-    const Teuchos::RCP<XFEM::ConditionManager>& cond_manager, const bool include_inner)
+    const std::shared_ptr<XFEM::DiscretizationXFEM>& discret,
+    const std::shared_ptr<XFEM::ConditionManager>& cond_manager, const bool include_inner)
     : XFluidOutputService(discret, cond_manager),
       gmsh_sol_out_(params_xfem.get<bool>("GMSH_SOL_OUT")),
       gmsh_ref_sol_out_(params_xfem.get<bool>("GMSH_TIMINT_OUT")),
@@ -271,27 +272,27 @@ FLD::XFluidOutputServiceGmsh::XFluidOutputServiceGmsh(Teuchos::ParameterList& pa
 };
 
 void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
-    const std::string& filename_base,             ///< name for output file
-    int step,                                     ///< step number
-    const Teuchos::RCP<FLD::XFluidState>& state,  ///< state
+    const std::string& filename_base,                ///< name for output file
+    int step,                                        ///< step number
+    const std::shared_ptr<FLD::XFluidState>& state,  ///< state
     int count  ///< counter (no counter for standard solution output : -1)
 )
 {
   if (!gmsh_sol_out_) return;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->velnp());
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_acc = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_acc = nullptr;
 
-  if (state->accnp() != Teuchos::null)
+  if (state->accnp() != nullptr)
   {
     output_col_acc = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->accnp());
   }
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp_col = nullptr;
 
-  if (state->dispnp_ != Teuchos::null)
+  if (state->dispnp_ != nullptr)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
 
@@ -303,26 +304,26 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output(
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_previous(
-    const std::string& filename_base,             ///< name for output file
-    int step,                                     ///< step number
-    const Teuchos::RCP<FLD::XFluidState>& state,  ///< state
+    const std::string& filename_base,                ///< name for output file
+    int step,                                        ///< step number
+    const std::shared_ptr<FLD::XFluidState>& state,  ///< state
     int count)
 {
   if (!gmsh_ref_sol_out_) return;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->veln());
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_acc = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_acc = nullptr;
 
-  if (state->accn() != Teuchos::null)
+  if (state->accn() != nullptr)
   {
     output_col_acc = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->accn());
   }
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp_col = nullptr;
 
-  if (state->dispnp_ != Teuchos::null)
+  if (state->dispnp_ != nullptr)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
 
@@ -335,64 +336,64 @@ void FLD::XFluidOutputServiceGmsh::gmsh_solution_output_debug(
     const std::string& filename_base,  ///< name for output file
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+    const std::shared_ptr<FLD::XFluidState>& state  ///< state
 )
 {
   if (!gmsh_debug_out_) return;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp_col = nullptr;
 
-  if (state->dispnp_ != Teuchos::null)
+  if (state->dispnp_ != nullptr)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_vel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_vel =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->velnp());
   const std::string prefix("SOL");
-  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_vel, Teuchos::null,
-      dispnp_col);
+  gmsh_output(
+      filename_base, prefix, step, count, *state->wizard(), *output_col_vel, nullptr, dispnp_col);
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_residual_output_debug(
     const std::string& filename_base,  ///< name for output file
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+    const std::shared_ptr<FLD::XFluidState>& state  ///< state
 )
 {
   if (!gmsh_debug_out_) return;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp_col = nullptr;
 
-  if (state->dispnp_ != Teuchos::null)
+  if (state->dispnp_ != nullptr)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_residual =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_residual =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->residual());
   const std::string prefix("RES");
-  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_residual,
-      Teuchos::null, dispnp_col);
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_residual, nullptr,
+      dispnp_col);
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_increment_output_debug(
     const std::string& filename_base,  ///< name for output file
     int step,                          ///< step number
     int count,                         ///< counter for iterations within a global time step
-    const Teuchos::RCP<FLD::XFluidState>& state  ///< state
+    const std::shared_ptr<FLD::XFluidState>& state  ///< state
 )
 {
   if (!gmsh_debug_out_) return;
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp_col = Teuchos::null;
+  std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp_col = nullptr;
 
-  if (state->dispnp_ != Teuchos::null)
+  if (state->dispnp_ != nullptr)
     dispnp_col = Core::Rebalance::get_col_version_of_row_vector(*discret_, state->dispnp_);
 
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> output_col_incvel =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> output_col_incvel =
       Core::Rebalance::get_col_version_of_row_vector(*discret_, state->inc_vel());
   const std::string prefix("INC");
-  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_incvel,
-      Teuchos::null, dispnp_col);
+  gmsh_output(filename_base, prefix, step, count, *state->wizard(), *output_col_incvel, nullptr,
+      dispnp_col);
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_output(
@@ -402,8 +403,8 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output(
     int count,                                ///< counter for iterations within a global time step
     Cut::CutWizard& wizard,                   ///< cut wizard
     const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    ///< vector holding acceleration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  ///< vector holding acceleration
+    std::shared_ptr<const Core::LinAlg::Vector<double>> acc,    ///< vector holding acceleration
+    std::shared_ptr<const Core::LinAlg::Vector<double>> dispnp  ///< vector holding acceleration
 )
 {
   // Todo: should be private
@@ -631,8 +632,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
     Core::Elements::Element* actele,          ///< element
     std::vector<int>& nds,                    ///< vector holding the nodal dofsets
     const Core::LinAlg::Vector<double>& vel,  ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    ///< vector holding acceleration
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> dispnp  ///< vector holding ale displacements
+    std::shared_ptr<const Core::LinAlg::Vector<double>> acc,  ///< vector holding acceleration
+    std::shared_ptr<const Core::LinAlg::Vector<double>>
+        dispnp  ///< vector holding ale displacements
 )
 {
   vel_f.setf(std::ios::scientific, std::ios::floatfield);
@@ -645,7 +647,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
   acc_f.precision(16);
 
   // output for accvec ?
-  const bool acc_output(acc != Teuchos::null);
+  const bool acc_output(acc != nullptr);
 
   Core::Elements::LocationArray la(1);
 
@@ -670,7 +672,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_element(
     Core::FE::extract_my_values(*acc, m_acc, la[0].lm_);
   }
 
-  const bool ale_output(dispnp != Teuchos::null);
+  const bool ale_output(dispnp != nullptr);
 
   std::vector<double> m_disp(la[0].lm_.size());
   if (ale_output)
@@ -766,7 +768,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
     Cut::VolumeCell* vc,                         ///< volumecell
     const std::vector<int>& nds,                 ///< vector holding the nodal dofsets
     const Core::LinAlg::Vector<double>& velvec,  ///< vector holding velocity and pressure dofs
-    Teuchos::RCP<const Core::LinAlg::Vector<double>> accvec  ///< vector holding acceleration
+    std::shared_ptr<const Core::LinAlg::Vector<double>> accvec  ///< vector holding acceleration
 )
 {
   vel_f.setf(std::ios::scientific, std::ios::floatfield);
@@ -782,7 +784,7 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_volume_cell(
 
   // output for accvec ?
   bool acc_output = true;
-  if (accvec == Teuchos::null) acc_output = false;
+  if (accvec == nullptr) acc_output = false;
 
   Core::Elements::LocationArray la(1);
 
@@ -1289,9 +1291,9 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
     std::cout << "discretization output " << discret_->name() << std::endl;
 
   // cast to DiscretizationFaces
-  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
-  if (xdiscret == Teuchos::null)
+  std::shared_ptr<Core::FE::DiscretizationFaces> xdiscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discret_);
+  if (xdiscret == nullptr)
     FOUR_C_THROW(
         "Failed to cast Core::FE::Discretization to "
         "Core::FE::DiscretizationFaces.");
@@ -1315,14 +1317,14 @@ void FLD::XFluidOutputServiceGmsh::gmsh_output_discretization(
 }
 
 void FLD::XFluidOutputServiceGmsh::gmsh_output_eos(
-    int step, Teuchos::RCP<XFEM::XfemEdgeStab> edge_stab)
+    int step, std::shared_ptr<XFEM::XfemEdgeStab> edge_stab)
 {
-  if (!gmsh_eos_out_ || edge_stab == Teuchos::null) return;
+  if (!gmsh_eos_out_ || edge_stab == nullptr) return;
 
   // cast to DiscretizationXFEM
-  Teuchos::RCP<Core::FE::DiscretizationFaces> xdiscret =
-      Teuchos::rcp_dynamic_cast<Core::FE::DiscretizationFaces>(discret_, true);
-  if (xdiscret == Teuchos::null)
+  std::shared_ptr<Core::FE::DiscretizationFaces> xdiscret =
+      std::dynamic_pointer_cast<Core::FE::DiscretizationFaces>(discret_);
+  if (xdiscret == nullptr)
     FOUR_C_THROW(
         "Failed to cast Core::FE::Discretization to "
         "Core::FE::DiscretizationFaces.");

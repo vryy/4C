@@ -288,7 +288,7 @@ namespace CONTACT
     */
     bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix, Core::LinAlg::Vector<double>& fint,
         const double& pp,
-        std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+        std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) override;
 
     /*!
@@ -417,10 +417,10 @@ namespace CONTACT
     Core::LinAlg::Matrix<3, 1, TYPE> normal_old_;
 
     //! neighbor elements of element 1
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors1_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
+    std::shared_ptr<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
     Core::LinAlg::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;
@@ -685,7 +685,7 @@ namespace CONTACT
     \brief Compute normal vector and gap function at contact point
     */
     void compute_normal(Core::LinAlg::Matrix<3, 1, TYPE>& delta_r, TYPE& norm_delta_r,
-        std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap);
+        std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap);
 
     /*!
     \brief Check, if we have contact or not (gap < 0 ???)
@@ -713,7 +713,7 @@ namespace CONTACT
       \brief Get the vector normal_old_ from the neighbor element
     */
     void get_neighbor_normal_old(
-        std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap);
+        std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap);
 
     void fad_check_lin_xi_and_lin_eta(const Core::LinAlg::Matrix<3, 1, TYPE>& delta_r,
         const Core::LinAlg::Matrix<3, 1, TYPE>& r1_xi,

@@ -21,7 +21,7 @@ bool Discret::Elements::SoHex27::read_element(const std::string& eletype,
   int material_id = container.get<int>("MAT");
   set_material(0, Mat::factory(material_id));
 
-  Teuchos::RCP<Core::Mat::Material> mat = material();
+  std::shared_ptr<Core::Mat::Material> mat = material();
 
   solid_material()->setup(NUMGPT_SOH27, container);
 

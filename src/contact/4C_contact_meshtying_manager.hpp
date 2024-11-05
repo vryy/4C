@@ -113,8 +113,8 @@ namespace CONTACT
 
     */
     void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> zero) final;
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::Vector<double>> zero) final;
 
     /*!
     \brief Write interface tractions for postprocessing
@@ -126,7 +126,7 @@ namespace CONTACT
 
     //! [derived]
     void postprocess_quantities_per_interface(
-        Teuchos::RCP<Teuchos::ParameterList> outputParams) final;
+        std::shared_ptr<Teuchos::ParameterList> outputParams) final;
 
     /*!
     \brief Write time step restart data/results of meshtying interfaces to output
@@ -135,7 +135,7 @@ namespace CONTACT
     \param[in] writeRestart Flag to control writing of restart data
     \param[in] writeState Flag to control writing of regular result data
     */
-    void output_step(Teuchos::RCP<Teuchos::ParameterList> outParams, const bool writeRestart,
+    void output_step(std::shared_ptr<Teuchos::ParameterList> outParams, const bool writeRestart,
         const bool writeState);
 
     //@}

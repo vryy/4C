@@ -13,7 +13,7 @@
 #include "4C_constraint_manager.hpp"
 #include "4C_structure_new_model_evaluator_generic.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -123,22 +123,22 @@ namespace Solid
       void post_output() override;
 
       //! derived
-      Teuchos::RCP<const Epetra_Map> get_block_dof_row_map_ptr() const override;
+      std::shared_ptr<const Epetra_Map> get_block_dof_row_map_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_current_solution_ptr() const override;
 
       //! derived
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
+      std::shared_ptr<const Core::LinAlg::Vector<double>> get_last_time_step_solution_ptr()
           const override;
 
-      const Teuchos::RCP<CONSTRAINTS::ConstrManager>& strategy_ptr();
+      const std::shared_ptr<CONSTRAINTS::ConstrManager>& strategy_ptr();
 
       //! Return the NOX::Nln::CONSTRAINT::Interface::Required member object
-      const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface>& nox_interface_ptr();
+      const std::shared_ptr<LAGPENCONSTRAINT::NoxInterface>& nox_interface_ptr();
 
       //! Return the NOX::Nln::CONSTRAINT::Interface::Preconditioner member object
-      const Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec>& nox_interface_prec_ptr();
+      const std::shared_ptr<LAGPENCONSTRAINT::NoxInterfacePrec>& nox_interface_prec_ptr();
 
      protected:
       //! Returns the underlying contact strategy object
@@ -147,22 +147,22 @@ namespace Solid
 
      private:
       //! all constraint instances
-      Teuchos::RCP<CONSTRAINTS::ConstrManager> constrman_;  //!< Constraint manager
+      std::shared_ptr<CONSTRAINTS::ConstrManager> constrman_;  //!< Constraint manager
 
       //! structural displacement at \f$t_{n+1}\f$
-      Teuchos::RCP<const Core::LinAlg::Vector<double>> disnp_ptr_;
+      std::shared_ptr<const Core::LinAlg::Vector<double>> disnp_ptr_;
 
       //! structural stiffness matrix
-      Teuchos::RCP<Core::LinAlg::SparseMatrix> stiff_constr_ptr_;
+      std::shared_ptr<Core::LinAlg::SparseMatrix> stiff_constr_ptr_;
 
       //! constraint contributions to the structural rhs at \f%t_{n+1}\f$
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fstrconstr_np_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fstrconstr_np_ptr_;
 
       //! pointer to the NOX::Nln::CONSTRAINT::Interface::Required object
-      Teuchos::RCP<LAGPENCONSTRAINT::NoxInterface> noxinterface_ptr_;
+      std::shared_ptr<LAGPENCONSTRAINT::NoxInterface> noxinterface_ptr_;
 
       //! pointer to the NOX::Nln::CONSTRAINT::Interface::Preconditioner object
-      Teuchos::RCP<LAGPENCONSTRAINT::NoxInterfacePrec> noxinterface_prec_ptr_;
+      std::shared_ptr<LAGPENCONSTRAINT::NoxInterfacePrec> noxinterface_prec_ptr_;
     };
 
   }  // namespace ModelEvaluator

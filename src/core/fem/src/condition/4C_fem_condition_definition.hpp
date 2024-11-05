@@ -15,9 +15,9 @@
 #include "4C_io_linecomponent.hpp"
 
 #include <Teuchos_Array.hpp>
-#include <Teuchos_RCP.hpp>
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <variant>
@@ -83,7 +83,7 @@ namespace Core::Conditions
       right. The order is important! On reading we try and read component
       after component.
      */
-    void add_component(const Teuchos::RCP<Input::LineComponent>& c);
+    void add_component(const std::shared_ptr<Input::LineComponent>& c);
 
     /// read all conditions from my input file section
     /*!
@@ -92,7 +92,7 @@ namespace Core::Conditions
       \param cmap (o) the conditions we read here
      */
     void read(Core::IO::InputFile& input,
-        std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap);
+        std::multimap<int, std::shared_ptr<Core::Conditions::Condition>>& cmap);
 
     /// print my dat file section and possible conditions from the discretization
     std::ostream& print(std::ostream& stream, const Core::FE::Discretization* dis = nullptr);
@@ -107,7 +107,7 @@ namespace Core::Conditions
     std::string description() const { return description_; }
 
     /// my condition inputline
-    std::vector<Teuchos::RCP<Input::LineComponent>> inputline() const { return inputline_; }
+    std::vector<std::shared_ptr<Input::LineComponent>> inputline() const { return inputline_; }
 
     /// my GeometryType
     Core::Conditions::GeometryType geometry_type() const { return gtype_; }
@@ -121,7 +121,7 @@ namespace Core::Conditions
     Core::Conditions::GeometryType gtype_;
 
     ///
-    std::vector<Teuchos::RCP<Input::LineComponent>> inputline_;
+    std::vector<std::shared_ptr<Input::LineComponent>> inputline_;
   };
 
 }  // namespace Core::Conditions

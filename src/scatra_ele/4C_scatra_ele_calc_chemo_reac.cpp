@@ -67,7 +67,7 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
 )
 {
   // get the material
-  Teuchos::RCP<Core::Mat::Material> material = ele->material();
+  std::shared_ptr<Core::Mat::Material> material = ele->material();
 
   // We may have some reactive and some non-reactive elements in one discretisation.
   // But since the calculation classes are singleton, we have to reset all reactive stuff in case
@@ -81,14 +81,14 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
 
   if (material->material_type() == Core::Materials::m_matlist)
   {
-    const Teuchos::RCP<const Mat::MatList> actmat =
-        Teuchos::rcp_dynamic_cast<const Mat::MatList>(material);
+    const std::shared_ptr<const Mat::MatList> actmat =
+        std::dynamic_pointer_cast<const Mat::MatList>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -96,14 +96,14 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
 
   else if (material->material_type() == Core::Materials::m_matlist_reactions)
   {
-    const Teuchos::RCP<Mat::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
+    const std::shared_ptr<Mat::MatListReactions> actmat =
+        std::dynamic_pointer_cast<Mat::MatListReactions>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       // Note: order is important here!!
       advreac::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
@@ -115,8 +115,8 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
 
   else if (material->material_type() == Core::Materials::m_matlist_chemotaxis)
   {
-    const Teuchos::RCP<Mat::MatListChemotaxis> actmat =
-        Teuchos::rcp_dynamic_cast<Mat::MatListChemotaxis>(material);
+    const std::shared_ptr<Mat::MatListChemotaxis> actmat =
+        std::dynamic_pointer_cast<Mat::MatListChemotaxis>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::get_chemotaxis_coefficients(
@@ -125,7 +125,7 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);
     }
@@ -133,8 +133,8 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
 
   else if (material->material_type() == Core::Materials::m_matlist_chemoreac)
   {
-    const Teuchos::RCP<Mat::MatListReactions> actmat =
-        Teuchos::rcp_dynamic_cast<Mat::MatListReactions>(material);
+    const std::shared_ptr<Mat::MatListReactions> actmat =
+        std::dynamic_pointer_cast<Mat::MatListReactions>(material);
     if (actmat->num_mat() != my::numscal_) FOUR_C_THROW("Not enough materials in MatList.");
 
     chemo::get_chemotaxis_coefficients(
@@ -143,7 +143,7 @@ void Discret::Elements::ScaTraEleCalcChemoReac<distype, probdim>::get_material_p
     for (int k = 0; k < my::numscal_; ++k)
     {
       int matid = actmat->mat_id(k);
-      Teuchos::RCP<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
+      std::shared_ptr<Core::Mat::Material> singlemat = actmat->material_by_id(matid);
 
       // Note: order is important here!!
       my::materials(singlemat, k, densn[k], densnp[k], densam[k], visc, iquad);

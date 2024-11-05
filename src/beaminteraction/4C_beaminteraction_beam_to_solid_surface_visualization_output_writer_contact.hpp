@@ -13,7 +13,7 @@
 
 #include "4C_io_visualization_parameters.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -48,7 +48,7 @@ namespace BEAMINTERACTION
      */
     explicit BeamToSolidSurfaceVisualizationOutputWriterContact(
         Core::IO::VisualizationParameters visualization_params,
-        Teuchos::RCP<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
+        std::shared_ptr<const BEAMINTERACTION::BeamToSolidSurfaceVisualizationOutputParams>
             output_params_ptr);
 
     /**
@@ -90,10 +90,11 @@ namespace BEAMINTERACTION
 
    private:
     //! Parameter container for output.
-    Teuchos::RCP<const BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
+    std::shared_ptr<const BeamToSolidSurfaceVisualizationOutputParams> output_params_ptr_;
 
     //! Pointer to the output writer, which handles the actual output data for this object.
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase> output_writer_base_ptr_;
+    std::shared_ptr<BEAMINTERACTION::BeamToSolidVisualizationOutputWriterBase>
+        output_writer_base_ptr_;
 
     //! visualization parameters
     const Core::IO::VisualizationParameters visualization_params_;

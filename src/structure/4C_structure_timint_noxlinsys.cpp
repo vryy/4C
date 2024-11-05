@@ -29,9 +29,9 @@ FOUR_C_NAMESPACE_OPEN
  *----------------------------------------------------------------------*/
 NOX::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
     Teuchos::ParameterList& linearSolverParams,
-    const Teuchos::RCP<::NOX::Epetra::Interface::Jacobian>& iJac,
-    const Teuchos::RCP<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
-    Teuchos::RCP<Core::LinAlg::Solver> structure_solver,
+    const std::shared_ptr<::NOX::Epetra::Interface::Jacobian>& iJac,
+    const std::shared_ptr<Epetra_Operator>& J, const ::NOX::Epetra::Vector& cloneVector,
+    std::shared_ptr<Core::LinAlg::Solver> structure_solver,
     const Teuchos::RCP<::NOX::Epetra::Scaling> s)
     : utils_(printParams),
       jacInterfacePtr_(iJac),
@@ -45,7 +45,7 @@ NOX::Solid::LinearSystem::LinearSystem(Teuchos::ParameterList& printParams,
       timer_("", true),
       timeApplyJacbianInverse_(0.0)
 {
-  tmpVectorPtr_ = Teuchos::make_rcp<::NOX::Epetra::Vector>(cloneVector);
+  tmpVectorPtr_ = std::make_shared<::NOX::Epetra::Vector>(cloneVector);
 
   // std::cout << "STRUCTURE SOLVER: " << *structureSolver_ << " " << structureSolver_ << std::endl;
 
@@ -136,8 +136,8 @@ bool NOX::Solid::LinearSystem::applyJacobianInverse(
   // Structure
   if (jacType_ == SparseMatrix)
   {
-    Teuchos::RCP<Core::LinAlg::Vector<double>> fres =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(input.getEpetraVector());
+    std::shared_ptr<Core::LinAlg::Vector<double>> fres =
+        std::make_shared<Core::LinAlg::Vector<double>>(input.getEpetraVector());
     Core::LinAlg::VectorView result_view(result.getEpetraVector());
     Core::LinAlg::SparseMatrix* J = dynamic_cast<Core::LinAlg::SparseMatrix*>(jacPtr_.get());
     Core::LinAlg::SolverParams solver_params;
@@ -251,13 +251,16 @@ bool NOX::Solid::LinearSystem::hasPreconditioner() const { return false; }
  *----------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Operator> NOX::Solid::LinearSystem::getJacobianOperator() const
 {
-  return jacPtr_;
+  return Teuchos::rcpFromRef(*jacPtr_);
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Operator> NOX::Solid::LinearSystem::getJacobianOperator() { return jacPtr_; }
+Teuchos::RCP<Epetra_Operator> NOX::Solid::LinearSystem::getJacobianOperator()
+{
+  return Teuchos::rcpFromRef(*jacPtr_);
+}
 
 
 /*----------------------------------------------------------------------*
@@ -281,7 +284,7 @@ Teuchos::RCP<Epetra_Operator> NOX::Solid::LinearSystem::getGeneratedPrecOperator
 void NOX::Solid::LinearSystem::setJacobianOperatorForSolve(
     const Teuchos::RCP<const Epetra_Operator>& solveJacOp)
 {
-  jacPtr_ = Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp);
+  jacPtr_ = Core::Utils::shared_ptr_from_ref(*Teuchos::rcp_const_cast<Epetra_Operator>(solveJacOp));
   jacType_ = get_operator_type(*solveJacOp);
 }
 

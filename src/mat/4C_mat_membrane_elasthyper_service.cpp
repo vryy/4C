@@ -16,7 +16,7 @@ namespace Mat
 {
   void membrane_elast_hyper_evaluate_invariant_derivatives(const Core::LinAlg::Matrix<3, 1>& prinv,
       Core::LinAlg::Matrix<2, 1>& dPI, Core::LinAlg::Matrix<3, 1>& ddPII, int gp, int eleGID,
-      const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+      const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
       const SummandProperties& properties)
   {
     Core::LinAlg::Matrix<3, 1> dPI_full(true);
@@ -88,7 +88,7 @@ void Mat::membrane_elast_hyper_evaluate_isotropic_stress_cmat(
     const Core::LinAlg::Matrix<3, 3>& cauchygreen, Teuchos::ParameterList& params,
     const Core::LinAlg::Matrix<3, 3>& Q_trafo, Core::LinAlg::Matrix<3, 1>& stress,
     Core::LinAlg::Matrix<3, 3>& cmat, int gp, int eleGID,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties)
 {
   // blank resulting quantities
@@ -145,7 +145,7 @@ void Mat::membrane_elast_hyper_evaluate_isotropic_stress_cmat(
     const Core::LinAlg::Matrix<3, 1>& id2, const Core::LinAlg::Matrix<3, 3>& id4sharp,
     const Core::LinAlg::Matrix<3, 1>& rcg, const double& rcg33,
     const Core::LinAlg::Matrix<3, 1>& icg, int gp, int eleGID,
-    const std::vector<Teuchos::RCP<Mat::Elastic::Summand>>& potsum,
+    const std::vector<std::shared_ptr<Mat::Elastic::Summand>>& potsum,
     const SummandProperties& properties)
 {
   // principal isotropic invariants

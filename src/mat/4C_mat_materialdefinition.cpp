@@ -33,7 +33,7 @@ Mat::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Mat::MaterialDefinition::add_component(const Teuchos::RCP<Input::LineComponent>& c)
+void Mat::MaterialDefinition::add_component(const std::shared_ptr<Input::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -49,8 +49,8 @@ std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefi
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
   for (const auto& line : input.lines_in_section(name))
   {
-    Teuchos::RCP<std::stringstream> condline =
-        Teuchos::make_rcp<std::stringstream>(std::string(line));
+    std::shared_ptr<std::stringstream> condline =
+        std::make_shared<std::stringstream>(std::string(line));
 
     // add trailing white space to stringstream "condline" to avoid deletion of stringstream upon
     // reading the last entry inside This is required since the material parameters can be
@@ -125,14 +125,14 @@ std::ostream& Mat::MaterialDefinition::print(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Mat::append_material_definition(std::vector<Teuchos::RCP<MaterialDefinition>>& matlist,
-    const Teuchos::RCP<MaterialDefinition>& mat)
+void Mat::append_material_definition(std::vector<std::shared_ptr<MaterialDefinition>>& matlist,
+    const std::shared_ptr<MaterialDefinition>& mat)
 {
   // test if material was defined with same name or type
-  std::vector<Teuchos::RCP<Mat::MaterialDefinition>>::const_iterator m;
+  std::vector<std::shared_ptr<Mat::MaterialDefinition>>::const_iterator m;
   for (m = matlist.begin(); m != matlist.end(); ++m)
   {
-    Teuchos::RCP<Mat::MaterialDefinition> mmd = *m;
+    std::shared_ptr<Mat::MaterialDefinition> mmd = *m;
 
     if (mmd->type() == mat->type())
       FOUR_C_THROW(

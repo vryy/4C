@@ -24,9 +24,9 @@ FOUR_C_NAMESPACE_OPEN
 PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::PoroMultiPhaseScaTraPartitionedTwoWay(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : PoroMultiPhaseScaTraPartitioned(comm, globaltimeparams),
-      scaincnp_(Teuchos::null),
-      structincnp_(Teuchos::null),
-      fluidincnp_(Teuchos::null),
+      scaincnp_(nullptr),
+      structincnp_(nullptr),
+      fluidincnp_(nullptr),
       itmax_(-1),
       ittol_(-1),
       artery_coupling_active_(false)
@@ -56,18 +56,18 @@ void PoroMultiPhaseScaTra::PoroMultiPhaseScaTraPartitionedTwoWay::init(
   artery_coupling_active_ = algoparams.get<bool>("ARTERY_COUPLING");
 
   // initialize increment vectors
-  scaincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+  scaincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(
       *(scatra_algo()->scatra_field()->discretization()->dof_row_map()));
   structincnp_ =
-      Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(poro_field()->struct_dof_row_map()));
+      std::make_shared<Core::LinAlg::Vector<double>>(*(poro_field()->struct_dof_row_map()));
   fluidincnp_ =
-      (Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(poro_field()->fluid_dof_row_map())));
+      (std::make_shared<Core::LinAlg::Vector<double>>(*(poro_field()->fluid_dof_row_map())));
   if (artery_coupling_active_)
   {
-    arterypressincnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(
+    arterypressincnp_ = std::make_shared<Core::LinAlg::Vector<double>>(
         *(poro_field()->fluid_field()->artery_dof_row_map()));
     artscaincnp_ =
-        Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*(scatramsht_->art_scatra_dof_row_map()));
+        std::make_shared<Core::LinAlg::Vector<double>>(*(scatramsht_->art_scatra_dof_row_map()));
   }
 }
 

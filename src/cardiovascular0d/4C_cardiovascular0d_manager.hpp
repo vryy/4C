@@ -18,7 +18,8 @@
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -60,13 +61,13 @@ namespace Utils
       \brief Constructor of cardiovascular0d manager
     */
     Cardiovascular0DManager(
-        Teuchos::RCP<Core::FE::Discretization> disc,            ///< standard discretization
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> disp,  ///< current displacement
+        std::shared_ptr<Core::FE::Discretization> disc,            ///< standard discretization
+        std::shared_ptr<const Core::LinAlg::Vector<double>> disp,  ///< current displacement
         Teuchos::ParameterList
             strparams,  ///<  parameterlist from structural time integration algorithm
         Teuchos::ParameterList cv0dparams,  ///<  parameterlist from cardiovascular0d
         Core::LinAlg::Solver& solver,       ///< Solver to solve linear subproblem in iteration
-        Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition>
+        std::shared_ptr<FourC::Cardiovascular0D::ProperOrthogonalDecomposition>
             mor  ///< model order reduction
     );
 
@@ -74,10 +75,11 @@ namespace Utils
       \brief Assemble cardiovascular0d stiffness and rhs contributions to full coupled problem
     */
     void evaluate_force_stiff(const double time,  ///< time at end of time step
-        Teuchos::RCP<const Core::LinAlg::Vector<double>>
-            disp,                                          ///< displacement at end of time step
-        Teuchos::RCP<Core::LinAlg::Vector<double>> fint,   ///< vector of internal structural forces
-        Teuchos::RCP<Core::LinAlg::SparseOperator> stiff,  ///< structural stiffness matrix
+        std::shared_ptr<const Core::LinAlg::Vector<double>>
+            disp,  ///< displacement at end of time step
+        std::shared_ptr<Core::LinAlg::Vector<double>>
+            fint,  ///< vector of internal structural forces
+        std::shared_ptr<Core::LinAlg::SparseOperator> stiff,  ///< structural stiffness matrix
         Teuchos::ParameterList scalelist);
 
     /*!
@@ -142,14 +144,14 @@ namespace Utils
     ///
     void evaluate_neumann_cardiovascular0_d_coupling(
         Teuchos::ParameterList params, Core::LinAlg::Vector<double>& actpres,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> systemvector,  ///< structural rhs
-        Teuchos::RCP<Core::LinAlg::SparseOperator> systemmatrix   ///< structural stiffness matrix
+        std::shared_ptr<Core::LinAlg::Vector<double>> systemvector,  ///< structural rhs
+        std::shared_ptr<Core::LinAlg::SparseOperator> systemmatrix  ///< structural stiffness matrix
     );
 
     /*!
          \brief Return cardiovascular0d rhs at generalized midpoint $t_{n+\theta}$
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get_cardiovascular0_drhs() const
+    std::shared_ptr<Core::LinAlg::Vector<double>> get_cardiovascular0_drhs() const
     {
       return cardvasc0d_res_m_;
     }
@@ -158,25 +160,25 @@ namespace Utils
      \brief Return EpetraMap that determined distribution of Cardiovascular0D functions and
      pressures over processors
     */
-    Teuchos::RCP<Epetra_Map> get_cardiovascular0_d_map() const
+    std::shared_ptr<Epetra_Map> get_cardiovascular0_d_map() const
     {
       return cardiovascular0dmap_full_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mat_dcardvasc0d_dd()  // const
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_mat_dcardvasc0d_dd()  // const
     {
       return mat_dcardvasc0d_dd_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_mat_dstruct_dcv0ddof()  // const
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_mat_dstruct_dcv0ddof()  // const
     {
       return mat_dstruct_dcv0ddof_;
     };
 
     //! Return the additional rectangular matrix, constructed for pressure evaluation
-    Teuchos::RCP<Core::LinAlg::SparseMatrix> get_cardiovascular0_d_stiffness()  // const
+    std::shared_ptr<Core::LinAlg::SparseMatrix> get_cardiovascular0_d_stiffness()  // const
     {
       return cardiovascular0dstiffness_;
     };
@@ -184,37 +186,40 @@ namespace Utils
     /*!
       \brief Return dof vector
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_dof_np() const { return cv0ddof_np_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_dof_np() const { return cv0ddof_np_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_dof_n() const { return cv0ddof_n_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_dof_n() const { return cv0ddof_n_; };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_dof_m() const { return cv0ddof_m_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_dof_m() const { return cv0ddof_m_; };
 
     /*!
       \brief Return vol vector
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_vol_np() const { return v_np_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_vol_np() const { return v_np_; };
 
 
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_df_np() const { return cardvasc0d_df_np_; };
-
-    /*!
-      \brief Return dof vector of last converged step
-    */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_df_n() const { return cardvasc0d_df_n_; };
-
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_f_np() const { return cardvasc0d_f_np_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_df_np() const
+    {
+      return cardvasc0d_df_np_;
+    };
 
     /*!
       \brief Return dof vector of last converged step
     */
-    Teuchos::RCP<Core::LinAlg::Vector<double>> get0_d_f_n() const { return cardvasc0d_f_n_; };
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_df_n() const { return cardvasc0d_df_n_; };
+
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_f_np() const { return cardvasc0d_f_np_; };
+
+    /*!
+      \brief Return dof vector of last converged step
+    */
+    std::shared_ptr<Core::LinAlg::Vector<double>> get0_d_f_n() const { return cardvasc0d_f_n_; };
 
     /*!
      \brief Return if there are Cardiovascular0Ds
@@ -236,7 +241,7 @@ namespace Utils
     */
     Teuchos::ParameterList& cardvasc0_d_params() { return cv0dparams_; }
 
-    Teuchos::RCP<Core::LinAlg::Solver>& get_solver() { return solver_; }
+    std::shared_ptr<Core::LinAlg::Solver>& get_solver() { return solver_; }
 
     /// Reset reference base values for restart computations
     void set0_d_v_n(Core::LinAlg::Vector<double>& newval  ///< new reference base values
@@ -273,8 +278,8 @@ namespace Utils
 
 
     //! switch Cardiovascular0D matrix to block matrix
-    void use_block_matrix(Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const Core::LinAlg::MultiMapExtractor> rangemaps);
+    void use_block_matrix(std::shared_ptr<const Core::LinAlg::MultiMapExtractor> domainmaps,
+        std::shared_ptr<const Core::LinAlg::MultiMapExtractor> rangemaps);
 
 
     void solver_setup(Core::LinAlg::Solver& solver, Teuchos::ParameterList params);
@@ -286,22 +291,22 @@ namespace Utils
         const double k_ptc                        ///< for 3D-0D PTC
     );
 
-    Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d4_element_windkessel()
+    std::shared_ptr<Cardiovascular0D> get_cardvasc0_d4_element_windkessel()
     {
       return cardvasc0d_4elementwindkessel_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d_arterial_prox_dist()
+    std::shared_ptr<Cardiovascular0D> get_cardvasc0_d_arterial_prox_dist()
     {
       return cardvasc0d_arterialproxdist_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> get_cardvasc0_d_sys_pul_circulation()
+    std::shared_ptr<Cardiovascular0D> get_cardvasc0_d_sys_pul_circulation()
     {
       return cardvasc0d_syspulcirculation_;
     }
 
-    Teuchos::RCP<Cardiovascular0D> get_cardvasc_respir0_d_sys_pul_periph_circulation()
+    std::shared_ptr<Cardiovascular0D> get_cardvasc_respir0_d_sys_pul_periph_circulation()
     {
       return cardvascrespir0d_syspulperiphcirculation_;
     }
@@ -332,49 +337,51 @@ namespace Utils
     Cardiovascular0DManager(const Cardiovascular0DManager& old);
 
 
-    Teuchos::RCP<Core::FE::Discretization>
+    std::shared_ptr<Core::FE::Discretization>
         actdisc_;  ///< discretization where elements of cardiovascular0d boundary live in
     int myrank_;   ///< processor
-    Teuchos::RCP<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
-    Teuchos::RCP<Cardiovascular0DDofSet>
+    std::shared_ptr<Core::LinAlg::MapExtractor> dbcmaps_;  ///< map for Dirichlet DOFs
+    std::shared_ptr<Cardiovascular0DDofSet>
         cardiovascular0ddofset_full_;  ///< degrees of freedom of pressures
-    Teuchos::RCP<Cardiovascular0DDofSet>
+    std::shared_ptr<Cardiovascular0DDofSet>
         cardiovascular0ddofset_;  ///< (reduced) degrees of freedom of pressures
-    Teuchos::RCP<Epetra_Map> cardiovascular0dmap_full_;  ///< unique map of Cardiovascular0D values
-    Teuchos::RCP<Epetra_Map>
+    std::shared_ptr<Epetra_Map>
+        cardiovascular0dmap_full_;  ///< unique map of Cardiovascular0D values
+    std::shared_ptr<Epetra_Map>
         cardiovascular0dmap_;  ///< unique map of (reduced) Cardiovascular0D values
-    Teuchos::RCP<Epetra_Map>
+    std::shared_ptr<Epetra_Map>
         redcardiovascular0dmap_;  ///< fully redundant map of Cardiovascular0D values
-    Teuchos::RCP<Epetra_Export> cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D
-                                                  ///< vector into distributed one
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddofincrement_;  ///< increment of cvdof
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_n_;         ///< cvdof vector at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_np_;        ///< cvdof vector at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> cv0ddof_m_;         ///< cvdof vector at mid-point
-    Teuchos::RCP<Core::LinAlg::Vector<double>> dcv0ddof_m_;  ///< cvdof rate vector at mid-point
-    Teuchos::RCP<Core::LinAlg::Vector<double>> v_n_;         ///< vol vector at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> v_np_;        ///< vol vector at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>> v_m_;         ///< vol vector at mid-point
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Epetra_Export>
+        cardvasc0dimpo_;  ///< importer for fully redundant Cardiovascular0D
+                          ///< vector into distributed one
+    std::shared_ptr<Core::LinAlg::Vector<double>> cv0ddofincrement_;  ///< increment of cvdof
+    std::shared_ptr<Core::LinAlg::Vector<double>> cv0ddof_n_;         ///< cvdof vector at t_{n}
+    std::shared_ptr<Core::LinAlg::Vector<double>> cv0ddof_np_;        ///< cvdof vector at t_{n+1}
+    std::shared_ptr<Core::LinAlg::Vector<double>> cv0ddof_m_;         ///< cvdof vector at mid-point
+    std::shared_ptr<Core::LinAlg::Vector<double>> dcv0ddof_m_;  ///< cvdof rate vector at mid-point
+    std::shared_ptr<Core::LinAlg::Vector<double>> v_n_;         ///< vol vector at t_{n}
+    std::shared_ptr<Core::LinAlg::Vector<double>> v_np_;        ///< vol vector at t_{n+1}
+    std::shared_ptr<Core::LinAlg::Vector<double>> v_m_;         ///< vol vector at mid-point
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cv0ddof_t_n_;  ///< cvdof vector at periodic time T_{N}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cv0ddof_t_np_;  ///< cvdof vector at periodic time T_{N+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_res_m_;  ///< Cardiovascular0D full rhs vector, at t_{n+theta}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_df_n_;  ///< Cardiovascular0D rhs part associated with time derivaties, at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_df_np_;  ///< Cardiovascular0D rhs part associated
                             ///< with time derivaties, at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_df_m_;  ///< Cardiovascular0D rhs part associated
                            ///< with time derivaties, at t_{n+theta}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_f_n_;  ///< Cardiovascular0D rhs part associated with non-derivatives, at t_{n}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_f_np_;  ///< Cardiovascular0D rhs part associated
                            ///< with non-derivatives, at t_{n+1}
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
+    std::shared_ptr<Core::LinAlg::Vector<double>>
         cardvasc0d_f_m_;           ///< Cardiovascular0D rhs part associated
                                    ///< with non-derivatives, at t_{n+theta}
     const double t_period_;        ///< periodic time
@@ -386,17 +393,17 @@ namespace Utils
     int offset_id_;                ///< smallest Cardiovascular0D bc id
     std::vector<int> current_id_;  ///< bc id
     bool havecardiovascular0d_;    ///< are there Cardiovascular0D bcs at all?
-    Teuchos::RCP<Cardiovascular0D> cardvasc0d_model_;
-    Teuchos::RCP<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
-    Teuchos::RCP<Cardiovascular0D> cardvasc0d_arterialproxdist_;
-    Teuchos::RCP<Cardiovascular0D> cardvasc0d_syspulcirculation_;
-    Teuchos::RCP<Cardiovascular0D> cardvascrespir0d_syspulperiphcirculation_;
-    Teuchos::RCP<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Cardiovascular0D> cardvasc0d_model_;
+    std::shared_ptr<Cardiovascular0D> cardvasc0d_4elementwindkessel_;
+    std::shared_ptr<Cardiovascular0D> cardvasc0d_arterialproxdist_;
+    std::shared_ptr<Cardiovascular0D> cardvasc0d_syspulcirculation_;
+    std::shared_ptr<Cardiovascular0D> cardvascrespir0d_syspulperiphcirculation_;
+    std::shared_ptr<Core::LinAlg::Solver> solver_;  ///< solver for linear standard linear system
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         cardiovascular0dstiffness_;  ///< additional rectangular matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         mat_dcardvasc0d_dd_;  ///< additional rectangular matrix
-    Teuchos::RCP<Core::LinAlg::SparseMatrix>
+    std::shared_ptr<Core::LinAlg::SparseMatrix>
         mat_dstruct_dcv0ddof_;  ///< additional rectangular matrix
     int counter_;               ///< counts how often #Solve is called
     bool isadapttol_;           ///< adaptive tolerance for solver?
@@ -404,10 +411,10 @@ namespace Utils
     double tolres_struct_;      ///< tolerace for structural residual
     double tolres_cardvasc0d_;  ///< tolerace for cardiovascular0d residual
     Inpar::Cardiovascular0D::Cardvasc0DSolveAlgo algochoice_;
-    Teuchos::RCP<Core::LinAlg::Vector<double>>
-        dirichtoggle_;                                  ///< \b only for compatability: dirichlet
-                                                        ///< toggle -- monitor its target change!
-    Teuchos::RCP<Core::LinAlg::Vector<double>> zeros_;  ///< a zero vector of full length
+    std::shared_ptr<Core::LinAlg::Vector<double>>
+        dirichtoggle_;                                     ///< \b only for compatability: dirichlet
+                                                           ///< toggle -- monitor its target change!
+    std::shared_ptr<Core::LinAlg::Vector<double>> zeros_;  ///< a zero vector of full length
     const double theta_;                 ///< time-integration factor for One Step Theta scheme
     const bool enhanced_output_;         ///< for enhanced output
     const bool ptc_3d0d_;                ///< if we want to use PTC (pseudo-transient continuation)
@@ -418,7 +425,7 @@ namespace Utils
     Teuchos::ParameterList cv0dparams_;  ///< 0D cardiovascular input parameters
     Inpar::Solid::IntegrationStrategy
         intstrat_;  ///< structural time-integration strategy (old vs. standard)
-    Teuchos::RCP<FourC::Cardiovascular0D::ProperOrthogonalDecomposition>
+    std::shared_ptr<FourC::Cardiovascular0D::ProperOrthogonalDecomposition>
         mor_;        ///< model order reduction
     bool have_mor_;  ///< model order reduction is used
 

@@ -18,7 +18,8 @@
 #include "4C_utils_parameter_list.fwd.hpp"
 
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -29,11 +30,12 @@ namespace ScaTra
   {
    public:
     /// Standard Constructor
-    ScaTraTimIntPoroMulti(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntPoroMulti(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
     // -----------------------------------------------------------------
     // general methods
@@ -47,12 +49,12 @@ namespace ScaTra
 
     //! set the nodal L2-flux
     virtual void set_l2_flux_of_multi_fluid(
-        Teuchos::RCP<const Core::LinAlg::MultiVector<double>> multiflux);
+        std::shared_ptr<const Core::LinAlg::MultiVector<double>> multiflux);
 
     //! set solution field of the multiphase fluid
     virtual void set_solution_field_of_multi_fluid(
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phinp_fluid,
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> phin_fluid);
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phinp_fluid,
+        std::shared_ptr<const Core::LinAlg::Vector<double>> phin_fluid);
 
     //! set the velocity field (zero or field by function)
     virtual void set_velocity_field(const int nds)
@@ -64,11 +66,11 @@ namespace ScaTra
 
     //! set convective velocity field (+ pressure and acceleration field as
     //! well as fine-scale velocity field, if required)
-    virtual void set_velocity_field(Teuchos::RCP<const Core::LinAlg::Vector<double>>
+    virtual void set_velocity_field(std::shared_ptr<const Core::LinAlg::Vector<double>>
                                         convvel,  //!< convective velocity/press. vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> acc,    //!< acceleration vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> vel,    //!< velocity vector
-        Teuchos::RCP<const Core::LinAlg::Vector<double>> fsvel,  //!< fine-scale velocity vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> acc,    //!< acceleration vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> vel,    //!< velocity vector
+        std::shared_ptr<const Core::LinAlg::Vector<double>> fsvel,  //!< fine-scale velocity vector
         const int nds,  //!< number of the dofset the velocity/pressure state belongs to
         const bool setpressure =
             false  //!< flag whether the fluid pressure needs to be known for the scatra
@@ -96,11 +98,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiOST(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntPoroMultiOST(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     //! initialize time integration scheme
@@ -117,11 +120,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiBDF2(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntPoroMultiBDF2(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     //! initialize time integration scheme
@@ -138,11 +142,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiGenAlpha(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntPoroMultiGenAlpha(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     //! initialize time integration scheme
@@ -159,11 +164,12 @@ namespace ScaTra
   {
    public:
     //! Standard Constructor
-    ScaTraTimIntPoroMultiStationary(Teuchos::RCP<Core::FE::Discretization> dis,
-        Teuchos::RCP<Core::LinAlg::Solver> solver, Teuchos::RCP<Teuchos::ParameterList> params,
-        Teuchos::RCP<Teuchos::ParameterList> sctratimintparams,
-        Teuchos::RCP<Teuchos::ParameterList> extraparams,
-        Teuchos::RCP<Core::IO::DiscretizationWriter> output);
+    ScaTraTimIntPoroMultiStationary(std::shared_ptr<Core::FE::Discretization> dis,
+        std::shared_ptr<Core::LinAlg::Solver> solver,
+        std::shared_ptr<Teuchos::ParameterList> params,
+        std::shared_ptr<Teuchos::ParameterList> sctratimintparams,
+        std::shared_ptr<Teuchos::ParameterList> extraparams,
+        std::shared_ptr<Core::IO::DiscretizationWriter> output);
 
 
     //! initialize time integration scheme

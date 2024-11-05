@@ -20,7 +20,7 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 LAGPENCONSTRAINT::NoxInterface::NoxInterface()
-    : isinit_(false), issetup_(false), gstate_ptr_(Teuchos::null)
+    : isinit_(false), issetup_(false), gstate_ptr_(nullptr)
 {
   // should stay empty
 }
@@ -28,7 +28,7 @@ LAGPENCONSTRAINT::NoxInterface::NoxInterface()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 LAGPENCONSTRAINT::NoxInterfacePrec::NoxInterfacePrec()
-    : isinit_(false), issetup_(false), gstate_ptr_(Teuchos::null)
+    : isinit_(false), issetup_(false), gstate_ptr_(nullptr)
 {
   // should stay empty
 }
@@ -36,7 +36,7 @@ LAGPENCONSTRAINT::NoxInterfacePrec::NoxInterfacePrec()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterface::init(
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -49,7 +49,7 @@ void LAGPENCONSTRAINT::NoxInterface::init(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void LAGPENCONSTRAINT::NoxInterfacePrec::init(
-    const Teuchos::RCP<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
+    const std::shared_ptr<Solid::TimeInt::BaseDataGlobalState>& gstate_ptr)
 {
   issetup_ = false;
 
@@ -88,14 +88,15 @@ double LAGPENCONSTRAINT::NoxInterface::get_constraint_rhs_norms(
 
 
   Core::LinAlg::Vector<double> F_copy(F);
-  Teuchos::RCP<Core::LinAlg::Vector<double>> constrRhs =
+  std::shared_ptr<Core::LinAlg::Vector<double>> constrRhs =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, F_copy);
 
   // no constraint contributions present
-  if (constrRhs.is_null()) return 0.0;
+  if (!constrRhs) return 0.0;
 
   const ::NOX::Epetra::Vector constrRhs_nox(
-      constrRhs->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*constrRhs->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateView);
 
 
   double constrNorm = -1.0;
@@ -119,14 +120,15 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_rms(
   Core::LinAlg::Vector<double> xOld_copy(xOld);
   Core::LinAlg::Vector<double> xNew_copy(xNew);
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
+  std::shared_ptr<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagnew_ptr =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> lagnew_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew_copy);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   const ::NOX::Epetra::Vector lagincr_nox_ptr(
-      lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*lagincr_ptr->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateView);
 
   rms = NOX::Nln::Aux::root_mean_square_norm(
       aTol, rTol, *lagnew_ptr, *lagincr_ptr, disable_implicit_weighting);
@@ -147,14 +149,15 @@ double LAGPENCONSTRAINT::NoxInterface::get_lagrange_multiplier_update_norms(
   Core::LinAlg::Vector<double> xNew_copy(xNew);
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lagincr_ptr =
+  std::shared_ptr<Core::LinAlg::Vector<double>> lagincr_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
-  Teuchos::RCP<const Core::LinAlg::Vector<double>> lagnew_ptr =
+  std::shared_ptr<const Core::LinAlg::Vector<double>> lagnew_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xNew_copy);
 
   lagincr_ptr->Update(1.0, *lagnew_ptr, -1.0);
   const ::NOX::Epetra::Vector lagincr_nox_ptr(
-      lagincr_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*lagincr_ptr->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateView);
 
   double updatenorm = -1.0;
 
@@ -176,11 +179,12 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
   Core::LinAlg::Vector<double> xOld_copy(xOld);
 
   // export the constraint solution
-  Teuchos::RCP<Core::LinAlg::Vector<double>> lagold_ptr =
+  std::shared_ptr<Core::LinAlg::Vector<double>> lagold_ptr =
       gstate_ptr_->extract_model_entries(Inpar::Solid::model_lag_pen_constraint, xOld_copy);
 
   const ::NOX::Epetra::Vector lagold_nox_ptr(
-      lagold_ptr->get_ptr_of_Epetra_Vector(), ::NOX::Epetra::Vector::CreateView);
+      Teuchos::rcpFromRef(*lagold_ptr->get_ptr_of_Epetra_Vector()),
+      ::NOX::Epetra::Vector::CreateView);
 
   double lagoldnorm = -1.0;
 
@@ -197,7 +201,7 @@ double LAGPENCONSTRAINT::NoxInterface::get_previous_lagrange_multiplier_norms(
  *----------------------------------------------------------------------------*/
 bool LAGPENCONSTRAINT::NoxInterfacePrec::is_saddle_point_system() const
 {
-  Teuchos::RCP<const Core::FE::Discretization> dis = gstate_ptr_->get_discret();
+  std::shared_ptr<const Core::FE::Discretization> dis = gstate_ptr_->get_discret();
 
   // ---------------------------------------------------------------------------
   // check type of constraint conditions (Lagrange multiplier vs. penalty)
@@ -235,8 +239,6 @@ bool LAGPENCONSTRAINT::NoxInterfacePrec::is_condensed_system() const
 void LAGPENCONSTRAINT::NoxInterfacePrec::fill_maps_for_preconditioner(
     std::vector<Teuchos::RCP<Epetra_Map>>& maps) const
 {
-  //  std::cout << "fill_maps_for_preconditioner" << std::endl;
-  return;
 }
 
 /*----------------------------------------------------------------------------*

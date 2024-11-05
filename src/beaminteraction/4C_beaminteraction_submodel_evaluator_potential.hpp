@@ -107,7 +107,7 @@ namespace BEAMINTERACTION
 
       //! derived
       void init_submodel_dependencies(
-          Teuchos::RCP<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
+          std::shared_ptr<Solid::ModelEvaluator::BeamInteraction::Map> const submodelmap) override;
 
       //! derived
       void add_bins_to_bin_col_map(std::set<int>& colbins) override;
@@ -145,7 +145,7 @@ namespace BEAMINTERACTION
         return *beam_potential_params_ptr_;
       }
 
-      inline Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr() const
+      inline std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr() const
       {
         check_init();
         return beam_potential_params_ptr_;
@@ -200,19 +200,20 @@ namespace BEAMINTERACTION
 
      private:
       //! data container holding all beam contact related parameters
-      Teuchos::RCP<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr_;
+      std::shared_ptr<BEAMINTERACTION::BeamPotentialParams> beam_potential_params_ptr_;
 
       //! type of eles in bins  // Todo kept line for future improvement
       //    Core::Binstrategy::Utils::BinContentType bin_beamcontent_;
 
       //! interacting pairs of beam elements that might exert forces on each other
-      std::vector<Teuchos::RCP<BEAMINTERACTION::BeamPotentialPair>> beam_potential_element_pairs_;
+      std::vector<std::shared_ptr<BEAMINTERACTION::BeamPotentialPair>>
+          beam_potential_element_pairs_;
 
       //! mapping beam ele (elegid) to set of spatially proximal eles (pointer to elements)
       std::map<int, std::set<Core::Elements::Element*>> nearby_elements_map_;
 
       //! runtime vtp writer for visualization of potential-based interactions
-      Teuchos::RCP<Core::IO::VisualizationManager> visualization_manager_;
+      std::shared_ptr<Core::IO::VisualizationManager> visualization_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR

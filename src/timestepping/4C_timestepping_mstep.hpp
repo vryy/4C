@@ -14,10 +14,11 @@
 
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
+#include "4C_utils_shared_ptr_from_ref.hpp"
 
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 
+#include <memory>
 #include <vector>
 
 FOUR_C_NAMESPACE_OPEN
@@ -67,12 +68,12 @@ namespace TimeStepping
       return state_[index_by_step(step)];
     }
 
-    //! Access state object by time step index and wrap into Teuchos::RCP
-    Teuchos::RCP<STATE> operator()(const int step  //!< inquiry step
+    //! Access state object by time step index and wrap into std::shared_ptr
+    std::shared_ptr<STATE> operator()(const int step  //!< inquiry step
     )
     {
       if (not step_exists(step)) FOUR_C_THROW("Step %d is not admissible", step);
-      return Teuchos::RCP<STATE>(&(state_[index_by_step(step)]), false);
+      return Core::Utils::shared_ptr_from_ref(state_[index_by_step(step)]);
     }
 
     //@}

@@ -62,7 +62,7 @@ void Thermo::ResultTest::test_node(
       double result = 0.0;     // will hold the actual result of run
 
       // test temperature
-      if (temp_ != Teuchos::null)
+      if (temp_ != nullptr)
       {
         const Epetra_BlockMap& tempmap = temp_->Map();
 
@@ -74,7 +74,7 @@ void Thermo::ResultTest::test_node(
       }
 
       // test temperature rates
-      if (rate_ != Teuchos::null)
+      if (rate_ != nullptr)
       {
         const Epetra_BlockMap& ratemap = rate_->Map();
 
@@ -86,7 +86,7 @@ void Thermo::ResultTest::test_node(
       }
 
       // test thermal flux
-      if (flux_ != Teuchos::null)
+      if (flux_ != nullptr)
       {
         const Epetra_BlockMap& fluxmap = flux_->Map();
 

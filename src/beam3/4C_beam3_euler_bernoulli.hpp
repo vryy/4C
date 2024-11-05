@@ -83,10 +83,10 @@ namespace Discret::Elements
 
     Core::Communication::ParObject* create(Core::Communication::UnpackBuffer& buffer) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const std::string eletype,
+    std::shared_ptr<Core::Elements::Element> create(const std::string eletype,
         const std::string eledistype, const int id, const int owner) override;
 
-    Teuchos::RCP<Core::Elements::Element> create(const int id, const int owner) override;
+    std::shared_ptr<Core::Elements::Element> create(const int id, const int owner) override;
 
     int initialize(Core::FE::Discretization& dis) override;
 
@@ -261,8 +261,8 @@ namespace Discret::Elements
     //! get kinetic energy of element
     double get_kinetic_energy() const override { return ekin_; };
 
-    //! \brief Get vector of Teuchos::RCPs to the lines of this element
-    std::vector<Teuchos::RCP<Core::Elements::Element>> lines() override;
+    //! \brief Get vector of std::shared_ptrs to the lines of this element
+    std::vector<std::shared_ptr<Core::Elements::Element>> lines() override;
 
     //! \brief Get number of degrees of freedom of a single node
     int num_dof_per_node(const Core::Nodes::Node& node) const override

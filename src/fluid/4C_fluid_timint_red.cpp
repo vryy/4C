@@ -22,19 +22,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                       bk 11/13 |
  *----------------------------------------------------------------------*/
-FLD::TimIntRedModels::TimIntRedModels(const Teuchos::RCP<Core::FE::Discretization>& actdis,
-    const Teuchos::RCP<Core::LinAlg::Solver>& solver,
-    const Teuchos::RCP<Teuchos::ParameterList>& params,
-    const Teuchos::RCP<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
+FLD::TimIntRedModels::TimIntRedModels(const std::shared_ptr<Core::FE::Discretization>& actdis,
+    const std::shared_ptr<Core::LinAlg::Solver>& solver,
+    const std::shared_ptr<Teuchos::ParameterList>& params,
+    const std::shared_ptr<Core::IO::DiscretizationWriter>& output, bool alefluid /*= false*/)
     : FluidImplicitTimeInt(actdis, solver, params, output, alefluid),
-      traction_vel_comp_adder_bc_(Teuchos::null),
-      coupled3D_redDbc_art_(Teuchos::null),
-      ART_timeInt_(Teuchos::null),
-      coupled3D_redDbc_airways_(Teuchos::null),
-      airway_imp_timeInt_(Teuchos::null),
-      vol_surf_flow_bc_(Teuchos::null),
-      vol_surf_flow_bc_maps_(Teuchos::null),
-      vol_flow_rates_bc_extractor_(Teuchos::null),
+      traction_vel_comp_adder_bc_(nullptr),
+      coupled3D_redDbc_art_(nullptr),
+      ART_timeInt_(nullptr),
+      coupled3D_redDbc_airways_(nullptr),
+      airway_imp_timeInt_(nullptr),
+      vol_surf_flow_bc_(nullptr),
+      vol_surf_flow_bc_maps_(nullptr),
+      vol_flow_rates_bc_extractor_(nullptr),
       strong_redD_3d_coupling_(false)
 {
 }
@@ -54,12 +54,12 @@ void FLD::TimIntRedModels::init()
     discret_->set_state("dispnp", dispn_);
   }
 
-  vol_surf_flow_bc_ = Teuchos::make_rcp<Utils::FluidVolumetricSurfaceFlowWrapper>(discret_, dta_);
+  vol_surf_flow_bc_ = std::make_shared<Utils::FluidVolumetricSurfaceFlowWrapper>(discret_, dta_);
 
   // evaluate the map of the womersley bcs
-  vol_flow_rates_bc_extractor_ = Teuchos::make_rcp<FLD::Utils::VolumetricFlowMapExtractor>();
+  vol_flow_rates_bc_extractor_ = std::make_shared<FLD::Utils::VolumetricFlowMapExtractor>();
   vol_flow_rates_bc_extractor_->setup(*discret_);
-  vol_surf_flow_bc_maps_ = Teuchos::make_rcp<Epetra_Map>(
+  vol_surf_flow_bc_maps_ = std::make_shared<Epetra_Map>(
       *(vol_flow_rates_bc_extractor_->volumetric_surface_flow_cond_map()));
 
   // -------------------------------------------------------------------
@@ -73,7 +73,7 @@ void FLD::TimIntRedModels::init()
   {
     ART_timeInt_ = dyn_art_net_drt(true);
     // Check if one-dimensional artery network problem exist
-    if (ART_timeInt_ != Teuchos::null)
+    if (ART_timeInt_ != nullptr)
     {
       Core::IO::DiscretizationWriter output_redD(ART_timeInt_->discretization(),
           Global::Problem::instance()->output_control_file(),
@@ -85,14 +85,14 @@ void FLD::TimIntRedModels::init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_art_ =
-          Teuchos::make_rcp<Utils::FluidCouplingWrapper<Adapter::ArtNet>>(discret_,
+          std::make_shared<Utils::FluidCouplingWrapper<Adapter::ArtNet>>(discret_,
               ART_timeInt_->discretization(), ART_timeInt_, output_redD, dta_, ART_timeInt_->dt());
     }
 
 
     airway_imp_timeInt_ = dyn_red_airways_drt(true);
     // Check if one-dimensional artery network problem exist
-    if (airway_imp_timeInt_ != Teuchos::null)
+    if (airway_imp_timeInt_ != nullptr)
     {
       Core::IO::DiscretizationWriter output_redD(airway_imp_timeInt_->discretization(),
           Global::Problem::instance()->output_control_file(),
@@ -104,7 +104,7 @@ void FLD::TimIntRedModels::init()
         discret_->set_state("dispnp", dispnp_);
       }
       coupled3D_redDbc_airways_ =
-          Teuchos::make_rcp<Utils::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>>(discret_,
+          std::make_shared<Utils::FluidCouplingWrapper<Airway::RedAirwayImplicitTimeInt>>(discret_,
               airway_imp_timeInt_->discretization(), airway_imp_timeInt_, output_redD, dta_,
               airway_imp_timeInt_->dt());
     }
@@ -113,17 +113,17 @@ void FLD::TimIntRedModels::init()
     zeros_->PutScalar(0.0);  // just in case of change
   }
 
-  traction_vel_comp_adder_bc_ = Teuchos::make_rcp<Utils::TotalTractionCorrector>(discret_, dta_);
+  traction_vel_comp_adder_bc_ = std::make_shared<Utils::TotalTractionCorrector>(discret_, dta_);
 
 
   // ------------------------------------------------------------------------------
   // Check, if features are used with the locsys manager that are not supported,
   // or better, not implemented yet.
   // ------------------------------------------------------------------------------
-  if (locsysman_ != Teuchos::null)
+  if (locsysman_ != nullptr)
   {
     // Models
-    if ((ART_timeInt_ != Teuchos::null) or (airway_imp_timeInt_ != Teuchos::null))
+    if ((ART_timeInt_ != nullptr) or (airway_imp_timeInt_ != nullptr))
     {
       FOUR_C_THROW(
           "No problem types involving airways are supported for use with locsys conditions!");
@@ -144,13 +144,13 @@ void FLD::TimIntRedModels::do_problem_specific_boundary_conditions()
   }
 
   // Check if one-dimensional artery network problem exist
-  if (ART_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != nullptr)
   {
     coupled3D_redDbc_art_->evaluate_dirichlet(*velnp_, *(dbcmaps_->cond_map()), time_);
   }
   // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
+  if (airway_imp_timeInt_ != nullptr)
   {
     coupled3D_redDbc_airways_->evaluate_dirichlet(*velnp_, *(dbcmaps_->cond_map()), time_);
   }
@@ -175,7 +175,7 @@ void FLD::TimIntRedModels::update_3d_to_reduced_mat_and_rhs()
   }
 
   // Check if one-dimensional artery network problem exist
-  if (ART_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != nullptr)
   {
     if (strong_redD_3d_coupling_)
     {
@@ -187,7 +187,7 @@ void FLD::TimIntRedModels::update_3d_to_reduced_mat_and_rhs()
   }
   // update the 3D-to-reduced_D coupling data
   // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
+  if (airway_imp_timeInt_ != nullptr)
   {
     if (strong_redD_3d_coupling_)
     {
@@ -229,10 +229,10 @@ void FLD::TimIntRedModels::output_reduced_d()
   {
     // write reduced model problem
     // Check if one-dimensional artery network problem exist
-    if (ART_timeInt_ != Teuchos::null)
+    if (ART_timeInt_ != nullptr)
     {
-      Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
-      redD_export_params = Teuchos::make_rcp<Teuchos::ParameterList>();
+      std::shared_ptr<Teuchos::ParameterList> redD_export_params;
+      redD_export_params = std::make_shared<Teuchos::ParameterList>();
 
       redD_export_params->set<int>("step", step_);
       redD_export_params->set<int>("upres", upres_);
@@ -243,10 +243,10 @@ void FLD::TimIntRedModels::output_reduced_d()
     }
 
     // Check if one-dimensional artery network problem exist
-    if (airway_imp_timeInt_ != Teuchos::null)
+    if (airway_imp_timeInt_ != nullptr)
     {
-      Teuchos::RCP<Teuchos::ParameterList> redD_export_params;
-      redD_export_params = Teuchos::make_rcp<Teuchos::ParameterList>();
+      std::shared_ptr<Teuchos::ParameterList> redD_export_params;
+      redD_export_params = std::make_shared<Teuchos::ParameterList>();
 
       redD_export_params->set<int>("step", step_);
       redD_export_params->set<int>("upres", upres_);
@@ -271,12 +271,12 @@ void FLD::TimIntRedModels::read_restart(int step)
   traction_vel_comp_adder_bc_->read_restart(reader);
 
   // Read restart of one-dimensional arterial network
-  if (ART_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != nullptr)
   {
     coupled3D_redDbc_art_->read_restart(reader);
   }
   // Check if zero-dimensional airway network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
+  if (airway_imp_timeInt_ != nullptr)
   {
     coupled3D_redDbc_airways_->read_restart(reader);
   }
@@ -290,13 +290,13 @@ void FLD::TimIntRedModels::read_restart(int step)
 void FLD::TimIntRedModels::read_restart_reduced_d(int step)
 {
   // Check if one-dimensional artery network problem exist
-  if (ART_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != nullptr)
   {
     ART_timeInt_->read_restart(step, true);
   }
 
   // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
+  if (airway_imp_timeInt_ != nullptr)
   {
     airway_imp_timeInt_->read_restart(step, true);
   }
@@ -339,12 +339,12 @@ void FLD::TimIntRedModels::output()
     if (uprestart_ != 0 && step_ % uprestart_ == 0)  // add restart data
     {
       // Check if one-dimensional artery network problem exist
-      if (ART_timeInt_ != Teuchos::null)
+      if (ART_timeInt_ != nullptr)
       {
         coupled3D_redDbc_art_->write_restart(*output_);
       }
       // Check if zero-dimensional airway network problem exist
-      if (airway_imp_timeInt_ != Teuchos::null)
+      if (airway_imp_timeInt_ != nullptr)
       {
         coupled3D_redDbc_airways_->write_restart(*output_);
       }
@@ -355,12 +355,12 @@ void FLD::TimIntRedModels::output()
   {
     // write reduced model problem
     // Check if one-dimensional artery network problem exist
-    if (ART_timeInt_ != Teuchos::null)
+    if (ART_timeInt_ != nullptr)
     {
       coupled3D_redDbc_art_->write_restart(*output_);
     }
     // Check if zero-dimensional airway network problem exist
-    if (airway_imp_timeInt_ != Teuchos::null)
+    if (airway_imp_timeInt_ != nullptr)
     {
       coupled3D_redDbc_airways_->write_restart(*output_);
     }
@@ -373,11 +373,12 @@ void FLD::TimIntRedModels::output()
  | read some additional data in restart                         bk 12/13|
  *----------------------------------------------------------------------*/
 void FLD::TimIntRedModels::insert_volumetric_surface_flow_cond_vector(
-    Teuchos::RCP<Core::LinAlg::Vector<double>> vel, Teuchos::RCP<Core::LinAlg::Vector<double>> res)
+    std::shared_ptr<Core::LinAlg::Vector<double>> vel,
+    std::shared_ptr<Core::LinAlg::Vector<double>> res)
 {
   // -------------------------------------------------------------------
   // take surface volumetric flow rate into account
-  //    Teuchos::RCP<Core::LinAlg::Vector<double>> temp_vec = Teuchos::rcp(new
+  //    std::shared_ptr<Core::LinAlg::Vector<double>> temp_vec = Teuchos::rcp(new
   //    Core::LinAlg::Vector<double>(*vol_surf_flow_bc_maps_,true));
   //    vol_surf_flow_bc_->insert_cond_vector( *temp_vec , *residual_);
   // -------------------------------------------------------------------
@@ -421,7 +422,7 @@ void FLD::TimIntRedModels::avm3_preparation()
 /*----------------------------------------------------------------------*
  | RedModels - specific BC in linear_relaxation_solve            bk 12/13|
  *----------------------------------------------------------------------*/
-void FLD::TimIntRedModels::custom_solve(Teuchos::RCP<Core::LinAlg::Vector<double>> relax)
+void FLD::TimIntRedModels::custom_solve(std::shared_ptr<Core::LinAlg::Vector<double>> relax)
 {
   // apply Womersley as a Dirichlet BC
   Core::LinAlg::apply_dirichlet_to_system(*incvel_, *residual_, *relax, *(vol_surf_flow_bc_maps_));
@@ -444,7 +445,7 @@ void FLD::TimIntRedModels::prepare_time_step()
   if (alefluid_) discret_->set_state("dispnp", dispnp_);
 
   // Check if one-dimensional artery network problem exist
-  if (ART_timeInt_ != Teuchos::null)
+  if (ART_timeInt_ != nullptr)
   {
     coupled3D_redDbc_art_->save_state();
     coupled3D_redDbc_art_->flow_rate_calculation(time_, dta_);
@@ -453,7 +454,7 @@ void FLD::TimIntRedModels::prepare_time_step()
 
 
   // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
+  if (airway_imp_timeInt_ != nullptr)
   {
     coupled3D_redDbc_airways_->save_state();
     coupled3D_redDbc_airways_->flow_rate_calculation(time_, dta_);
@@ -471,7 +472,7 @@ void FLD::TimIntRedModels::assemble_mat_and_rhs()
 {
   FluidImplicitTimeInt::assemble_mat_and_rhs();
 
-  if (shapederivatives_ != Teuchos::null)
+  if (shapederivatives_ != nullptr)
   {
     // apply the womersley bc as a dirichlet bc
     shapederivatives_->apply_dirichlet(*(vol_surf_flow_bc_maps_), false);
@@ -485,7 +486,7 @@ void FLD::TimIntRedModels::apply_dirichlet_to_system()
 {
   FluidImplicitTimeInt::apply_dirichlet_to_system();
 
-  if (locsys_manager() != Teuchos::null)
+  if (locsys_manager() != nullptr)
   {
     // apply Womersley as a Dirichlet BC
     Core::LinAlg::apply_dirichlet_to_system(

@@ -102,16 +102,16 @@ namespace Solid
 
      private:
       //! viscous force vector F_viscous F_{viscous;n+1}
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fvisconp_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fvisconp_ptr_;
 
       //! viscous force vector F_viscous F_{viscous;n}
-      Teuchos::RCP<Core::LinAlg::Vector<double>> fviscon_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> fviscon_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n+1} at new time
-      Teuchos::RCP<Core::LinAlg::Vector<double>> finertianp_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> finertianp_ptr_;
 
       //! pointer to inertial force vector F_{inertial,n} at last time
-      Teuchos::RCP<Core::LinAlg::Vector<double>> finertian_ptr_;
+      std::shared_ptr<Core::LinAlg::Vector<double>> finertian_ptr_;
 
       /*! \brief Flag to record the computing phase
        * compute_phase_ = 0..order: compute the initial values using modified forward Euler

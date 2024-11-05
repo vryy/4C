@@ -25,15 +25,15 @@ Solid::ModelEvaluator::BeamInteractionDataState::BeamInteractionDataState()
     : isinit_(false),
       issetup_(false),
       myrank_(0),
-      dis_(Teuchos::null),
-      dis_restart_(Teuchos::null),
-      dis_restart_col_(Teuchos::null),
+      dis_(nullptr),
+      dis_restart_(nullptr),
+      dis_restart_col_(nullptr),
       is_restart_coupling_(false),
-      disnp_(Teuchos::null),
-      discolnp_(Teuchos::null),
-      forcen_(Teuchos::null),
-      forcenp_(Teuchos::null),
-      stiff_(Teuchos::null)
+      disnp_(nullptr),
+      discolnp_(nullptr),
+      forcen_(nullptr),
+      forcenp_(nullptr),
+      stiff_(nullptr)
 {
   // empty constructor
 }
@@ -58,7 +58,7 @@ void Solid::ModelEvaluator::BeamInteractionDataState::init()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void Solid::ModelEvaluator::BeamInteractionDataState::setup(
-    Teuchos::RCP<const Core::FE::Discretization> const& ia_discret)
+    std::shared_ptr<const Core::FE::Discretization> const& ia_discret)
 {
   // safety check
   check_init();
@@ -66,16 +66,16 @@ void Solid::ModelEvaluator::BeamInteractionDataState::setup(
   myrank_ = ia_discret->get_comm().MyPID();
 
   // displacements
-  dis_ = Teuchos::make_rcp<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
+  dis_ = std::make_shared<TimeStepping::TimIntMStep<Core::LinAlg::Vector<double>>>(
       0, 0, ia_discret->dof_row_map(), true);
-  disnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
-  discolnp_ = Teuchos::make_rcp<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
+  disnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
+  discolnp_ = std::make_shared<Core::LinAlg::Vector<double>>(*ia_discret->dof_col_map());
 
   // force
-  forcen_ = Teuchos::make_rcp<Epetra_FEVector>(*ia_discret->dof_row_map());
-  forcenp_ = Teuchos::make_rcp<Epetra_FEVector>(*ia_discret->dof_row_map());
+  forcen_ = std::make_shared<Epetra_FEVector>(*ia_discret->dof_row_map());
+  forcenp_ = std::make_shared<Epetra_FEVector>(*ia_discret->dof_row_map());
 
-  stiff_ = Teuchos::make_rcp<Core::LinAlg::SparseMatrix>(
+  stiff_ = std::make_shared<Core::LinAlg::SparseMatrix>(
       *ia_discret->dof_row_map(), 81, true, true, Core::LinAlg::SparseMatrix::FE_MATRIX);
 
   issetup_ = true;

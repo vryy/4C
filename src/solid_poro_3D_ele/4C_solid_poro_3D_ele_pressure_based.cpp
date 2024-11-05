@@ -80,17 +80,17 @@ void Discret::Elements::SolidPoroPressureBasedType::setup_element_definition(
           .build();
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
     const std::string eletype, const std::string elecelltype, const int id, const int owner)
 {
   if (eletype == "SOLIDPORO_PRESSURE_BASED") return create(id, owner);
-  return Teuchos::null;
+  return nullptr;
 }
 
-Teuchos::RCP<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
+std::shared_ptr<Core::Elements::Element> Discret::Elements::SolidPoroPressureBasedType::create(
     const int id, const int owner)
 {
-  return Teuchos::make_rcp<Discret::Elements::SolidPoroPressureBased>(id, owner);
+  return std::make_shared<Discret::Elements::SolidPoroPressureBased>(id, owner);
 }
 
 Core::Communication::ParObject* Discret::Elements::SolidPoroPressureBasedType::create(
@@ -138,13 +138,13 @@ int Discret::Elements::SolidPoroPressureBased::num_volume() const
   return Core::FE::get_number_of_element_volumes(celltype_);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::SolidPoroPressureBased::lines()
 {
   return Core::Communication::get_element_lines<StructuralLine, SolidPoroPressureBased>(*this);
 }
 
-std::vector<Teuchos::RCP<Core::Elements::Element>>
+std::vector<std::shared_ptr<Core::Elements::Element>>
 Discret::Elements::SolidPoroPressureBased::surfaces()
 {
   return Core::Communication::get_element_surfaces<StructuralSurface, SolidPoroPressureBased>(
@@ -156,14 +156,14 @@ void Discret::Elements::SolidPoroPressureBased::set_params_interface_ptr(
 {
   if (p.isParameter("interface"))
   {
-    interface_ptr_ = p.get<Teuchos::RCP<Core::Elements::ParamsInterface>>("interface");
+    interface_ptr_ = p.get<std::shared_ptr<Core::Elements::ParamsInterface>>("interface");
     solid_interface_ptr_ =
-        Teuchos::rcp_dynamic_cast<FourC::Solid::Elements::ParamsInterface>(interface_ptr_);
+        std::dynamic_pointer_cast<FourC::Solid::Elements::ParamsInterface>(interface_ptr_);
   }
   else
   {
-    interface_ptr_ = Teuchos::null;
-    solid_interface_ptr_ = Teuchos::null;
+    interface_ptr_ = nullptr;
+    solid_interface_ptr_ = nullptr;
   }
 }
 
@@ -207,8 +207,7 @@ bool Discret::Elements::SolidPoroPressureBased::read_element(const std::string& 
 
 Mat::So3Material& Discret::Elements::SolidPoroPressureBased::solid_poro_material(int nummat) const
 {
-  return *Teuchos::rcp_dynamic_cast<Mat::So3Material>(
-      Core::Elements::Element::material(nummat), true);
+  return *std::dynamic_pointer_cast<Mat::So3Material>(Core::Elements::Element::material(nummat));
 }
 
 void Discret::Elements::SolidPoroPressureBased::pack(Core::Communication::PackBuffer& data) const
@@ -280,9 +279,9 @@ bool Discret::Elements::SolidPoroPressureBased::vis_data(
 Mat::StructPoro& Discret::Elements::SolidPoroPressureBased::struct_poro_material(int nummat) const
 {
   auto porostruct_mat =
-      Teuchos::rcp_dynamic_cast<Mat::StructPoro>(Core::Elements::Element::material(nummat), true);
+      std::dynamic_pointer_cast<Mat::StructPoro>(Core::Elements::Element::material(nummat));
 
-  if (porostruct_mat == Teuchos::null) FOUR_C_THROW("cast to poro material failed");
+  if (porostruct_mat == nullptr) FOUR_C_THROW("cast to poro material failed");
 
   if (porostruct_mat->material_type() != Core::Materials::m_structporo and
       porostruct_mat->material_type() != Core::Materials::m_structpororeaction and
@@ -299,11 +298,10 @@ Mat::FluidPoroMultiPhase& Discret::Elements::SolidPoroPressureBased::fluid_poro_
     FOUR_C_THROW("No second material defined for SolidPoroPressureBased element %i", id());
   }
 
-  auto fluidmulti_mat = Teuchos::rcp_dynamic_cast<Mat::FluidPoroMultiPhase>(
-      Core::Elements::Element::material(1), true);
+  auto fluidmulti_mat =
+      std::dynamic_pointer_cast<Mat::FluidPoroMultiPhase>(Core::Elements::Element::material(1));
 
-  if (fluidmulti_mat == Teuchos::null)
-    FOUR_C_THROW("cast to multiphase fluid poro material failed");
+  if (fluidmulti_mat == nullptr) FOUR_C_THROW("cast to multiphase fluid poro material failed");
   if (fluidmulti_mat->material_type() != Core::Materials::m_fluidporo_multiphase and
       fluidmulti_mat->material_type() != Core::Materials::m_fluidporo_multiphase_reactions)
     FOUR_C_THROW("invalid fluid material for poro-multiphase-elasticity");

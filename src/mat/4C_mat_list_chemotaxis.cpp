@@ -40,15 +40,16 @@ Mat::PAR::MatListChemotaxis::MatListChemotaxis(const Core::Mat::PAR::Parameter::
     for (m = pairids_.begin(); m != pairids_.end(); ++m)
     {
       const int pairid = *m;
-      Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(pairid);
-      material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(pairid, mat));
+      std::shared_ptr<Core::Mat::Material> mat = Mat::factory(pairid);
+      material_map_write()->insert(
+          std::pair<int, std::shared_ptr<Core::Mat::Material>>(pairid, mat));
     }
   }
 }
 
-Teuchos::RCP<Core::Mat::Material> Mat::PAR::MatListChemotaxis::create_material()
+std::shared_ptr<Core::Mat::Material> Mat::PAR::MatListChemotaxis::create_material()
 {
-  return Teuchos::make_rcp<Mat::MatListChemotaxis>(this);
+  return std::make_shared<Mat::MatListChemotaxis>(this);
 }
 
 
@@ -97,9 +98,9 @@ void Mat::MatListChemotaxis::setup_mat_map()
   for (m = paramschemo_->pair_ids()->begin(); m != paramschemo_->pair_ids()->end(); ++m)
   {
     const int pairid = *m;
-    Teuchos::RCP<Core::Mat::Material> mat = Mat::factory(pairid);
-    if (mat == Teuchos::null) FOUR_C_THROW("Failed to allocate this material");
-    material_map_write()->insert(std::pair<int, Teuchos::RCP<Core::Mat::Material>>(pairid, mat));
+    std::shared_ptr<Core::Mat::Material> mat = Mat::factory(pairid);
+    if (mat == nullptr) FOUR_C_THROW("Failed to allocate this material");
+    material_map_write()->insert(std::pair<int, std::shared_ptr<Core::Mat::Material>>(pairid, mat));
   }
   return;
 }
@@ -153,7 +154,7 @@ void Mat::MatListChemotaxis::unpack(Core::Communication::UnpackBuffer& buffer)
   int matid(-1);
   extract_from_pack(buffer, matid);
   paramschemo_ = nullptr;
-  if (Global::Problem::instance()->materials() != Teuchos::null)
+  if (Global::Problem::instance()->materials() != nullptr)
     if (Global::Problem::instance()->materials()->num() != 0)
     {
       const int probinst = Global::Problem::instance()->materials()->get_read_from_problem();

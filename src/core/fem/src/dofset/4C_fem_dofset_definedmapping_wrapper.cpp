@@ -19,19 +19,19 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
-    Teuchos::RCP<DofSetInterface> sourcedofset,
-    Teuchos::RCP<const Core::FE::Discretization> sourcedis, const std::string& couplingcond,
+    std::shared_ptr<DofSetInterface> sourcedofset,
+    std::shared_ptr<const Core::FE::Discretization> sourcedis, const std::string& couplingcond,
     const std::set<int> condids)
     : DofSetBase(),
       sourcedofset_(sourcedofset),
-      targetlidtosourcegidmapping_(Teuchos::null),
+      targetlidtosourcegidmapping_(nullptr),
       sourcedis_(sourcedis),
       couplingcond_(couplingcond),
       condids_(condids),
       filled_(false)
 {
-  if (sourcedofset_ == Teuchos::null) FOUR_C_THROW("Source dof set is null pointer.");
-  if (sourcedis_ == Teuchos::null) FOUR_C_THROW("Source discretization is null pointer.");
+  if (sourcedofset_ == nullptr) FOUR_C_THROW("Source dof set is null pointer.");
+  if (sourcedis_ == nullptr) FOUR_C_THROW("Source discretization is null pointer.");
 
   sourcedofset_->register_proxy(this);
 }
@@ -40,7 +40,7 @@ Core::DOFSets::DofSetDefinedMappingWrapper::DofSetDefinedMappingWrapper(
  *----------------------------------------------------------------------*/
 Core::DOFSets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 {
-  if (sourcedofset_ != Teuchos::null) sourcedofset_->unregister(this);
+  if (sourcedofset_ != nullptr) sourcedofset_->unregister(this);
 }
 
 /*----------------------------------------------------------------------*
@@ -48,10 +48,8 @@ Core::DOFSets::DofSetDefinedMappingWrapper::~DofSetDefinedMappingWrapper()
 int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
     const Core::FE::Discretization& dis, const unsigned dspos, const int start)
 {
-  if (sourcedofset_ == Teuchos::null)
-    FOUR_C_THROW("No source dof set assigned to mapping dof set!");
-  if (sourcedis_ == Teuchos::null)
-    FOUR_C_THROW("No source discretization assigned to mapping dof set!");
+  if (sourcedofset_ == nullptr) FOUR_C_THROW("No source dof set assigned to mapping dof set!");
+  if (sourcedis_ == nullptr) FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get condition which defines the coupling on target discretization
   std::vector<Core::Conditions::Condition*> conds;
@@ -63,9 +61,9 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
 
   // get the respective nodes which are in the condition
   const bool use_coupling_id = condids_.size() != 1;
-  std::map<int, Teuchos::RCP<std::vector<int>>> nodes;
+  std::map<int, std::shared_ptr<std::vector<int>>> nodes;
   Core::Conditions::find_conditioned_nodes(dis, conds, nodes, use_coupling_id);
-  std::map<int, Teuchos::RCP<std::vector<int>>> nodes_source;
+  std::map<int, std::shared_ptr<std::vector<int>>> nodes_source;
   Core::Conditions::find_conditioned_nodes(
       *sourcedis_, conds_source, nodes_source, use_coupling_id);
 
@@ -74,8 +72,8 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   std::map<int, std::pair<int, double>> coupling;
 
   // define iterators
-  std::map<int, Teuchos::RCP<std::vector<int>>>::iterator iter_target;
-  std::map<int, Teuchos::RCP<std::vector<int>>>::iterator iter_source;
+  std::map<int, std::shared_ptr<std::vector<int>>>::iterator iter_target;
+  std::map<int, std::shared_ptr<std::vector<int>>>::iterator iter_source;
 
   for (std::set<int>::iterator it = condids_.begin(); it != condids_.end(); ++it)
   {
@@ -117,7 +115,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   }  // loop over all condition ids
 
   // clone communicator of target discretization
-  Teuchos::RCP<Epetra_Comm> com = Teuchos::RCP(dis.get_comm().Clone());
+  std::shared_ptr<Epetra_Comm> com(dis.get_comm().Clone());
 
   // extract permutation
   std::vector<int> targetnodes(dis.node_row_map()->MyGlobalElements(),
@@ -156,7 +154,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   Core::LinAlg::Vector<int> permsourcenodevec(targetnodemap, permsourcenodemap.MyGlobalElements());
 
   // initialize the final mapping
-  targetlidtosourcegidmapping_ = Teuchos::make_rcp<Core::LinAlg::Vector<int>>(*dis.node_col_map());
+  targetlidtosourcegidmapping_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());
 
   // default value -1
   targetlidtosourcegidmapping_->PutValue(-1);
@@ -177,7 +175,7 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
  *----------------------------------------------------------------------*/
 void Core::DOFSets::DofSetDefinedMappingWrapper::reset()
 {
-  targetlidtosourcegidmapping_ = Teuchos::null;
+  targetlidtosourcegidmapping_ = nullptr;
   filled_ = false;
 
   // tell the proxies
@@ -190,8 +188,8 @@ void Core::DOFSets::DofSetDefinedMappingWrapper::disconnect(DofSetInterface* dof
 {
   if (dofset == sourcedofset_.get())
   {
-    sourcedofset_ = Teuchos::null;
-    sourcedis_ = Teuchos::null;
+    sourcedofset_ = nullptr;
+    sourcedis_ = nullptr;
   }
   else
     FOUR_C_THROW("cannot disconnect from non-connected DofSet");

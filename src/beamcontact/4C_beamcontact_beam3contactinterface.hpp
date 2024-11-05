@@ -179,11 +179,11 @@ namespace CONTACT
     */
     virtual bool evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
         Core::LinAlg::Vector<double>& fint, const double& pp,
-        std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>>& contactpairmap,
+        std::map<std::pair<int, int>, std::shared_ptr<Beam3contactinterface>>& contactpairmap,
         Teuchos::ParameterList& timeintparams, bool fdcheck = false) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
-    static Teuchos::RCP<Beam3contactinterface> impl(const int numnodes, const int numnodalvalues,
+    static std::shared_ptr<Beam3contactinterface> impl(const int numnodes, const int numnodalvalues,
         const Core::FE::Discretization& pdiscret, const Core::FE::Discretization& cdiscret,
         const std::map<int, int>& dofoffsetmap, Core::Elements::Element* element1,
         Core::Elements::Element* element2, Teuchos::ParameterList& beamcontactparams);

@@ -33,7 +33,7 @@ namespace Mat
       FluidPoroMultiPhase(const Core::Mat::PAR::Parameter::Data& matdata);
 
       /// create material instance of matching type with my parameters
-      Teuchos::RCP<Core::Mat::Material> create_material() override;
+      std::shared_ptr<Core::Mat::Material> create_material() override;
 
       /// initialize the material
       virtual void initialize();
@@ -52,7 +52,7 @@ namespace Mat
       //@}
 
       //! transformation of degrees of freedom to true pressures
-      Teuchos::RCP<Core::LinAlg::SerialDenseMatrix> dof2pres_;
+      std::shared_ptr<Core::LinAlg::SerialDenseMatrix> dof2pres_;
 
       //! number of constraint saturation phase
       int constraintphaseID_;
@@ -136,9 +136,9 @@ namespace Mat
     }
 
     /// return copy of this material object
-    Teuchos::RCP<Core::Mat::Material> clone() const override
+    std::shared_ptr<Core::Mat::Material> clone() const override
     {
-      return Teuchos::make_rcp<FluidPoroMultiPhase>(*this);
+      return std::make_shared<FluidPoroMultiPhase>(*this);
     }
 
     /// return permeability

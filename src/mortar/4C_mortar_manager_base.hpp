@@ -15,7 +15,8 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -114,12 +115,12 @@ namespace Mortar
     \param[in] outputParams Parameter list with stuff required by interfaces to write output
     */
     virtual void postprocess_quantities_per_interface(
-        Teuchos::RCP<Teuchos::ParameterList> outputParams) = 0;
+        std::shared_ptr<Teuchos::ParameterList> outputParams) = 0;
 
     //! Read restart data from disk
     virtual void read_restart(Core::IO::DiscretizationReader& reader,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> dis,
-        Teuchos::RCP<Core::LinAlg::Vector<double>> zero) = 0;
+        std::shared_ptr<Core::LinAlg::Vector<double>> dis,
+        std::shared_ptr<Core::LinAlg::Vector<double>> zero) = 0;
 
     //! Write restart data to disk
     virtual void write_restart(
@@ -132,10 +133,10 @@ namespace Mortar
     ManagerBase(const ManagerBase& old) = delete;
 
     //! Communicator
-    Teuchos::RCP<Epetra_Comm> comm_;
+    std::shared_ptr<Epetra_Comm> comm_;
 
     //! Strategy object
-    Teuchos::RCP<Mortar::StrategyBase> strategy_;
+    std::shared_ptr<Mortar::StrategyBase> strategy_;
 
   };  // class ManagerBase
 }  // namespace Mortar

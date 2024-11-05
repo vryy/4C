@@ -16,7 +16,7 @@
 #include "4C_linear_solver_method_linalg.hpp"
 #include "4C_red_airways_implicitintegration.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 void dyn_red_airways_drt();
 void redairway_tissue_dyn();
 
-Teuchos::RCP<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
+std::shared_ptr<Airway::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledTo3D);
 
 
 FOUR_C_NAMESPACE_CLOSE

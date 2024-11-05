@@ -15,7 +15,7 @@
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
 #include "4C_contact_node.hpp"
 
-#include <Teuchos_RCP.hpp>
+#include <memory>
 
 FOUR_C_NAMESPACE_OPEN
 
@@ -44,13 +44,14 @@ namespace CONTACT
       /* \brief create Contact ConstitutiveLaw object given the id of the constitutive law in the
        * input file
        */
-      static Teuchos::RCP<ConstitutiveLaw> factory(const int id);
+      static std::shared_ptr<ConstitutiveLaw> factory(const int id);
 
       /* \brief create Contact Constitutivelaw object given input information for the constitutive
        * law \param[in] Container holding the Coefficients for the Contact ConstitutiveLaw
        */
-      static Teuchos::RCP<ConstitutiveLaw> factory(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
+      static std::shared_ptr<ConstitutiveLaw> factory(
+          const std::shared_ptr<const CONTACT::CONSTITUTIVELAW::Container>
+              contactconstitutivelawdata);
 
       virtual ~ConstitutiveLaw() = default;
     };

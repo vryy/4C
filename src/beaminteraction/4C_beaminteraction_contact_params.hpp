@@ -54,37 +54,37 @@ namespace BEAMINTERACTION
     void build_beam_contact_runtime_output_params(double restart_time);
 
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params()
+    inline std::shared_ptr<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params()
         const
     {
       return beam_to_beam_contact_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams> beam_to_sphere_contact_params()
-        const
+    inline std::shared_ptr<BEAMINTERACTION::BeamToSphereContactParams>
+    beam_to_sphere_contact_params() const
     {
       return beam_to_sphere_contact_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
+    inline std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
     beam_to_solid_volume_meshtying_params() const
     {
       return beam_to_solid_volume_meshtying_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
+    inline std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
     beam_to_solid_surface_meshtying_params() const
     {
       return beam_to_solid_surface_meshtying_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
+    inline std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
     beam_to_solid_surface_contact_params() const
     {
       return beam_to_solid_surface_contact_params_;
     }
 
-    inline Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
+    inline std::shared_ptr<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
     beam_contact_runtime_visualization_output_params() const
     {
       return beam_contact_runtime_output_params_;
@@ -93,25 +93,25 @@ namespace BEAMINTERACTION
 
    private:
     //! pointer to the parameter class of beam-to-beam contact
-    Teuchos::RCP<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params_;
+    std::shared_ptr<BEAMINTERACTION::BeamToBeamContactParams> beam_to_beam_contact_params_;
 
     //! pointer to the parameter class of beam-to-sphere contact
-    Teuchos::RCP<BEAMINTERACTION::BeamToSphereContactParams> beam_to_sphere_contact_params_;
+    std::shared_ptr<BEAMINTERACTION::BeamToSphereContactParams> beam_to_sphere_contact_params_;
 
     //! pointer to the parameter class of beam-to-solid-volume contact
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
+    std::shared_ptr<BEAMINTERACTION::BeamToSolidVolumeMeshtyingParams>
         beam_to_solid_volume_meshtying_params_;
 
     //! pointer to the parameter class of beam-to-solid-surface mesh tying
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
+    std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceMeshtyingParams>
         beam_to_solid_surface_meshtying_params_;
 
     //! pointer to the parameter class of beam-to-solid-surface contact
-    Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
+    std::shared_ptr<BEAMINTERACTION::BeamToSolidSurfaceContactParams>
         beam_to_solid_surface_contact_params_;
 
     //! pointer to the parameter class of beam contact visualization output
-    Teuchos::RCP<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
+    std::shared_ptr<BEAMINTERACTION::BeamContactRuntimeVisualizationOutputParams>
         beam_contact_runtime_output_params_;
   };
 
