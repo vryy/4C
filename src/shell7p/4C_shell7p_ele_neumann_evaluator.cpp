@@ -316,22 +316,22 @@ void Discret::Elements::Shell::evaluate_neumann(Core::Elements::Element& ele,
       {
         for (int dim = 0; dim < num_dim; ++dim)
         {
-          dg1(dim, nodeid + num_dim + dim) = shapefunctions.derivatives_(0, nodeid);
-          dg2(dim, nodeid + num_dim + dim) = shapefunctions.derivatives_(1, nodeid);
+          dg1(dim, nodeid * noddof + dim) = shapefunctions.derivatives_(0, nodeid);
+          dg2(dim, nodeid * noddof + dim) = shapefunctions.derivatives_(1, nodeid);
         }
       }
       // linearization of local surface normal vector
-      for (int dim = 0; dim < num_dim; ++dim)
+      for (int dof = 0; dof < numdof; ++dof)
       {
-        dnormal(0, dim) =
-            dg1(1, dim) * g_metrics_kovariant(1, 2) + g_metrics_kovariant(0, 1) * dg2(2, dim) -
-            dg1(2, dim) * g_metrics_kovariant(1, 1) - g_metrics_kovariant(0, 2) * dg2(1, dim);
-        dnormal(1, dim) =
-            dg1(2, dim) * g_metrics_kovariant(1, 0) + g_metrics_kovariant(0, 2) * dg2(0, dim) -
-            dg1(0, dim) * g_metrics_kovariant(1, 2) - g_metrics_kovariant(0, 0) * dg2(2, dim);
-        dnormal(2, dim) =
-            dg1(0, dim) * g_metrics_kovariant(1, 1) + g_metrics_kovariant(0, 0) * dg2(1, dim) -
-            dg1(1, dim) * g_metrics_kovariant(1, 0) - g_metrics_kovariant(0, 1) * dg2(0, dim);
+        dnormal(0, dof) =
+            dg1(1, dof) * g_metrics_kovariant(1, 2) + g_metrics_kovariant(0, 1) * dg2(2, dof) -
+            dg1(2, dof) * g_metrics_kovariant(1, 1) - g_metrics_kovariant(0, 2) * dg2(1, dof);
+        dnormal(1, dof) =
+            dg1(2, dof) * g_metrics_kovariant(1, 0) + g_metrics_kovariant(0, 2) * dg2(0, dof) -
+            dg1(0, dof) * g_metrics_kovariant(1, 2) - g_metrics_kovariant(0, 0) * dg2(2, dof);
+        dnormal(2, dof) =
+            dg1(0, dof) * g_metrics_kovariant(1, 1) + g_metrics_kovariant(0, 0) * dg2(1, dof) -
+            dg1(1, dof) * g_metrics_kovariant(1, 0) - g_metrics_kovariant(0, 1) * dg2(0, dof);
       }
       // build surface element load linearization matrix
       // (CAREFUL: Minus sign due to the fact that external forces enter the global
