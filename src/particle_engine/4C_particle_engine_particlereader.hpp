@@ -19,7 +19,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }
 
 namespace PARTICLEENGINE
@@ -28,7 +28,7 @@ namespace PARTICLEENGINE
    * Read particles from a dat file. The particles are read from the section
    * with name @p section_name.
    */
-  void read_particles(Core::IO::DatFileReader& reader, const std::string& section_name,
+  void read_particles(Core::IO::InputFile& input, const std::string& section_name,
       std::vector<PARTICLEENGINE::ParticleObjShrdPtr>& particles);
 
 }  // namespace PARTICLEENGINE

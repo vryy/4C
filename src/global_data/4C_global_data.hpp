@@ -61,7 +61,7 @@ namespace CONTACT
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }
 namespace Core::FE
 {
@@ -84,7 +84,7 @@ namespace Global
    *
    * Global problem instance that keeps the discretizations
    * The global problem represents the input file passed to 4C. This class organizes the reading of
-   * a dat file (utilizing the DatFileReader of course). That is way, in all but the most eccentric
+   * a dat file (utilizing the InputFile of course). That is way, in all but the most eccentric
    * cases there will be exactly one object of this class during a 4C run. This object contains all
    * parameters read from the input file as well as any material definitions and even all the
    * discretizations.

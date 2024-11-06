@@ -5,8 +5,8 @@
 //
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-#ifndef FOUR_C_IO_INPUTREADER_HPP
-#define FOUR_C_IO_INPUTREADER_HPP
+#ifndef FOUR_C_IO_INPUT_FILE_HPP
+#define FOUR_C_IO_INPUT_FILE_HPP
 
 #include "4C_config.hpp"
 
@@ -127,39 +127,84 @@ namespace Core::IO
       //! The two ways to iterate over dat file content are handled by the iterator variants.
       std::variant<StreamLineIterator, PreReadIterator> iterator_;
     };
+
+    //! Helper to store section positions in dat files.
+    struct SectionPosition
+    {
+      std::filesystem::path file;
+      std::ifstream::pos_type pos;
+      unsigned int length;
+
+      void pack(Core::Communication::PackBuffer& data) const;
+
+      void unpack(Core::Communication::UnpackBuffer& buffer);
+    };
   }  // namespace Internal
 
-  /*----------------------------------------------------------------------*/
-  /// reading, broadcasting and storing of dat file contents
-  /*!
-    The normal 4C job needs to read one dat file at the beginning of
-    its execution. This file contains all input parameters as well as
-    the meshes and so on and needs to be available on all
-    processors. However, we cannot rely on a shared file system, so only
-    on process (the first one) can do the actual reading. All others
-    need to get the data via MPI communication.
-
-    This class manages the reading and broadcasting of the input
-    file. To do so processor 0 reads the input file line by line and
-    stores all lines in an array. Afterwards these lines are
-    communicated to all other processors, so each processor has an
-    internal copy of the input file and subsequently parses it.  There
-    is one instance of this class during the input phase of 4C. When
-    everything is set up properly this instance goes away and the
-    internal copy of the input file vanishes.
-
-    There is one more details to be considered: we do not want to
-    read all elements and nodes on each processor. So we skip reading
-    these sections here. Elements and nodes are read in parallel by the
-    ElementReader and MeshReader, respectively.
-
+  /**
+   * This class encapsulates input files independent of their format.
+   *
+   * Objects of this class read the content of a file and grant access to it. The input is not
+   * yet interpreted in any way. Input files contain different sections. A section either contains
+   * key-value pairs or a list of arbitrary lines of text. Sections may appear in an arbitrary order
+   * and each section name must be unique. An exception is the special section named "INCLUDES"
+   * which can contain a list of other files that should be read in addition to the current file.
+   *
+   * Three file formats are supported: the custom .dat file format and the standard .yaml (or .yml)
+   * and .json formats. The format of a file is detected based on its ending. If the ending is not
+   * one of the above mentioned, the file is assumed to be in the .dat format.
+   * Included files do not have to use the same format as the including file.
+   *
+   * The following example shows the structure of a .dat file:
+   *
+   * @code
+   * // A comment. Sections start with at least two dashes in the .dat file format.
+   * --INCLUDES
+   * include1.yml
+   * include2.json
+   * // More dashes are allowed to start a section.
+   * -------------SECTION1
+   * key1 = value1
+   * key2 = value2
+   * // The "=" is optional and can be replaced by whitespace. This only works if key and value do
+   * // not contain whitespace themselves.
+   * key3 value3
+   * --SECTION2
+   * A line with content that is not a key-value pair. It can contain anything.
+   * @endcode
+   *
+   * A similar example looks like this in .yaml format:
+   *
+   * @code
+   * INCLUDES:
+   *   - include1.yml
+   *   - include2.json
+   * # A comment. Note that sections do NOT start with dashes in the .yaml file format.
+   * SECTION1:
+   *   key1: value1
+   *   key2: value2
+   * SECTION2:
+   *   - A line with content that is not a key-value pair.
+   *   - It can contain anything.
+   * @endcode
+   *
+   *
+   * @note The file is only read on rank 0 and the content is distributed to all ranks.
    */
-  /*----------------------------------------------------------------------*/
-  class DatFileReader
+  class InputFile
   {
    public:
+    /// Format flags for dumping the content of the input file.
+    enum class Format
+    {
+      /// Print the input file as a dat file.
+      dat,
+      /// Print the input file as a yaml file.
+      yaml,
+    };
+
     /// construct a reader for a given file
-    DatFileReader(std::string filename, const Epetra_Comm& comm, int outflag = 0);
+    InputFile(std::string filename, const Epetra_Comm& comm, int outflag = 0);
 
     /// return my inputfile name
     [[nodiscard]] std::string my_inputfile_name() const;
@@ -173,7 +218,7 @@ namespace Core::IO
      * and whitespace trimmed. The usual way to do something with the lines is
      *
      * @code
-     *   for (const auto& line : reader.lines_in_section("section_name"))
+     *   for (const auto& line : input.lines_in_section("section_name"))
      *   {
      *     // do something with line
      *   }
@@ -205,9 +250,17 @@ namespace Core::IO
      */
     bool print_unknown_sections(std::ostream& out) const;
 
+    /**
+     * Dump the content of the input file to the given output stream.
+     * Various output format settings are controlled by the format flags.
+     */
+    void dump(std::ostream& output, Format format) const;
+
    private:
-    /// actual read dat file, store and broadcast general sections
-    void read_dat();
+    /**
+     * The shared part of reading a file and postprocessing its content.
+     */
+    void read_generic();
 
     //! Remember that a section was used.
     void record_section_used(const std::string& section_name);
@@ -215,18 +268,6 @@ namespace Core::IO
     //! Internal helper to get the range of lines in a section.
     //! Does not record the section as used.
     [[nodiscard]] auto line_range(const std::string& section_name) const;
-
-    //! Helper to store section positions.
-    struct SectionPosition
-    {
-      std::filesystem::path file;
-      std::ifstream::pos_type pos;
-      unsigned int length;
-
-      void pack(Core::Communication::PackBuffer& data) const;
-
-      void unpack(Core::Communication::UnpackBuffer& buffer);
-    };
 
     /// The top-level file that is first read by this object.
     std::filesystem::path top_level_file_;
@@ -244,7 +285,7 @@ namespace Core::IO
     std::vector<std::string_view> lines_;
 
     /// file positions of skipped sections
-    std::map<std::string, SectionPosition> excludepositions_;
+    std::map<std::string, Internal::SectionPosition> excludepositions_;
 
     /// Section positions of all sections inside the #inputfile_ array.
     std::map<std::string, std::pair<std::size_t, std::size_t>> positions_;
@@ -271,17 +312,17 @@ namespace Core::IO
    * Read a @p section_name from the input file and store the key-value pairs in the given @p list.
    */
   bool read_parameters_in_section(
-      DatFileReader& reader, const std::string& section_name, Teuchos::ParameterList& list);
+      InputFile& input, const std::string& section_name, Teuchos::ParameterList& list);
 
   /**
    * Read a node-design topology section
    *
-   * @param reader The dat file reader
+   * @param input The input file.
    * @param name Name of the topology to read
    * @param dobj_fenode Resulting collection of all nodes that belong to a design.
    * @param get_discretization Callback to return a discretization by name.
    */
-  void read_design(DatFileReader& reader, const std::string& name,
+  void read_design(InputFile& input, const std::string& name,
       std::vector<std::vector<int>>& dobj_fenode,
       const std::function<const Core::FE::Discretization&(const std::string& name)>&
           get_discretization);
@@ -289,18 +330,18 @@ namespace Core::IO
   /**
    * \brief read the knotvector section (for isogeometric analysis)
    *
-   * \param  reader         (in ): DatFileReader object
+   * \param  reader         (in ): InputFile object
    * \param  name           (in ): Name/type of discretisation
    * \param  disknots       (out): node vector coordinates
    *
    */
-  void read_knots(DatFileReader& reader, const std::string& name,
+  void read_knots(InputFile& input, const std::string& name,
       Teuchos::RCP<Core::FE::Nurbs::Knotvector>& disknots);
 
 
   /// -- template and inline functions --- //
 
-  inline auto DatFileReader::line_range(const std::string& section_name) const
+  inline auto InputFile::line_range(const std::string& section_name) const
   {
     auto filter = [](std::string_view line)
     { return !Core::Utils::strip_comment(std::string(line)).empty(); };
@@ -334,7 +375,7 @@ namespace Core::IO
         filter);
   }
 
-  inline auto DatFileReader::lines_in_section(const std::string& section_name)
+  inline auto InputFile::lines_in_section(const std::string& section_name)
   {
     record_section_used(section_name);
     return line_range(section_name);

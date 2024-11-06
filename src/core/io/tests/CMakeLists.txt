@@ -9,7 +9,7 @@ set(TESTNAME unittests_core_io)
 
 set(SOURCE_LIST
     4C_io_file_reader_test.cpp
-    4C_io_inputreader_test.cpp
+    4C_io_input_file_test.cpp
     4C_io_linedefinition_test.cpp
     4C_io_value_parser_test.cpp
     4C_io_pstream_test.cpp

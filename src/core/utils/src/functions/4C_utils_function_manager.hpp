@@ -26,7 +26,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }  // namespace Core::IO
 
 
@@ -50,7 +50,7 @@ namespace Core::Utils
     std::vector<Input::LineDefinition> valid_function_lines();
 
     /// Read the 4C input file and set up all Functions.
-    void read_input(Core::IO::DatFileReader& reader);
+    void read_input(Core::IO::InputFile& input);
 
     /**
      * Tell the FunctionManager how to parse a set of @p possible_lines into a Function object.

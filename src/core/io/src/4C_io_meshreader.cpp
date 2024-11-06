@@ -10,7 +10,7 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_io_domainreader.hpp"
 #include "4C_io_elementreader.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_nodereader.hpp"
 #include "4C_rebalance.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -27,9 +27,9 @@ FOUR_C_NAMESPACE_OPEN
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::MeshReader::MeshReader(
-    Core::IO::DatFileReader& reader, std::string node_section_name, MeshReaderParameters parameters)
-    : comm_(reader.get_comm()),
-      reader_(reader),
+    Core::IO::InputFile& input, std::string node_section_name, MeshReaderParameters parameters)
+    : comm_(input.get_comm()),
+      input_(input),
       node_section_name_(std::move(node_section_name)),
       parameters_(std::move(parameters))
 {
@@ -40,7 +40,7 @@ Core::IO::MeshReader::MeshReader(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void Core::IO::MeshReader::add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
-    Core::IO::DatFileReader& reader, const std::string& sectionname,
+    Core::IO::InputFile& input, const std::string& sectionname,
     const Core::IO::GeometryType geometrysource, const std::string* geofilepath)
 {
   std::set<std::string> elementtypes;
@@ -49,14 +49,14 @@ void Core::IO::MeshReader::add_advanced_reader(Teuchos::RCP<Core::FE::Discretiza
     case Core::IO::geometry_full:
     {
       std::string fullsectionname(sectionname + " ELEMENTS");
-      ElementReader er = ElementReader(dis, reader, fullsectionname, elementtypes);
+      ElementReader er = ElementReader(dis, input, fullsectionname, elementtypes);
       element_readers_.emplace_back(er);
       break;
     }
     case Core::IO::geometry_box:
     {
       std::string fullsectionname(sectionname + " DOMAIN");
-      DomainReader dr = DomainReader(dis, reader, fullsectionname);
+      DomainReader dr = DomainReader(dis, input, fullsectionname);
       domain_readers_.emplace_back(dr);
       break;
     }
@@ -105,7 +105,7 @@ void Core::IO::MeshReader::read_mesh_from_dat_file(int& max_node_id)
   for (auto& element_reader : element_readers_) element_reader.read_and_distribute();
 
   // read nodes based on the element information
-  read_nodes(reader_, node_section_name_, element_readers_, max_node_id);
+  read_nodes(input_, node_section_name_, element_readers_, max_node_id);
 }
 
 /*----------------------------------------------------------------------*/

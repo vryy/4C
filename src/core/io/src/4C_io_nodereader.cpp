@@ -12,7 +12,7 @@
 #include "4C_fem_general_fiber_node.hpp"
 #include "4C_fem_general_immersed_node.hpp"
 #include "4C_fem_nurbs_discretization_control_point.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 
 #include <istream>
 
@@ -34,17 +34,17 @@ namespace
 }  // namespace
 
 
-void Core::IO::read_nodes(Core::IO::DatFileReader& reader, const std::string& node_section_name,
+void Core::IO::read_nodes(Core::IO::InputFile& input, const std::string& node_section_name,
     std::vector<ElementReader>& element_readers, int& max_node_id)
 {
-  const int myrank = reader.get_comm().MyPID();
+  const int myrank = input.get_comm().MyPID();
   if (myrank > 0) return;
 
   std::string tmp;
   std::string tmp2;
 
   int line_count = 0;
-  for (const auto& node_line : reader.lines_in_section(node_section_name))
+  for (const auto& node_line : input.lines_in_section(node_section_name))
   {
     std::istringstream linestream{std::string{node_line}};
     linestream >> tmp;

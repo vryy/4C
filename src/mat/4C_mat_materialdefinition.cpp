@@ -8,7 +8,7 @@
 #include "4C_mat_materialdefinition.hpp"
 
 #include "4C_comm_pack_helpers.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_mat_par_bundle.hpp"
 
@@ -42,12 +42,12 @@ void Mat::MaterialDefinition::add_component(const Teuchos::RCP<Input::LineCompon
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 std::vector<std::pair<int, Core::IO::InputParameterContainer>> Mat::MaterialDefinition::read(
-    Core::IO::DatFileReader& reader)
+    Core::IO::InputFile& input)
 {
   std::string name = "MATERIALS";
 
   std::vector<std::pair<int, Core::IO::InputParameterContainer>> found_materials;
-  for (const auto& line : reader.lines_in_section(name))
+  for (const auto& line : input.lines_in_section(name))
   {
     Teuchos::RCP<std::stringstream> condline =
         Teuchos::make_rcp<std::stringstream>(std::string(line));

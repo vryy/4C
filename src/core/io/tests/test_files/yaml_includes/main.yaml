@@ -1,0 +1,3 @@
+INCLUDES: included.dat
+MAIN SECTION:
+  - something

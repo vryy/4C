@@ -31,7 +31,7 @@ namespace Input
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }
 
 namespace Mat
@@ -74,8 +74,8 @@ namespace Mat
     void add_component(const Teuchos::RCP<Input::LineComponent>& c);
 
     /// Try to read all lines that fit the current material definition.
-    std::vector<std::pair<int, Core::IO::InputParameterContainer>> read(Core::IO::DatFileReader&
-            reader  ///< the actual dat file reader that has access to the dat file
+    std::vector<std::pair<int, Core::IO::InputParameterContainer>> read(
+        Core::IO::InputFile& input  ///< the actual dat file reader that has access to the dat file
     );
 
     /// print my DAT file section and possible materials from the discretization

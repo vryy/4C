@@ -21,7 +21,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 
   /*!
     \brief helper class to read a mesh
@@ -54,10 +54,10 @@ namespace Core::IO
     };
 
     /**
-     * Construct a mesh reader. Read nodes from the given @p reader under section
+     * Construct a mesh reader. Read nodes from the given @p input under section
      * @p node_section_name.
      */
-    MeshReader(Core::IO::DatFileReader& reader, std::string node_section_name,
+    MeshReader(Core::IO::InputFile& input, std::string node_section_name,
         MeshReaderParameters parameters = {});
 
     /// add an element reader for each discretization
@@ -76,15 +76,15 @@ namespace Core::IO
      * version with a dummy set.
      *
      * \param dis            [in] This discretization will be passed on
-     * \param reader         [in] This reader will be passed on
+     * \param input          [in] The input file.
      * \param sectionname    [in] This will be passed on element/domain readers only (not used for
      *                            file reader)
      * \param geometrysource [in] selects which reader will be created
      * \param geofilepath    [in] path to the file for the file reader (not used for the others)
      */
-    void add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis,
-        Core::IO::DatFileReader& reader, const std::string& sectionname,
-        const Core::IO::GeometryType geometrysource, const std::string* geofilepath);
+    void add_advanced_reader(Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input,
+        const std::string& sectionname, const Core::IO::GeometryType geometrysource,
+        const std::string* geofilepath);
 
     /// do the actual reading
     /*!
@@ -146,7 +146,7 @@ namespace Core::IO
     std::vector<DomainReader> domain_readers_;
 
     /// Input file contents
-    Core::IO::DatFileReader& reader_;
+    Core::IO::InputFile& input_;
 
     /// The name of the section under which we will read the nodes.
     std::string node_section_name_;

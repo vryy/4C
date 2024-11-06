@@ -23,7 +23,7 @@
 #include "4C_io_dat_file_utils.hpp"
 #include "4C_io_elementreader.hpp"
 #include "4C_io_geometry_type.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_linedefinition.hpp"
 #include "4C_io_meshreader.hpp"
 #include "4C_mat_elchmat.hpp"
@@ -44,8 +44,7 @@
 
 FOUR_C_NAMESPACE_OPEN
 
-void Global::read_fields(
-    Global::Problem& problem, Core::IO::DatFileReader& reader, const bool read_mesh)
+void Global::read_fields(Global::Problem& problem, Core::IO::InputFile& input, const bool read_mesh)
 {
   Teuchos::RCP<Core::FE::Discretization> structdis = Teuchos::null;
   Teuchos::RCP<Core::FE::Discretization> fluiddis = Teuchos::null;
@@ -73,7 +72,7 @@ void Global::read_fields(
   auto output_control = problem.output_control_file();
 
   // the basic mesh reader. now add desired node and element readers to it!
-  Core::IO::MeshReader meshreader(reader, "NODE COORDS",
+  Core::IO::MeshReader meshreader(input, "NODE COORDS",
       {.mesh_paritioning_parameters = Problem::instance()->mesh_partitioning_params(),
           .geometric_search_parameters = Problem::instance()->geometric_search_params(),
           .io_parameters = Problem::instance()->io_params()});
@@ -125,16 +124,16 @@ void Global::read_fields(
       problem.add_dis("ale", aledis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
       if (xfluiddis != Teuchos::null)
       {
-        meshreader.add_element_reader(Core::IO::ElementReader(xfluiddis, reader, "FLUID ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(xfluiddis, input, "FLUID ELEMENTS"));
       }
       else
-        meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
 
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "ALE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
 
       break;
     }
@@ -182,12 +181,12 @@ void Global::read_fields(
       problem.add_dis("scatra2", structscatradis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(fluidscatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(fluidscatradis, input, "TRANSPORT ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structscatradis, reader, "TRANSPORT2 ELEMENTS"));
+          Core::IO::ElementReader(structscatradis, input, "TRANSPORT2 ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -234,8 +233,8 @@ void Global::read_fields(
 
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
 
 #ifdef EXTENDEDPARALLELOVERLAP
       structdis->CreateExtendedOverlap(false, false, false);
@@ -267,7 +266,7 @@ void Global::read_fields(
       structdis->set_writer(
           Teuchos::make_rcp<Core::IO::DiscretizationWriter>(structdis, output_control, distype));
       problem.add_dis("structure", structdis);
-      meshreader.add_advanced_reader(structdis, reader, "STRUCTURE",
+      meshreader.add_advanced_reader(structdis, input, "STRUCTURE",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
@@ -285,7 +284,7 @@ void Global::read_fields(
         problem.add_dis("xfluid", xfluiddis);
 
         meshreader.add_element_reader(
-            Core::IO::ElementReader(xfluiddis, reader, "FLUID ELEMENTS", "FLUID"));
+            Core::IO::ElementReader(xfluiddis, input, "FLUID ELEMENTS", "FLUID"));
       }
       else
       {
@@ -294,7 +293,7 @@ void Global::read_fields(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(fluiddis, output_control, distype));
         problem.add_dis("fluid", fluiddis);
 
-        meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
+        meshreader.add_advanced_reader(fluiddis, input, "FLUID",
             Teuchos::getIntegralValue<Core::IO::GeometryType>(
                 problem.fluid_dynamic_params(), "GEOMETRY"),
             nullptr);
@@ -304,7 +303,7 @@ void Global::read_fields(
       aledis->set_writer(
           Teuchos::make_rcp<Core::IO::DiscretizationWriter>(aledis, output_control, distype));
       problem.add_dis("ale", aledis);
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "ALE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
       break;
     }
     case Core::ProblemType::fpsi_xfem:
@@ -331,14 +330,14 @@ void Global::read_fields(
       problem.add_dis("ale", aledis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
-      meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
+      meshreader.add_advanced_reader(fluiddis, input, "FLUID",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "ALE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
 
       break;
     }
@@ -365,7 +364,7 @@ void Global::read_fields(
 
       problem.add_dis("ale", aledis);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "ALE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
 
       break;
     }
@@ -400,7 +399,7 @@ void Global::read_fields(
       }
       else
       {
-        // fluiddis  = Teuchos::rcp(new Core::FE::Discretization("fluid",reader.Comm()));
+        // fluiddis  = Teuchos::rcp(new Core::FE::Discretization("fluid",input.Comm()));
         fluiddis = Teuchos::make_rcp<Core::FE::DiscretizationFaces>("fluid", comm, problem.n_dim());
 
         // create discretization writer - in constructor set into and owned by corresponding discret
@@ -410,7 +409,7 @@ void Global::read_fields(
 
       problem.add_dis("fluid", fluiddis);
 
-      meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
+      meshreader.add_advanced_reader(fluiddis, input, "FLUID",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
@@ -430,7 +429,7 @@ void Global::read_fields(
       problem.add_dis("lubrication", lubricationdis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(lubricationdis, reader, "LUBRICATION ELEMENTS"));
+          Core::IO::ElementReader(lubricationdis, input, "LUBRICATION ELEMENTS"));
 
       break;
     }
@@ -474,9 +473,9 @@ void Global::read_fields(
       problem.add_dis("fluid", fluiddis);
       problem.add_dis("scatra", scatradis);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -500,9 +499,9 @@ void Global::read_fields(
       problem.add_dis("scatra", scatradis);
       problem.add_dis("thermo", thermdis);
 
-      // add element reader to node reader
+      // add element input to node input
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -555,12 +554,12 @@ void Global::read_fields(
 
       if (xfluiddis != Teuchos::null)
       {
-        meshreader.add_element_reader(Core::IO::ElementReader(xfluiddis, reader, "FLUID ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(xfluiddis, input, "FLUID ELEMENTS"));
       }
       else
-        meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
 
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "ALE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
 
       break;
     }
@@ -594,11 +593,11 @@ void Global::read_fields(
       problem.add_dis("structure", structdis);
       problem.add_dis("thermo", thermdis);
 
-      meshreader.add_advanced_reader(structdis, reader, "STRUCTURE",
+      meshreader.add_advanced_reader(structdis, input, "STRUCTURE",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
-      meshreader.add_advanced_reader(thermdis, reader, "THERMO",
+      meshreader.add_advanced_reader(thermdis, input, "THERMO",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.thermal_dynamic_params(), "GEOMETRY"),
           nullptr);
@@ -628,7 +627,7 @@ void Global::read_fields(
 
       problem.add_dis("thermo", thermdis);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(thermdis, reader, "THERMO ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(thermdis, input, "THERMO ELEMENTS"));
 
       break;
     }
@@ -657,7 +656,7 @@ void Global::read_fields(
 
       problem.add_dis("structure", structdis);
 
-      meshreader.add_advanced_reader(structdis, reader, "STRUCTURE",
+      meshreader.add_advanced_reader(structdis, input, "STRUCTURE",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.structural_dynamic_params(), "GEOMETRY"),
           nullptr);
@@ -681,9 +680,9 @@ void Global::read_fields(
       problem.add_dis("boundingbox", pboxdis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(pboxdis, reader, "PERIODIC BOUNDINGBOX ELEMENTS"));
+          Core::IO::ElementReader(pboxdis, input, "PERIODIC BOUNDINGBOX ELEMENTS"));
 
       break;
     }
@@ -703,9 +702,9 @@ void Global::read_fields(
       problem.add_dis("fluid", fluiddis);
       problem.add_dis("scatra", scatradis);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -733,15 +732,15 @@ void Global::read_fields(
       problem.add_dis("scatra", scatradis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
-      meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_advanced_reader(fluiddis, input, "FLUID",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
-      // meshreader.AddElementReader(Teuchos::rcp(new Core::IO::ElementReader(fluiddis, reader,
+      // meshreader.AddElementReader(Teuchos::rcp(new Core::IO::ElementReader(fluiddis, input,
       // "FLUID ELEMENTS")));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
       break;
     }
 
@@ -789,12 +788,12 @@ void Global::read_fields(
       problem.add_dis("ale", aledis);
       problem.add_dis("scatra_micro", scatra_micro_dis);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
-      meshreader.add_element_reader(Core::IO::ElementReader(aledis, reader, "ALE ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(aledis, input, "ALE ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatra_micro_dis, reader, "TRANSPORT2 ELEMENTS"));
+          Core::IO::ElementReader(scatra_micro_dis, input, "TRANSPORT2 ELEMENTS"));
 
       break;
     }
@@ -828,9 +827,9 @@ void Global::read_fields(
       scatradis->set_writer(
           Teuchos::make_rcp<Core::IO::DiscretizationWriter>(scatradis, output_control, distype));
 
-      meshreader.add_element_reader(Core::IO::ElementReader(arterydis, reader, "ARTERY ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
 
       break;
     }
@@ -846,7 +845,7 @@ void Global::read_fields(
       problem.add_dis("red_airway", airwaydis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(airwaydis, reader, "REDUCED D AIRWAYS ELEMENTS"));
+          Core::IO::ElementReader(airwaydis, input, "REDUCED D AIRWAYS ELEMENTS"));
 
       break;
     }
@@ -884,9 +883,8 @@ void Global::read_fields(
       problem.add_dis("porofluid", porofluiddis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
-      meshreader.add_element_reader(
-          Core::IO::ElementReader(porofluiddis, reader, "FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(porofluiddis, input, "FLUID ELEMENTS"));
 
       if (problem.poro_multi_phase_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
@@ -894,8 +892,7 @@ void Global::read_fields(
         arterydis->set_writer(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
-        meshreader.add_element_reader(
-            Core::IO::ElementReader(arterydis, reader, "ARTERY ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
       }
 
       break;
@@ -939,11 +936,10 @@ void Global::read_fields(
       problem.add_dis("scatra", scatradis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(porofluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(porofluiddis, reader, "FLUID ELEMENTS"));
-      meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
 
       if (problem.poro_multi_phase_scatra_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
@@ -951,8 +947,7 @@ void Global::read_fields(
         arterydis->set_writer(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
-        meshreader.add_element_reader(
-            Core::IO::ElementReader(arterydis, reader, "ARTERY ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
 
         artscatradis =
             Teuchos::make_rcp<Core::FE::Discretization>("artery_scatra", comm, problem.n_dim());
@@ -960,7 +955,7 @@ void Global::read_fields(
             artscatradis, output_control, distype));
         problem.add_dis("artery_scatra", artscatradis);
         meshreader.add_element_reader(
-            Core::IO::ElementReader(artscatradis, reader, "TRANSPORT ELEMENTS"));
+            Core::IO::ElementReader(artscatradis, input, "TRANSPORT ELEMENTS"));
       }
 
       break;
@@ -990,8 +985,7 @@ void Global::read_fields(
 
       problem.add_dis("porofluid", porofluiddis);
 
-      meshreader.add_element_reader(
-          Core::IO::ElementReader(porofluiddis, reader, "FLUID ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(porofluiddis, input, "FLUID ELEMENTS"));
 
       if (problem.poro_fluid_multi_phase_dynamic_params().get<bool>("ARTERY_COUPLING"))
       {
@@ -999,8 +993,7 @@ void Global::read_fields(
         arterydis->set_writer(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
-        meshreader.add_element_reader(
-            Core::IO::ElementReader(arterydis, reader, "ARTERY ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
       }
       break;
     }
@@ -1028,9 +1021,9 @@ void Global::read_fields(
       problem.add_dis("fluid", fluiddis);
       problem.add_dis("ale", aledis);
 
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
       break;
     }
@@ -1050,8 +1043,8 @@ void Global::read_fields(
       problem.add_dis("fluid", fluiddis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
-      meshreader.add_advanced_reader(fluiddis, reader, "FLUID",
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_advanced_reader(fluiddis, input, "FLUID",
           Teuchos::getIntegralValue<Core::IO::GeometryType>(
               problem.fluid_dynamic_params(), "GEOMETRY"),
           nullptr);
@@ -1074,8 +1067,8 @@ void Global::read_fields(
       problem.add_dis("fluid", fluiddis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
 
       break;
     }
@@ -1104,9 +1097,9 @@ void Global::read_fields(
       problem.add_dis("ale", aledis);
 
 
-      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, reader, "FLUID ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(fluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
       // fluid scatra field
       fluidscatradis =
@@ -1147,11 +1140,10 @@ void Global::read_fields(
       problem.add_dis("scatra", scatradis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
+      meshreader.add_element_reader(Core::IO::ElementReader(porofluiddis, input, "FLUID ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(porofluiddis, reader, "FLUID ELEMENTS"));
-      meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
       break;
     }
     case Core::ProblemType::ehl:
@@ -1171,9 +1163,9 @@ void Global::read_fields(
       problem.add_dis("lubrication", lubricationdis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(lubricationdis, reader, "LUBRICATION ELEMENTS"));
+          Core::IO::ElementReader(lubricationdis, input, "LUBRICATION ELEMENTS"));
 
       break;
     }
@@ -1204,9 +1196,9 @@ void Global::read_fields(
       }
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
 
       if (problem.get_problem_type() == Core::ProblemType::ssti)
       {
@@ -1215,7 +1207,7 @@ void Global::read_fields(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(thermdis, output_control, distype));
         problem.add_dis("thermo", thermdis);
         meshreader.add_element_reader(
-            Core::IO::ElementReader(thermdis, reader, "TRANSPORT ELEMENTS"));
+            Core::IO::ElementReader(thermdis, input, "TRANSPORT ELEMENTS"));
       }
 
       break;
@@ -1233,7 +1225,7 @@ void Global::read_fields(
       problem.add_dis("structure", structdis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
 
       break;
     }
@@ -1249,7 +1241,7 @@ void Global::read_fields(
       problem.add_dis("scatra", scatradis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(scatradis, reader, "TRANSPORT ELEMENTS"));
+          Core::IO::ElementReader(scatradis, input, "TRANSPORT ELEMENTS"));
       break;
     }
     case Core::ProblemType::np_support:
@@ -1273,7 +1265,7 @@ void Global::read_fields(
       elemagelementtypes.insert("ELECTROMAGNETICDIFF");
 
       meshreader.add_element_reader(Core::IO::ElementReader(
-          elemagdis, reader, "ELECTROMAGNETIC ELEMENTS", elemagelementtypes));
+          elemagdis, input, "ELECTROMAGNETIC ELEMENTS", elemagelementtypes));
 
       break;
     }
@@ -1293,9 +1285,9 @@ void Global::read_fields(
       problem.add_dis("red_airway", airwaydis);
 
       meshreader.add_element_reader(
-          Core::IO::ElementReader(structdis, reader, "STRUCTURE ELEMENTS"));
+          Core::IO::ElementReader(structdis, input, "STRUCTURE ELEMENTS"));
       meshreader.add_element_reader(
-          Core::IO::ElementReader(airwaydis, reader, "REDUCED D AIRWAYS ELEMENTS"));
+          Core::IO::ElementReader(airwaydis, input, "REDUCED D AIRWAYS ELEMENTS"));
     }
     break;
     default:
@@ -1318,8 +1310,7 @@ void Global::read_fields(
         arterydis->set_writer(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(arterydis, output_control, distype));
         problem.add_dis("artery", arterydis);
-        meshreader.add_element_reader(
-            Core::IO::ElementReader(arterydis, reader, "ARTERY ELEMENTS"));
+        meshreader.add_element_reader(Core::IO::ElementReader(arterydis, input, "ARTERY ELEMENTS"));
 
         airwaydis =
             Teuchos::make_rcp<Core::FE::Discretization>("red_airway", comm, problem.n_dim());
@@ -1328,7 +1319,7 @@ void Global::read_fields(
             Teuchos::make_rcp<Core::IO::DiscretizationWriter>(airwaydis, output_control, distype));
         problem.add_dis("red_airway", airwaydis);
         meshreader.add_element_reader(
-            Core::IO::ElementReader(airwaydis, reader, "REDUCED D AIRWAYS ELEMENTS"));
+            Core::IO::ElementReader(airwaydis, input, "REDUCED D AIRWAYS ELEMENTS"));
       }
     }
     break;
@@ -1352,7 +1343,7 @@ void Global::read_fields(
       {
         // read microscale fields from second, third, ... input file if necessary
         // (in case of multi-scale material models)
-        read_micro_fields(problem, std::filesystem::path(reader.my_inputfile_name()).parent_path());
+        read_micro_fields(problem, std::filesystem::path(input.my_inputfile_name()).parent_path());
         break;
       }
       case Core::ProblemType::np_support:
@@ -1580,7 +1571,7 @@ void Global::read_micro_fields(Global::Problem& problem, const std::filesystem::
         subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
         // start with actual reading
-        Core::IO::DatFileReader micro_reader(micro_inputfile_name, *subgroupcomm, 1);
+        Core::IO::InputFile micro_reader(micro_inputfile_name, *subgroupcomm, 1);
 
         Teuchos::RCP<Core::FE::Discretization> dis_micro =
             Teuchos::make_rcp<Core::FE::Discretization>(
@@ -1722,7 +1713,7 @@ void Global::read_microfields_np_support(Global::Problem& problem)
     subgroupcomm->Broadcast((const_cast<char*>(micro_inputfile_name.c_str())), length, 0);
 
     // start with actual reading
-    Core::IO::DatFileReader micro_reader(micro_inputfile_name, *subgroupcomm, 1);
+    Core::IO::InputFile micro_reader(micro_inputfile_name, *subgroupcomm, 1);
 
     Teuchos::RCP<Core::FE::Discretization> structdis_micro =
         Teuchos::make_rcp<Core::FE::Discretization>("structure", subgroupcomm, problem.n_dim());
@@ -1776,176 +1767,174 @@ void Global::read_microfields_np_support(Global::Problem& problem)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_parameter(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_parameter(Global::Problem& problem, Core::IO::InputFile& input)
 {
   Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::make_rcp<Teuchos::ParameterList>("DAT FILE");
 
-  Core::IO::read_parameters_in_section(reader, "DISCRETISATION", *list);
-  Core::IO::read_parameters_in_section(reader, "PROBLEM SIZE", *list);
-  Core::IO::read_parameters_in_section(reader, "PROBLEM TYP", *list);
-  Core::IO::read_parameters_in_section(reader, "BINNING STRATEGY", *list);
-  Core::IO::read_parameters_in_section(reader, "BOUNDINGVOLUME STRATEGY", *list);
-  Core::IO::read_parameters_in_section(reader, "IO", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/EVERY ITERATION", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/MONITOR STRUCTURE DBC", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/RUNTIME VTK OUTPUT", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/RUNTIME VTK OUTPUT/FLUID", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/RUNTIME VTK OUTPUT/STRUCTURE", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/RUNTIME VTK OUTPUT/BEAMS", *list);
-  Core::IO::read_parameters_in_section(reader, "IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCTURAL DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCTURAL DYNAMIC/GENALPHA", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
+  Core::IO::read_parameters_in_section(input, "DISCRETISATION", *list);
+  Core::IO::read_parameters_in_section(input, "PROBLEM SIZE", *list);
+  Core::IO::read_parameters_in_section(input, "PROBLEM TYP", *list);
+  Core::IO::read_parameters_in_section(input, "BINNING STRATEGY", *list);
+  Core::IO::read_parameters_in_section(input, "BOUNDINGVOLUME STRATEGY", *list);
+  Core::IO::read_parameters_in_section(input, "IO", *list);
+  Core::IO::read_parameters_in_section(input, "IO/EVERY ITERATION", *list);
+  Core::IO::read_parameters_in_section(input, "IO/MONITOR STRUCTURE DBC", *list);
+  Core::IO::read_parameters_in_section(input, "IO/RUNTIME VTK OUTPUT", *list);
+  Core::IO::read_parameters_in_section(input, "IO/RUNTIME VTK OUTPUT/FLUID", *list);
+  Core::IO::read_parameters_in_section(input, "IO/RUNTIME VTK OUTPUT/STRUCTURE", *list);
+  Core::IO::read_parameters_in_section(input, "IO/RUNTIME VTK OUTPUT/BEAMS", *list);
+  Core::IO::read_parameters_in_section(input, "IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/GENALPHA", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   Core::IO::read_parameters_in_section(
-      reader, "STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT", *list);
-  Core::IO::read_parameters_in_section(reader, "MORTAR COUPLING", *list);
-  Core::IO::read_parameters_in_section(reader, "MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
-  Core::IO::read_parameters_in_section(reader, "CONTACT DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);
+      input, "STRUCTURAL DYNAMIC/TIMEADAPTIVITY/JOINT EXPLICIT", *list);
+  Core::IO::read_parameters_in_section(input, "MORTAR COUPLING", *list);
+  Core::IO::read_parameters_in_section(input, "MORTAR COUPLING/PARALLEL REDISTRIBUTION", *list);
+  Core::IO::read_parameters_in_section(input, "CONTACT DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "CARDIOVASCULAR 0D-STRUCTURE COUPLING", *list);
   Core::IO::read_parameters_in_section(
-      reader, "CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);
+      input, "CARDIOVASCULAR 0D-STRUCTURE COUPLING/SYS-PUL CIRCULATION PARAMETERS", *list);
   Core::IO::read_parameters_in_section(
-      reader, "CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS", *list);
-  Core::IO::read_parameters_in_section(reader, "BROWNIAN DYNAMICS", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM INTERACTION", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM INTERACTION/SPHERE BEAM LINK", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
+      input, "CARDIOVASCULAR 0D-STRUCTURE COUPLING/RESPIRATORY PARAMETERS", *list);
+  Core::IO::read_parameters_in_section(input, "BROWNIAN DYNAMICS", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM INTERACTION", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM INTERACTION/SPHERE BEAM LINK", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM INTERACTION/BEAM TO BEAM CONTACT", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM INTERACTION/BEAM TO SPHERE CONTACT", *list);
   Core::IO::read_parameters_in_section(
-      reader, "BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT", *list);
+      input, "BEAM INTERACTION/BEAM TO SOLID SURFACE CONTACT", *list);
   Core::IO::read_parameters_in_section(
-      reader, "BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM INTERACTION/BEAM TO SOLID SURFACE", *list);
+      input, "BEAM INTERACTION/BEAM TO SOLID SURFACE MESHTYING", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM INTERACTION/BEAM TO SOLID SURFACE", *list);
   Core::IO::read_parameters_in_section(
-      reader, "BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT", *list);
+      input, "BEAM INTERACTION/BEAM TO SOLID SURFACE/RUNTIME VTK OUTPUT", *list);
   Core::IO::read_parameters_in_section(
-      reader, "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", *list);
+      input, "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING", *list);
   Core::IO::read_parameters_in_section(
-      reader, "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM INTERACTION/CROSSLINKING", *list);
-  Core::IO::read_parameters_in_section(reader, "THERMAL DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "THERMAL DYNAMIC/GENALPHA", *list);
-  Core::IO::read_parameters_in_section(reader, "THERMAL DYNAMIC/ONESTEPTHETA", *list);
-  Core::IO::read_parameters_in_section(reader, "TSI DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "TSI DYNAMIC/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "TSI DYNAMIC/PARTITIONED", *list);
-  Core::IO::read_parameters_in_section(reader, "TSI CONTACT", *list);
-  Core::IO::read_parameters_in_section(reader, "POROELASTICITY DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "POROSCATRA CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "POROFLUIDMULTIPHASE DYNAMIC", *list);
+      input, "BEAM INTERACTION/BEAM TO SOLID VOLUME MESHTYING/RUNTIME VTK OUTPUT", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM INTERACTION/CROSSLINKING", *list);
+  Core::IO::read_parameters_in_section(input, "THERMAL DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "THERMAL DYNAMIC/GENALPHA", *list);
+  Core::IO::read_parameters_in_section(input, "THERMAL DYNAMIC/ONESTEPTHETA", *list);
+  Core::IO::read_parameters_in_section(input, "TSI DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "TSI DYNAMIC/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "TSI DYNAMIC/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "TSI CONTACT", *list);
+  Core::IO::read_parameters_in_section(input, "POROELASTICITY DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "POROSCATRA CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "POROFLUIDMULTIPHASE DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING", *list);
+  Core::IO::read_parameters_in_section(input, "POROMULTIPHASE DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "POROMULTIPHASE DYNAMIC/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "POROMULTIPHASE DYNAMIC/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "POROMULTIPHASESCATRA DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "POROMULTIPHASESCATRA DYNAMIC/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "ELASTO HYDRO DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "EMBEDDED MESH COUPLING", *list);
+  Core::IO::read_parameters_in_section(input, "SSI CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "SSI CONTROL/ELCH", *list);
+  Core::IO::read_parameters_in_section(input, "SSI CONTROL/MANIFOLD", *list);
+  Core::IO::read_parameters_in_section(input, "SSI CONTROL/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "SSI CONTROL/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "SSTI CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "SSTI CONTROL/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "SSTI CONTROL/THERMO", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/EDGE-BASED STABILIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/POROUS-FLOW STABILIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/TURBULENCE MODEL", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/WALL MODEL", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/TIMEADAPTIVITY", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/TURBULENT INFLOW", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES", *list);
+  Core::IO::read_parameters_in_section(input, "LUBRICATION DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "SCALAR TRANSPORT DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
+  Core::IO::read_parameters_in_section(input, "SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
+  Core::IO::read_parameters_in_section(input, "SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING", *list);
+  Core::IO::read_parameters_in_section(input, "SCALAR TRANSPORT DYNAMIC/EXTERNAL FORCE", *list);
+  Core::IO::read_parameters_in_section(input, "STI DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "STI DYNAMIC/MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "STI DYNAMIC/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "FS3I DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "FS3I DYNAMIC/PARTITIONED", *list);
+  Core::IO::read_parameters_in_section(input, "FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "ALE DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "FSI DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "FSI DYNAMIC/CONSTRAINT", *list);
+  Core::IO::read_parameters_in_section(input, "FSI DYNAMIC/MONOLITHIC SOLVER", *list);
+  Core::IO::read_parameters_in_section(input, "FSI DYNAMIC/PARTITIONED SOLVER", *list);
+  Core::IO::read_parameters_in_section(input, "FSI DYNAMIC/TIMEADAPTIVITY", *list);
+  Core::IO::read_parameters_in_section(input, "FLUID BEAM INTERACTION", *list);
   Core::IO::read_parameters_in_section(
-      reader, "POROFLUIDMULTIPHASE DYNAMIC/ARTERY COUPLING", *list);
-  Core::IO::read_parameters_in_section(reader, "POROMULTIPHASE DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "POROMULTIPHASE DYNAMIC/PARTITIONED", *list);
-  Core::IO::read_parameters_in_section(reader, "POROMULTIPHASE DYNAMIC/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "POROMULTIPHASESCATRA DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "POROMULTIPHASESCATRA DYNAMIC/PARTITIONED", *list);
-  Core::IO::read_parameters_in_section(reader, "POROMULTIPHASESCATRA DYNAMIC/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "ELASTO HYDRO DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "ELASTO HYDRO DYNAMIC/PARTITIONED", *list);
-  Core::IO::read_parameters_in_section(reader, "ELASTO HYDRO DYNAMIC/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "EMBEDDED MESH COUPLING", *list);
-  Core::IO::read_parameters_in_section(reader, "SSI CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "SSI CONTROL/ELCH", *list);
-  Core::IO::read_parameters_in_section(reader, "SSI CONTROL/MANIFOLD", *list);
-  Core::IO::read_parameters_in_section(reader, "SSI CONTROL/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "SSI CONTROL/PARTITIONED", *list);
-  Core::IO::read_parameters_in_section(reader, "SSTI CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "SSTI CONTROL/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "SSTI CONTROL/THERMO", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/EDGE-BASED STABILIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/POROUS-FLOW STABILIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/TURBULENCE MODEL", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/WALL MODEL", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/TIMEADAPTIVITY", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/TURBULENT INFLOW", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES", *list);
-  Core::IO::read_parameters_in_section(reader, "LUBRICATION DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "SCALAR TRANSPORT DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
-  Core::IO::read_parameters_in_section(reader, "SCALAR TRANSPORT DYNAMIC/STABILIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "SCALAR TRANSPORT DYNAMIC/S2I COUPLING", *list);
-  Core::IO::read_parameters_in_section(reader, "SCALAR TRANSPORT DYNAMIC/ARTERY COUPLING", *list);
-  Core::IO::read_parameters_in_section(reader, "SCALAR TRANSPORT DYNAMIC/EXTERNAL FORCE", *list);
-  Core::IO::read_parameters_in_section(reader, "STI DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "STI DYNAMIC/MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "STI DYNAMIC/PARTITIONED", *list);
-  Core::IO::read_parameters_in_section(reader, "FS3I DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "FS3I DYNAMIC/PARTITIONED", *list);
+      input, "FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", *list);
   Core::IO::read_parameters_in_section(
-      reader, "FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "ALE DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "FSI DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "FSI DYNAMIC/CONSTRAINT", *list);
-  Core::IO::read_parameters_in_section(reader, "FSI DYNAMIC/MONOLITHIC SOLVER", *list);
-  Core::IO::read_parameters_in_section(reader, "FSI DYNAMIC/PARTITIONED SOLVER", *list);
-  Core::IO::read_parameters_in_section(reader, "FSI DYNAMIC/TIMEADAPTIVITY", *list);
-  Core::IO::read_parameters_in_section(reader, "FLUID BEAM INTERACTION", *list);
+      input, "FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT", *list);
+  Core::IO::read_parameters_in_section(input, "IMMERSED METHOD", *list);
+  Core::IO::read_parameters_in_section(input, "IMMERSED METHOD/PARTITIONED SOLVER", *list);
+  Core::IO::read_parameters_in_section(input, "FPSI DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "ARTERIAL DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
   Core::IO::read_parameters_in_section(
-      reader, "FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING", *list);
+      input, "COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "SEARCH TREE", *list);
+  Core::IO::read_parameters_in_section(input, "XFEM GENERAL", *list);
+  Core::IO::read_parameters_in_section(input, "CUT GENERAL", *list);
+  Core::IO::read_parameters_in_section(input, "XFLUID DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "XFLUID DYNAMIC/GENERAL", *list);
+  Core::IO::read_parameters_in_section(input, "XFLUID DYNAMIC/STABILIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "XFLUID DYNAMIC/XFPSI MONOLITHIC", *list);
+  Core::IO::read_parameters_in_section(input, "LOMA CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "ELCH CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "ELCH CONTROL/DIFFCOND", *list);
+  Core::IO::read_parameters_in_section(input, "ELCH CONTROL/SCL", *list);
+  Core::IO::read_parameters_in_section(input, "BIOFILM CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "PARTICLE DYNAMIC", *list);
   Core::IO::read_parameters_in_section(
-      reader, "FLUID BEAM INTERACTION/BEAM TO FLUID MESHTYING/RUNTIME VTK OUTPUT", *list);
-  Core::IO::read_parameters_in_section(reader, "IMMERSED METHOD", *list);
-  Core::IO::read_parameters_in_section(reader, "IMMERSED METHOD/PARTITIONED SOLVER", *list);
-  Core::IO::read_parameters_in_section(reader, "FPSI DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "ARTERIAL DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "REDUCED DIMENSIONAL AIRWAYS DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(
-      reader, "COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "SEARCH TREE", *list);
-  Core::IO::read_parameters_in_section(reader, "XFEM GENERAL", *list);
-  Core::IO::read_parameters_in_section(reader, "CUT GENERAL", *list);
-  Core::IO::read_parameters_in_section(reader, "XFLUID DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "XFLUID DYNAMIC/GENERAL", *list);
-  Core::IO::read_parameters_in_section(reader, "XFLUID DYNAMIC/STABILIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "XFLUID DYNAMIC/XFPSI MONOLITHIC", *list);
-  Core::IO::read_parameters_in_section(reader, "LOMA CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "ELCH CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "ELCH CONTROL/DIFFCOND", *list);
-  Core::IO::read_parameters_in_section(reader, "ELCH CONTROL/SCL", *list);
-  Core::IO::read_parameters_in_section(reader, "BIOFILM CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "PARTICLE DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(
-      reader, "PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
-  Core::IO::read_parameters_in_section(reader, "PARTICLE DYNAMIC/SPH", *list);
-  Core::IO::read_parameters_in_section(reader, "PARTICLE DYNAMIC/DEM", *list);
-  Core::IO::read_parameters_in_section(reader, "PASI DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "LEVEL-SET CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "LEVEL-SET CONTROL/REINITIALIZATION", *list);
-  Core::IO::read_parameters_in_section(reader, "WEAR", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM CONTACT", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM CONTACT/RUNTIME VTK OUTPUT", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM POTENTIAL", *list);
-  Core::IO::read_parameters_in_section(reader, "BEAM POTENTIAL/RUNTIME VTK OUTPUT", *list);
-  Core::IO::read_parameters_in_section(reader, "SEMI-SMOOTH PLASTICITY", *list);
-  Core::IO::read_parameters_in_section(reader, "ELECTROMAGNETIC DYNAMIC", *list);
-  Core::IO::read_parameters_in_section(reader, "VOLMORTAR COUPLING", *list);
-  Core::IO::read_parameters_in_section(reader, "CARDIAC MONODOMAIN CONTROL", *list);
-  Core::IO::read_parameters_in_section(reader, "MOR", *list);
-  Core::IO::read_parameters_in_section(reader, "MESH PARTITIONING", *list);
-  Core::IO::read_parameters_in_section(reader, "MULTI POINT CONSTRAINTS", *list);
-  Core::IO::read_parameters_in_section(reader, "NURBS", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Direction", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Direction/Newton", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Direction/Newton/Modified", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Direction/Newton/Linear Solver", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Direction/Steepest Descent", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Line Search", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Line Search/Full Step", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Line Search/Backtrack", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Line Search/Polynomial", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Line Search/More'-Thuente", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Pseudo Transient", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Trust Region", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Printing", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Status Test", *list);
-  Core::IO::read_parameters_in_section(reader, "STRUCT NOX/Solver Options", *list);
+      input, "PARTICLE DYNAMIC/INITIAL AND BOUNDARY CONDITIONS", *list);
+  Core::IO::read_parameters_in_section(input, "PARTICLE DYNAMIC/SPH", *list);
+  Core::IO::read_parameters_in_section(input, "PARTICLE DYNAMIC/DEM", *list);
+  Core::IO::read_parameters_in_section(input, "PASI DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "LEVEL-SET CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "LEVEL-SET CONTROL/REINITIALIZATION", *list);
+  Core::IO::read_parameters_in_section(input, "WEAR", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM CONTACT", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM CONTACT/RUNTIME VTK OUTPUT", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM POTENTIAL", *list);
+  Core::IO::read_parameters_in_section(input, "BEAM POTENTIAL/RUNTIME VTK OUTPUT", *list);
+  Core::IO::read_parameters_in_section(input, "SEMI-SMOOTH PLASTICITY", *list);
+  Core::IO::read_parameters_in_section(input, "ELECTROMAGNETIC DYNAMIC", *list);
+  Core::IO::read_parameters_in_section(input, "VOLMORTAR COUPLING", *list);
+  Core::IO::read_parameters_in_section(input, "CARDIAC MONODOMAIN CONTROL", *list);
+  Core::IO::read_parameters_in_section(input, "MOR", *list);
+  Core::IO::read_parameters_in_section(input, "MESH PARTITIONING", *list);
+  Core::IO::read_parameters_in_section(input, "MULTI POINT CONSTRAINTS", *list);
+  Core::IO::read_parameters_in_section(input, "NURBS", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Direction", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Direction/Newton", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Direction/Newton/Modified", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Direction/Newton/Linear Solver", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Direction/Steepest Descent", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Line Search", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Line Search/Full Step", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Line Search/Backtrack", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Line Search/Polynomial", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Line Search/More'-Thuente", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Pseudo Transient", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Trust Region", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Printing", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Status Test", *list);
+  Core::IO::read_parameters_in_section(input, "STRUCT NOX/Solver Options", *list);
 
   // read in solver sections
   // Note: the maximum number of solver blocks in dat files is hardwired here.
@@ -1955,7 +1944,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::DatFileReader& r
   {
     std::stringstream ss;
     ss << "SOLVER " << i;
-    Core::IO::read_parameters_in_section(reader, ss.str(), *list);
+    Core::IO::read_parameters_in_section(input, ss.str(), *list);
 
     // adapt path of XML file if necessary
     Teuchos::ParameterList& sublist = list->sublist(ss.str());
@@ -1970,7 +1959,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::DatFileReader& r
         // make path relative to input file path if it is not an absolute path
         if ((*xml_filename)[0] != '/')
         {
-          std::string filename = reader.my_inputfile_name();
+          std::string filename = input.my_inputfile_name();
           std::string::size_type pos = filename.rfind('/');
           if (pos != std::string::npos)
           {
@@ -1992,7 +1981,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::DatFileReader& r
     // make path relative to input file path if it is not an absolute path
     if (((*statustest_xmlfile)[0] != '/') and ((*statustest_xmlfile) != "none"))
     {
-      std::string filename = reader.my_inputfile_name();
+      std::string filename = input.my_inputfile_name();
       std::string::size_type pos = filename.rfind('/');
       if (pos != std::string::npos)
       {
@@ -2056,7 +2045,7 @@ void Global::read_parameter(Global::Problem& problem, Core::IO::DatFileReader& r
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_materials(Global::Problem& problem, Core::IO::InputFile& input)
 {
   // create list of known materials
   Teuchos::RCP<std::vector<Teuchos::RCP<Mat::MaterialDefinition>>> vm = Input::valid_materials();
@@ -2068,7 +2057,7 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
   for (auto& mat : matlist)
   {
     std::vector<std::pair<int, Core::IO::InputParameterContainer>> read_materials =
-        mat->read(reader);
+        mat->read(input);
 
     for (const auto& [id, data] : read_materials)
     {
@@ -2102,7 +2091,7 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
 
   // check if every material was identified
   const std::string material_section = "MATERIALS";
-  for (const auto& section_i : reader.lines_in_section(material_section))
+  for (const auto& section_i : input.lines_in_section(material_section))
   {
     std::stringstream condline{std::string{section_i}};
 
@@ -2129,8 +2118,7 @@ void Global::read_materials(Global::Problem& problem, Core::IO::DatFileReader& r
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_contact_constitutive_laws(
-    Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_contact_constitutive_laws(Global::Problem& problem, Core::IO::InputFile& input)
 {
   // create list of known contact constitutive laws
   Teuchos::RCP<std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>> vm =
@@ -2142,12 +2130,12 @@ void Global::read_contact_constitutive_laws(
   for (auto& m : coconstlawlist)
   {
     // read contact constitutive law from DAT file of type
-    m->read(problem, reader, *problem.contact_constitutive_laws());
+    m->read(problem, input, *problem.contact_constitutive_laws());
   }
 
   // check if every contact constitutive law was identified
   const std::string contact_const_laws = "CONTACT CONSTITUTIVE LAWS";
-  for (const auto& section_i : reader.lines_in_section(contact_const_laws))
+  for (const auto& section_i : input.lines_in_section(contact_const_laws))
   {
     std::stringstream condline{std::string{section_i}};
 
@@ -2179,13 +2167,13 @@ void Global::read_contact_constitutive_laws(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_cloning_material_map(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_cloning_material_map(Global::Problem& problem, Core::IO::InputFile& input)
 {
   const std::vector<Input::LineDefinition> lines = Core::FE::valid_cloning_material_map_lines();
 
   // perform the actual reading and extract the input parameters
   std::vector<Input::LineDefinition> input_line_vec =
-      Core::IO::DatFileUtils::read_all_lines_in_section(reader, "CLONING MATERIAL MAP", lines);
+      Core::IO::DatFileUtils::read_all_lines_in_section(input, "CLONING MATERIAL MAP", lines);
   for (const auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
@@ -2206,7 +2194,7 @@ void Global::read_cloning_material_map(Global::Problem& problem, Core::IO::DatFi
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_result(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_result(Global::Problem& problem, Core::IO::InputFile& input)
 {
   const auto lines = global_legacy_module_callbacks().valid_result_description_lines();
 
@@ -2214,22 +2202,22 @@ void Global::read_result(Global::Problem& problem, Core::IO::DatFileReader& read
   const auto get_discretization_callback = [](const std::string& name) -> decltype(auto)
   { return *Global::Problem::instance()->get_dis(name); };
   std::vector<std::vector<std::vector<int>>> nodeset(4);
-  Core::IO::read_design(reader, "DNODE", nodeset[0], get_discretization_callback);
-  Core::IO::read_design(reader, "DLINE", nodeset[1], get_discretization_callback);
-  Core::IO::read_design(reader, "DSURF", nodeset[2], get_discretization_callback);
-  Core::IO::read_design(reader, "DVOL", nodeset[3], get_discretization_callback);
+  Core::IO::read_design(input, "DNODE", nodeset[0], get_discretization_callback);
+  Core::IO::read_design(input, "DLINE", nodeset[1], get_discretization_callback);
+  Core::IO::read_design(input, "DSURF", nodeset[2], get_discretization_callback);
+  Core::IO::read_design(input, "DVOL", nodeset[3], get_discretization_callback);
   problem.get_result_test_manager().set_node_set(nodeset);
 
   problem.get_result_test_manager().set_parsed_lines(
-      Core::IO::DatFileUtils::read_all_lines_in_section(reader, "RESULT DESCRIPTION", lines));
+      Core::IO::DatFileUtils::read_all_lines_in_section(input, "RESULT DESCRIPTION", lines));
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_conditions(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_conditions(Global::Problem& problem, Core::IO::InputFile& input)
 {
   Teuchos::Time time("", true);
-  if (reader.get_comm().MyPID() == 0)
+  if (input.get_comm().MyPID() == 0)
   {
     Core::IO::cout << "Read/generate conditions                          in....";
     Core::IO::cout.flush();
@@ -2241,19 +2229,19 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::DatFileReader& 
 
   // read design nodes <-> nodes
   std::vector<std::vector<int>> dnode_fenode;
-  Core::IO::read_design(reader, "DNODE", dnode_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DNODE", dnode_fenode, get_discretization_callback);
 
   // read design lines <-> nodes
   std::vector<std::vector<int>> dline_fenode;
-  Core::IO::read_design(reader, "DLINE", dline_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DLINE", dline_fenode, get_discretization_callback);
 
   // read design surfaces <-> nodes
   std::vector<std::vector<int>> dsurf_fenode;
-  Core::IO::read_design(reader, "DSURF", dsurf_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DSURF", dsurf_fenode, get_discretization_callback);
 
   // read design volumes <-> nodes
   std::vector<std::vector<int>> dvol_fenode;
-  Core::IO::read_design(reader, "DVOL", dvol_fenode, get_discretization_callback);
+  Core::IO::read_design(input, "DVOL", dvol_fenode, get_discretization_callback);
 
   // check for meshfree discretisation to add node set topologies
   std::vector<std::vector<std::vector<int>>*> nodeset(4);
@@ -2278,7 +2266,7 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::DatFileReader& 
     std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>> cond;
 
     // read conditions from dat file
-    condition->read(reader, cond);
+    condition->read(input, cond);
 
     // add nodes to conditions
     std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>::const_iterator curr;
@@ -2358,7 +2346,7 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::DatFileReader& 
     }
   }
 
-  if (reader.get_comm().MyPID() == 0)
+  if (input.get_comm().MyPID() == 0)
   {
     std::cout << time.totalElapsedTime(true) << " secs\n";
   }
@@ -2367,7 +2355,7 @@ void Global::read_conditions(Global::Problem& problem, Core::IO::DatFileReader& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_knots(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_knots(Global::Problem& problem, Core::IO::InputFile& input)
 {
   // get information on the spatial approximation --- we only read knots
   // in the nurbs case
@@ -2391,7 +2379,7 @@ void Global::read_knots(Global::Problem& problem, Core::IO::DatFileReader& reade
       Teuchos::RCP<Core::FE::Nurbs::Knotvector> disknots = Teuchos::null;
 
       // read the knotvector data from the input
-      Core::IO::read_knots(reader, dis->name(), disknots);
+      Core::IO::read_knots(input, dis->name(), disknots);
 
       if (disknots == Teuchos::null)
       {
@@ -2423,12 +2411,12 @@ void Global::read_knots(Global::Problem& problem, Core::IO::DatFileReader& reade
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void Global::read_particles(Global::Problem& problem, Core::IO::DatFileReader& reader)
+void Global::read_particles(Global::Problem& problem, Core::IO::InputFile& input)
 {
   // no need to read in particles in case of restart
   if (problem.restart()) return;
 
-  PARTICLEENGINE::read_particles(reader, "PARTICLES", problem.particles());
+  PARTICLEENGINE::read_particles(input, "PARTICLES", problem.particles());
 }
 
 FOUR_C_NAMESPACE_CLOSE

@@ -111,7 +111,7 @@ namespace Core::FE
 
   The initialization of a discretization is a major effort since the parallel
   distribution needs to be established. Normally the discretization is read from
-  a dat-file with the help of Discret::DatFileReader and related classes. The
+  a dat-file with the help of Discret::InputFile and related classes. The
   discretization class comes with a bunch of helper method for its setup phase.
 
   <h3>Filled-State</h3>

@@ -25,7 +25,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace Core::IO
 {
-  class DatFileReader;
+  class InputFile;
 }
 
 namespace Input

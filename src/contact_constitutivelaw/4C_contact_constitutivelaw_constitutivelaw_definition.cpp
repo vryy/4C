@@ -9,7 +9,7 @@
 
 #include "4C_contact_constitutivelaw_bundle.hpp"
 #include "4C_contact_constitutivelaw_contactconstitutivelaw_parameter.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -34,9 +34,9 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::add_component(Teuchos::RCP<Input::
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::LawDefinition::read(const Global::Problem& problem,
-    Core::IO::DatFileReader& reader, CONTACT::CONSTITUTIVELAW::Bundle& bundle)
+    Core::IO::InputFile& input, CONTACT::CONSTITUTIVELAW::Bundle& bundle)
 {
-  for (const auto& i : reader.lines_in_section("CONTACT CONSTITUTIVE LAWS"))
+  for (const auto& i : input.lines_in_section("CONTACT CONSTITUTIVE LAWS"))
   {
     Teuchos::RCP<std::stringstream> condline = Teuchos::make_rcp<std::stringstream>(std::string{i});
 

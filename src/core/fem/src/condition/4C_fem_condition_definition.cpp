@@ -8,7 +8,7 @@
 #include "4C_fem_condition_definition.hpp"
 
 #include "4C_fem_discretization.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_io_linecomponent.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_utils_exceptions.hpp"
@@ -49,13 +49,13 @@ void Core::Conditions::ConditionDefinition::add_component(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void Core::Conditions::ConditionDefinition::read(Core::IO::DatFileReader& reader,
-    std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap)
+void Core::Conditions::ConditionDefinition::read(
+    Core::IO::InputFile& input, std::multimap<int, Teuchos::RCP<Core::Conditions::Condition>>& cmap)
 {
   // read the range into a vector
   std::vector<std::string> section_vec;
   {
-    const auto& section = reader.lines_in_section(sectionname_);
+    const auto& section = input.lines_in_section(sectionname_);
     for (const auto& line : section) section_vec.push_back(std::string{line});
   }
 

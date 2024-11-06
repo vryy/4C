@@ -10,7 +10,7 @@
 #include "4C_comm_utils_factory.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_fem_general_element_definition.hpp"
-#include "4C_io_inputreader.hpp"
+#include "4C_io_input_file.hpp"
 #include "4C_rebalance_print.hpp"
 
 FOUR_C_NAMESPACE_OPEN
@@ -18,10 +18,10 @@ FOUR_C_NAMESPACE_OPEN
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    Core::IO::DatFileReader& reader, std::string sectionname)
+Core::IO::ElementReader::ElementReader(
+    Teuchos::RCP<Core::FE::Discretization> dis, Core::IO::InputFile& input, std::string sectionname)
     : name_(dis->name()),
-      reader_(reader),
+      input_(input),
       comm_(dis->get_comm()),
       sectionname_(sectionname),
       dis_(dis)
@@ -32,9 +32,9 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    Core::IO::DatFileReader& reader, std::string sectionname, std::string elementtype)
+    Core::IO::InputFile& input, std::string sectionname, std::string elementtype)
     : name_(dis->name()),
-      reader_(reader),
+      input_(input),
       comm_(dis->get_comm()),
       sectionname_(sectionname),
       dis_(dis)
@@ -46,10 +46,9 @@ Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> di
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Core::IO::ElementReader::ElementReader(Teuchos::RCP<Core::FE::Discretization> dis,
-    Core::IO::DatFileReader& reader, std::string sectionname,
-    const std::set<std::string>& elementtypes)
+    Core::IO::InputFile& input, std::string sectionname, const std::set<std::string>& elementtypes)
     : name_(dis->name()),
-      reader_(reader),
+      input_(input),
       comm_(dis->get_comm()),
       sectionname_(sectionname),
       dis_(dis)
@@ -74,7 +73,7 @@ void Core::IO::ElementReader::read_and_distribute()
   {
     if (numele == 0)
     {
-      // If the element section is empty, we create an empty reader and return
+      // If the element section is empty, we create an empty input and return
       coleles_ = roweles_ = colnodes_ = rownodes_ =
           Teuchos::make_rcp<Epetra_Map>(-1, 0, nullptr, 0, comm_);
 
@@ -126,7 +125,7 @@ std::pair<int, std::vector<int>> Core::IO::ElementReader::get_element_size_and_i
   // all reading is done on proc 0
   if (comm_.MyPID() == 0)
   {
-    for (const auto& element_line : reader_.lines_in_section(sectionname_))
+    for (const auto& element_line : input_.lines_in_section(sectionname_))
     {
       std::istringstream t{std::string{element_line}};
       int elenumber;
@@ -176,7 +175,7 @@ void Core::IO::ElementReader::get_and_distribute_elements(const int nblock, cons
     int bcount = 0;
     int block = 0;
 
-    for (const auto& element_line : reader_.lines_in_section(sectionname_))
+    for (const auto& element_line : input_.lines_in_section(sectionname_))
     {
       std::istringstream t{std::string{element_line}};
       int elenumber;
