@@ -17,7 +17,7 @@ set(SOURCE_LIST
 four_c_add_google_test_executable(
   ${TESTNAME}
   NP
-  5
+  3
   SOURCE
   ${SOURCE_LIST}
   )
