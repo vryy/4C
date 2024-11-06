@@ -91,7 +91,7 @@ RUN mkdir ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 RUN /dependencies/testing/llvm/install.sh /usr/local
 
 # Install newer GCC
-RUN /dependencies/testing/gcc/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
+# RUN /dependencies/testing/gcc/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}
 
 # Install Mathjax
 RUN /dependencies/testing/mathjax/install.sh ${FOUR_C_TESTING_DEPENDENCIES_DIR}

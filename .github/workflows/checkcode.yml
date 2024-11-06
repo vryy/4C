@@ -1,0 +1,23 @@
+# Check for code style
+name: checkcode
+
+on:
+  pull_request:
+    branches:
+      - 'main'
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  checkcode:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run pre-commit
+        run: |
+          ./utilities/set_up_dev_env.sh
+          source ./utilities/python-venv/bin/activate
+          pre-commit clean
+          pre-commit run --all-files --show-diff-on-failure
+
