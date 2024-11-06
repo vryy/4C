@@ -28,7 +28,7 @@ namespace
   {
     // mock up for command line to create communicators
     std::vector<std::string> argv{
-        "dummyEntryInputFile", "-nptype=separateDatFiles", "-ngroup=2", "-glayout=2,3"};
+        "dummyEntryInputFile", "-nptype=separateDatFiles", "-ngroup=2", "-glayout=1,2"};
 
     return Core::Communication::create_comm(argv);
   };
