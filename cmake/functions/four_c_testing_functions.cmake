@@ -114,13 +114,13 @@ function(_add_test_with_options)
 endfunction()
 
 ###------------------------------------------------------------------ 4C Test
-# Run simulation with .dat file
+# Run simulation with input file
 # Usage in tests/lists_of_tests.cmake:
 #            "four_c_test(<input_file> optional: NP <> RESTART_STEP <> TIMEOUT <> OMP_THREADS <> POST_ENSIGHT_STRUCTURE <> LABEL <>
 #                                                CSV_COMPARISON_RESULT_FILE <> CSV_COMPARISON_REFERENCE_FILE <>
 #                                                CSV_COMPARISON_TOL_R <> CSV_COMPARISON_TOL_A <>)"
 
-# TEST_FILE:              must equal the name of a .dat file in directory tests/input_files; without ".dat".
+# TEST_FILE:              must equal the name of an input file in directory tests/input_files
 #                         If two files are provided the second input file is restarted based on the results of the first input file.
 
 # optional:
@@ -225,7 +225,7 @@ function(four_c_test)
   # check if source files exist
   set(source_file "")
   foreach(string IN LISTS _parsed_TEST_FILE)
-    set(file_name "${PROJECT_SOURCE_DIR}/tests/input_files/${string}.dat")
+    set(file_name "${PROJECT_SOURCE_DIR}/tests/input_files/${string}")
     if(NOT EXISTS ${file_name})
       message(FATAL_ERROR "Test source file ${file_name} does not exist!")
     endif()
@@ -457,8 +457,8 @@ endfunction()
 
 ###------------------------------------------------------------------ Nested Parallelism
 # Usage in tests/lists_of_tests.cmake: "four_c_test_nested_parallelism(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
-# <name_of_input_file_1>: must equal the name of a .dat file in directory tests/input_files for the first test; without ".dat". This test will be executed using 1 process.
-# <name_of_input_file_2>: must equal the name of a .dat file in directory tests/input_files for the second test; without ".dat". This test will be executed using 2 processes.
+# <name_of_input_file_1>: must equal the name of an input file in directory tests/input_files for the first test; This test will be executed using 1 process.
+# <name_of_input_file_2>: must equal the name of an input file in directory tests/input_files for the second test; This test will be executed using 2 processes.
 # <restart_step>: number of restart step; <""> indicates no restart
 function(four_c_test_nested_parallelism name_of_input_file_1 name_of_input_file_2 restart_step)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file_1})
@@ -467,7 +467,7 @@ function(four_c_test_nested_parallelism name_of_input_file_1 name_of_input_file_
     NAME ${name_of_input_file_1}-nestedPar
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
+      "mkdir -p ${test_directory} &&  ${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1} ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2} ${test_directory}/xxxAdditional"
     )
 
   require_fixture(${name_of_input_file_1}-nestedPar test_cleanup)
@@ -480,7 +480,7 @@ function(four_c_test_nested_parallelism name_of_input_file_1 name_of_input_file_
       NAME ${name_of_input_file_1}-nestedPar-restart
       COMMAND
         bash -c
-        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
+        "${MPIEXEC_EXECUTABLE} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${FOUR_C_EXECUTABLE_NAME}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1} ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2} ${test_directory}/xxxAdditional restart=${restart_step}"
       )
 
     require_fixture(
@@ -593,7 +593,7 @@ endfunction()
 # Run ensight postprocessor on previous test
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in tests/lists_of_tests.cmake: "four_c_test_post_processing(<name_of_input_file> <num_proc> <stresstype> <straintype> <startstep> <optional: identifier> <optional: field>"
-# <name_of_input_file>: must equal the name of a .dat file from a previous tests
+# <name_of_input_file>: must equal the name of an input file from a previous tests
 # <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
 # <stresstype>: use post processor with this stresstype
@@ -637,12 +637,15 @@ function(
       ${MPIEXEC_EXECUTABLE}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
 
+  # remove file ending of input file for reference file
+  get_filename_component(name_of_reference_file ${name_of_input_file} NAME_WLE)
+
   # specify test case
   add_test(
     NAME "${name_of_test}"
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${FOUR_C_PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
+      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${FOUR_C_PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_reference_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
     )
 
   require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
@@ -660,7 +663,7 @@ endfunction()
 # Implementation can be found in '/tests/output_test/vtk_compare.py'
 # Usage in tests/lists_of_tests.cmake: "four_c_test_vtk(<name_of_input_file> <num_proc> <filetag> <pvd_referencefilename> <tolerance> <optional: time_steps>)"
 # <name_of_test>: name of this test
-# <name_of_input_file>: must equal the name of a .dat file from a previous test
+# <name_of_input_file>: must equal the name of an input file from a previous test
 # <num_proc_base_run>: number of processors of precursor base run
 # <pvd_referencefilename>: file to compare with
 # <tolerance>: difference the values may have
