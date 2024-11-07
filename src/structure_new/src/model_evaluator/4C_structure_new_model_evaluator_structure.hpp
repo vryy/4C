@@ -13,7 +13,8 @@
 #include "4C_inpar_structure.hpp"  // enumerators
 #include "4C_io_visualization_parameters.hpp"
 #include "4C_structure_new_elements_paramsinterface.hpp"  // interface to the element evaluation
-#include "4C_structure_new_model_evaluator_generic.hpp"   // base class
+#include "4C_structure_new_error_evaluator.hpp"
+#include "4C_structure_new_model_evaluator_generic.hpp"  // base class
 
 #include <Teuchos_RCP.hpp>
 
@@ -173,6 +174,9 @@ namespace Solid
 
       //! [derived]
       void evaluate_jacobian_contributions_from_element_level_for_ptc() override;
+
+      //! calculate the L2 displacement error in comparison to the analytical solution.
+      void evaluate_analytical_error();
 
       //! [derived]
       void assemble_jacobian_contributions_from_element_level_for_ptc(
@@ -530,6 +534,9 @@ namespace Solid
 
       //! visualization parameters
       Core::IO::VisualizationParameters visualization_params_;
+
+      //! error evaluator parameters
+      ErrorEvaluator::Parameters error_evaluator_parameters_;
 
       Teuchos::RCP<Core::IO::DiscretizationVisualizationWriterMesh> vtu_writer_ptr_;
 

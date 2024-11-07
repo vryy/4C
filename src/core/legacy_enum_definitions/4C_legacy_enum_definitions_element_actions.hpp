@@ -77,7 +77,8 @@ namespace Core::Elements
     struct_create_backup,        //!< create a backup state of the internally store state quantities
                                  //!< (e.g. EAS, material history, etc.)
     struct_recover_from_backup,  //!< recover from previously stored backup state
-    calc_struct_stiffscalar      //!< calculate coupling term k_dS for monolithic SSI
+    calc_struct_stiffscalar,     //!< calculate coupling term k_dS for monolithic SSI
+    struct_calc_analytical_error  //!< compute L2 error in comparison to analytical solution
   };
 
   static inline enum ActionType string_to_action_type(const std::string& action)
@@ -96,6 +97,8 @@ namespace Core::Elements
       return struct_calc_nlnstiffmass;
     else if (action == "calc_struct_nlnstifflmass")
       return struct_calc_nlnstifflmass;
+    else if (action == "struct_calc_analytical_error")
+      return struct_calc_analytical_error;
     else if (action == "calc_struct_stress")
       return struct_calc_stress;
     else if (action == "calc_struct_eleload")
@@ -165,6 +168,8 @@ namespace Core::Elements
         return "struct_calc_nlnstiffmass";
       case struct_calc_nlnstifflmass:
         return "struct_calc_nlnstifflmass";
+      case struct_calc_analytical_error:
+        return "struct_calc_analytical_error";
       case struct_calc_predict:
         return "struct_calc_predict";
       case struct_calc_recover:

@@ -709,6 +709,10 @@ void Solid::Integrator::post_time_loop()
 {
   check_init_setup();
   model_eval().post_time_loop();
+
+  Solid::ModelEvaluator::Structure& str_model =
+      dynamic_cast<Solid::ModelEvaluator::Structure&>(evaluator(Inpar::Solid::model_structure));
+  str_model.evaluate_analytical_error();
 }
 
 /*----------------------------------------------------------------------------*
