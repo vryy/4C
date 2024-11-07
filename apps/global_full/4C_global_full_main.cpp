@@ -18,7 +18,7 @@
 #include "4C_inpar_validcontactconstitutivelaw.hpp"
 #include "4C_inpar_validmaterials.hpp"
 #include "4C_inpar_validparameters.hpp"
-#include "4C_io_dat_file_utils.hpp"
+#include "4C_io_input_file_utils.hpp"
 #include "4C_utils_exceptions.hpp"
 #include "4C_utils_singleton_owner.hpp"
 
@@ -292,13 +292,13 @@ int main(int argc, char *argv[])
       print_contact_constitutive_law_dat_header();
 
       const auto lines = Core::FE::valid_cloning_material_map_lines();
-      Core::IO::DatFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
+      Core::IO::InputFileUtils::print_section(std::cout, "CLONING MATERIAL MAP", lines);
 
       print_element_dat_header();
 
       const std::vector<Input::LineDefinition> result_lines =
           global_legacy_module_callbacks().valid_result_description_lines();
-      Core::IO::DatFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
+      Core::IO::InputFileUtils::print_section(std::cout, "RESULT DESCRIPTION", result_lines);
 
       printf("\n\n");
     }

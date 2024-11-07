@@ -18,6 +18,7 @@
 #include "4C_inpar_validparameters.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
+#include "4C_io_input_file_utils.hpp"
 #include "4C_mat_materialdefinition.hpp"
 #include "4C_particle_engine_particlereader.hpp"
 #include "4C_rebalance_graph_based.hpp"
@@ -191,7 +192,7 @@ void Global::Problem::write_input_parameters()
   std::string s = output_control_file()->file_name();
   s.append(".parameter");
   std::ofstream stream(s.c_str());
-  Input::print_dat_header(stream, *parameters_, "", false);
+  Core::IO::InputFileUtils::print_dat(stream, *parameters_, false);
 }
 
 

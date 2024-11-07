@@ -64,6 +64,7 @@
 #include "4C_inpar_volmortar.hpp"
 #include "4C_inpar_wear.hpp"
 #include "4C_inpar_xfem.hpp"
+#include "4C_io_input_file_utils.hpp"
 #include "4C_io_pstream.hpp"
 #include "4C_utils_parameter_list.hpp"
 
@@ -172,160 +173,11 @@ void print_help_message()
 }
 
 
-void Input::print_documentation(std::ostream& stream, const Teuchos::ParameterEntry& entry)
-{
-  // Helper function to print documentation
-  std::string doc = entry.docString();
-  if (!doc.empty())
-  {
-    Teuchos::StrUtils::printLines(stream, "// ", doc);
-  }
-}
-
-
-void Input::print_sublist(std::ostream& stream, const std::string& parentname,
-    const std::string& name, const Teuchos::ParameterList& list, bool comment)
-{
-  // Helper function to print a sublist
-  std::string secname = parentname;
-  if (!secname.empty()) secname += "/";
-  secname += name;
-  unsigned l = secname.length();
-  stream << "--" << std::string(std::max<int>(65 - l, 0), '-');
-  stream << secname << "\n";
-  print_dat_header(stream, list.sublist(name), secname, comment);
-}
-
-void Input::print_parameter(std::ostream& stream, const Teuchos::ParameterEntry& entry,
-    const std::string& name, const Teuchos::ParameterList& list, bool comment)
-{
-  // Retrieve the parameter entry's validator (if any)
-  Teuchos::RCP<const Teuchos::ParameterEntryValidator> validator = entry.validator();
-
-  // Print comments if requested
-  if (comment)
-  {
-    // Check if the validator has valid string values
-    if (validator != Teuchos::null)
-    {
-      Teuchos::RCP<const Teuchos::Array<std::string>> validValues = validator->validStringValues();
-
-      // If valid values exist, print them
-      if (validValues != Teuchos::null)
-      {
-        unsigned totalLength = 0;
-        // Calculate the total length of all valid values
-        for (const auto& value : *validValues)
-        {
-          totalLength += value.length() + 1;  // Include space/comma
-        }
-        // Print valid values in a compact or expanded format based on total length
-        if (totalLength < 74)
-        {
-          // Print all values in a single line, separated by commas
-          stream << "//     ";
-          for (auto it = validValues->begin(); it != validValues->end(); ++it)
-          {
-            stream << *it;
-            if (std::next(it) != validValues->end())
-            {
-              stream << ",";  // Add a comma if it's not the last element
-            }
-          }
-          stream << "\n";
-        }
-        else
-        {
-          // Print each value on a new line
-          for (const auto& value : *validValues)
-          {
-            stream << "//     " << value << '\n';
-          }
-        }
-      }
-    }
-  }
-
-  // Print the parameter's name and value
-  const Teuchos::any& value = entry.getAny(false);
-  stream << name;
-  unsigned nameLength = name.length();
-  // Ensure proper spacing for alignment
-  stream << std::string(std::max<int>(31 - nameLength, 0), ' ');
-
-  // Optionally print an equal sign if needed
-  if (need_to_print_equal_sign(list)) stream << " =";
-
-  try
-  {
-    // print true/false for bool values to distinguish them from type int
-    if (value.type() == typeid(bool))
-    {
-      stream << " " << (Teuchos::any_cast<bool>(value) ? "true" : "false") << "\n";
-    }
-    else
-    {
-      // For non-boolean types, print the value directly
-      stream << " " << value << "\n";
-    }
-  }
-  catch (const Teuchos::NonprintableTypeException&)
-  {
-    // Handle non-printable enum class types
-    stream << value.typeName() << "\n";
-  }
-}
-
-void Input::print_dat_header(
-    std::ostream& stream, const Teuchos::ParameterList& list, std::string parentname, bool comment)
-{
-  // Main loop over the parameter list that calls the helper functions to print
-  // documentation, sublists or parameters:
-  //
-  // Iterate through the parameter list in two distinct phases to ensure proper ordering and
-  // handling:
-  // - **Phase 0**:
-  //    Print all parameters that are not sublists. This ensures that top-level parameters
-  //    are written to stream first, without any nested content interfering.
-  // - **Phase 1**:
-  //    Recursively handle and print all sublists. This phase is executed after all non-sublists
-  //    have been processed, allowing sublists to be printed in their hierarchical order.
-  //
-  // By separating the iteration into these phases, we avoid issues with alphabetical
-  // ordering that could cause invalid output sequences for nested lists.
-  for (int iterationPhase = 0; iterationPhase < 2; ++iterationPhase)
-  {
-    for (auto paramIter = list.begin(); paramIter != list.end(); ++paramIter)
-    {
-      const Teuchos::ParameterEntry& entry = list.entry(paramIter);
-      const std::string& name = list.name(paramIter);
-
-      if ((entry.isList() && iterationPhase == 0) || (!entry.isList() && iterationPhase == 1))
-      {
-        continue;
-      }
-      if (comment)
-      {
-        stream << "//\n";
-        print_documentation(stream, entry);
-      }
-      if (entry.isList())
-      {
-        print_sublist(stream, parentname, name, list, comment);
-      }
-      else
-      {
-        print_parameter(stream, entry, name, list, comment);
-      }
-    }
-  }
-  stream << std::endl;
-}
 
 void print_default_dat_header()
 {
   std::shared_ptr<const Teuchos::ParameterList> list = Input::valid_parameters();
-  Input::print_dat_header(std::cout, *list);
+  Core::IO::InputFileUtils::print_dat(std::cout, *list);
 }
 
 std::shared_ptr<const Teuchos::ParameterList> Input::valid_parameters()
@@ -454,28 +306,5 @@ std::shared_ptr<const Teuchos::ParameterList> Input::valid_parameters()
 }
 
 
-bool Input::need_to_print_equal_sign(const Teuchos::ParameterList& list)
-{
-  // Helper function to check if string contains a space.
-  const auto string_has_space = [](const std::string& s)
-  { return std::any_of(s.begin(), s.end(), [](unsigned char c) { return std::isspace(c); }); };
 
-  return std::any_of(list.begin(), list.end(),
-      [&](const auto& it)
-      {
-        // skip entries that are lists: they are allowed to have spaces
-        if (it.second.isList()) return false;
-
-        const std::string& name = it.key;
-
-        const Teuchos::RCP<const Teuchos::Array<std::string>>& values_ptr =
-            it.second.validator()->validStringValues();
-
-        const bool value_has_space =
-            (values_ptr != Teuchos::null) &&
-            std::any_of(values_ptr->begin(), values_ptr->end(), string_has_space);
-
-        return value_has_space || string_has_space(name);
-      });
-}
 FOUR_C_NAMESPACE_CLOSE
