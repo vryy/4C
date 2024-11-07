@@ -25,17 +25,7 @@ DYNAMICTYP                      Statics
 TIMESTEP                        0.1
 NUMSTEP                         10
 MAXTIME                         1
-TOLRES                          1.0E-10
-TOLDISP                         1.0E-10
 PREDICT                         ConstDis
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NORMCOMBI_RESFDISP              And
-TOLCONSTR                       1.0E-6
-MAXITER                         50
-UZAWAPARAM                      1.0
-UZAWAMAXITER                    20
-UZAWAALGO                       direct
 LINEAR_SOLVER                   1
 LOADLIN                         yes
 ---------------------------------------------------------STRUCT NOX
@@ -53,7 +43,8 @@ Full                            Step = 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -2.4916812836364950 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -2.49168128363535368 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 44 QUANTITY dispy VALUE -2.49114725113795465 TOLERANCE 1e-10
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 0.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 120 NUE 0.499
@@ -61,7 +52,7 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 120 NUE 0.499
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
-E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.23616 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 orthopressure Mid
+E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.23616 0.0 0.0 0.0 FUNCT 0 0 1 0 0 0 orthopressure
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 3
 E 1 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
